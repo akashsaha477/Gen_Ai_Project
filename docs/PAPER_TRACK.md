@@ -1,5 +1,7 @@
 # PAPER TRACK
 
+Amended 2026-10-08 after the kickoff review: see `docs/DECISIONS.md` (A1–A11).
+
 ## Working titles
 - Does Generative Augmentation Help Rare-Arrhythmia Detection Under Inter-Patient Evaluation?
   A Controlled Comparison of Conditional VAEs and WGAN-GP
@@ -12,7 +14,8 @@ careful answer to whether, when and why generative augmentation helps, under con
 deployment.
 
 **Contributions**
-- **C1 Controlled, leakage-free comparison:** cVAE vs WGAN-GP vs SMOTE vs class-weighted loss vs none;
+- **C1 Controlled, leakage-free comparison:** cVAE vs WGAN-GP vs SMOTE vs random oversampling vs
+  class-weighted loss vs none;
   two architectures; multiple seeds; inter-patient DS1/DS2; record-level uncertainty; pre-registered selection.
 - **C2 Leakage audit:** how much intra-patient evaluation inflates baseline performance and the apparent
   benefit of augmentation.
@@ -25,27 +28,35 @@ deployment.
 
 ## Research questions and pre-registered hypotheses
 
+H1 is the only confirmatory hypothesis. H1c is tested in the secondary family. H1b, H2, H3 and H4 are
+exploratory and are reported as such.
+
 **RQ1 — Does generative augmentation improve rare-class detection under inter-patient evaluation?**
-- H1: the best generative condition improves test rare-class macro-F1 over no augmentation for at least
-  one architecture (95% record-level CI of the difference excludes 0 after Holm correction).
-- H1b: gains are larger for F (morphology-defined) than for S (largely defined by timing/prematurity),
-  because the generators model beat morphology, not RR context.
-- H1c: generative augmentation beats SMOTE and class-weighted loss on the primary metric.
-  It may well not. Report either way.
+- H1 (confirmatory): a generative condition (cVAE or WGAN-GP) improves test rare-class macro-F1 over
+  no augmentation for at least one architecture: positive difference with Holm-adjusted two-sided
+  bootstrap p < 0.05 within the confirmatory family of 4 tests.
+- H1b (exploratory): gains are larger for F (morphology-defined) than for S (largely defined by
+  timing/prematurity), because the generators model beat morphology, not RR context.
+- H1c (secondary): generative augmentation beats SMOTE, random oversampling and class-weighted loss on
+  the primary metric. It may well not. Report either way.
 
 **RQ2 — How much does intra-patient evaluation inflate results?**
-- H2: intra-patient splits give higher baseline scores and larger apparent augmentation gains than
-  inter-patient splits.
+- H2 (exploratory): intra-patient splits give higher baseline scores and larger apparent augmentation
+  gains than inter-patient splits.
 
 **RQ3 — Do synthetic-quality metrics predict downstream benefit?**
-- H3: across generator checkpoints and variants, at least one metric correlates with downstream
-  validation gain (Spearman ρ, bootstrap CI excluding 0); fidelity-only metrics (FID-analog) correlate
-  more weakly than diversity-aware ones.
+- H3 (exploratory): across generator checkpoints and variants, at least one metric correlates with
+  downstream validation gain (Spearman ρ, bootstrap CI excluding 0); fidelity-only metrics
+  (FID-analog) correlate more weakly than diversity-aware ones.
+- TSTR is analysed separately from the fidelity and diversity metrics: it and the downstream gain are
+  both validation scores of a CNN trained on the same synthetic beats, so some correlation is built in.
+- Intervals come from resampling generator training runs (variant × seed), not checkpoints, because
+  checkpoints of one run are dependent.
 
 **RQ4 — Does augmentation change what the classifier relies on?**
-- H4: augmented models show equal or higher saliency faithfulness than the baseline, with saliency in
-  physiologically relevant windows. Any shift toward regions where synthetic beats differ from real ones
-  is reported as potential artifact reliance.
+- H4 (exploratory): augmented models show equal or higher saliency faithfulness than the baseline,
+  with saliency in physiologically relevant windows. Any shift toward regions where synthetic beats
+  differ from real ones is reported as potential artifact reliance.
 
 ## Metrics
 - **Primary:** rare-class macro-F1 (mean of S and F F1).
@@ -57,14 +68,28 @@ deployment.
   22 DS2 records with replacement; metrics on pooled beats within each replicate; seeds averaged within
   each replicate. Beat-level bootstrap is not used: beats within a patient are correlated, and it would
   understate uncertainty.
-- Report the fraction of replicates where a class is absent (S and F are concentrated in few records).
-- **Pre-registered comparisons, per architecture**, each condition at the strength chosen on validation:
-  (1) cVAE vs none, (2) WGAN-GP vs none, (3) cVAE vs WGAN-GP, (4) best generative vs SMOTE,
-  (5) best generative vs class-weighted CE. Holm–Bonferroni across all 10 (5 × 2 architectures).
+- Report the fraction of replicates where a class is absent, and, for S and for F, the fraction of
+  replicates that lack the record holding most of that class's test beats (S and F are concentrated in
+  few records, so the second number is the informative one).
+- A replicate in which S or F has no true beats has an undefined primary metric. Such replicates are
+  excluded from intervals and p-values, and their fraction is reported.
+- **Pre-registered comparisons, per architecture**, each condition at the strength chosen on validation.
+  "Best generative" is the generative condition with the higher validation selection metric, fixed
+  before `/final-eval`.
+  - *Confirmatory family (H1, 2 × 2 architectures = 4 tests):* (1) cVAE vs none, (2) WGAN-GP vs none.
+  - *Secondary family (4 × 2 architectures = 8 tests):* (3) cVAE vs WGAN-GP, (4) best generative vs
+    SMOTE, (5) best generative vs class-weighted CE, (6) best generative vs random oversampling.
+- **Multiplicity:** each comparison gets a two-sided percentile-bootstrap p-value,
+  p = min(1, 2 · min(#{Δ* ≤ 0} + 1, #{Δ* ≥ 0} + 1) / (B + 1)). Holm–Bonferroni is applied to the
+  p-values within each family at α = 0.05. Unadjusted 95% percentile intervals are reported next to
+  the adjusted p-values.
 - Effect sizes: Δ rare-class macro-F1 with 95% CI. Seed variance (mean ± sd across seeds) is reported
   separately from record-level uncertainty.
-- **Sensitivity analyses:** leave-one-record-out for S and F; per-record results; 5 seeds if run.
+- **Sensitivity analyses:** leave-one-record-out for S and F; per-record results; test results without
+  record 202 (same subject as training record 201); 5 seeds if run.
 - No significance claims from seed-level tests with 3 seeds.
+- F1 is computed from argmax decisions with no threshold tuning. Rebalancing moves the operating
+  point, so PR-AUC for S and F is read alongside F1 to separate ranking quality from threshold effects.
 
 ## Figures and tables (all generated by scripts)
 | Item | Content | Phase |
@@ -85,8 +110,9 @@ deployment.
 | Appendix | Per-record counts, variation-study tables for every module, training curves, failure modes | all |
 
 ## Threats to validity (write these into the paper, specifically)
-- Small test population (22 patients); rare classes concentrated in few records → wide CIs, results may
-  reflect individual patients.
+- Small test population (22 records: 21 from patients not seen in training, plus record 202, whose
+  subject also contributes DS1 record 201); rare classes concentrated in few records → wide CIs,
+  results may reflect individual patients.
 - Single database from one hospital, recorded decades ago; narrow demographics; no external validation
   unless added post-deadline.
 - Single lead; beat-level classification on reference R-peaks (no detector errors).
@@ -98,7 +124,8 @@ deployment.
 ## Reproducibility checklist
 - Public data, download script, record lists and label mapping in `contract.json`.
 - Lockfile, configs, seeds, git SHA per run, `runs_index.csv`.
-- `PREREGISTRATION.md` with commit SHA and date, committed before the governed experiments.
+- `PREREGISTRATION.md` with commit SHA and date, committed before the governed experiments; each
+  version tagged `prereg-vK` and pushed the day it is committed.
 - `TEST_ACCESS_LOG.md` showing a single final evaluation.
 - Code release; check PhysioNet licence terms before releasing synthetic banks derived from the data.
 
