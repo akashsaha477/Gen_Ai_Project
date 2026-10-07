@@ -11,13 +11,14 @@ __pycache__/
 .pytest_cache/
 .ipynb_checkpoints/
 
-# Data is never committed (raw PhysioNet files, processed arrays, synthetic banks)
-data/
+# Data is never committed (raw PhysioNet files, processed arrays, synthetic banks).
+# Anchored to the repo root: the source package src/ecgaug/data/ must stay tracked.
+/data/
 
 # Runs: small summaries are committed, bulky outputs are not
-runs/**/*.pt
-runs/**/*.npz
-runs/**/checkpoints/
+/runs/**/*.pt
+/runs/**/*.npz
+/runs/**/checkpoints/
 
 # Secrets and local settings
 .env
