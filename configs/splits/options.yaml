@@ -1,0 +1,22 @@
+# Candidate validation splits for the Phase 1 decision point (a).
+# Each option lists the DS1 records that form validation; the rest of DS1 is training.
+# Rationales cite DS1 per-record counts only (results/data/val_options.md is generated from this file).
+options:
+  - name: V1
+    val: [115, 118, 201, 205, 223]
+    rationale: >
+      Keeps record 208 (which holds most of DS1's F beats) in training, so the generators and
+      classifiers have F to learn from. Validation gets S from three records with substantial counts
+      (201, 118, 223), V from four, and one record with no ectopy (115, the lowest-numbered DS1 record
+      with no S, V or F beats) to check N specificity. Record 201 goes to validation, so no model or
+      generator trains on the subject who also appears in the test set as record 202.
+  - name: V2
+    val: [118, 124, 201, 208]
+    rationale: >
+      Puts record 208 in validation so that F can be part of the selection metric. The price is that
+      training keeps only the F beats scattered over the other DS1 records.
+  - name: V3
+    val: [201, 205, 207, 220, 223]
+    rationale: >
+      Like V1 but moves more S into validation (201, 207, 220, 223) to make the S-based selection
+      metric less noisy, at the cost of leaving training S more concentrated in record 209.
