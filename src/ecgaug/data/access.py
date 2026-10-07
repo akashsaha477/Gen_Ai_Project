@@ -55,7 +55,8 @@ def log_test_access(kind: str, purpose: str, run_ids: str = "", approved_by: str
     log.parent.mkdir(parents=True, exist_ok=True)
     if not log.exists():
         log.write_text(_LOG_HEADER)
-    command = " ".join(shlex.quote(a) for a in sys.argv) or "(interactive)"
+    root = str(paths.repo_root()) + "/"
+    command = " ".join(shlex.quote(a.replace(root, "")) for a in sys.argv) or "(interactive)"
     cells = [
         _dt.datetime.now().astimezone().strftime("%Y-%m-%d %H:%M %z"),
         kind,

@@ -1,0 +1,54 @@
+{
+  "variant": "C",
+  "representation": {
+    "name": "m1-C",
+    "window_pre_s": 0.25,
+    "window_post_s": 0.25,
+    "bandpass_hz": null,
+    "bandpass_order": 4,
+    "target_fs": null,
+    "normalization": "per_beat_zscore",
+    "rr_features": true,
+    "effective_fs": 360,
+    "window_samples": [
+      90,
+      90
+    ],
+    "n_samples": 180
+  },
+  "inputs_per_beat": 183,
+  "X_shape": [
+    50969,
+    180
+  ],
+  "X_dtype": "float32",
+  "non_finite_X": 0,
+  "non_finite_rr": 0,
+  "per_beat_mean_abs_max": 8.477105239990124e-08,
+  "per_beat_std_range": [
+    0.9999998211860657,
+    1.0000001192092896
+  ],
+  "kept": {
+    "N": 45824,
+    "S": 943,
+    "V": 3788,
+    "F": 414
+  },
+  "annotated": {
+    "N": 45866,
+    "S": 944,
+    "V": 3788,
+    "F": 415
+  },
+  "dropped_unusable": {
+    "N": 42,
+    "S": 1,
+    "V": 0,
+    "F": 1
+  },
+  "q_beats_excluded": 8,
+  "unmapped_qrs_excluded": 472,
+  "beat_set_sha256": "ac6f1c988d8b65b6270362b98d131ae88c628edf18637cef8d366fe3e4dc460e",
+  "content_sha256": "e89f304e57d1d9c98253586ec004c7376c2b110cbcc471c2745178ebd468ff6f"
+}

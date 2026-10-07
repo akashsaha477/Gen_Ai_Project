@@ -1,0 +1,76 @@
+{
+  "tolerance": 0.01,
+  "datasets": {
+    "DS1": {
+      "n_records": 22,
+      "Q": 8,
+      "classes": {
+        "N": {
+          "observed": 45866,
+          "reference": 45868,
+          "difference": -2,
+          "relative_difference": -4.360338362256911e-05,
+          "within_tolerance": true
+        },
+        "S": {
+          "observed": 944,
+          "reference": 942,
+          "difference": 2,
+          "relative_difference": 0.0021231422505307855,
+          "within_tolerance": true
+        },
+        "V": {
+          "observed": 3788,
+          "reference": 3787,
+          "difference": 1,
+          "relative_difference": 0.0002640612622128334,
+          "within_tolerance": true
+        },
+        "F": {
+          "observed": 415,
+          "reference": 415,
+          "difference": 0,
+          "relative_difference": 0.0,
+          "within_tolerance": true
+        }
+      },
+      "unmapped_qrs": 472
+    },
+    "DS2": {
+      "n_records": 22,
+      "Q": 7,
+      "classes": {
+        "N": {
+          "observed": 44259,
+          "reference": 44258,
+          "difference": 1,
+          "relative_difference": 2.2594785123593476e-05,
+          "within_tolerance": true
+        },
+        "S": {
+          "observed": 1837,
+          "reference": 1837,
+          "difference": 0,
+          "relative_difference": 0.0,
+          "within_tolerance": true
+        },
+        "V": {
+          "observed": 3221,
+          "reference": 3221,
+          "difference": 0,
+          "relative_difference": 0.0,
+          "within_tolerance": true
+        },
+        "F": {
+          "observed": 388,
+          "reference": 388,
+          "difference": 0,
+          "relative_difference": 0.0,
+          "within_tolerance": true
+        }
+      },
+      "unmapped_qrs": 0
+    }
+  },
+  "passed": true
+}

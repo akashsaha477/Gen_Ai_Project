@@ -187,7 +187,8 @@ def options_report(counts: pd.DataFrame, options: list[dict]) -> str:
             "",
             f"- Validation S: {s_val['beats']} beats in {s_val['n_records_with_class']} records; "
             f"largest is record {s_val['largest_record']} with {s_val['largest_record_share']:.0%}.",
-            f"- Validation F: {f_val['beats']} beats in {f_val['n_records_with_class']} records.",
+            f"- Validation F: {f_val['beats']} beats in {f_val['n_records_with_class']} records; "
+            f"largest is record {f_val['largest_record']} with {f_val['largest_record_share']:.0%}.",
             f"- Training S: {s_train['beats']} beats in {s_train['n_records_with_class']} records; "
             f"largest is record {s_train['largest_record']} with {s_train['largest_record_share']:.0%}.",
             f"- Training F: {f_train['beats']} beats in {f_train['n_records_with_class']} records; "
