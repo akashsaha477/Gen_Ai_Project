@@ -1,0 +1,12 @@
+base: _shared.yaml
+variant: B
+description: Window -0.4 s to +0.6 s (360 samples); 0.5-40 Hz zero-phase Butterworth band-pass on the continuous record before segmentation; per-beat z-score.
+representation:
+  name: m1-B
+  window_pre_s: 0.4
+  window_post_s: 0.6
+  bandpass_hz: [0.5, 40.0]
+  bandpass_order: 4
+  target_fs: null
+  normalization: per_beat_zscore
+  rr_features: false
