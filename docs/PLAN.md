@@ -1,13 +1,18 @@
 # PLAN — Phases, Modules, Variants, Gates
 
 Day 1 = 2026-10-07 · Day 30 = 2026-11-05 · Buffer days: 15, 29, 30.
+Amended 2026-10-08 after the kickoff review: see `docs/DECISIONS.md` (A1–A11).
 
 ## Global selection conventions (copied into PREREGISTRATION.md in Phase 1)
 
 - **Primary selection metric:** validation rare-class macro-F1 (mean F1 of S and F), averaged over
-  seeds [0, 1, 2]. Fallback if F is absent from validation: see CLAUDE.md §4.
-- **Ties:** variants within 0.02 of each other → the simpler/cheaper one wins (fewer parameters,
-  then less wall-clock).
+  seeds [0, 1, 2]. Fallback if validation holds too few F beats: see CLAUDE.md §4.
+- **Ties:** variants within the tie margin of the best one → the simpler/cheaper one wins (fewer
+  parameters, then less wall-clock). Tie margin = max(0.02, pooled across-seed SD of the two variants).
+  Under the fallback, a tie on S F1 is broken first by V F1, then by simplicity.
+- **"Best" always means validation:** any "best" condition, checkpoint, strength or variant is the one
+  with the highest validation selection metric, recorded in DECISIONS.md before `/final-eval`.
+- **Decision rule:** argmax of the class probabilities in every condition; no threshold is tuned.
 - **Equal budget per variant:** same epoch/step cap, early stopping (patience 5 on the primary
   metric), and tuning grid (learning rate ∈ {1e-3, 3e-4}, nothing else) unless a module says otherwise.
 - **Result file per variant:** `results/validation/m<M>/<X>.json` with per-seed metrics, mean ± sd,
@@ -27,6 +32,7 @@ Day 1 = 2026-10-07 · Day 30 = 2026-11-05 · Buffer days: 15, 29, 30.
 3. Beat extraction: reference R-peak annotations, MLII selected by name, AAMI mapping, paced records
    excluded, Q policy, `rr_prev` / `rr_next`.
 4. Per-record class counts → `results/data/record_counts.csv`; compare totals with CLAUDE.md sanity counts.
+   Counting DS2 labels is a logged construction access. The validation proposal uses DS1 counts only.
 5. **Validation proposal:** 2–3 options for which DS1 records form validation, each with class counts
    for train and val, and a per-record concentration table. Goal: S, V and (if at all possible) F
    represented in validation while training keeps enough of each. **STOP for a human decision.**
@@ -63,10 +69,11 @@ beats; document this as a limitation (S beats are largely defined by prematurity
 ### Gate 1 checklist
 - [ ] All 44 non-paced records processed; class totals within ±1% of sanity counts (deviations explained).
 - [ ] Zero record overlap across train/val/test (test passes).
-- [ ] Test loader raises without `ALLOW_TEST`; TEST_ACCESS_LOG empty.
+- [ ] Test loader raises without `ALLOW_TEST`; TEST_ACCESS_LOG holds construction entries only (zero
+      evaluation accesses).
 - [ ] Validation split approved; record lists written to DECISIONS.md and contract.json.
-- [ ] Primary-metric fallback decided if F is absent from validation.
-- [ ] PREREGISTRATION.md v1 committed (SHA recorded) before Module 1 runs.
+- [ ] Selection metric fixed by the minimum-support rule (primary or fallback) and recorded.
+- [ ] PREREGISTRATION.md v1 committed (SHA recorded), tagged `prereg-v1` and pushed before Module 1 runs.
 - [ ] Module 1 winner selected by rule; contract v1 frozen with hashes in `results/manifest.json`.
 - [ ] Eval utilities and bootstrap tested.
 
@@ -144,12 +151,16 @@ records only, with quality reports.
 
 ### Shared infrastructure (`/phase 3`)
 1. Generator interface: `fit(X, y)`, `sample(cls, n, seed)`; checkpoint at each quarter of the step budget.
+   The bank is exported from the final checkpoint. Earlier checkpoints are scored for RQ3 only and are
+   never selectable.
 2. Bank exporter in contract format for classes S, V, F.
 3. **Pilot harness:** at every checkpoint, compute the quality suite + diagnostics and a downstream pilot
    score (train `cnn`, seed 0, with the bank at a fixed pilot policy: minority classes balanced to 50% of
    N; validation primary metric). Log every checkpoint — this is the RQ3 dataset.
-4. Classical comparisons: SMOTE (imbalanced-learn, fitted on training records only) and class-weighted
-   cross-entropy configs. DeepSMOTE optional.
+4. Classical comparisons: SMOTE (imbalanced-learn, fitted on training records only), random
+   oversampling of real minority beats (the matched-count control: same counts, no new information)
+   and class-weighted cross-entropy with three weightings w_c = (n_max / n_c)^γ, γ ∈ {0.5, 0.75, 1}
+   (values fixed in PREREGISTRATION v2 before Phase 3 runs). DeepSMOTE optional.
 5. Grid runner: conditions × strengths × architectures × seeds from YAML; resumable; skips completed
    runs; updates `results/runs_index.csv`; dry-run on baselines.
 6. Assertion in every generator: fitted data contains only `split == 'train'` records.
@@ -214,18 +225,23 @@ quality table, training curves, failure-mode figure.
 
 **Selection:** validation primary metric, with N recall drop ≤ 0.01 versus no augmentation; tie →
 simpler. The chosen policy gets three pre-registered strengths (low / medium / high), e.g. fractions
-{0.1, 0.25, 0.5} for B, or multiples {1×, 2×, 4×} for C.
+{0.1, 0.25, 0.5} for B, or multiples {1×, 2×, 4×} for C. The chosen policy and strengths apply
+identically to SMOTE and to random oversampling.
 
 ### Full grid (Days 18–21)
-- Conditions: none · class-weighted CE · SMOTE · cVAE · WGAN-GP.
-- Strengths: three each for SMOTE, cVAE, WGAN-GP; one for none and class-weighted.
+- Conditions: none · class-weighted CE · random oversampling · SMOTE · cVAE · WGAN-GP.
+- Strengths: three each for class-weighted CE (the three weightings), random oversampling, SMOTE,
+  cVAE and WGAN-GP; one for none.
 - Architectures: `cnn`, `rnn`. Seeds: grid seeds; classifier seed s uses bank seed s.
-- Runs at 3 seeds: (2 + 3 × 3) × 2 × 3 = 66.
+- Runs at 3 seeds: (1 + 5 × 3) × 2 × 3 = 96.
 - Synthetic beats are added to training records only. Validation and test are always 100% real.
 
 ### Optional (if compute allows; otherwise post-deadline): leakage-audit arm
 The same pipeline under the common intra-patient protocol (random beat-level split pooling DS1 and DS2):
 {none, cVAE, WGAN-GP} at medium strength, `cnn`, 3 seeds. Never used for any decision.
+It trains and evaluates on DS2 beats, so it runs **only after `/final-eval` has completed**, in its own
+namespace (`runs/audit/`, `data/synthetic/audit/`), with every run logged in TEST_ACCESS_LOG as kind
+`audit`. The main grid runner refuses any bank or checkpoint under an audit path.
 
 ### Order of operations
 `/gate 4` (validation summary) → human approval → `/final-eval` (the single test access) →
@@ -250,7 +266,8 @@ analysis. All method selection uses validation beats. Error analysis reuses save
 (no new test access). The demo uses validation records.
 
 ### Module 8 — Explainability variants
-Run on the best checkpoint per architecture for: none, best cVAE, best WGAN-GP.
+Run on the best checkpoint per architecture for: none, best cVAE, best WGAN-GP ("best" = highest
+validation selection metric, recorded before `/final-eval`).
 
 | Variant | Definition |
 |---|---|
@@ -320,7 +337,8 @@ evaluation table, error-analysis figure.
 3. `rnn` out of the grid (keep it in baselines).
 4. Leakage-audit arm → post-deadline.
 
-**Never cut:** inter-patient splits, the test lock, the quality metrics, the class-weighted and SMOTE comparisons.
+**Never cut:** inter-patient splits, the test lock, the quality metrics, and the class-weighted, random
+oversampling and SMOTE comparisons (cutting strengths 3 → 2 applies to them like any other condition).
 
 ---
 
@@ -345,8 +363,8 @@ Frozen artifacts (hashes):
 
 `docs/TEST_ACCESS_LOG.md`
 ```
-| date | git SHA | command | purpose | run IDs | approved by |
-|---|---|---|---|---|---|
+| date | kind | git SHA | command | purpose | run IDs | approved by |
+|---|---|---|---|---|---|---|
 ```
 
 `docs/ASSIGNMENTS.md`

@@ -3,6 +3,7 @@
 This file is loaded every session. Read it fully before acting.
 Detailed specs: `docs/PLAN.md` (phases, modules, variants, gates) and `docs/PAPER_TRACK.md`
 (research questions, statistics, paper artifacts). Live state: `docs/PROGRESS.md`, `docs/DECISIONS.md`.
+Amended 2026-10-08 after the kickoff review: see `docs/DECISIONS.md` (A1–A11).
 
 ## 1. Mission
 
@@ -30,11 +31,17 @@ reveal about when and why it helps?
 
 1. **Inter-patient only.** Splits are by record (patient): DS1 → train + validation, DS2 → test.
    No record appears in two splits. Generators, oversamplers, normalization statistics and any fitted
-   preprocessing see training records only.
+   preprocessing see training records only. One known exception to record = patient: records 201 (DS1)
+   and 202 (DS2) are the same subject. The de Chazal split is kept for comparability, the overlap is
+   disclosed, and test results are also reported without record 202.
 2. **Test lock.** Test data lives in a separate file, readable only via `ecgaug.data.load_test()`,
-   which raises unless `ALLOW_TEST=1` is set by `/final-eval`. Every access is appended to
-   `docs/TEST_ACCESS_LOG.md`. No decision of any kind (model, variant, epoch, threshold, strength,
-   prompt) may use test data. If you see test metrics anywhere before final eval, stop and report.
+   which raises unless `ALLOW_TEST=1` is set by `/final-eval`. All raw-file reads go through
+   `ecgaug.data.raw`, which refuses DS2 records without a matching permission. Access has three kinds,
+   each appended to `docs/TEST_ACCESS_LOG.md`: *construction* (counting labels and building arrays
+   under `ALLOW_TEST_BUILD=1`; no model sees the data), *evaluation* (only `/final-eval`) and *audit*
+   (the leakage-audit arm, only after `/final-eval`). No decision of any kind (model, variant, epoch,
+   threshold, strength, prompt) may use test data. If you see test metrics anywhere before final eval,
+   stop and report.
 3. **Selection on validation, by pre-registered rules.** Rules in `docs/PREREGISTRATION.md` are
    committed before the experiments they govern. Apply them literally. If a rule is ambiguous for the
    actual results, stop and ask. Never improvise post hoc.
@@ -70,7 +77,8 @@ reveal about when and why it helps?
   channel order is not guaranteed identical across records.
 - **Labels:** reference annotations (`atr`) mapped to AAMI EC57 classes:
   N = {N, L, R, e, j}; S = {A, a, J, S}; V = {V, E}; F = {F}; Q = {/, f, Q}.
-  Non-beat annotations are ignored.
+  Non-beat annotations are ignored. RR intervals are measured between consecutive QRS-type
+  annotations (including Q-class beats and flutter waves) before any class is dropped.
 - **Q policy:** Q (about 8 beats in DS1, 7 in DS2) is excluded from training and primary metrics;
   counts are reported.
 - **Sanity counts** (literature; small deviations fine, large ones mean a bug):
@@ -82,8 +90,10 @@ reveal about when and why it helps?
 - **Validation:** a patient-wise subset of DS1 records, proposed in Phase 1 from per-record counts and
   approved at Gate 1. Generators never see validation records.
 - **Primary metric (pre-registered):** rare-class macro-F1 = mean F1 over S and F (validation for
-  selection, test for final results). If F is absent from the approved validation split, selection
-  uses S F1 with V F1 as tie-break, and this is recorded at Gate 1.
+  selection, test for final results). If the approved validation split holds fewer F beats than the
+  minimum support fixed in `docs/PREREGISTRATION.md` (beats and records), selection uses S F1 with
+  V F1 as tie-break, and this is recorded at Gate 1. The test primary metric is unchanged either way.
+  Decisions are argmax in every condition; no threshold is tuned.
 - **Secondary metrics:** per-class F1, one-vs-rest PR-AUC, AAMI-style sensitivity (Se) and positive
   predictivity (+P) for S and V (for comparison with prior work), N recall, macro-F1 over N/S/V/F.
 
@@ -92,10 +102,13 @@ reveal about when and why it helps?
 `data/processed/v{K}/`
 - `trainval.npz` — `X` float32 [n, L] (or [n, C, L]); `y` int8 (0 N, 1 S, 2 V, 3 F); `record` int16;
   `split` {'train','val'}; `r_idx` int32 (R-peak sample index in source record); `rr_prev`, `rr_next`
-  float32 seconds; `is_synthetic` bool; `source` str ('real').
+  float32 seconds; `rr_ratio` float32 (`rr_prev` over the mean of the previous 10 RR intervals);
+  `is_synthetic` bool; `source` str ('real').
 - `test.npz` — same fields for DS2; readable only through the guarded loader.
 - `contract.json` — fs, window, filtering, normalization, label map, record lists per split, Q policy,
-  segment windows, SHA-256 of each array file, git SHA at creation.
+  RR definition, usable-beat rule, segment windows, SHA-256 of each array file, git SHA at creation.
+- The usable-beat rule (window fits in the record, both RR intervals exist) is the same for every
+  representation, so the beat set never depends on the input representation.
 
 `data/synthetic/<generator_id>/seed<s>.npz` — same fields, `is_synthetic=True`,
 `source=<generator_id>`, plus `bank.json` (config, checkpoint hash, samples per class, quality report).
@@ -116,7 +129,10 @@ configs/               YAML per experiment; variants at configs/m<M>/<A-D>.yaml
 src/ecgaug/
   data/                download, beat extraction, splits, contract, guarded loaders
   eval/                metrics, record-level bootstrap, statistics, plotting helpers
-  models/              cnn, resnet1d, bilstm, hybrid (+ feature hooks)
+  models/              probe, cnn, resnet1d, bilstm, hybrid (+ feature hooks)
+  train/               seeding, training loop with early stopping
+  experiments/         per-module variant runners (m1, ...)
+  runs.py              run IDs, env capture, runs_index, ingest
   generators/          cvae/, wgan_gp/, smote.py
   quality/             dtw, spectral, fid_analog, tstr, diversity, memorization, c2st
   grid/                runner, aggregation
@@ -147,7 +163,8 @@ tests/                 leakage, test lock, contract hashes, metrics, bootstrap
 
 ## 8. Experiment logging
 
-- `run_id = <phase>-m<module>-<variant>-s<seed>-<gitsha7>-<yyyymmddHHMM>`
+- `run_id = <phase>-m<module>-<variant>[.<tag>]-s<seed>-<gitsha7>-<yyyymmddHHMM>`; the optional tag
+  names a point of the tuning grid (e.g. `lr1e-03`). A run directory is never overwritten.
 - `runs/<run_id>/`: `config.yaml`, `env.json` (packages, GPU type, wall-clock), `train_log.csv`,
   `metrics_val.json`, `preds_val.npz` (probabilities + record/beat ids), checkpoint path + hash.
   `preds_test.npz` exists only after `/final-eval`.
@@ -180,7 +197,7 @@ when you don't.
 - `/variant M X` — implement and evaluate variant X of module M on its own branch.
 - `/gate N` — checks, pre-registered selection, decision draft; then wait for approval.
 - `/status` — progress vs timeline, blockers, compute, next actions.
-- `/final-eval` — the only test-set access, after Gate 4 approval.
+- `/final-eval` — the only test-set evaluation, after Gate 4 approval.
 - `/paper <section>` — update the paper draft from generated artifacts.
 
 ## 12. Timeline
