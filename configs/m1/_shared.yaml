@@ -1,0 +1,16 @@
+# Budget shared by every Module 1 variant (docs/RULES.md rule 7, PREREGISTRATION §5).
+# Variant files may not override anything here; the runner rejects them if they try.
+phase: 1
+module: 1
+seeds: [0, 1, 2]
+lr_grid: [1.0e-3, 3.0e-4]
+max_epochs: 40
+patience: 5
+batch_size: 256
+weight_decay: 0.01
+device: cpu
+model:
+  name: probe_cnn
+  channels: [16, 32, 64]
+  kernel: 7
+  side_hidden: 16
