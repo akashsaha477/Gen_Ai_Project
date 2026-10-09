@@ -1,8 +1,8 @@
 # Running the project on Kaggle
 
-Everyone runs the same notebook, `notebooks/kaggle/run_config.ipynb`. It clones this repository at the
+Everyone runs the same notebook, `kaggle/run_config.ipynb`. It clones this repository at the
 branch or commit you name, installs the environment, checks the raw data, runs your configs and
-produces one zip. You bring the zip back with `scripts/ingest_runs.py`. No logic lives in the notebook.
+produces one zip. You bring the zip back with `kaggle/ingest_runs.py`. No logic lives in the notebook.
 
 ## One-time setup by the repo owner
 
@@ -10,7 +10,7 @@ produces one zip. You bring the zip back with `scripts/ingest_runs.py`. No logic
 2. Build the raw-data zip on a machine that has the verified download:
    ```
    uv run python -m ecgaug.data.raw          # only if data/raw/mitdb is not there yet
-   uv run python scripts/make_raw_dataset.py # writes data/kaggle/mitdb-raw.zip (66 MB)
+   uv run python kaggle/make_raw_dataset.py # writes data/kaggle/mitdb-raw.zip (66 MB)
    ```
 3. On kaggle.com: Datasets > New Dataset > upload `mitdb-raw.zip`, title `mitdb-raw`, keep it
    **private**, then Settings > Sharing > add the three teammates as viewers.
@@ -21,7 +21,7 @@ produces one zip. You bring the zip back with `scripts/ingest_runs.py`. No logic
 2. A GitHub token that can read the repo: GitHub > Settings > Developer settings > Fine-grained
    tokens > only this repository > Contents: Read-only. Copy it once.
 3. On kaggle.com: Create > New Notebook > File > Import Notebook > upload
-   `notebooks/kaggle/run_config.ipynb`.
+   `kaggle/run_config.ipynb`.
 4. In the notebook:
    - Add-ons > Secrets > add a secret named `GITHUB_TOKEN` with the token, and tick it for this notebook.
    - Add Input > Your Datasets (or Shared with you) > `mitdb-raw`.
@@ -48,7 +48,7 @@ The token is read from Kaggle Secrets, never printed and never put in a URL. Do 
 4. Download `ecgaug_<sha>_<time>.zip` from the notebook's Output.
 5. In your clone, on your variant branch:
    ```
-   uv run python scripts/ingest_runs.py ~/Downloads/ecgaug_<sha>_<time>.zip
+   uv run python kaggle/ingest_runs.py ~/Downloads/ecgaug_<sha>_<time>.zip
    git add results runs && git commit -m "m1 A results" && git push
    ```
    Ingest never overwrites an existing run or result file and refuses any run that carries test

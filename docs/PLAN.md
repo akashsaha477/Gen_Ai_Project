@@ -46,7 +46,7 @@ Amended 2026-10-08 after the kickoff review: see `docs/DECISIONS.md` (A1–A11).
    - `paired_cluster_bootstrap_diff(a, b, ...)` for condition differences.
    - Unit tests against hand-computed cases.
 8. Probe CNN (small, fixed) used only to compare Module 1 variants. Supports an optional RR side input.
-9. Kaggle runner notebook template + `scripts/ingest_runs.py`.
+9. Kaggle runner notebook template + `kaggle/ingest_runs.py`.
 10. `docs/PREREGISTRATION.md` v1 generated from `docs/PAPER_TRACK.md` (hypotheses, metrics,
     comparisons, statistics, thresholds). **Committed before any Module 1 variant runs.**
 

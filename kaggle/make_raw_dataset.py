@@ -1,6 +1,6 @@
 """Package the verified raw MIT-BIH files for upload as a private Kaggle dataset.
 
-    python scripts/make_raw_dataset.py            # writes data/kaggle/mitdb-raw.zip
+    python kaggle/make_raw_dataset.py            # writes data/kaggle/mitdb-raw.zip
 
 Upload the zip once at kaggle.com/datasets (New Dataset, keep it private, share it with the team),
 then attach it to the runner notebook. This avoids the slow PhysioNet download in every session.

@@ -27,7 +27,7 @@ Done:
   Shapes: A (50969, 180), B (50969, 360), C (50969, 180), D (50969, 63) (`results/data/m1_representation_check_*.json`).
   Smoke runs on fake data pass for A–D.
 - Validation-split options with DS1 per-record counts: `results/data/val_options.md`.
-- Kaggle runner notebook and `scripts/ingest_runs.py`.
+- Kaggle runner notebook and `kaggle/ingest_runs.py`.
 - `docs/PREREGISTRATION.md` v1 drafted, status DRAFT.
 - Tests: 123 pass, also in a fresh clone installed with `uv sync --frozen`.
 
