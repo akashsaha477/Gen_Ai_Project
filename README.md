@@ -7,6 +7,28 @@ classes on MIT-BIH when training and test patients are kept apart? A 30-day proj
 Start with `CLAUDE.md` (rules and data protocol), then `docs/PLAN.md`, `docs/PAPER_TRACK.md` and
 `docs/PREREGISTRATION.md`. Live state is in `docs/PROGRESS.md` and `docs/DECISIONS.md`.
 
+## Status
+
+Updated 2026-10-09 (Day 3). Phase 1 of 6, data foundation.
+
+- Done: environment and lockfile, MIT-BIH download with checksum verification, beat extraction, per-record
+  counts, the test lock, evaluation utilities, probe model, Module 1 runner with variants A-D, Kaggle setup.
+- Waiting on the team: choice of validation split (`results/data/val_options.md`) and approval of
+  `docs/PREREGISTRATION.md`. Module 1 variants cannot run before that.
+- Next: draw variant assignments, run `/variant 1 A..D`, then `/gate 1`.
+
+## Repository layout
+
+| Path | Contents |
+|---|---|
+| `src/ecgaug/` | the package: `data`, `eval`, `models`, `train`, `experiments` |
+| `configs/` | experiment configs (`m1/` variants, `splits/` validation options) |
+| `kaggle/` | everything for running on Kaggle; start with `kaggle/README.md` |
+| `docs/` | plan, pre-registration, decisions, progress log, variant briefs |
+| `results/` | generated summaries (counts, validation results, gate reports) |
+| `tests/` | leakage, test lock, contract, metrics, bootstrap, runner |
+| `Papers/` | reference papers |
+
 ## Setup
 
 ```
