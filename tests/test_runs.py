@@ -142,7 +142,7 @@ def test_kaggle_bundle_round_trips_through_ingest(tmp_path):
 
     from conftest import REPO
 
-    spec = importlib.util.spec_from_file_location("kaggle_run", REPO / "scripts" / "kaggle_run.py")
+    spec = importlib.util.spec_from_file_location("kaggle_run", REPO / "kaggle" / "kaggle_run.py")
     kaggle_run = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(kaggle_run)
 

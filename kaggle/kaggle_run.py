@@ -1,13 +1,13 @@
 """Run one or more configs inside a Kaggle session (or any fresh checkout) and bundle the outputs.
 
-Called by notebooks/kaggle/run_config.ipynb after it has cloned the repository. Uses only the
+Called by kaggle/run_config.ipynb after it has cloned the repository. Uses only the
 standard library, so it runs with the system Python before the project environment exists.
 
-    python scripts/kaggle_run.py --config configs/m1/A.yaml -- --device cuda
-    python scripts/kaggle_run.py --config configs/m1/A.yaml configs/m1/B.yaml --raw-dir /kaggle/input/mitdb-raw
+    python kaggle/kaggle_run.py --config configs/m1/A.yaml -- --device cuda
+    python kaggle/kaggle_run.py --config configs/m1/A.yaml configs/m1/B.yaml --raw-dir /kaggle/input/mitdb-raw
 
 Steps: install the environment, get and verify the raw data, run each config through its package
-CLI, and zip runs/ plus the variant result files for scripts/ingest_runs.py.
+CLI, and zip runs/ plus the variant result files for kaggle/ingest_runs.py.
 """
 
 from __future__ import annotations
@@ -120,7 +120,7 @@ def main(argv: list[str] | None = None) -> int:
     archive = bundle(out_dir, manifest)
     if archive:
         print(f"bundle: {archive} ({archive.stat().st_size / 1e6:.1f} MB)")
-        print("next: download it and run `python scripts/ingest_runs.py <zip>` in your clone")
+        print("next: download it and run `python kaggle/ingest_runs.py <zip>` in your clone")
     else:
         print("no run outputs to bundle")
     return 0 if all(code == 0 for code in results.values()) and len(results) == len(args.config) else 1

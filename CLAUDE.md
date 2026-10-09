@@ -139,8 +139,9 @@ src/ecgaug/
   explain/             gradcam1d, integrated_gradients, smoothgrad, occlusion, faithfulness
   report/              note generator (template + LLM), fact checker, schemas
   demo/                end-to-end CLI
-scripts/               thin CLIs (python -m ecgaug.<...> --config ...), kaggle runner + ingest
-notebooks/kaggle/      thin wrappers only; no logic in notebooks
+scripts/               thin CLIs (python -m ecgaug.<...> --config ...)
+kaggle/                everything for Kaggle: guide (README.md), runner notebook, kaggle_run.py,
+                       make_raw_dataset.py, ingest_runs.py; no logic in the notebook
 runs/<run_id>/         per-run outputs (gitignored except small summaries)
 results/               runs_index.csv, validation/, gates/, manifest.json, data/
 tables/ figures/       generated only by scripts
@@ -177,7 +178,7 @@ Kaggle GPU sessions (weekly quota) plus laptops. Targets: classifier run ≤ 15 
 ≤ 45 min, full generator training ≤ 2 h per seed. Measure real run times in Phase 2 and re-estimate
 the grid budget at Gate 3. Early stopping on the validation primary metric.
 Kaggle flow: a notebook clones the repo at a given SHA, runs one config, and packages
-`runs/<run_id>/`; `scripts/ingest_runs.py` brings outputs back and updates `results/runs_index.csv`.
+`runs/<run_id>/`; `kaggle/ingest_runs.py` brings outputs back and updates `results/runs_index.csv`.
 
 ## 10. Session protocol
 
