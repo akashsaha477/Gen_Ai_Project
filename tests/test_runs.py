@@ -135,3 +135,31 @@ def test_git_dirty_ignores_run_outputs_but_not_code(monkeypatch):
     assert status(["R  results/a.json -> docs/a.json"]) is True
     monkeypatch.setattr(runs, "_git", lambda *args: None)
     assert runs.git_dirty() is True  # no git: cannot vouch for the tree
+
+
+def test_kaggle_bundle_round_trips_through_ingest(tmp_path):
+    import importlib.util
+
+    from conftest import REPO
+
+    spec = importlib.util.spec_from_file_location("kaggle_run", REPO / "scripts" / "kaggle_run.py")
+    kaggle_run = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(kaggle_run)
+
+    fake_repo = tmp_path / "repo"
+    assert kaggle_run.bundle(tmp_path / "out", {"git_sha": "abcdef0123"}, repo=fake_repo) is None
+    run_id = runs.make_run_id(1, 1, "A", 0, now=NOW)
+    shutil.copytree(_write(run_id), fake_repo / "runs" / run_id)
+    shutil.rmtree(paths.runs_dir())
+    (fake_repo / "results" / "validation" / "m1").mkdir(parents=True)
+    (fake_repo / "results" / "validation" / "m1" / "A.json").write_text("{}")
+    (tmp_path / "out").mkdir(exist_ok=True)
+    archive = kaggle_run.bundle(tmp_path / "out", {"git_sha": "abcdef0123"}, repo=fake_repo)
+    assert archive.name.startswith("ecgaug_abcdef0_") and archive.suffix == ".zip"
+    report = runs.ingest([archive])
+    assert report["ingested"] == [run_id] and report["result_files"] == ["m1/A.json"]
+
+    nested = tmp_path / "input" / "mitdb-raw" / "files"
+    nested.mkdir(parents=True)
+    (nested / "100.dat").write_bytes(b"x")
+    assert kaggle_run.find_raw(tmp_path / "input") == nested

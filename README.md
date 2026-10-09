@@ -32,8 +32,7 @@ uv run python -m ecgaug.experiments.m1 --config configs/m1/A.yaml           # th
 ```
 
 The experiment refuses to start until the pre-registration is in force, the validation split is
-approved and the tree is committed. On Kaggle use `notebooks/kaggle/run_config.ipynb`, then
-`python scripts/ingest_runs.py <zip>`.
+approved and the tree is committed. To run on Kaggle, follow `docs/KAGGLE.md`.
 
 ## Troubleshooting
 
