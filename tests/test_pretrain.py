@@ -245,3 +245,20 @@ def test_pretraining_code_never_asks_for_test_data():
     for name in ("experiments/pretrain.py", "experiments/common.py", "data/checks.py"):
         text = (REPO / "src" / "ecgaug" / name).read_text()
         assert "load_test" not in text and "ALLOW_TEST" not in text and 'access="' not in text
+
+
+def test_a_ptbxl_copy_without_the_500hz_files_is_refused_clearly(tmp_root):
+    import shutil
+
+    source = tmp_root / "attached" / "low-rate-only"
+    write_fake_ptbxl(source, n_extra=2)
+    shutil.rmtree(source / "records500")
+    with pytest.raises(pretrain.PreconditionError, match="records500"):
+        pretrain.ensure_ptbxl(str(tmp_root / "attached"), workers=1, verify=False)
+    assert not ptbxl.is_full_build()
+
+
+def test_gpu_determinism_setting_is_in_place():
+    import ecgaug.train.loop  # noqa: F401
+
+    assert os.environ["CUBLAS_WORKSPACE_CONFIG"] == ":4096:8"
