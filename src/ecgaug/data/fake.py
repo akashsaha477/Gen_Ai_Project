@@ -111,24 +111,36 @@ _FAKE_SCP = [  # code, diagnostic, diagnostic_class
 ]  # fmt: skip
 
 
-def write_fake_ptbxl(root: Path, seed: int = 0) -> dict[int, np.ndarray]:
+_FAKE_EXTRA_CODES = ("NORM", "IMI", "NDT", "CLBBB", "LVH")  # one per superclass, with a QRS width each
+_FAKE_EXTRA_WIDTHS = (0.010, 0.016, 0.022, 0.030, 0.040)
+
+
+def write_fake_ptbxl(root: Path, seed: int = 0, n_extra: int = 0) -> dict[int, np.ndarray]:
     """Write a tiny PTB-XL-like folder (two CSV files and nine 500 Hz recordings).
 
     Returns the true R-peak sample indices at 500 Hz for the recordings with beats. Recording 3 has
-    its leads in a different order, to check that lead II is selected by name.
+    its leads in a different order, to check that lead II is selected by name. ``n_extra`` adds
+    clean recordings (ids from 101, two per patient, all ten folds, one superclass each with its own
+    QRS width) so that there is enough data to train on in a smoke run.
     """
     root = Path(root)
     rng = np.random.default_rng(seed)
     fs, n = 500, 5000
     time = np.arange(n) / fs
     rows, truth = [], {}
-    for ecg_id, (patient, fold, codes, pacemaker, electrodes, kind) in _FAKE_PTBXL.items():
+    records = {k: (*v, 0.012, 0.75 + 0.02 * k) for k, v in _FAKE_PTBXL.items()}
+    for i in range(n_extra):
+        patient = 100 + i // 2
+        label = i % len(_FAKE_EXTRA_CODES)
+        codes = f"{{'{_FAKE_EXTRA_CODES[label]}': 100.0}}"
+        records[101 + i] = (patient, patient % 10 + 1, codes, "", "", "ok", _FAKE_EXTRA_WIDTHS[label], 0.7 + 0.01 * (i % 7))
+    for ecg_id, (patient, fold, codes, pacemaker, electrodes, kind, width, period) in records.items():
         filename = f"records500/00000/{ecg_id:05d}_hr"
         lead2 = 0.01 * rng.standard_normal(n)
         if kind in ("ok", "swapped"):
-            beats = np.arange(0.5 + 0.05 * (ecg_id % 3), 9.6, 0.75 + 0.02 * ecg_id)
+            beats = np.arange(0.5 + 0.05 * (ecg_id % 3), 9.6, period)
             for b in beats:
-                lead2 += np.exp(-0.5 * ((time - b) / 0.012) ** 2) + 0.2 * np.exp(-0.5 * ((time - b - 0.25) / 0.05) ** 2)
+                lead2 += np.exp(-0.5 * ((time - b) / width) ** 2) + 0.2 * np.exp(-0.5 * ((time - b - 0.25) / 0.05) ** 2)
             truth[ecg_id] = np.rint(beats * fs).astype(int)
         elif kind == "flat":
             lead2 = np.zeros(n)

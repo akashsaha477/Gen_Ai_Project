@@ -10,7 +10,7 @@ Undefined values are NaN, never 0: a class with no true beats has no recall or F
 from __future__ import annotations
 
 import numpy as np
-from sklearn.metrics import average_precision_score
+from sklearn.metrics import average_precision_score, roc_auc_score
 
 from ecgaug.data.records import CLASS_INDEX, CLASSES
 
@@ -150,3 +150,18 @@ def evaluate(probs: np.ndarray, y: np.ndarray, records: np.ndarray | None = None
         unique, cms = confusion_by_record(y, y_pred, records)
         out["per_record"] = {int(r): cm.astype(int).tolist() for r, cm in zip(unique, cms)}
     return out
+
+
+def multilabel_auroc(probs: np.ndarray, y: np.ndarray, names: tuple[str, ...] | list[str]) -> dict:
+    """Per-label AUROC for multi-label targets ``y`` [n, K] and scores ``probs`` [n, K].
+
+    A label that is all 0 or all 1 has no AUROC (NaN). ``macro`` is the mean over the defined labels,
+    NaN if none is defined.
+    """
+    probs, y = np.asarray(probs), np.asarray(y) > 0.5
+    per_label = {}
+    for i, name in enumerate(names):
+        column = y[:, i]
+        per_label[name] = float(roc_auc_score(column, probs[:, i])) if column.any() and not column.all() else float("nan")
+    defined = [v for v in per_label.values() if not np.isnan(v)]
+    return {"per_label": per_label, "macro": float(np.mean(defined)) if defined else float("nan"), "n_defined": len(defined)}

@@ -74,3 +74,22 @@ the test. PTB-XL is added for one purpose: pretraining the classifier before fin
   MIT-BIH patients.
 - **Order:** built in Phase 2, after Gate 1, because the beat window comes from the Module 1 winner.
   Details are in `docs/PLAN.md`, Phase 2.
+
+## 2026-10-13 (Day 7) — A13: pretraining arm built and may run before Gate 1 — decided by Akash Saha
+
+- The PTB-XL preprocessing for Kaggle and the supervised pretraining plus fine-tuning runner were built
+  now, at Akash's instruction, so the team can run both in one Kaggle session.
+- This is ahead of the phase order (rule 9: no next phase before the gate). Consequences, recorded so
+  they are not forgotten:
+  - The input representation is not frozen. Every result file of the arm carries `provisional: true`
+    until `data/processed/v1` exists. The arm is rerun for the Gate 1 winner.
+  - The architecture is the probe CNN, the only classifier that exists. The arm is rerun with the
+    `cnn` chosen in Module 3.
+  - Results of the arm are not an input to Gate 1. Gate 1 is decided from the Module 1 variants alone.
+- Protocol fixed before any run (details in `docs/PLAN.md`, Phase 2): one pretraining run per seed;
+  fine-tuning seed s starts from pretraining seed s; full fine-tuning with a new head; both arms use
+  the Module 1 budget; pretraining stops on PTB-XL fold 9 only; from scratch is the simpler option in
+  the tie rule.
+- Edge treatment for 10-second recordings: mirror padding of 2 s, chosen from a DS1 measurement
+  (`results/data/ptbxl_method_checks_ds1.json`). No mains notch filter is applied to PTB-XL: the
+  64-recording sample shows no 50 Hz interference; the full-data figure is in the preprocessing report.

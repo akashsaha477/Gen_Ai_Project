@@ -21,6 +21,7 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
+EXTRA_RESULT_FILES = ("results/data/ptbxl_preprocessing.json",)
 
 
 def sh(cmd: list[str], check: bool = True) -> int:
@@ -76,7 +77,7 @@ def git_sha() -> str:
 
 
 def bundle(out_dir: Path, manifest: dict, repo: Path = REPO) -> Path | None:
-    """Zip runs/ and results/validation/ into ``out_dir``; None if there is nothing to bundle."""
+    """Zip runs/, results/validation/ and the PTB-XL report into ``out_dir``; None if no run produced output."""
     staging = out_dir / "_bundle"
     shutil.rmtree(staging, ignore_errors=True)
     found = False
@@ -84,6 +85,10 @@ def bundle(out_dir: Path, manifest: dict, repo: Path = REPO) -> Path | None:
         if (repo / rel).is_dir() and any((repo / rel).rglob("*")):
             shutil.copytree(repo / rel, staging / rel)
             found = True
+    for rel in EXTRA_RESULT_FILES:  # small reports that exist only where the full data was processed
+        if found and (repo / rel).is_file():
+            (staging / rel).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(repo / rel, staging / rel)
     if not found:
         return None
     (staging / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")

@@ -102,27 +102,37 @@ beats; document this as a limitation (S beats are largely defined by prematurity
 5. Toy cVAE and toy WGAN-GP smoke tests on one minority class (plumbing only; not selected).
 6. Measure wall-clock per run to re-estimate Phases 3–4.
 
-### PTB-XL pretraining arm (A12, added 2026-10-13)
+### PTB-XL pretraining arm (A12 and A13, built 2026-10-13)
 
-One extra condition for the selected `cnn` baseline: pretrain on PTB-XL, then fine-tune on MIT-BIH.
+One extra condition for the baseline classifier: pretrain on PTB-XL, then fine-tune on MIT-BIH, compared
+with the same model trained from scratch. Runner: `python -m ecgaug.experiments.pretrain --config
+configs/pretrain/<A-D>.yaml`; one command does preprocessing, pretraining and both fine-tuning arms.
 
-1. **Data (built, `src/ecgaug/data/ptbxl.py`):** PTB-XL 500 Hz files, lead II by name (closest to
-   MLII), resampled to 360 Hz. Recordings are dropped if they have no diagnostic superclass, a
-   pacemaker, flagged electrode problems, a flat or implausible signal, an implausible number of
-   peaks, or peaks that do not stand out of the noise. R peaks come from `src/ecgaug/data/rpeaks.py`,
-   validated against the MIT-BIH DS1 annotations (`results/data/rpeak_validation_ds1.json`). Beats
-   need both RR intervals inside 0.3–2.0 s and the same usable-beat rule as MIT-BIH. Windows are cut
-   later with the Module 1 winning representation, through the same code as the MIT-BIH beats.
-2. **Labels:** each beat gets its recording's diagnostic superclasses (NORM, MI, STTC, CD, HYP,
+1. **Data (`src/ecgaug/data/ptbxl.py`):** PTB-XL 500 Hz files, lead II by name (closest to MLII),
+   resampled to 360 Hz. Recordings are dropped if they have no diagnostic superclass, a pacemaker,
+   flagged electrode problems, a flat or implausible signal, an implausible number of peaks, or peaks
+   that do not stand out of the noise. R peaks come from `src/ecgaug/data/rpeaks.py`, validated against
+   the MIT-BIH DS1 annotations (`results/data/rpeak_validation_ds1.json`). Beats need both RR intervals
+   inside 0.3–2.0 s and the same usable-beat rule as MIT-BIH. Files are compared with PhysioNet's
+   checksums and the counts are reported.
+2. **Windows:** cut with the representation of the config's letter, through the same code as the
+   MIT-BIH beats. Each 10-second recording is mirror-padded by 2 s before filtering; that padding was
+   the best of four treatments measured on DS1 (`results/data/ptbxl_method_checks_ds1.json`).
+3. **Labels:** each beat gets its recording's diagnostic superclasses (NORM, MI, STTC, CD, HYP,
    multi-label). Noisy at beat level by construction.
-3. **Pretraining:** same architecture as `cnn` with a 5-output head, binary cross-entropy. PTB-XL's
-   official patient-wise folds: 1–8 train, 9 for early stopping, 10 unused.
-4. **Fine-tuning:** replace the head with the 4-class head and train on DS1 training records with the
-   Phase 2 trainer budget, seeds [0, 1, 2], selection on the approved validation split.
-5. **Comparison:** pretrained vs from scratch on the validation selection metric. It joins the Phase 4
-   grid as a second starting point only if it wins by the tie rule; otherwise it is reported as a
-   negative result.
-6. **Checks:** a test that no PTB-XL code path can read DS2; counts of detected beats per fold logged.
+4. **Pretraining:** same architecture with a 5-output head, binary cross-entropy, AdamW, learning rate
+   1e-3, at most 30 epochs, patience 5 on the macro AUROC of PTB-XL fold 9. Folds 1–8 train, 10 unused.
+   One pretraining run per seed; fine-tuning seed s starts from pretraining seed s.
+5. **Fine-tuning:** the head is replaced by a new 4-class head and all layers are trained on the DS1
+   training records. Budget, seeds, learning-rate grid and early stopping are read from the Module 1
+   config, for both arms. The from-scratch arm is exactly a Module 1 run of that representation.
+6. **Comparison:** the selection rule on the validation selection metric, with from scratch as the
+   simpler option, so pretraining has to win by more than the tie margin. It joins the Phase 4 grid as
+   a second starting point only if it wins; otherwise it is reported as a negative result.
+7. **Status of results:** provisional until Gate 1 freezes the representation. The architecture is the
+   probe CNN for now; the arm is rerun with the `cnn` selected in Module 3.
+8. **Checks:** PTB-XL code cannot read MIT-BIH records or the test file; no patient is in two PTB-XL
+   splits; the arm never asks for test access.
 
 ### Module 3 — Baseline classifier variants (real, imbalanced data, no reweighting)
 

@@ -16,7 +16,7 @@ beat annotations. This module turns it into beats that look like the MIT-BIH bea
 Everything up to here is independent of the input representation. ``beat_arrays`` then cuts windows
 with any ``RepresentationSpec``, through the same ``transform_record`` used for MIT-BIH.
 
-Usage: ``python -m ecgaug.data.ptbxl --root <folder with ptbxl_database.csv>``
+Usage: ``python -m ecgaug.data.ptbxl --root <folder that holds ptbxl_database.csv> [--workers 4]``
 """
 
 from __future__ import annotations
@@ -25,6 +25,7 @@ import argparse
 import ast
 import json
 from collections import Counter
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -54,6 +55,25 @@ RR_RANGE_S = (0.3, 2.0)
 # Noise without QRS complexes scores below 3; the lowest 1% of MIT-BIH DS1 10-second segments score 6.6.
 MIN_QRS_CONTRAST = 4.0
 OUT_NAME = "records.npz"
+REFERENCE_SHA256_URL = "https://physionet.org/files/ptb-xl/1.0.3/SHA256SUMS.txt"
+POWERLINE_HZ = 50.0  # PTB-XL was recorded in Germany
+# Mirror padding before filtering a 10-second recording. MIT-BIH records are 30 minutes long, so their
+# beats never see a filter's start-up transient; PTB-XL beats near the ends of a recording would.
+# Mirror (even) reflection was the best of four treatments measured on MIT-BIH DS1
+# (results/data/ptbxl_method_checks_ds1.json, from ``python -m ecgaug.data.checks``).
+EDGE_PAD_S = 2.0
+EDGE_PAD_MODE = "reflect"
+
+
+def find_root(path: Path) -> Path:
+    """The folder that holds ``ptbxl_database.csv``, looked for in ``path`` and below it."""
+    path = Path(path)
+    if (path / "ptbxl_database.csv").is_file():
+        return path
+    hits = sorted(path.rglob("ptbxl_database.csv"))
+    if not hits:
+        raise FileNotFoundError(f"no ptbxl_database.csv in or below {path}")
+    return hits[0].parent
 
 
 def superclass_map(scp_statements: pd.DataFrame) -> dict[str, str]:
@@ -123,18 +143,41 @@ def resample_to_fs(x: np.ndarray, fs: int) -> np.ndarray:
     return sps.resample_poly(x, FS // divisor, fs // divisor)
 
 
-def process_record(x: np.ndarray, fs: int) -> tuple[np.ndarray | None, np.ndarray | None, str | None]:
-    """Quality-check, resample and detect: ``(signal_360hz, r_peaks, problem)``."""
+def powerline_ratio(x: np.ndarray, fs: int, f0: float = POWERLINE_HZ) -> float:
+    """Spectral peak within 1 Hz of ``f0`` divided by the median power 2-6 Hz to either side.
+
+    About 1-3 for a signal without mains interference; above 10 when it is clearly present.
+    """
+    freqs, power = sps.welch(np.asarray(x, dtype=np.float64), fs=fs, nperseg=min(len(x), 4 * fs))
+    band = np.abs(freqs - f0) < 1
+    side = (np.abs(freqs - f0) > 2) & (np.abs(freqs - f0) < 6)
+    return float(power[band].max() / np.median(power[side]))
+
+
+def process_record(x: np.ndarray, fs: int) -> dict:
+    """Quality-check, resample and detect peaks in one raw lead.
+
+    Returns ``{"problem": reason}`` for an unusable recording, else the resampled signal, the R
+    peaks, and the quality measures that go into the report.
+    """
     problem = signal_problem(x, fs)
     if problem:
-        return None, None, problem
+        return {"problem": problem}
     y = resample_to_fs(x, fs)
     peaks = detect_r_peaks(y)
     if not MIN_PEAKS <= peaks.size <= MAX_PEAKS:
-        return None, None, "implausible_peak_count"
-    if qrs_contrast(y, peaks) < MIN_QRS_CONTRAST:
-        return None, None, "low_qrs_contrast"
-    return y.astype(np.float32), peaks, None
+        return {"problem": "implausible_peak_count"}
+    contrast = qrs_contrast(y, peaks)
+    if contrast < MIN_QRS_CONTRAST:
+        return {"problem": "low_qrs_contrast"}
+    return {
+        "problem": None,
+        "signal": y.astype(np.float32),
+        "peaks": peaks,
+        "qrs_contrast": contrast,
+        "heart_rate_bpm": float(60.0 * FS / np.median(np.diff(peaks))),
+        "powerline_ratio": powerline_ratio(x, fs),
+    }
 
 
 def beat_table(peaks: np.ndarray, n_signal: int = N_SAMPLES) -> tuple[np.ndarray, dict[str, np.ndarray], Counter]:
@@ -156,38 +199,110 @@ def fold_split(fold: int) -> str:
     return "val" if fold in VAL_FOLDS else "unused"
 
 
-def build(root: Path, limit: int | None = None, allow_missing: bool = False) -> tuple[dict[str, np.ndarray], dict]:
-    """Run the whole pipeline. Returns record- and beat-level arrays and a stage-by-stage report."""
+def _process_file(task: tuple[str, str, bool]) -> dict:
+    """Everything that happens to one recording file. Top-level so worker processes can run it."""
+    root, filename, with_hashes = task
+    hea, dat = Path(root) / f"{filename}.hea", Path(root) / f"{filename}.dat"
+    if not hea.is_file() or not dat.is_file():
+        return {"problem": "file_missing"}
+    x, fs = raw.read_ptbxl_lead(Path(root), filename, LEAD)
+    out = process_record(x, fs)
+    if with_hashes:
+        out["sha256"] = {f"{filename}.hea": raw.file_sha256(hea), f"{filename}.dat": raw.file_sha256(dat)}
+    if out["problem"]:
+        return out
+    peaks = out.pop("peaks")
+    keep, features, dropped = beat_table(peaks)
+    out["dropped"] = dict(dropped)
+    if keep.size == 0:
+        out["problem"] = "no_usable_beat"
+        out.pop("signal")
+        return out
+    out["r_idx"] = peaks[keep]
+    out["features"] = features
+    return out
+
+
+def _percentiles(values: list[float], points: tuple[float, ...]) -> dict[str, float]:
+    array = np.asarray(values, dtype=np.float64)
+    return {f"p{g:g}": float(np.percentile(array, g)) for g in points}
+
+
+def verify_checksums(root: Path, hashes: dict[str, str], reference: dict[str, str] | None = None) -> dict:
+    """Compare the files that were read with PhysioNet's published SHA-256 list for PTB-XL 1.0.3.
+
+    A copy from Kaggle may be another version, so a mismatch is reported, not fatal.
+    """
+    root = Path(root)
+    hashes = dict(hashes)
+    for name in ("ptbxl_database.csv", "scp_statements.csv"):
+        hashes[name] = raw.file_sha256(root / name)
+    out: dict = {"reference_url": REFERENCE_SHA256_URL, "files_checked": len(hashes)}
+    out["metadata_sha256"] = {name: hashes[name] for name in ("ptbxl_database.csv", "scp_statements.csv")}
+    if reference is None:
+        reference = raw.fetch_reference_checksums(REFERENCE_SHA256_URL)
+    if reference is None:
+        return {**out, "reference_available": False}
+    mismatched = sorted(name for name, digest in hashes.items() if name in reference and reference[name] != digest)
+    not_listed = sorted(name for name in hashes if name not in reference)
+    out.update(
+        reference_available=True,
+        matched=len(hashes) - len(mismatched) - len(not_listed),
+        mismatched=len(mismatched),
+        not_in_reference=len(not_listed),
+        examples_mismatched=mismatched[:10],
+        metadata_matches_reference={
+            name: reference.get(name) == hashes[name] for name in ("ptbxl_database.csv", "scp_statements.csv")
+        },
+    )
+    return out
+
+
+def build(
+    root: Path,
+    limit: int | None = None,
+    allow_missing: bool = False,
+    workers: int = 1,
+    verify: bool = False,
+) -> tuple[dict[str, np.ndarray], dict]:
+    """Run the whole pipeline. Returns record- and beat-level arrays and a stage-by-stage report.
+
+    The result does not depend on ``workers``. With ``verify`` the files that were read are checked
+    against PhysioNet's checksum list.
+    """
     root = Path(root)
     meta, report = load_metadata(root)
     if limit:
         meta = meta.head(limit)
+    tasks = [(str(root), filename, verify) for filename in meta["filename_hr"]]
+    if workers > 1:
+        with ProcessPoolExecutor(max_workers=workers) as pool:
+            outputs = list(pool.map(_process_file, tasks, chunksize=64))
+    else:
+        outputs = [_process_file(task) for task in tasks]
+
     signals, rec_rows, beat_cols = [], [], {k: [] for k in ("beat_record", "r_idx", "rr_prev", "rr_next", "rr_ratio")}
     excluded: Counter = Counter()
     dropped: Counter = Counter()
-    for row in meta.itertuples(index=False):
-        if not (root / f"{row.filename_hr}.hea").is_file():
-            if allow_missing:
-                excluded["file_missing"] += 1
-                continue
-            raise FileNotFoundError(f"{root / row.filename_hr}.hea (use --allow-missing for a partial download)")
-        x, fs = raw.read_ptbxl_lead(root, row.filename_hr, LEAD)
-        y, peaks, problem = process_record(x, fs)
-        if problem:
-            excluded[problem] += 1
-            continue
-        keep, features, drop = beat_table(peaks)
-        dropped.update(drop)
-        if keep.size == 0:
-            excluded["no_usable_beat"] += 1
+    hashes: dict[str, str] = {}
+    quality: dict[str, list[float]] = {"heart_rate_bpm": [], "qrs_contrast": [], "powerline_ratio": []}
+    for row, out in zip(meta.itertuples(index=False), outputs):
+        hashes.update(out.get("sha256", {}))
+        if out["problem"] == "file_missing" and not allow_missing:
+            raise FileNotFoundError(f"{root / row.filename_hr} (use --allow-missing for a partial download)")
+        dropped.update(out.get("dropped", {}))
+        if out["problem"]:
+            excluded[out["problem"]] += 1
             continue
         index = len(signals)
-        signals.append(y)
+        signals.append(out["signal"])
         rec_rows.append((row.ecg_id, row.patient_id, row.strat_fold, row.labels))
-        beat_cols["beat_record"].append(np.full(keep.size, index, dtype=np.int32))
-        beat_cols["r_idx"].append(peaks[keep].astype(np.int32))
+        beat_cols["beat_record"].append(np.full(out["r_idx"].size, index, dtype=np.int32))
+        beat_cols["r_idx"].append(out["r_idx"].astype(np.int32))
         for name in ("rr_prev", "rr_next", "rr_ratio"):
-            beat_cols[name].append(features[name].astype(np.float32))
+            beat_cols[name].append(out["features"][name].astype(np.float32))
+        for name in quality:
+            quality[name].append(out[name])
 
     if not signals:
         raise RuntimeError("No PTB-XL recording survived preprocessing")
@@ -213,6 +328,7 @@ def build(root: Path, limit: int | None = None, allow_missing: bool = False) -> 
             "recordings_per_class": {c: int(arrays["labels"][rec_mask, i].sum()) for i, c in enumerate(SUPERCLASSES)},
         }
     beats_per_record = np.bincount(arrays["beat_record"], minlength=len(signals))
+    powerline = np.asarray(quality["powerline_ratio"])
     report.update(
         {
             "processed_from_metadata": int(len(meta)),
@@ -225,17 +341,27 @@ def build(root: Path, limit: int | None = None, allow_missing: bool = False) -> 
                 "median": float(np.median(beats_per_record)),
                 "max": int(beats_per_record.max()),
             },
+            "quality_of_kept_recordings": {
+                "heart_rate_bpm": _percentiles(quality["heart_rate_bpm"], (1, 5, 50, 95, 99)),
+                "qrs_contrast": _percentiles(quality["qrs_contrast"], (1, 5, 50)),
+                "powerline_50hz_ratio": {
+                    **_percentiles(quality["powerline_ratio"], (50, 90, 99)),
+                    "share_above_10": float((powerline > 10).mean()),
+                },
+            },
             "per_split": per_split,
             "settings": {
                 "lead": LEAD, "source_fs": SOURCE_FS, "fs": FS, "superclasses": list(SUPERCLASSES),
                 "train_folds": list(TRAIN_FOLDS), "val_folds": list(VAL_FOLDS), "unused_folds": list(UNUSED_FOLDS),
                 "min_peak_to_peak_mv": MIN_PEAK_TO_PEAK_MV, "max_abs_mv": MAX_ABS_MV, "max_flat_s": MAX_FLAT_S,
                 "peak_count_range": [MIN_PEAKS, MAX_PEAKS], "rr_range_s": list(RR_RANGE_S),
-                "min_qrs_contrast": MIN_QRS_CONTRAST,
+                "min_qrs_contrast": MIN_QRS_CONTRAST, "edge_pad_s": EDGE_PAD_S, "edge_pad_mode": EDGE_PAD_MODE,
             },  # fmt: skip
             "content_sha256": content_sha256(arrays),
         }
     )
+    if verify:
+        report["checksums"] = verify_checksums(root, hashes)
     return arrays, report
 
 
@@ -251,14 +377,57 @@ def out_dir() -> Path:
     return paths.processed_dir() / "ptbxl"
 
 
+def build_report() -> dict | None:
+    """The report of the build on disk, or None if PTB-XL has not been preprocessed here."""
+    path = out_dir() / "report.json"
+    return json.loads(path.read_text()) if path.is_file() else None
+
+
+def is_full_build() -> bool:
+    """True if a complete (not sample or partial) build is on disk."""
+    report = build_report()
+    return bool(report) and not report.get("partial_run", True) and (out_dir() / OUT_NAME).is_file()
+
+
 def load() -> dict[str, np.ndarray]:
     """The preprocessed PTB-XL arrays, after checking the file hash recorded at build time."""
-    meta = json.loads((out_dir() / "report.json").read_text())
+    report = build_report()
     path = out_dir() / OUT_NAME
-    if sha256_file(path) != meta["file_sha256"]:
+    if report is None or not path.is_file():
+        raise FileNotFoundError(f"PTB-XL has not been preprocessed here ({path} is missing)")
+    if sha256_file(path) != report["file_sha256"]:
         raise RuntimeError(f"{path} does not match the hash recorded when it was built")
     with np.load(path, allow_pickle=False) as data:
         return {name: data[name] for name in data.files}
+
+
+def prepare(
+    root: Path, workers: int = 1, limit: int | None = None, allow_missing: bool = False, verify: bool = True
+) -> dict:
+    """Build, save and report. Writes ``data/processed/ptbxl/`` and a summary under ``results/data/``."""
+    arrays, report = build(Path(root), limit=limit, allow_missing=allow_missing, workers=workers, verify=verify)
+    partial = bool(limit) or report["excluded_by_signal"].get("file_missing", 0) > 0
+    report["partial_run"] = partial
+    out_dir().mkdir(parents=True, exist_ok=True)
+    save_npz_deterministic(out_dir() / OUT_NAME, arrays)
+    report["file_sha256"] = sha256_file(out_dir() / OUT_NAME)
+    (out_dir() / "report.json").write_text(json.dumps(report, indent=2) + "\n")
+    name = "ptbxl_preprocessing_sample.json" if partial else "ptbxl_preprocessing.json"
+    summary = paths.results_dir() / "data" / name
+    summary.parent.mkdir(parents=True, exist_ok=True)
+    summary.write_text(json.dumps(report, indent=2) + "\n")
+    return report
+
+
+def windows_for_record(signal: np.ndarray, r_idx: np.ndarray, spec: RepresentationSpec) -> np.ndarray:
+    """Windows of one 10-second recording, cut by the MIT-BIH code after mirror padding.
+
+    The padding keeps most of the start-up transient of a band-pass filter outside the recording,
+    so beats near its ends are filtered almost as they would be inside a long record.
+    """
+    pad = round(EDGE_PAD_S * FS)
+    padded = np.pad(np.asarray(signal, dtype=np.float64), pad, mode=EDGE_PAD_MODE)
+    return transform_record(padded, np.asarray(r_idx, dtype=np.int64) + pad, spec)
 
 
 def beat_arrays(arrays: dict[str, np.ndarray], spec: RepresentationSpec, split: str) -> dict[str, np.ndarray]:
@@ -268,16 +437,18 @@ def beat_arrays(arrays: dict[str, np.ndarray], spec: RepresentationSpec, split: 
     features, and ``patient`` and ``ecg_id`` per beat.
     """
     records = np.flatnonzero(arrays["split"] == split)
-    xs, rows = [], []
     order = np.argsort(arrays["beat_record"], kind="stable")
     starts = np.searchsorted(arrays["beat_record"][order], records, side="left")
     stops = np.searchsorted(arrays["beat_record"][order], records, side="right")
+    xs, rows = [], []
     for index, start, stop in zip(records, starts, stops):
         beat_ids = order[start:stop]
         if beat_ids.size == 0:
             continue
-        xs.append(transform_record(arrays["signal"][index], arrays["r_idx"][beat_ids], spec))
+        xs.append(windows_for_record(arrays["signal"][index], arrays["r_idx"][beat_ids], spec))
         rows.append(beat_ids)
+    if not rows:
+        raise ValueError(f"PTB-XL split {split!r} has no beats")
     beat_ids = np.concatenate(rows)
     rec = arrays["beat_record"][beat_ids]
     return {
@@ -289,26 +460,51 @@ def beat_arrays(arrays: dict[str, np.ndarray], spec: RepresentationSpec, split: 
     }
 
 
+def alignment_report(ptbxl_x: np.ndarray, mitbih_x: np.ndarray, spec: RepresentationSpec) -> dict:
+    """How alike two sets of beat windows are: mean-beat correlation and R-peak centring.
+
+    "Centred" means the largest absolute value of a window lies within 6 ms of the R index. Call it
+    with PTB-XL beats from normal recordings and MIT-BIH N beats of the training records.
+    """
+    pre = spec.window_samples[0]
+    tolerance = max(1, round(0.006 * spec.effective_fs))
+
+    def centred(x: np.ndarray) -> float:
+        return float((np.abs(np.abs(x).argmax(axis=1) - pre) <= tolerance).mean())
+
+    return {
+        "n_ptbxl_beats": int(len(ptbxl_x)),
+        "n_mitbih_beats": int(len(mitbih_x)),
+        "mean_beat_correlation": float(np.corrcoef(ptbxl_x.mean(axis=0), mitbih_x.mean(axis=0))[0, 1]),
+        "ptbxl_peak_at_centre": centred(ptbxl_x),
+        "mitbih_peak_at_centre": centred(mitbih_x),
+        "tolerance_samples": tolerance,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Preprocess PTB-XL into beats for the pretraining arm.")
-    parser.add_argument("--root", default=str(paths.repo_root() / "data" / "raw" / "ptbxl"))
+    parser.add_argument("--root", default=str(paths.repo_root() / "data" / "raw" / "ptbxl"),
+                        help="folder that holds ptbxl_database.csv, or any folder above it")  # fmt: skip
+    parser.add_argument("--download", action="store_true",
+                        help="download PTB-XL 1.0.3 from PhysioNet (1.8 GB) into data/raw/ptbxl first")  # fmt: skip
+    parser.add_argument("--workers", type=int, default=1, help="worker processes (4 on Kaggle)")
     parser.add_argument("--limit", type=int, default=None, help="process only the first N eligible recordings")
     parser.add_argument("--allow-missing", action="store_true", help="skip recordings whose files are absent")
+    parser.add_argument("--skip-verify", action="store_true", help="do not compare files with PhysioNet checksums")
     args = parser.parse_args(argv)
 
-    arrays, report = build(Path(args.root), limit=args.limit, allow_missing=args.allow_missing)
-    partial = bool(args.limit) or report["excluded_by_signal"].get("file_missing", 0) > 0
-    report["partial_run"] = partial
-    out_dir().mkdir(parents=True, exist_ok=True)
-    save_npz_deterministic(out_dir() / OUT_NAME, arrays)
-    report["file_sha256"] = sha256_file(out_dir() / OUT_NAME)
-    (out_dir() / "report.json").write_text(json.dumps(report, indent=2) + "\n")
-    name = "ptbxl_preprocessing_sample.json" if partial else "ptbxl_preprocessing.json"
-    summary = paths.results_dir() / "data" / name
-    summary.parent.mkdir(parents=True, exist_ok=True)
-    summary.write_text(json.dumps(report, indent=2) + "\n")
+    if args.download:
+        raw.download_ptbxl(Path(args.root))
+    report = prepare(
+        find_root(Path(args.root)), workers=args.workers, limit=args.limit,
+        allow_missing=args.allow_missing, verify=not args.skip_verify,
+    )  # fmt: skip
     print(json.dumps({k: v for k, v in report.items() if k != "settings"}, indent=2))
-    print(f"wrote {out_dir() / OUT_NAME} and {summary}")
+    checks = report.get("checksums", {})
+    if checks.get("mismatched"):
+        print(f"WARNING: {checks['mismatched']} files differ from PhysioNet PTB-XL 1.0.3 (another version?)")
+    print(f"wrote {out_dir() / OUT_NAME}")
     return 0
 
 

@@ -1,0 +1,3 @@
+base: _shared.yaml
+variant: A
+representation_from: ../m1/A.yaml

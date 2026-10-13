@@ -14,19 +14,22 @@ Updated 2026-10-13 (Day 7). Phase 1 of 6, data foundation.
 - Done: environment and lockfile, MIT-BIH download with checksum verification, beat extraction, per-record
   counts, the test lock, evaluation utilities, probe model, Module 1 runner with variants A-D, Kaggle setup.
 - Dataset: MIT-BIH Arrhythmia Database (PhysioNet), inter-patient DS1/DS2 split, for training,
-  validation and test. PTB-XL is used only to pretrain the classifier in Phase 2; its preprocessing is
-  built (`python -m ecgaug.data.ptbxl --root <PTB-XL folder>`), the pretraining itself is not.
+  validation and test. PTB-XL is used only to pretrain the classifier. Its preprocessing and the
+  pretraining plus fine-tuning runner are built and tested on fake data and a 64-recording sample;
+  the full run is meant for Kaggle (`kaggle/README.md`) and has not been done yet.
 - Validation split: option V1 (records 115, 118, 201, 205, 223), in `configs/splits/approved.yaml`.
   Variants are selected on S F1 with V F1 as tie-break.
 - Module 1 variants can be run now, locally or on Kaggle.
+- The PTB-XL pretraining arm can be run on Kaggle: one run does preprocessing, pretraining and
+  fine-tuning. Its results are provisional until Gate 1 fixes the input representation.
 - Next: draw variant assignments, run `/variant 1 A..D`, then `/gate 1`.
 
 ## Repository layout
 
 | Path | Contents |
 |---|---|
-| `src/ecgaug/` | the package: `data` (MIT-BIH pipeline, PTB-XL preprocessing, R-peak detector), `eval`, `models`, `train`, `experiments` |
-| `configs/` | experiment configs (`m1/` variants, `splits/` validation options) |
+| `src/ecgaug/` | the package: `data` (MIT-BIH pipeline, PTB-XL preprocessing, R-peak detector), `eval`, `models`, `train`, `experiments` (`m1`, `pretrain`) |
+| `configs/` | experiment configs (`m1/` variants, `pretrain/` PTB-XL arm, `splits/` validation split) |
 | `kaggle/` | everything for running on Kaggle; start with `kaggle/README.md` |
 | `docs/` | plan, pre-registration, decisions, progress log, variant briefs |
 | `results/` | generated summaries (counts, validation results, gate reports) |
@@ -59,6 +62,18 @@ uv run python -m ecgaug.experiments.m1 --config configs/m1/A.yaml           # th
 
 The experiment needs the approved validation split (`configs/splits/approved.yaml`, option V1) and a
 committed tree. Anyone with a clone can run it. To run on Kaggle, follow `kaggle/README.md`.
+
+## PTB-XL pretraining arm
+
+```
+uv run python -m ecgaug.experiments.pretrain --config configs/pretrain/A.yaml --smoke          # fake data
+uv run python -m ecgaug.experiments.pretrain --config configs/pretrain/A.yaml --ptbxl-root DIR  # real run
+```
+
+One command preprocesses PTB-XL (lead II, 360 Hz, detected R peaks, quality checks), pretrains the
+classifier on the recordings' diagnostic superclasses, fine-tunes it on MIT-BIH, and trains the same
+model from scratch for comparison. `DIR` is a PTB-XL copy; `--ptbxl-download` fetches it from PhysioNet
+instead. Results go to `results/validation/pretrain/`. Design: `docs/PLAN.md`, Phase 2.
 
 ## Troubleshooting
 

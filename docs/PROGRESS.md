@@ -135,3 +135,43 @@ Open issues / risks:
 Next:
 1. Module 1 variants and Gate 1 (unchanged).
 2. Full PTB-XL preprocessing on Kaggle, then the pretraining runner in Phase 2.
+
+## 2026-10-13 (Day 7), evening — PTB-XL on Kaggle: preprocessing and pretraining arm
+
+Done:
+- PTB-XL preprocessing made ready for the full data: worker processes (same result for any number of
+  workers), search for the dataset folder below an attached Kaggle input, optional download of PTB-XL
+  1.0.3 from PhysioNet as one zip, comparison of every file read with PhysioNet's checksum list, and
+  heart-rate, QRS-contrast and 50 Hz statistics in the report.
+- Edge effect measured on MIT-BIH DS1 (`python -m ecgaug.data.checks`,
+  `results/data/ptbxl_method_checks_ds1.json`): when a 10-second piece is band-pass filtered on its own,
+  beats 0.4-1.0s from an end correlate with the same beats filtered inside the full record at a 5th
+  percentile of 0.854 without padding, 0.922 with odd reflection, 0.976 with
+  edge-value padding and 0.990 with mirror padding (3,061 beats). Mirror padding of 2 s is now used
+  for PTB-XL. It only matters for the band-passed representation (B).
+- Mains interference: 60 Hz is clearly present in 55% of DS1 records (median ratio 11.9);
+  the PTB-XL sample shows no 50 Hz interference (share above 10: 0%). No notch filter was added.
+- Pretraining arm (`src/ecgaug/experiments/pretrain.py`, `configs/pretrain/A–D.yaml`): one command
+  preprocesses PTB-XL, pretrains once per seed (5 superclasses per beat, binary cross-entropy, early
+  stopping on PTB-XL fold 9), fine-tunes on MIT-BIH from the pretrained weights and from scratch with
+  the Module 1 budget, applies the selection rule and writes `results/validation/pretrain/<letter>.json`.
+- Shared runner code moved to `src/ecgaug/experiments/common.py`; the Module 1 runner uses it and
+  gives the same results as before (a test checks that the from-scratch arm equals a Module 1 run).
+- Kaggle: notebook parameters and guide for the arm; the bundle and `ingest_runs.py` now carry
+  `results/data/ptbxl_preprocessing.json`.
+- Verified here: the arm end to end on fake data (A and C); preprocessing and the pretraining stage on
+  the real 64-recording sample (59 recordings, 587 beats, median heart rate 73 bpm).
+- Tests: 157 pass.
+
+Run IDs: none (no real run of the arm; the sample check was discarded).
+
+Open issues / risks:
+- No full PTB-XL run and no real pretraining or fine-tuning run exists yet. Run times on Kaggle are unknown.
+- The arm uses the probe CNN and a representation that Gate 1 has not frozen, so its results are
+  provisional (DECISIONS A13) and must be rerun after Gate 1 and after Module 3.
+- Which PTB-XL copy on Kaggle to attach is not settled; the download option avoids the question.
+- The download from PhysioNet inside the runner was tested with a local zip only, not against PhysioNet.
+
+Next:
+1. Push. On Kaggle: smoke run of the arm, then the real run for the four letters.
+2. Module 1 variants and Gate 1 (still the critical path).

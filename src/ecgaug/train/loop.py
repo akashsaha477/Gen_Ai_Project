@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import random
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 import numpy as np
 import torch
 from torch import nn
 
-from ecgaug.eval.metrics import evaluate
+from ecgaug.eval.metrics import evaluate, multilabel_auroc
 from ecgaug.eval.selection import selection_value
 
 
@@ -54,46 +55,47 @@ class FitResult:
 
 
 @torch.no_grad()
-def predict_proba(
+def predict_logits(
     model: nn.Module, x: torch.Tensor, side: torch.Tensor | None, device: torch.device, batch_size: int = 2048
-) -> np.ndarray:
-    """Class probabilities ``[n, C]`` in evaluation mode."""
+) -> torch.Tensor:
+    """Raw model outputs ``[n, C]`` in evaluation mode, on the CPU."""
     model.eval()
     chunks = []
     for start in range(0, x.shape[0], batch_size):
         xb = x[start : start + batch_size].to(device)
         sb = side[start : start + batch_size].to(device) if side is not None else None
-        chunks.append(torch.softmax(model(xb, sb), dim=1).cpu())
-    return torch.cat(chunks).numpy()
+        chunks.append(model(xb, sb).cpu())
+    return torch.cat(chunks)
 
 
-def fit_classifier(
+def predict_proba(
+    model: nn.Module, x: torch.Tensor, side: torch.Tensor | None, device: torch.device, batch_size: int = 2048
+) -> np.ndarray:
+    """Class probabilities ``[n, C]`` (softmax) in evaluation mode."""
+    return torch.softmax(predict_logits(model, x, side, device, batch_size), dim=1).numpy()
+
+
+def _fit(
     model: nn.Module,
     train: dict[str, np.ndarray],
-    val: dict[str, np.ndarray],
+    y_train: torch.Tensor,
+    loss_fn: nn.Module,
+    validate: Callable[[nn.Module], tuple[float, dict, np.ndarray, dict]],
     cfg: TrainConfig,
-    selection: str,
     seed: int,
-    device: torch.device | None = None,
+    device: torch.device,
 ) -> FitResult:
-    """Train with unweighted cross-entropy and AdamW; stop when the validation metric stalls.
+    """Shared training loop: AdamW, one validation pass per epoch, early stopping on its value.
 
-    ``train`` and ``val`` hold ``X`` ``[n, L]``, ``y`` and optionally ``side`` ``[n, k]``. After every
-    epoch the model is evaluated on validation; the checkpoint with the highest selection value is
-    kept, and training stops after ``cfg.patience`` epochs without improvement.
+    ``validate(model)`` returns ``(value, metrics, probabilities, fields for the training log)``.
+    The checkpoint with the highest value is kept; training stops after ``cfg.patience`` epochs
+    without improvement.
     """
-    device = device or torch.device("cpu")
     set_seed(seed)
     model.to(device)
     x_tr = torch.from_numpy(train["X"])
-    y_tr = torch.from_numpy(train["y"].astype(np.int64))
     s_tr = torch.from_numpy(train["side"]) if train.get("side") is not None else None
-    x_va = torch.from_numpy(val["X"])
-    s_va = torch.from_numpy(val["side"]) if val.get("side") is not None else None
-    y_va = val["y"]
-
     optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
-    loss_fn = nn.CrossEntropyLoss()
     shuffle = torch.Generator().manual_seed(seed)
     n = x_tr.shape[0]
 
@@ -112,7 +114,7 @@ def fit_classifier(
             idx = order[start : start + cfg.batch_size]
             if idx.numel() < 2:  # batch norm needs at least two samples
                 continue
-            xb, yb = x_tr[idx].to(device), y_tr[idx].to(device)
+            xb, yb = x_tr[idx].to(device), y_train[idx].to(device)
             sb = s_tr[idx].to(device) if s_tr is not None else None
             optimizer.zero_grad(set_to_none=True)
             loss = loss_fn(model(xb, sb), yb)
@@ -121,21 +123,13 @@ def fit_classifier(
             total_loss += loss.item() * idx.numel()
             seen += idx.numel()
 
-        probs = predict_proba(model, x_va, s_va, device)
-        metrics = evaluate(probs, y_va)
-        value = selection_value(metrics, selection)
-        if np.isnan(value):
-            raise ValueError(f"Selection metric {selection!r} is undefined on the validation split")
+        value, metrics, probs, fields = validate(model)
         history.append(
             {
                 "epoch": epoch,
                 "train_loss": total_loss / max(seen, 1),
                 "val_selection": value,
-                "val_rare_macro_f1": metrics["rare_macro_f1"],
-                "val_f1_S": metrics["per_class"]["S"]["f1"],
-                "val_f1_V": metrics["per_class"]["V"]["f1"],
-                "val_f1_F": metrics["per_class"]["F"]["f1"],
-                "val_n_recall": metrics["n_recall"],
+                **fields,
                 "elapsed_s": time.perf_counter() - started,
             }
         )
@@ -159,3 +153,76 @@ def fit_classifier(
         wall_clock_s=time.perf_counter() - started,
         history=history,
     )
+
+
+def fit_classifier(
+    model: nn.Module,
+    train: dict[str, np.ndarray],
+    val: dict[str, np.ndarray],
+    cfg: TrainConfig,
+    selection: str,
+    seed: int,
+    device: torch.device | None = None,
+) -> FitResult:
+    """Train with unweighted cross-entropy and AdamW; stop when the validation metric stalls.
+
+    ``train`` and ``val`` hold ``X`` ``[n, L]``, ``y`` and optionally ``side`` ``[n, k]``. After every
+    epoch the model is evaluated on validation; the checkpoint with the highest selection value is
+    kept, and training stops after ``cfg.patience`` epochs without improvement.
+    """
+    device = device or torch.device("cpu")
+    x_va = torch.from_numpy(val["X"])
+    s_va = torch.from_numpy(val["side"]) if val.get("side") is not None else None
+    y_va = val["y"]
+
+    def validate(net: nn.Module) -> tuple[float, dict, np.ndarray, dict]:
+        probs = predict_proba(net, x_va, s_va, device)
+        metrics = evaluate(probs, y_va)
+        value = selection_value(metrics, selection)
+        if np.isnan(value):
+            raise ValueError(f"Selection metric {selection!r} is undefined on the validation split")
+        fields = {
+            "val_rare_macro_f1": metrics["rare_macro_f1"],
+            "val_f1_S": metrics["per_class"]["S"]["f1"],
+            "val_f1_V": metrics["per_class"]["V"]["f1"],
+            "val_f1_F": metrics["per_class"]["F"]["f1"],
+            "val_n_recall": metrics["n_recall"],
+        }
+        return value, metrics, probs, fields
+
+    y_tr = torch.from_numpy(train["y"].astype(np.int64))
+    return _fit(model, train, y_tr, nn.CrossEntropyLoss(), validate, cfg, seed, device)
+
+
+def fit_multilabel(
+    model: nn.Module,
+    train: dict[str, np.ndarray],
+    val: dict[str, np.ndarray],
+    cfg: TrainConfig,
+    label_names: tuple[str, ...] | list[str],
+    seed: int,
+    device: torch.device | None = None,
+) -> FitResult:
+    """Multi-label training with binary cross-entropy; early stopping on validation macro AUROC.
+
+    ``y`` is multi-hot ``[n, K]``. Used to pretrain on PTB-XL, where every beat carries the
+    diagnostic superclasses of its recording.
+    """
+    device = device or torch.device("cpu")
+    x_va = torch.from_numpy(val["X"])
+    s_va = torch.from_numpy(val["side"]) if val.get("side") is not None else None
+    y_va = np.asarray(val["y"], dtype=np.float32)
+    loss_fn = nn.BCEWithLogitsLoss()
+
+    def validate(net: nn.Module) -> tuple[float, dict, np.ndarray, dict]:
+        logits = predict_logits(net, x_va, s_va, device)
+        probs = torch.sigmoid(logits).numpy()
+        auroc = multilabel_auroc(probs, y_va, label_names)
+        if np.isnan(auroc["macro"]):
+            raise ValueError("Validation AUROC is undefined: every label is constant in the validation data")
+        metrics = {**auroc, "val_loss": float(loss_fn(logits, torch.from_numpy(y_va)))}
+        fields = {"val_loss": metrics["val_loss"], **{f"val_auroc_{k}": v for k, v in auroc["per_label"].items()}}
+        return auroc["macro"], metrics, probs, fields
+
+    y_tr = torch.from_numpy(np.asarray(train["y"], dtype=np.float32))
+    return _fit(model, train, y_tr, loss_fn, validate, cfg, seed, device)

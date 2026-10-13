@@ -29,6 +29,7 @@ RUN_ID_RE = re.compile(
     r"-s(?P<seed>\d+)-(?P<sha>[0-9a-f]{7})-(?P<stamp>\d{12})$"
 )
 REQUIRED_RUN_FILES = ("config.yaml", "env.json", "train_log.csv", "metrics_val.json")
+INGESTED_DATA_REPORTS = ("ptbxl_preprocessing.json",)
 RUNS_INDEX_COLUMNS = [
     "run_id", "phase", "module", "variant", "tag", "seed", "status",
     "selection_metric", "selection_value", "rare_macro_f1", "wall_clock_s", "git_sha",
@@ -247,4 +248,17 @@ def ingest(sources: list[Path]) -> dict:
                     dst.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(src, dst)
                     report["result_files"].append(str(relative))
+            # Reports that only exist where the full data was processed (PTB-XL on Kaggle).
+            for name in INGESTED_DATA_REPORTS:
+                for src in root.rglob(name):
+                    if src.parent.name != "data" or src.parent.parent.name != "results":
+                        continue
+                    dst = paths.results_dir() / "data" / name
+                    if dst.exists():
+                        if dst.read_bytes() != src.read_bytes():
+                            report["result_conflicts"].append(f"data/{name}")
+                        continue
+                    dst.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(src, dst)
+                    report["result_files"].append(f"data/{name}")
     return report
