@@ -89,3 +89,62 @@ def write_fake_mitdb(
         int(r): write_fake_record(raw_dir, int(r), seconds=seconds, seed=seed, swap_leads=(int(r) == 114))
         for r in records
     }
+
+
+PTBXL_LEADS = ["I", "II", "III", "AVR", "AVL", "AVF", "V1", "V2", "V3", "V4", "V5", "V6"]
+
+# ecg_id: (patient, fold, scp_codes, pacemaker, electrodes_problems, kind of signal)
+_FAKE_PTBXL = {
+    1: (10, 1, "{'NORM': 100.0, 'SR': 0.0}", "", "", "ok"),
+    2: (10, 1, "{'IMI': 50.0, 'NDT': 0.0}", "", "", "ok"),
+    3: (11, 9, "{'CLBBB': 100.0, 'LVH': 80.0}", "", "", "swapped"),
+    4: (12, 10, "{'NORM': 80.0}", "", "", "ok"),
+    5: (13, 2, "{'SR': 0.0}", "", "", "ok"),  # no diagnostic statement
+    6: (14, 2, "{'NORM': 100.0}", "ja, pacemaker", "", "ok"),
+    7: (15, 3, "{'NORM': 100.0}", "", "V6", "ok"),
+    8: (16, 3, "{'NORM': 100.0}", "", "", "flat"),
+    9: (17, 4, "{'NORM': 100.0}", "", "", "noise"),  # no detectable beats
+}
+_FAKE_SCP = [  # code, diagnostic, diagnostic_class
+    ("NORM", 1.0, "NORM"), ("IMI", 1.0, "MI"), ("NDT", 1.0, "STTC"), ("CLBBB", 1.0, "CD"), ("LVH", 1.0, "HYP"),
+    ("SR", "", ""),
+]  # fmt: skip
+
+
+def write_fake_ptbxl(root: Path, seed: int = 0) -> dict[int, np.ndarray]:
+    """Write a tiny PTB-XL-like folder (two CSV files and nine 500 Hz recordings).
+
+    Returns the true R-peak sample indices at 500 Hz for the recordings with beats. Recording 3 has
+    its leads in a different order, to check that lead II is selected by name.
+    """
+    root = Path(root)
+    rng = np.random.default_rng(seed)
+    fs, n = 500, 5000
+    time = np.arange(n) / fs
+    rows, truth = [], {}
+    for ecg_id, (patient, fold, codes, pacemaker, electrodes, kind) in _FAKE_PTBXL.items():
+        filename = f"records500/00000/{ecg_id:05d}_hr"
+        lead2 = 0.01 * rng.standard_normal(n)
+        if kind in ("ok", "swapped"):
+            beats = np.arange(0.5 + 0.05 * (ecg_id % 3), 9.6, 0.75 + 0.02 * ecg_id)
+            for b in beats:
+                lead2 += np.exp(-0.5 * ((time - b) / 0.012) ** 2) + 0.2 * np.exp(-0.5 * ((time - b - 0.25) / 0.05) ** 2)
+            truth[ecg_id] = np.rint(beats * fs).astype(int)
+        elif kind == "flat":
+            lead2 = np.zeros(n)
+        signals = np.stack([lead2 if name == "II" else 2.0 + 0.3 * i - 0.2 * lead2 for i, name in enumerate(PTBXL_LEADS)], axis=1)
+        names = list(PTBXL_LEADS)
+        if kind == "swapped":
+            names = names[::-1]
+            signals = signals[:, ::-1]
+        (root / "records500" / "00000").mkdir(parents=True, exist_ok=True)
+        wfdb.wrsamp(
+            f"{ecg_id:05d}_hr", fs=fs, units=["mV"] * 12, sig_name=names, p_signal=np.ascontiguousarray(signals),
+            fmt=["16"] * 12, write_dir=str(root / "records500" / "00000"),
+        )  # fmt: skip
+        rows.append(f'{ecg_id},{patient}.0,"{codes}",{fold},{filename},"{pacemaker}",{electrodes}')
+    header = "ecg_id,patient_id,scp_codes,strat_fold,filename_hr,pacemaker,electrodes_problems"
+    (root / "ptbxl_database.csv").write_text(header + "\n" + "\n".join(rows) + "\n")
+    scp = ["," + "diagnostic,diagnostic_class"] + [f"{code},{diag},{cls}" for code, diag, cls in _FAKE_SCP]
+    (root / "scp_statements.csv").write_text("\n".join(scp) + "\n")
+    return truth

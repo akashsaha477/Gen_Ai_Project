@@ -1,0 +1,273 @@
+{
+  "dataset": "MIT-BIH DS1 (22 records), reference = all QRS-type annotations",
+  "tolerance_ms": 150.0,
+  "parameters": {
+    "band_hz": [
+      5.0,
+      20.0
+    ],
+    "integration_s": 0.12,
+    "refractory_s": 0.25,
+    "local_window_s": 5.0,
+    "height_fraction": 0.15,
+    "refine_s": 0.08
+  },
+  "overall": {
+    "tp": 51304,
+    "fn": 189,
+    "fp": 346,
+    "sensitivity": 0.9963295981978133,
+    "positive_predictivity": 0.9933010648596321,
+    "offset_ms": {
+      "median": 0.0,
+      "mean": 1.3665276261759967,
+      "sd": 12.885318173075024,
+      "abs_p95": 2.7777777777777777,
+      "within_10ms": 0.970996413535007
+    }
+  },
+  "per_record": [
+    {
+      "record": 101,
+      "reference": 1865,
+      "detected": 1868,
+      "tp": 1864,
+      "fn": 1,
+      "fp": 4,
+      "sensitivity": 0.9994638069705094,
+      "positive_predictivity": 0.9978586723768736,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 106,
+      "reference": 2027,
+      "detected": 2028,
+      "tp": 2027,
+      "fn": 0,
+      "fp": 1,
+      "sensitivity": 1.0,
+      "positive_predictivity": 0.9995069033530573,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 108,
+      "reference": 1763,
+      "detected": 1879,
+      "tp": 1752,
+      "fn": 11,
+      "fp": 127,
+      "sensitivity": 0.9937606352807714,
+      "positive_predictivity": 0.932410856838744,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 109,
+      "reference": 2532,
+      "detected": 2527,
+      "tp": 2527,
+      "fn": 5,
+      "fp": 0,
+      "sensitivity": 0.9980252764612955,
+      "positive_predictivity": 1.0,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 112,
+      "reference": 2539,
+      "detected": 2540,
+      "tp": 2539,
+      "fn": 0,
+      "fp": 1,
+      "sensitivity": 1.0,
+      "positive_predictivity": 0.9996062992125985,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 114,
+      "reference": 1879,
+      "detected": 1885,
+      "tp": 1878,
+      "fn": 1,
+      "fp": 7,
+      "sensitivity": 0.9994678020223523,
+      "positive_predictivity": 0.9962864721485412,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 115,
+      "reference": 1953,
+      "detected": 1953,
+      "tp": 1953,
+      "fn": 0,
+      "fp": 0,
+      "sensitivity": 1.0,
+      "positive_predictivity": 1.0,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 116,
+      "reference": 2412,
+      "detected": 2404,
+      "tp": 2400,
+      "fn": 12,
+      "fp": 4,
+      "sensitivity": 0.9950248756218906,
+      "positive_predictivity": 0.9983361064891847,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 118,
+      "reference": 2278,
+      "detected": 2278,
+      "tp": 2278,
+      "fn": 0,
+      "fp": 0,
+      "sensitivity": 1.0,
+      "positive_predictivity": 1.0,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 119,
+      "reference": 1987,
+      "detected": 1988,
+      "tp": 1987,
+      "fn": 0,
+      "fp": 1,
+      "sensitivity": 1.0,
+      "positive_predictivity": 0.9994969818913481,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 122,
+      "reference": 2476,
+      "detected": 2476,
+      "tp": 2476,
+      "fn": 0,
+      "fp": 0,
+      "sensitivity": 1.0,
+      "positive_predictivity": 1.0,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 124,
+      "reference": 1619,
+      "detected": 1627,
+      "tp": 1615,
+      "fn": 4,
+      "fp": 12,
+      "sensitivity": 0.9975293390982087,
+      "positive_predictivity": 0.9926244622003688,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 201,
+      "reference": 1963,
+      "detected": 2076,
+      "tp": 1943,
+      "fn": 20,
+      "fp": 133,
+      "sensitivity": 0.9898115129903209,
+      "positive_predictivity": 0.9359344894026975,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 203,
+      "reference": 2980,
+      "detected": 2974,
+      "tp": 2957,
+      "fn": 23,
+      "fp": 17,
+      "sensitivity": 0.9922818791946308,
+      "positive_predictivity": 0.9942837928715534,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 205,
+      "reference": 2656,
+      "detected": 2653,
+      "tp": 2653,
+      "fn": 3,
+      "fp": 0,
+      "sensitivity": 0.9988704819277109,
+      "positive_predictivity": 1.0,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 207,
+      "reference": 2332,
+      "detected": 2281,
+      "tp": 2251,
+      "fn": 81,
+      "fp": 30,
+      "sensitivity": 0.9652658662092625,
+      "positive_predictivity": 0.9868478737395879,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 208,
+      "reference": 2955,
+      "detected": 2943,
+      "tp": 2936,
+      "fn": 19,
+      "fp": 7,
+      "sensitivity": 0.993570219966159,
+      "positive_predictivity": 0.9976214746856948,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 209,
+      "reference": 3005,
+      "detected": 3007,
+      "tp": 3005,
+      "fn": 0,
+      "fp": 2,
+      "sensitivity": 1.0,
+      "positive_predictivity": 0.9993348852677086,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 215,
+      "reference": 3363,
+      "detected": 3363,
+      "tp": 3363,
+      "fn": 0,
+      "fp": 0,
+      "sensitivity": 1.0,
+      "positive_predictivity": 1.0,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 220,
+      "reference": 2048,
+      "detected": 2048,
+      "tp": 2048,
+      "fn": 0,
+      "fp": 0,
+      "sensitivity": 1.0,
+      "positive_predictivity": 1.0,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 223,
+      "reference": 2605,
+      "detected": 2596,
+      "tp": 2596,
+      "fn": 9,
+      "fp": 0,
+      "sensitivity": 0.9965451055662188,
+      "positive_predictivity": 1.0,
+      "median_offset_ms": 0.0
+    },
+    {
+      "record": 230,
+      "reference": 2256,
+      "detected": 2256,
+      "tp": 2256,
+      "fn": 0,
+      "fp": 0,
+      "sensitivity": 1.0,
+      "positive_predictivity": 1.0,
+      "median_offset_ms": 0.0
+    }
+  ]
+}

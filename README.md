@@ -14,7 +14,8 @@ Updated 2026-10-13 (Day 7). Phase 1 of 6, data foundation.
 - Done: environment and lockfile, MIT-BIH download with checksum verification, beat extraction, per-record
   counts, the test lock, evaluation utilities, probe model, Module 1 runner with variants A-D, Kaggle setup.
 - Dataset: MIT-BIH Arrhythmia Database (PhysioNet), inter-patient DS1/DS2 split, for training,
-  validation and test. PTB-XL will be used only to pretrain the classifier in Phase 2 (not built yet).
+  validation and test. PTB-XL is used only to pretrain the classifier in Phase 2; its preprocessing is
+  built (`python -m ecgaug.data.ptbxl --root <PTB-XL folder>`), the pretraining itself is not.
 - Validation split: option V1 (records 115, 118, 201, 205, 223), in `configs/splits/approved.yaml`.
   Variants are selected on S F1 with V F1 as tie-break.
 - Module 1 variants can be run now, locally or on Kaggle.
@@ -24,7 +25,7 @@ Updated 2026-10-13 (Day 7). Phase 1 of 6, data foundation.
 
 | Path | Contents |
 |---|---|
-| `src/ecgaug/` | the package: `data`, `eval`, `models`, `train`, `experiments` |
+| `src/ecgaug/` | the package: `data` (MIT-BIH pipeline, PTB-XL preprocessing, R-peak detector), `eval`, `models`, `train`, `experiments` |
 | `configs/` | experiment configs (`m1/` variants, `splits/` validation options) |
 | `kaggle/` | everything for running on Kaggle; start with `kaggle/README.md` |
 | `docs/` | plan, pre-registration, decisions, progress log, variant briefs |

@@ -106,9 +106,13 @@ beats; document this as a limitation (S beats are largely defined by prematurity
 
 One extra condition for the selected `cnn` baseline: pretrain on PTB-XL, then fine-tune on MIT-BIH.
 
-1. **Data:** PTB-XL from PhysioNet, lead II (closest to MLII), resampled to 360 Hz. R peaks from a
-   detector (`wfdb.processing`), since PTB-XL has no beat annotations. Beats are cut with the Module 1
-   winning representation and the same usable-beat rule.
+1. **Data (built, `src/ecgaug/data/ptbxl.py`):** PTB-XL 500 Hz files, lead II by name (closest to
+   MLII), resampled to 360 Hz. Recordings are dropped if they have no diagnostic superclass, a
+   pacemaker, flagged electrode problems, a flat or implausible signal, an implausible number of
+   peaks, or peaks that do not stand out of the noise. R peaks come from `src/ecgaug/data/rpeaks.py`,
+   validated against the MIT-BIH DS1 annotations (`results/data/rpeak_validation_ds1.json`). Beats
+   need both RR intervals inside 0.3–2.0 s and the same usable-beat rule as MIT-BIH. Windows are cut
+   later with the Module 1 winning representation, through the same code as the MIT-BIH beats.
 2. **Labels:** each beat gets its recording's diagnostic superclasses (NORM, MI, STTC, CD, HYP,
    multi-label). Noisy at beat level by construction.
 3. **Pretraining:** same architecture as `cnn` with a 5-output head, binary cross-entropy. PTB-XL's
