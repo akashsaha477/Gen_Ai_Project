@@ -1,3 +1,0 @@
-base: _shared.yaml
-variant: C
-representation_from: ../m1/C.yaml

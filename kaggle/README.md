@@ -38,7 +38,7 @@ The token is read from Kaggle Secrets, never printed and never put in a URL. Do 
    |---|---|
    | `GIT_REF` | your branch (`variant/m1-A`) or a full commit SHA |
    | `CONFIGS` | one or more config files, run in order |
-   | `MODULE_CLI` | the runner of the module (Module 1: `ecgaug.experiments.m1`) |
+   | `MODULE_CLI` | the runner of the module (Module 1: `ecgaug.experiments.input_representation`) |
    | `EXTRA_ARGS` | passed to the runner; `["--device", "auto"]` uses the GPU when there is one |
    | `ENV_MODE` | `locked` (exact `uv.lock` versions) or `kaggle` (see below) |
    | `RAW_DATASET_DIR` | leave as `/kaggle/input`; set to `""` to download from PhysioNet instead |
@@ -72,8 +72,8 @@ the same model trained from scratch for comparison.
 3. Parameter cell:
    ```
    GIT_REF = "main"
-   CONFIGS = ["configs/pretrain/A.yaml"]          # or several: A.yaml, B.yaml, C.yaml, D.yaml
-   MODULE_CLI = "ecgaug.experiments.pretrain"
+   CONFIGS = ["configs/ptbxl_pretraining/A_short_window.yaml"]          # or several: A.yaml, B.yaml, C.yaml, D.yaml
+   MODULE_CLI = "ecgaug.experiments.ptbxl_pretraining"
    EXTRA_ARGS = ["--device", "auto", "--ptbxl-root", "/kaggle/input"]
    ```
 4. Run All, download the zip, `python kaggle/ingest_runs.py <zip>`.
@@ -83,7 +83,7 @@ What comes back in the zip:
 | file | content |
 |---|---|
 | `results/data/ptbxl_preprocessing.json` | how many recordings and beats were kept, every exclusion by reason, heart-rate and noise statistics, and how many files match PhysioNet's checksums |
-| `results/validation/pretrain/<A-D>.json` | both arms (from scratch, pretrained): per-seed validation metrics, mean ± SD, the pretraining AUROC, and which arm the selection rule picks |
+| `results/validation/ptbxl_pretraining/<A-D>.json` | both arms (from scratch, pretrained): per-seed validation metrics, mean ± SD, the pretraining AUROC, and which arm the selection rule picks |
 | `runs/` | one folder per run: 3 pretraining runs, 6 from-scratch and 6 fine-tuning runs per config |
 
 Things to know:
@@ -106,14 +106,14 @@ Things to know:
 
 ## Rules that still apply on Kaggle
 
-- A real run is refused (exit code 2) if `configs/splits/approved.yaml` is missing or the checkout
+- A real run is refused (exit code 2) if `configs/validation_split/approved.yaml` is missing or the checkout
   differs from the commit. The message says which.
 - Never set `ALLOW_TEST` or `ALLOW_TEST_BUILD` in a notebook. The final evaluation is run once, locally,
   through `/final-eval`.
 - One GPU quota per account, renewed weekly (your remaining hours are shown under Settings in the
   notebook). Turn the accelerator off when you do not need it, and ask the team before anything
   estimated above 2 GPU-hours.
-- Same seeds, same budget, same commit for every seed of a variant. Do not edit `configs/m1/_shared.yaml`.
+- Same seeds, same budget, same commit for every seed of a variant. Do not edit `configs/m1_input_representation/shared_budget.yaml`.
 
 ## When something fails
 
@@ -128,8 +128,8 @@ Things to know:
 ## Later phases
 
 The same notebook serves every phase: each module gets its own runner under `ecgaug.experiments`, and
-you change only `MODULE_CLI` and `CONFIGS`. Runners so far: `ecgaug.experiments.m1` (Module 1) and
-`ecgaug.experiments.pretrain` (PTB-XL pretraining arm). This file is updated when a phase adds one.
+you change only `MODULE_CLI` and `CONFIGS`. Runners so far: `ecgaug.experiments.input_representation` (Module 1) and
+`ecgaug.experiments.ptbxl_pretraining` (PTB-XL pretraining arm). This file is updated when a phase adds one.
 
 Status: the runner script was rehearsed in a fresh clone with the raw-data zip as input (locked
 environment, checksum check, two smoke runs). The pretraining arm was run end to end on fake data, and

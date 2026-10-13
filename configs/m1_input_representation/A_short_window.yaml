@@ -1,4 +1,4 @@
-base: _shared.yaml
+base: shared_budget.yaml
 variant: A
 description: Window -0.25 s to +0.25 s around R (180 samples at 360 Hz); per-beat z-score; no filtering.
 representation:

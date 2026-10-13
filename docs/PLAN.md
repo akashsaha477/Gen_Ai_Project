@@ -105,8 +105,8 @@ beats; document this as a limitation (S beats are largely defined by prematurity
 ### PTB-XL pretraining arm (A12 and A13, built 2026-10-13)
 
 One extra condition for the baseline classifier: pretrain on PTB-XL, then fine-tune on MIT-BIH, compared
-with the same model trained from scratch. Runner: `python -m ecgaug.experiments.pretrain --config
-configs/pretrain/<A-D>.yaml`; one command does preprocessing, pretraining and both fine-tuning arms.
+with the same model trained from scratch. Runner: `python -m ecgaug.experiments.ptbxl_pretraining --config
+configs/ptbxl_pretraining/<variant>.yaml`; one command does preprocessing, pretraining and both fine-tuning arms.
 
 1. **Data (`src/ecgaug/data/ptbxl.py`):** PTB-XL 500 Hz files, lead II by name (closest to MLII),
    resampled to 360 Hz. Recordings are dropped if they have no diagnostic superclass, a pacemaker,

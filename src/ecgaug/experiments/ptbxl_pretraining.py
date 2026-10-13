@@ -1,9 +1,9 @@
 """PTB-XL pretraining arm: pretrain on PTB-XL beats, fine-tune on MIT-BIH, compare with from scratch.
 
 Usage:
-    python -m ecgaug.experiments.pretrain --config configs/pretrain/A.yaml --ptbxl-root <PTB-XL folder>
-    python -m ecgaug.experiments.pretrain --config configs/pretrain/A.yaml --ptbxl-download
-    python -m ecgaug.experiments.pretrain --config configs/pretrain/A.yaml --smoke   # fake data, end to end
+    python -m ecgaug.experiments.ptbxl_pretraining --config configs/ptbxl_pretraining/A_short_window.yaml --ptbxl-root <PTB-XL folder>
+    python -m ecgaug.experiments.ptbxl_pretraining --config configs/ptbxl_pretraining/A_short_window.yaml --ptbxl-download
+    python -m ecgaug.experiments.ptbxl_pretraining --config configs/ptbxl_pretraining/A_short_window.yaml --smoke   # fake data, end to end
 
 One command does everything, so a single Kaggle session is enough:
 
@@ -40,7 +40,7 @@ from ecgaug.data.records import CLASS_INDEX
 from ecgaug.data.representation import RepresentationSpec
 from ecgaug.data.splits import Split, check_split, selection_metric_for
 from ecgaug.eval.selection import Candidate, select_winner
-from ecgaug.experiments import m1
+from ecgaug.experiments import input_representation as m1
 from ecgaug.experiments.common import (
     BUDGET_KEYS,
     SIDE_FIELDS,
@@ -111,7 +111,7 @@ def pretrain(cfg: dict, spec: RepresentationSpec, train: dict, val: dict, device
     )
     out = {}
     for seed in cfg["seeds"]:
-        run_id = runs.make_run_id(cfg["phase"], cfg["module"], f"pre{cfg['variant']}", seed)
+        run_id = runs.make_run_id(cfg["phase"], cfg["module"], f"pretrain{cfg['variant']}", seed)
         set_seed(seed)
         model = build_model(cfg["model"], len(ptbxl.SUPERCLASSES), len(SIDE_FIELDS) if spec.rr_features else 0)
         fit = fit_multilabel(model, train, val, train_cfg, ptbxl.SUPERCLASSES, seed=seed, device=device)
@@ -164,7 +164,7 @@ def run(cfg: dict, split: Split, ptbxl_arrays: dict, device_name: str | None = N
         return {"kind": "ptbxl_pretrained", "run_id": pretrained[seed]["run_id"], "tensors_copied": len(copied)}
 
     arms = {}
-    for arm, label, init in (("scratch", f"sc{variant}", None), ("pretrained", f"pt{variant}", from_pretrained)):
+    for arm, label, init in (("scratch", f"scratch{variant}", None), ("pretrained", f"finetune{variant}", from_pretrained)):
         grid, n_params = train_grid(
             cfg, split, spec, train, val, phase=cfg["phase"], module=cfg["module"], label=label,
             device=device, dataset=dataset, init=init,
@@ -236,7 +236,7 @@ def run(cfg: dict, split: Split, ptbxl_arrays: dict, device_name: str | None = N
         "git_sha": runs.git_sha(),
         "dataset_content_sha256": dataset["content_sha256"],
     }
-    out_dir = paths.results_dir() / "validation" / "pretrain"
+    out_dir = paths.results_dir() / "validation" / "ptbxl_pretraining"
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / f"{variant}.json").write_text(json.dumps(result, indent=2) + "\n")
     notes = out_dir / f"{variant}_notes.md"
@@ -303,7 +303,7 @@ def smoke(cfg: dict) -> dict:
         result = run(smoke_cfg, split, ptbxl.load(), device_name="cpu", require_all_ds1=False)
         run_ids = [result["pretraining"]["per_seed"][0]["run_id"], *(result["arms"][a]["run_ids"][0] for a in ARMS)]
         missing = [r for r in run_ids if not (root / "runs" / r / "checkpoints" / "best.pt").is_file()]
-        if missing or not (root / "results" / "validation" / "pretrain" / f"{result['variant']}.json").is_file():
+        if missing or not (root / "results" / "validation" / "ptbxl_pretraining" / f"{result['variant']}.json").is_file():
             raise RuntimeError(f"Smoke run is incomplete (missing runs: {missing})")
         return {
             "variant": result["variant"],
@@ -311,14 +311,14 @@ def smoke(cfg: dict) -> dict:
             "selection_metric": result["selection_metric"],
             "winner_field_present": result["winner"] in ARMS,
             "pretrained_init": yaml.safe_load((root / "runs" / run_ids[2] / "config.yaml").read_text())["init"],
-            "result_file": f"results/validation/pretrain/{result['variant']}.json",
+            "result_file": f"results/validation/ptbxl_pretraining/{result['variant']}.json",
             "note": "fake data; the numbers of a smoke run mean nothing and are discarded",
         }
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="PTB-XL pretraining, MIT-BIH fine-tuning, comparison with from scratch.")
-    parser.add_argument("--config", required=True, help="configs/pretrain/<A-D>.yaml")
+    parser.add_argument("--config", required=True, help="configs/ptbxl_pretraining/<variant>.yaml")
     parser.add_argument("--ptbxl-root", default=None, help="folder holding ptbxl_database.csv, or any folder above it")
     parser.add_argument("--ptbxl-download", action="store_true", help="fetch PTB-XL from PhysioNet if no copy is given")
     parser.add_argument("--workers", type=int, default=4, help="worker processes for PTB-XL preprocessing")

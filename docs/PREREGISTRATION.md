@@ -5,7 +5,7 @@
 **Drafted:** 2026-10-08 (Day 2)
 
 **How it is used.** This file describes the rules the code applies (selection metric, tie rule,
-statistics). The runner no longer checks it; it only needs `configs/splits/approved.yaml`.
+statistics). The runner no longer checks it; it only needs `configs/validation_split/approved.yaml`.
 
 Sources: `docs/RULES.md` §3–4, `docs/PLAN.md` (global conventions, Phase 1), `docs/PAPER_TRACK.md`
 (hypotheses, statistics) and the amendments A1–A11 in `docs/DECISIONS.md`.
@@ -85,12 +85,12 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 
 ## 5. Module 1 (input representation)
 
-- **Variants:** A, B, C and D as defined in `docs/PLAN.md` and `configs/m1/`. The band-pass of B is a
+- **Variants:** A, B, C and D as defined in `docs/PLAN.md` and `configs/m1_input_representation/`. The band-pass of B is a
   4th-order Butterworth applied forward and backward **(new: the order was unspecified)**. D resamples
   the continuous record to 125 Hz with a polyphase filter before windowing **(new)**.
 - **Probe:** the fixed probe CNN of `src/ecgaug/models/probe.py`, unweighted cross-entropy, AdamW,
   batch 256, weight decay 0.01, at most 40 epochs **(new: epoch cap)**; budget in
-  `configs/m1/_shared.yaml`.
+  `configs/m1_input_representation/shared_budget.yaml`.
 - **Selection:** §4 with the selection metric of §3. Simplicity = fewer input values per beat:
   D 63, A 180, C 183, B 360.
 - The winner defines contract v1. If C wins, every downstream classifier takes the RR side input and

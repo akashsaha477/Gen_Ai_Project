@@ -9,15 +9,15 @@ seeds and budget are identical, and the test suite checks that the beat set is t
 
 ## Interface and what already exists
 
-- The representation is defined by `configs/m1/B.yaml` and executed by shared, tested code:
+- The representation is defined by `configs/m1_input_representation/B_long_window_bandpass.yaml` and executed by shared, tested code:
   `RepresentationSpec` and `transform_record` in `src/ecgaug/data/representation.py`.
-- The runner is `src/ecgaug/experiments/m1.py`. It builds the candidate dataset from DS1 records only,
+- The runner is `src/ecgaug/experiments/input_representation.py`. It builds the candidate dataset from DS1 records only,
   trains the probe, logs every run and writes the result file.
 - There is no variant-specific code to write. Your job in `/variant 1 B` is to check that the config
   matches the definition above, run it, sanity-check the outputs and write the notes.
 - If shared code needs a change, stop and describe it so it can go through `main`.
 
-## Budget (identical for A–D, from `configs/m1/_shared.yaml`)
+## Budget (identical for A–D, from `configs/m1_input_representation/shared_budget.yaml`)
 
 | item | value |
 |---|---|
@@ -35,15 +35,15 @@ A variant file that tries to override any of this is rejected by the runner.
 ```
 git switch -c variant/m1-B main
 uv sync
-uv run python -m ecgaug.experiments.m1 --config configs/m1/B.yaml --check    # DS1 inputs, no training
-uv run python -m ecgaug.experiments.m1 --config configs/m1/B.yaml --smoke    # fake data, end to end
-uv run python -m ecgaug.experiments.m1 --config configs/m1/B.yaml            # the experiment
+uv run python -m ecgaug.experiments.input_representation --config configs/m1_input_representation/B_long_window_bandpass.yaml --check    # DS1 inputs, no training
+uv run python -m ecgaug.experiments.input_representation --config configs/m1_input_representation/B_long_window_bandpass.yaml --smoke    # fake data, end to end
+uv run python -m ecgaug.experiments.input_representation --config configs/m1_input_representation/B_long_window_bandpass.yaml            # the experiment
 ```
 
 On Kaggle: follow `kaggle/README.md` with `GIT_REF = "variant/m1-B"` and
-`CONFIGS = ["configs/m1/B.yaml"]`, then `python kaggle/ingest_runs.py <zip>` locally.
+`CONFIGS = ["configs/m1_input_representation/B_long_window_bandpass.yaml"]`, then `python kaggle/ingest_runs.py <zip>` locally.
 
-The experiment needs the approved validation split (`configs/splits/approved.yaml`) and a committed tree. Wall-clock has not been
+The experiment needs the approved validation split (`configs/validation_split/approved.yaml`) and a committed tree. Wall-clock has not been
 measured yet; the first run reports it.
 
 ## What gets logged
@@ -51,9 +51,9 @@ measured yet; the first run reports it.
 - `runs/<run_id>/` for each of the 6 runs (2 learning rates × 3 seeds): `config.yaml`, `env.json`,
   `train_log.csv`, `metrics_val.json`, `preds_val.npz`, `checkpoints/best.pt`.
 - `results/runs_index.csv`: one row per run.
-- `results/validation/m1/B.json`: per-seed metrics, mean ± SD, run IDs, wall-clock, both learning
+- `results/validation/m1_input_representation/B.json`: per-seed metrics, mean ± SD, run IDs, wall-clock, both learning
   rates, budget deviations. Written by the runner; do not edit by hand.
-- `results/validation/m1/B_notes.md`: you write this (what worked, what failed, surprises, figures).
+- `results/validation/m1_input_representation/B_notes.md`: you write this (what worked, what failed, surprises, figures).
 
 ## Sanity checks before you report
 

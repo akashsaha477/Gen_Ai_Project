@@ -6,15 +6,15 @@ import os
 import pytest
 import yaml
 
-from conftest import REPO
+from conftest import REPO, variant_config, variant_letters
 from ecgaug import paths
-from ecgaug.experiments import m1
+from ecgaug.experiments import input_representation as m1
 
-CONFIG_DIR = REPO / "configs" / "m1"
+CONFIG_DIR = REPO / "configs" / "m1_input_representation"
 
 
 def _config(letter):
-    return CONFIG_DIR / f"{letter}.yaml"
+    return variant_config(CONFIG_DIR, letter)
 
 
 def _output_files():
@@ -29,7 +29,7 @@ def _output_files():
 
 def test_four_variants_share_one_budget():
     configs = {letter: m1.load_config(_config(letter)) for letter in "ABCD"}
-    assert sorted(p.stem for p in CONFIG_DIR.glob("[A-Z].yaml")) == list("ABCD")
+    assert variant_letters(CONFIG_DIR) == list("ABCD")
     varying = {"variant", "description", "representation"}
     reference = {k: v for k, v in configs["A"].items() if k not in varying}
     assert reference["seeds"] == [0, 1, 2] and reference["lr_grid"] == [1e-3, 3e-4] and reference["patience"] == 5
@@ -39,7 +39,7 @@ def test_four_variants_share_one_budget():
 
 
 def test_a_variant_file_cannot_override_the_shared_budget(tmp_path):
-    (tmp_path / "_shared.yaml").write_text((CONFIG_DIR / "_shared.yaml").read_text())
+    (tmp_path / "shared_budget.yaml").write_text((CONFIG_DIR / "shared_budget.yaml").read_text())
     variant = yaml.safe_load(_config("A").read_text())
     variant["seeds"] = [0, 1, 2, 3, 4]
     (tmp_path / "A.yaml").write_text(yaml.safe_dump(variant))

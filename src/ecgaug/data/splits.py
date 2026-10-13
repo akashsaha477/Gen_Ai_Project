@@ -63,11 +63,11 @@ def make_split(name: str, val: list[int] | tuple[int, ...], **kwargs) -> Split:
 
 
 def approved_split_path() -> Path:
-    return paths.configs_dir() / "splits" / "approved.yaml"
+    return paths.configs_dir() / "validation_split" / "approved.yaml"
 
 
 def load_approved_split(counts: pd.DataFrame | None = None) -> Split:
-    """The validation split approved at Gate 1 (``configs/splits/approved.yaml``).
+    """The validation split approved at Gate 1 (``configs/validation_split/approved.yaml``).
 
     If ``counts`` (per-record class counts) is given, the file's selection metric is checked
     against the minimum-support rule and a contradiction raises ``ValueError``.
@@ -203,7 +203,7 @@ def options_report(counts: pd.DataFrame, options: list[dict]) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validation-split options report (DS1 counts only).")
-    parser.add_argument("--options", default=str(paths.configs_dir() / "splits" / "options.yaml"))
+    parser.add_argument("--options", default=str(paths.configs_dir() / "validation_split" / "options.yaml"))
     args = parser.parse_args(argv)
     counts = pd.read_csv(paths.results_dir() / "data" / "record_counts.csv")
     counts = counts[counts["dataset"] == "DS1"]  # DS2 rows are never loaded into the proposal

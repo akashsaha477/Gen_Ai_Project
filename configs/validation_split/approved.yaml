@@ -1,4 +1,4 @@
-# Validation split used by every module. Option V1 of configs/splits/options.yaml.
+# Validation split used by every module. Option V1 of configs/validation_split/options.yaml.
 # Evidence: results/data/val_options.md (DS1 counts only).
 name: V1
 val: [115, 118, 201, 205, 223]

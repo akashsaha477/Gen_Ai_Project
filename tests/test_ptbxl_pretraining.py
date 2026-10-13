@@ -10,7 +10,7 @@ import pytest
 import torch
 import yaml
 
-from conftest import REPO
+from conftest import REPO, variant_config, variant_letters
 from ecgaug import paths, runs
 from ecgaug.data import ptbxl
 from ecgaug.data.counts import count_record
@@ -18,12 +18,14 @@ from ecgaug.data.fake import write_fake_mitdb, write_fake_ptbxl
 from ecgaug.data.records import DS1
 from ecgaug.data.splits import Split, selection_metric_for
 from ecgaug.eval.metrics import multilabel_auroc
-from ecgaug.experiments import m1, pretrain
+from ecgaug.experiments import input_representation as m1
+from ecgaug.experiments import ptbxl_pretraining as pretrain
 from ecgaug.experiments.common import BUDGET_KEYS
 from ecgaug.models import build_model, load_encoder
 from ecgaug.train.loop import TrainConfig, fit_multilabel, set_seed
 
-CONFIGS = REPO / "configs" / "pretrain"
+CONFIGS = REPO / "configs" / "ptbxl_pretraining"
+M1_CONFIGS = REPO / "configs" / "m1_input_representation"
 MODEL = {"name": "probe_cnn", "channels": [16, 32, 64], "kernel": 7, "side_hidden": 16}
 
 
@@ -96,10 +98,10 @@ def test_encoder_transfer_refuses_a_different_architecture():
 
 
 def test_config_takes_representation_and_budget_from_module_1():
-    assert sorted(p.stem for p in CONFIGS.glob("[A-Z].yaml")) == list("ABCD")
+    assert variant_letters(CONFIGS) == list("ABCD")
     for letter in "ABCD":
-        cfg = pretrain.load_config(CONFIGS / f"{letter}.yaml")
-        base = m1.load_config(REPO / "configs" / "m1" / f"{letter}.yaml")
+        cfg = pretrain.load_config(variant_config(CONFIGS, letter))
+        base = m1.load_config(variant_config(M1_CONFIGS, letter))
         assert cfg["variant"] == letter and cfg["representation"] == base["representation"]
         assert {k: cfg[k] for k in BUDGET_KEYS} == {k: base[k] for k in BUDGET_KEYS}
         assert cfg["model"] == base["model"]
@@ -108,15 +110,19 @@ def test_config_takes_representation_and_budget_from_module_1():
 
 
 def test_config_cannot_change_the_fine_tuning_budget_or_point_at_another_variant(tmp_path):
-    (tmp_path / "m1").mkdir()
-    for name in ("_shared.yaml", "A.yaml", "B.yaml"):
-        (tmp_path / "m1" / name).write_text((REPO / "configs" / "m1" / name).read_text())
+    (tmp_path / "m1_input_representation").mkdir()
+    for name in ("shared_budget.yaml", "A_short_window.yaml", "B_long_window_bandpass.yaml"):
+        (tmp_path / "m1_input_representation" / name).write_text((M1_CONFIGS / name).read_text())
     (tmp_path / "pretrain").mkdir()
-    shared = yaml.safe_load((CONFIGS / "_shared.yaml").read_text())
-    variant = {"base": "_shared.yaml", "variant": "A", "representation_from": "../m1/A.yaml"}
+    shared = yaml.safe_load((CONFIGS / "pretraining_settings.yaml").read_text())
+    variant = {
+        "base": "pretraining_settings.yaml",
+        "variant": "A",
+        "representation_from": "../m1_input_representation/A_short_window.yaml",
+    }
 
     def write(shared_cfg, variant_cfg):
-        (tmp_path / "pretrain" / "_shared.yaml").write_text(yaml.safe_dump(shared_cfg))
+        (tmp_path / "pretrain" / "pretraining_settings.yaml").write_text(yaml.safe_dump(shared_cfg))
         (tmp_path / "pretrain" / "A.yaml").write_text(yaml.safe_dump(variant_cfg))
         return pretrain.load_config(tmp_path / "pretrain" / "A.yaml")
 
@@ -124,7 +130,7 @@ def test_config_cannot_change_the_fine_tuning_budget_or_point_at_another_variant
     with pytest.raises(ValueError, match="fine-tuning budget comes from Module 1"):
         write({**shared, "seeds": [0, 1, 2, 3, 4]}, variant)
     with pytest.raises(ValueError, match="points at the Module 1 config of B"):
-        write(shared, {**variant, "representation_from": "../m1/B.yaml"})
+        write(shared, {**variant, "representation_from": "../m1_input_representation/B_long_window_bandpass.yaml"})
     with pytest.raises(ValueError, match="unexpected keys"):
         write(shared, {**variant, "max_epochs": 100})
 
@@ -142,7 +148,7 @@ def _fake_world(tmp_root, n_extra=40):
 
 def test_arm_end_to_end_on_fake_data(tmp_root):
     split = _fake_world(tmp_root)
-    cfg = pretrain.load_config(CONFIGS / "C.yaml")
+    cfg = pretrain.load_config(variant_config(CONFIGS, "C"))
     cfg = {**cfg, "seeds": [0, 1], "lr_grid": [1e-3], "max_epochs": 2, "pretrain": {**cfg["pretrain"], "max_epochs": 2}}
     result = pretrain.run(cfg, split, ptbxl.load(), device_name="cpu", require_all_ds1=False)
 
@@ -168,21 +174,21 @@ def test_arm_end_to_end_on_fake_data(tmp_root):
     assert result["alignment_with_mitbih_train"]["n_ptbxl_beats"] > 0
     assert result["budget"] == {k: cfg[k] for k in BUDGET_KEYS} and result["budget_deviations"] == []
 
-    written = json.loads((paths.results_dir() / "validation" / "pretrain" / "C.json").read_text())
+    written = json.loads((paths.results_dir() / "validation" / "ptbxl_pretraining" / "C.json").read_text())
     assert written["winner"] == result["winner"]
     with (paths.results_dir() / "runs_index.csv").open() as fh:
         rows = list(csv.DictReader(fh))
-    assert sorted({r["variant"] for r in rows}) == ["preC", "ptC", "scC"] and len(rows) == 6
+    assert sorted({r["variant"] for r in rows}) == ["finetuneC", "pretrainC", "scratchC"] and len(rows) == 6
     assert {r["phase"] for r in rows} == {"2"} and {r["module"] for r in rows} == {"3"}
 
 
 def test_scratch_arm_matches_a_module_1_run_exactly(tmp_root):
     """Same data, seed, budget and model: the from-scratch arm is a Module 1 variant run."""
     split = _fake_world(tmp_root)
-    cfg = pretrain.load_config(CONFIGS / "A.yaml")
+    cfg = pretrain.load_config(variant_config(CONFIGS, "A"))
     small = {"seeds": [0], "lr_grid": [1e-3], "max_epochs": 2}
     result = pretrain.run({**cfg, **small, "pretrain": {**cfg["pretrain"], "max_epochs": 1}}, split, ptbxl.load(), "cpu", False)
-    reference = m1.run_variant({**m1.load_config(REPO / "configs" / "m1" / "A.yaml"), **small}, split, "cpu", False)
+    reference = m1.run_variant({**m1.load_config(variant_config(M1_CONFIGS, "A")), **small}, split, "cpu", False)
     assert result["arms"]["scratch"]["mean"] == reference["mean"]
     assert result["arms"]["scratch"]["per_seed"][0]["f1"] == reference["per_seed"][0]["f1"]
 
@@ -191,7 +197,7 @@ def test_scratch_arm_matches_a_module_1_run_exactly(tmp_root):
 def test_smoke_run_from_the_cli(letter, capsys, monkeypatch):
     monkeypatch.delenv("ECGAUG_ROOT")
     before = {(str(p), p.stat().st_mtime_ns) for d in ("runs", "results", "data/processed") for p in (REPO / d).rglob("*") if p.is_file()}
-    assert pretrain.main(["--config", str(CONFIGS / f"{letter}.yaml"), "--smoke"]) == 0
+    assert pretrain.main(["--config", str(variant_config(CONFIGS, letter)), "--smoke"]) == 0
     report = json.loads(capsys.readouterr().out)
     assert report["variant"] == letter and len(report["runs"]) == 3
     assert report["pretrained_init"]["kind"] == "ptbxl_pretrained" and report["pretrained_init"]["run_id"] == report["runs"][0]
@@ -204,14 +210,14 @@ def _approve(full_fake_root):
     counts = pd.DataFrame([count_record(r) for r in DS1])
     val = [115, 118, 201, 205, 223]
     metric = selection_metric_for(counts, Split(name="x", train=tuple(r for r in DS1 if r not in val), val=tuple(val)))
-    path = paths.configs_dir() / "splits" / "approved.yaml"
+    path = paths.configs_dir() / "validation_split" / "approved.yaml"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(yaml.safe_dump({"name": "V1", "val": val, "selection_metric": metric, "approved_by": ["A"]}))
 
 
 def test_real_run_is_refused_without_split_or_ptbxl(full_fake_root, capsys, monkeypatch):
     monkeypatch.setattr(runs, "git_dirty", lambda: False)
-    config = ["--config", str(CONFIGS / "A.yaml")]
+    config = ["--config", str(variant_config(CONFIGS, "A"))]
     assert pretrain.main(config) == 2
     assert "approved" in capsys.readouterr().out
 
@@ -242,7 +248,7 @@ def test_ptbxl_is_built_once_and_then_reused(tmp_root, monkeypatch):
 
 
 def test_pretraining_code_never_asks_for_test_data():
-    for name in ("experiments/pretrain.py", "experiments/common.py", "data/checks.py"):
+    for name in ("experiments/ptbxl_pretraining.py", "experiments/common.py", "data/checks.py"):
         text = (REPO / "src" / "ecgaug" / name).read_text()
         assert "load_test" not in text and "ALLOW_TEST" not in text and 'access="' not in text
 

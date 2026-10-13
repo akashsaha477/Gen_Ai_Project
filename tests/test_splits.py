@@ -44,7 +44,7 @@ def test_check_split_rejects_leaky_or_malformed_splits(train, val, test, message
 
 
 def test_every_proposed_option_is_leak_free():
-    options = yaml.safe_load((REPO / "configs" / "splits" / "options.yaml").read_text())["options"]
+    options = yaml.safe_load((REPO / "configs" / "validation_split" / "options.yaml").read_text())["options"]
     assert 2 <= len(options) <= 3
     for option in options:
         split = make_split(option["name"], option["val"])
@@ -81,7 +81,7 @@ def _approved(tmp_root, **overrides) -> None:
         "decision": "docs/DECISIONS.md Gate 1",
     }
     data.update(overrides)
-    path = paths.configs_dir() / "splits" / "approved.yaml"
+    path = paths.configs_dir() / "validation_split" / "approved.yaml"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(yaml.safe_dump(data))
 

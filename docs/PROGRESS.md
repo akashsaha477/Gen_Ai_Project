@@ -56,7 +56,7 @@ Open issues / risks:
 
 Next:
 1. Team decides the validation split and approves PREREGISTRATION v1 (with or without A2 and A7).
-2. Then: write `configs/splits/approved.yaml`, fill §2, set the status to IN FORCE, commit, tag
+2. Then: write `configs/validation_split/approved.yaml`, fill §2, set the status to IN FORCE, commit, tag
    `prereg-v1`, push.
 3. Draw the Module 1 assignments (`docs/ASSIGNMENTS.md`); each member runs `/variant 1 <letter>`.
 4. `/gate 1`.
@@ -82,7 +82,7 @@ Next:
 
 Done:
 - Validation split decided: option V1 (validation records 115, 118, 201, 205, 223), stored in
-  `configs/splits/approved.yaml`. Selection metric: S F1 with V F1 as tie-break.
+  `configs/validation_split/approved.yaml`. Selection metric: S F1 with V F1 as tie-break.
 - The runner no longer checks `docs/PREREGISTRATION.md`; a variant runs with the approved split and a
   committed tree. The document is kept as a description of the rules.
 - Dataset decision recorded: MIT-BIH only. PTB-XL was considered and rejected as the main dataset
@@ -151,10 +151,10 @@ Done:
   for PTB-XL. It only matters for the band-passed representation (B).
 - Mains interference: 60 Hz is clearly present in 55% of DS1 records (median ratio 11.9);
   the PTB-XL sample shows no 50 Hz interference (share above 10: 0%). No notch filter was added.
-- Pretraining arm (`src/ecgaug/experiments/pretrain.py`, `configs/pretrain/A–D.yaml`): one command
+- Pretraining arm (`src/ecgaug/experiments/ptbxl_pretraining.py`, `configs/ptbxl_pretraining/`): one command
   preprocesses PTB-XL, pretrains once per seed (5 superclasses per beat, binary cross-entropy, early
   stopping on PTB-XL fold 9), fine-tunes on MIT-BIH from the pretrained weights and from scratch with
-  the Module 1 budget, applies the selection rule and writes `results/validation/pretrain/<letter>.json`.
+  the Module 1 budget, applies the selection rule and writes `results/validation/ptbxl_pretraining/<letter>.json`.
 - Shared runner code moved to `src/ecgaug/experiments/common.py`; the Module 1 runner uses it and
   gives the same results as before (a test checks that the from-scratch arm equals a Module 1 run).
 - Kaggle: notebook parameters and guide for the arm; the bundle and `ingest_runs.py` now carry
@@ -175,3 +175,24 @@ Open issues / risks:
 Next:
 1. Push. On Kaggle: smoke run of the arm, then the real run for the four letters.
 2. Module 1 variants and Gate 1 (still the critical path).
+
+## 2026-10-13 (Day 7), night — clearer file names
+
+Done:
+- Config folders and files renamed to say what they hold: `configs/validation_split/`,
+  `configs/m1_input_representation/{A_short_window, B_long_window_bandpass, C_short_window_rr_features,
+  D_short_window_125hz, shared_budget}.yaml`, `configs/ptbxl_pretraining/` (same four names plus
+  `pretraining_settings.yaml`).
+- Runner modules renamed: `ecgaug.experiments.input_representation` (was `m1`) and
+  `ecgaug.experiments.ptbxl_pretraining` (was `pretrain`). Briefs: `docs/briefs/m1_<letter>_<name>.md`.
+- Run labels in the pretraining arm are now `pretrain<letter>`, `scratch<letter>`, `finetune<letter>`.
+- Result folders: `results/validation/m1_input_representation/` and `results/validation/ptbxl_pretraining/`.
+- README has a table of names. Every reference in code, tests, docs and the Kaggle guide was updated.
+- Tests: 159 pass; both runners were smoke-run by their new names.
+
+Run IDs: none.
+
+Open issues / risks:
+- Anyone with an older clone or notebook must use the new paths and module names.
+
+Next: unchanged (push, Module 1 variants, Gate 1, Kaggle run of the pretraining arm).

@@ -1,4 +1,4 @@
-base: _shared.yaml
+base: shared_budget.yaml
 variant: C
 description: Variant A plus RR features (rr_prev, rr_next, rr_prev over the mean RR of the previous 10 beats) fed to the probe's side branch.
 representation:

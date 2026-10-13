@@ -51,3 +51,13 @@ def full_fake_root(tmp_root, _fake_raw_full):
     raw, written = _fake_raw_full
     shutil.copytree(raw, paths.raw_dir())
     return tmp_root, written
+
+
+def variant_config(folder: Path, letter: str) -> Path:
+    """The config of a variant letter, e.g. A -> A_short_window.yaml."""
+    (path,) = sorted(folder.glob(f"{letter}_*.yaml"))
+    return path
+
+
+def variant_letters(folder: Path) -> list[str]:
+    return sorted(p.name[0] for p in folder.glob("[A-Z]_*.yaml"))

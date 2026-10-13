@@ -1,11 +1,11 @@
 """Module 1 runner: compare input representations with the probe CNN.
 
 Usage:
-    python -m ecgaug.experiments.m1 --config configs/m1/A.yaml            # the variant experiment
-    python -m ecgaug.experiments.m1 --config configs/m1/A.yaml --check    # build DS1 inputs, no training
-    python -m ecgaug.experiments.m1 --config configs/m1/A.yaml --smoke    # fake data, end to end
+    python -m ecgaug.experiments.input_representation --config configs/m1_input_representation/A_short_window.yaml            # the variant experiment
+    python -m ecgaug.experiments.input_representation --config configs/m1_input_representation/A_short_window.yaml --check    # build DS1 inputs, no training
+    python -m ecgaug.experiments.input_representation --config configs/m1_input_representation/A_short_window.yaml --smoke    # fake data, end to end
 
-A real run needs two things first: an approved validation split (configs/splits/approved.yaml)
+A real run needs two things first: an approved validation split (configs/validation_split/approved.yaml)
 and a clean git tree. ``--check`` reads DS1 only and trains nothing. ``--smoke`` never touches real data
 or the repository's results.
 """
@@ -41,6 +41,7 @@ from ecgaug.experiments.common import (
 from ecgaug.train.loop import resolve_device
 
 MODULE = 1
+RESULTS_DIR = "m1_input_representation"
 PHASE = 1
 VARIANT_KEYS = {"base", "variant", "description", "representation"}
 
@@ -107,7 +108,7 @@ def run_variant(cfg: dict, split: Split, device_name: str | None = None, require
         "git_sha": runs.git_sha(),
         "dataset_content_sha256": dataset_hash,
     }
-    out_dir = paths.results_dir() / "validation" / f"m{MODULE}"
+    out_dir = paths.results_dir() / "validation" / RESULTS_DIR
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / f"{variant}.json").write_text(json.dumps(result, indent=2) + "\n")
     notes = out_dir / f"{variant}_notes.md"
@@ -171,14 +172,14 @@ def smoke(cfg: dict) -> dict:
             "n_parameters": result["n_parameters"],
             "selection_metric": result["selection_metric"],
             "run_files": produced,
-            "result_file": f"results/validation/m{MODULE}/{result['variant']}.json",
+            "result_file": f"results/validation/{RESULTS_DIR}/{result['variant']}.json",
             "note": "fake data; the numbers of a smoke run mean nothing and are discarded",
         }
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Module 1: input-representation variants with the probe CNN.")
-    parser.add_argument("--config", required=True, help="configs/m1/<A-D>.yaml")
+    parser.add_argument("--config", required=True, help="configs/m1_input_representation/<variant>.yaml")
     parser.add_argument("--device", default=None, help="cpu, cuda, mps or auto (default: from the shared config)")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--smoke", action="store_true", help="end-to-end run on fake data in a temp directory")
