@@ -67,8 +67,8 @@ in about a minute and produces no bundle; if it prints no error, your setup work
 
 ## Rules that still apply on Kaggle
 
-- A real run is refused (exit code 2) until `docs/PREREGISTRATION.md` is in force and the validation
-  split is approved. The message says which one is missing.
+- A real run is refused (exit code 2) if `configs/splits/approved.yaml` is missing or the checkout
+  differs from the commit. The message says which.
 - Never set `ALLOW_TEST` or `ALLOW_TEST_BUILD` in a notebook. The final evaluation is run once, locally,
   through `/final-eval`.
 - One GPU quota per account, renewed weekly (your remaining hours are shown under Settings in the
@@ -82,7 +82,7 @@ in about a minute and produces no bundle; if it prints no error, your setup work
 |---|---|
 | `git clone` fails | the `GITHUB_TOKEN` secret is missing, not ticked for this notebook, expired, or you are not a collaborator |
 | `no MIT-BIH record files` or a checksum problem | the `mitdb-raw` dataset is not attached or is damaged; re-attach it, or set `RAW_DATASET_DIR = ""` |
-| exit code 2, "Refusing to run" | pre-registration not in force, split not approved, or the checkout differs from the commit |
+| exit code 2, "Refusing to run" | approved split missing, or the checkout differs from the commit |
 | `uv sync` fails or is too slow | Internet is off, or try `ENV_MODE = "kaggle"` for debugging |
 | no bundle produced | nothing ran to completion (or it was a `--smoke` or `--check` run) |
 

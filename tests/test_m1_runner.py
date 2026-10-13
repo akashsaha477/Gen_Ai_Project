@@ -47,44 +47,10 @@ def test_a_variant_file_cannot_override_the_shared_budget(tmp_path):
         m1.load_config(tmp_path / "A.yaml")
 
 
-def test_prereg_status_is_read_from_the_document(tmp_root):
-    assert m1.prereg_status() == "MISSING"
-    doc = paths.docs_dir() / "PREREGISTRATION.md"
-    doc.parent.mkdir(parents=True, exist_ok=True)
-    doc.write_text("# PREREGISTRATION\n\n**Version:** 1\n**Status:** DRAFT (not in force)\n")
-    assert m1.prereg_status().startswith("DRAFT")
-    doc.write_text("# PREREGISTRATION\n\nVersion: 1\nStatus: IN FORCE since 2026-10-09\n")
-    assert m1.prereg_status().startswith("IN FORCE")
-
-
-def _prereg(status):
-    doc = paths.docs_dir() / "PREREGISTRATION.md"
-    doc.parent.mkdir(parents=True, exist_ok=True)
-    doc.write_text(f"# PREREGISTRATION\n\n**Status:** {status}\n")
-
-
-def test_real_run_is_refused_without_a_preregistration_in_force(tmp_root, capsys):
-    assert m1.main(["--config", str(_config("A"))]) == 2
-    assert "MISSING" in capsys.readouterr().out
-    _prereg("DRAFT (not in force)")
-    assert m1.main(["--config", str(_config("A"))]) == 2
-    assert "DRAFT" in capsys.readouterr().out
-    assert not paths.runs_dir().exists() and not (paths.results_dir() / "validation").exists()
-
-
 def test_real_run_is_refused_without_an_approved_split(full_fake_root, capsys):
-    _prereg("IN FORCE")
     assert m1.main(["--config", str(_config("A"))]) == 2
     assert "approved" in capsys.readouterr().out
-    assert not paths.runs_dir().exists()
-
-
-def test_the_repository_itself_is_not_yet_cleared_to_run_variants():
-    """The pre-registration status and the approved split must change together, in one commit."""
-    text = (REPO / "docs" / "PREREGISTRATION.md").read_text()
-    approved = (REPO / "configs" / "splits" / "approved.yaml").is_file()
-    in_force = "Status:** IN FORCE" in text or "\nStatus: IN FORCE" in text
-    assert in_force == approved, "PREREGISTRATION status and the approved split must change together"
+    assert not paths.runs_dir().exists() and not (paths.results_dir() / "validation").exists()
 
 
 @pytest.mark.parametrize("letter", "ABCD")

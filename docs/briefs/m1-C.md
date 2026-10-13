@@ -43,8 +43,7 @@ uv run python -m ecgaug.experiments.m1 --config configs/m1/C.yaml            # t
 On Kaggle: follow `kaggle/README.md` with `GIT_REF = "variant/m1-C"` and
 `CONFIGS = ["configs/m1/C.yaml"]`, then `python kaggle/ingest_runs.py <zip>` locally.
 
-The experiment refuses to start until `docs/PREREGISTRATION.md` is `IN FORCE`, the validation split
-is approved (`configs/splits/approved.yaml`) and your tree is committed. Wall-clock has not been
+The experiment needs the approved validation split (`configs/splits/approved.yaml`) and a committed tree. Wall-clock has not been
 measured yet; the first run reports it.
 
 ## What gets logged

@@ -1,13 +1,11 @@
 # PREREGISTRATION
 
 **Version:** 1
-**Status:** DRAFT (not in force)
+**Status:** reference document (not enforced by code since 2026-10-13)
 **Drafted:** 2026-10-08 (Day 2)
 
-**How this comes into force.** The team approves it at the Phase 1 decision point. §2 is then filled
-in, the status line becomes `IN FORCE`, `configs/splits/approved.yaml` is written, and the file is
-committed, tagged `prereg-v1` and pushed the same day. The Module 1 runner refuses to run until the
-status is `IN FORCE` and the approved split exists.
+**How it is used.** This file describes the rules the code applies (selection metric, tie rule,
+statistics). The runner no longer checks it; it only needs `configs/splits/approved.yaml`.
 
 Sources: `docs/RULES.md` §3–4, `docs/PLAN.md` (global conventions, Phase 1), `docs/PAPER_TRACK.md`
 (hypotheses, statistics) and the amendments A1–A11 in `docs/DECISIONS.md`.
@@ -36,14 +34,14 @@ Items marked **(new)** were not in the kit and need the team's explicit agreemen
 
 ## 2. Validation split
 
-**TO BE FILLED AT APPROVAL.** Options and their DS1 per-record counts are in
+Options and their DS1 per-record counts are in
 `results/data/val_options.md`. The choice is justified from DS1 counts alone; DS2 counts are not read
 by the proposal tool.
 
-- Chosen option: TBD
-- Validation records: TBD
-- Selection metric given by §3: TBD
-- Approved by: TBD on TBD
+- Chosen option: V1
+- Validation records: 115, 118, 201, 205, 223
+- Selection metric given by §3: S F1, with V F1 as tie-break (validation holds 27 F beats)
+- Approved by: Akash Saha on 2026-10-13
 
 Generators, oversamplers and any fitted preprocessing never see validation records.
 

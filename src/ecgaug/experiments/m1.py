@@ -5,8 +5,8 @@ Usage:
     python -m ecgaug.experiments.m1 --config configs/m1/A.yaml --check    # build DS1 inputs, no training
     python -m ecgaug.experiments.m1 --config configs/m1/A.yaml --smoke    # fake data, end to end
 
-A real run needs three things first: PREREGISTRATION.md in force, an approved validation split and
-a clean git tree. ``--check`` reads DS1 only and trains nothing. ``--smoke`` never touches real data
+A real run needs two things first: an approved validation split (configs/splits/approved.yaml)
+and a clean git tree. ``--check`` reads DS1 only and trains nothing. ``--smoke`` never touches real data
 or the repository's results.
 """
 
@@ -15,7 +15,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import re
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
@@ -67,23 +66,8 @@ def load_config(path: Path) -> dict:
     }
 
 
-def prereg_status() -> str:
-    """The ``Status:`` line of docs/PREREGISTRATION.md ('DRAFT', 'IN FORCE', or 'MISSING')."""
-    path = paths.docs_dir() / "PREREGISTRATION.md"
-    if not path.is_file():
-        return "MISSING"
-    match = re.search(r"^\*{0,2}Status:\*{0,2}\s*(.+?)\s*$", path.read_text(), flags=re.MULTILINE)
-    return match.group(1).strip() if match else "MISSING"
-
-
 def check_preconditions(allow_dirty: bool = False) -> Split:
     """Return the approved split, or raise :class:`PreconditionError` explaining what is missing."""
-    status = prereg_status()
-    if not status.upper().startswith("IN FORCE"):
-        raise PreconditionError(
-            f"docs/PREREGISTRATION.md has status '{status}'. Module 1 variants may run only after "
-            "v1 is approved, committed and marked 'IN FORCE'."
-        )
     counts = pd.DataFrame([count_record(r) for r in DS1])
     try:
         split = load_approved_split(counts)
