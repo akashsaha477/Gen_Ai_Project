@@ -14,9 +14,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
-import tempfile
-from contextlib import contextmanager
 from pathlib import Path
 
 import numpy as np
@@ -30,19 +27,22 @@ from ecgaug.data.fake import write_fake_mitdb
 from ecgaug.data.loaders import load_candidate
 from ecgaug.data.records import CLASSES, DS1
 from ecgaug.data.representation import RepresentationSpec
-from ecgaug.data.splits import Split, check_split, load_approved_split, selection_metric_for
-from ecgaug.eval.selection import selection_value, tie_break_value
-from ecgaug.models.probe import ProbeCNN, count_parameters
-from ecgaug.train.loop import TrainConfig, fit_classifier, resolve_device, set_seed
+from ecgaug.data.splits import Split, check_split, selection_metric_for
+from ecgaug.experiments.common import (
+    BUDGET_KEYS,
+    SIDE_FIELDS,
+    PreconditionError,
+    best_grid_point,
+    check_preconditions,
+    split_part,
+    temporary_root,
+    train_grid,
+)
+from ecgaug.train.loop import resolve_device
 
 MODULE = 1
 PHASE = 1
 VARIANT_KEYS = {"base", "variant", "description", "representation"}
-SIDE_FIELDS = ("rr_prev", "rr_next", "rr_ratio")
-
-
-class PreconditionError(RuntimeError):
-    """A real variant run was requested before its preconditions were met."""
 
 
 def load_config(path: Path) -> dict:
@@ -66,31 +66,6 @@ def load_config(path: Path) -> dict:
     }
 
 
-def check_preconditions(allow_dirty: bool = False) -> Split:
-    """Return the approved split, or raise :class:`PreconditionError` explaining what is missing."""
-    counts = pd.DataFrame([count_record(r) for r in DS1])
-    try:
-        split = load_approved_split(counts)
-    except (FileNotFoundError, ValueError) as err:
-        raise PreconditionError(str(err)) from err
-    if not allow_dirty and runs.git_dirty():
-        raise PreconditionError("The git tree has uncommitted changes; a run must map to one commit.")
-    return split
-
-
-def _part(arrays: dict[str, np.ndarray], name: str, with_side: bool) -> dict[str, np.ndarray]:
-    mask = arrays["split"] == name
-    part = {"X": arrays["X"][mask], "y": arrays["y"][mask], "record": arrays["record"][mask]}
-    part["r_idx"] = arrays["r_idx"][mask]
-    part["side"] = np.stack([arrays[f][mask] for f in SIDE_FIELDS], axis=1) if with_side else None
-    return part
-
-
-def _mean_sd(values: list[float]) -> tuple[float, float]:
-    array = np.asarray(values, dtype=np.float64)
-    return float(array.mean()), float(array.std(ddof=1)) if array.size > 1 else 0.0
-
-
 def run_variant(cfg: dict, split: Split, device_name: str | None = None, require_all_ds1: bool = True) -> dict:
     """Train the probe for every learning rate and seed, log every run, and write the result file."""
     spec = RepresentationSpec(**cfg["representation"])
@@ -101,77 +76,12 @@ def run_variant(cfg: dict, split: Split, device_name: str | None = None, require
     dataset_dir = build_candidate(spec, split, require_all_ds1=require_all_ds1)
     arrays = load_candidate(spec.name)
     dataset_hash = content_sha256(arrays)
-    train, val = _part(arrays, "train", spec.rr_features), _part(arrays, "val", spec.rr_features)
-
-    grid: dict[str, dict] = {}
-    n_params = 0
-    for lr in cfg["lr_grid"]:
-        tag = f"lr{lr:.0e}"
-        per_seed = []
-        for seed in cfg["seeds"]:
-            run_id = runs.make_run_id(PHASE, MODULE, variant, seed, tag=tag)
-            set_seed(seed)
-            model = ProbeCNN(
-                n_classes=len(CLASSES),
-                n_side=len(SIDE_FIELDS) if spec.rr_features else 0,
-                channels=tuple(cfg["model"]["channels"]),
-                kernel=cfg["model"]["kernel"],
-                side_hidden=cfg["model"]["side_hidden"],
-            )
-            n_params = count_parameters(model)
-            train_cfg = TrainConfig(
-                lr=float(lr),
-                max_epochs=cfg["max_epochs"],
-                patience=cfg["patience"],
-                batch_size=cfg["batch_size"],
-                weight_decay=cfg["weight_decay"],
-            )
-            fit = fit_classifier(model, train, val, train_cfg, selection, seed=seed, device=device)
-            metrics = {
-                **fit.best_metrics,
-                "selection_metric": selection,
-                "selection_value": fit.best_value,
-                "best_epoch": fit.best_epoch,
-                "epochs_run": fit.epochs_run,
-                "stopped_early": fit.stopped_early,
-            }
-            env = {**runs.capture_env(str(device)), "wall_clock_s": fit.wall_clock_s}
-            run_config = {
-                **cfg,
-                "lr": float(lr),
-                "seed": seed,
-                "run_id": run_id,
-                "split": {"name": split.name, "val": list(split.val), "selection_metric": selection},
-                "dataset": {"path": str(dataset_dir), "content_sha256": dataset_hash},
-            }
-            preds = {"probs": fit.val_probs, "y": val["y"], "record": val["record"], "r_idx": val["r_idx"]}
-            runs.write_run(run_id, run_config, env, fit.history, metrics, preds, fit.state_dict)
-            runs.upsert_runs_index(runs.index_row(run_id, metrics, fit.wall_clock_s))
-            per_seed.append(
-                {
-                    "seed": seed,
-                    "run_id": run_id,
-                    "selection_value": fit.best_value,
-                    "tie_break_value": tie_break_value(fit.best_metrics, selection),
-                    "rare_macro_f1": fit.best_metrics["rare_macro_f1"],
-                    "f1": {c: fit.best_metrics["per_class"][c]["f1"] for c in CLASSES},
-                    "pr_auc": fit.best_metrics["pr_auc"],
-                    "n_recall": fit.best_metrics["n_recall"],
-                    "best_epoch": fit.best_epoch,
-                    "epochs_run": fit.epochs_run,
-                    "wall_clock_s": fit.wall_clock_s,
-                }
-            )
-        mean, sd = _mean_sd([r["selection_value"] for r in per_seed])
-        entry = {"lr": float(lr), "per_seed": per_seed, "mean": mean, "sd": sd}
-        if per_seed[0]["tie_break_value"] is not None:
-            entry["tie_break_mean"], entry["tie_break_sd"] = _mean_sd([r["tie_break_value"] for r in per_seed])
-        entry["wall_clock_s"] = float(sum(r["wall_clock_s"] for r in per_seed))
-        grid[tag] = entry
-
-    # The learning rate with the higher seed-mean selection metric is used; the first one wins exact ties.
-    chosen_tag = max(grid, key=lambda t: grid[t]["mean"])
-    chosen = grid[chosen_tag]
+    train, val = split_part(arrays, "train", spec.rr_features), split_part(arrays, "val", spec.rr_features)
+    grid, n_params = train_grid(
+        cfg, split, spec, train, val, phase=PHASE, module=MODULE, label=variant, device=device,
+        dataset={"path": str(dataset_dir), "content_sha256": dataset_hash},
+    )  # fmt: skip
+    chosen = best_grid_point(grid)
     result = {
         "module": MODULE,
         "variant": variant,
@@ -191,7 +101,7 @@ def run_variant(cfg: dict, split: Split, device_name: str | None = None, require
         "run_ids": [r["run_id"] for r in chosen["per_seed"]],
         "lr_grid": grid,
         "wall_clock_s": float(sum(e["wall_clock_s"] for e in grid.values())),
-        "budget": {k: cfg[k] for k in ("seeds", "lr_grid", "max_epochs", "patience", "batch_size", "weight_decay")},
+        "budget": {k: cfg[k] for k in BUDGET_KEYS},
         "budget_deviations": [],
         "device": str(device),
         "git_sha": runs.git_sha(),
@@ -236,25 +146,10 @@ def representation_check(cfg: dict) -> dict:
     }
 
 
-@contextmanager
-def _temporary_root():
-    """Point ECGAUG_ROOT at a throwaway directory for the duration of a smoke run."""
-    previous = os.environ.get("ECGAUG_ROOT")
-    with tempfile.TemporaryDirectory(prefix="ecgaug-smoke-") as tmp:
-        os.environ["ECGAUG_ROOT"] = tmp
-        try:
-            yield Path(tmp)
-        finally:
-            if previous is None:
-                os.environ.pop("ECGAUG_ROOT", None)
-            else:
-                os.environ["ECGAUG_ROOT"] = previous
-
-
 def smoke(cfg: dict) -> dict:
     """Run the whole variant pipeline on fake records in a temporary root (one seed, two epochs)."""
     train_records, val_records = (101, 106, 108, 114), (118, 201)
-    with _temporary_root() as root:
+    with temporary_root() as root:
         write_fake_mitdb(paths.raw_dir(), train_records + val_records, seconds=120.0)
         counts = pd.DataFrame([count_record(r) for r in train_records + val_records])
         split = Split(name="smoke", train=train_records, val=val_records)

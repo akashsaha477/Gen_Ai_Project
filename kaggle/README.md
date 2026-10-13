@@ -57,6 +57,45 @@ The token is read from Kaggle Secrets, never printed and never put in a URL. Do 
 First time: set `EXTRA_ARGS = ["--smoke"]` and run once. It exercises the whole pipeline on fake data
 in about a minute and produces no bundle; if it prints no error, your setup works.
 
+## PTB-XL pretraining arm (preprocessing, pretraining and fine-tuning in one run)
+
+One run does all of it: PTB-XL preprocessing, pretraining on PTB-XL beats, fine-tuning on MIT-BIH, and
+the same model trained from scratch for comparison.
+
+1. Give the session a copy of PTB-XL, one of two ways:
+   - **Attach a copy:** Add Input > search Kaggle Datasets for "PTB-XL" > pick one whose files include
+     `ptbxl_database.csv`, `scp_statements.csv` and a `records500/` folder. Use
+     `"--ptbxl-root", "/kaggle/input"`; the folder is found automatically.
+   - **Download it:** use `"--ptbxl-download"` instead. The session fetches PTB-XL 1.0.3 from PhysioNet
+     (1.8 GB) and unpacks only what is needed. Internet must be on.
+2. Keep the `mitdb-raw` dataset attached as well, and turn the GPU on.
+3. Parameter cell:
+   ```
+   GIT_REF = "main"
+   CONFIGS = ["configs/pretrain/A.yaml"]          # or several: A.yaml, B.yaml, C.yaml, D.yaml
+   MODULE_CLI = "ecgaug.experiments.pretrain"
+   EXTRA_ARGS = ["--device", "auto", "--ptbxl-root", "/kaggle/input"]
+   ```
+4. Run All, download the zip, `python kaggle/ingest_runs.py <zip>`.
+
+What comes back in the zip:
+
+| file | content |
+|---|---|
+| `results/data/ptbxl_preprocessing.json` | how many recordings and beats were kept, every exclusion by reason, heart-rate and noise statistics, and how many files match PhysioNet's checksums |
+| `results/validation/pretrain/<A-D>.json` | both arms (from scratch, pretrained): per-seed validation metrics, mean ± SD, the pretraining AUROC, and which arm the selection rule picks |
+| `runs/` | one folder per run: 3 pretraining runs, 6 from-scratch and 6 fine-tuning runs per config |
+
+Things to know:
+
+- The letter is the input representation (the Module 1 variant). PTB-XL is preprocessed once per session
+  and reused for every config in `CONFIGS`.
+- Until Gate 1 fixes the representation, the result is marked `provisional`. Rerun the winning letter
+  after Gate 1, and again when Phase 2 has chosen the baseline architecture.
+- If the attached copy is not version 1.0.3, the checksum comparison reports mismatches. That is a
+  warning, not an error; read the numbers in `ptbxl_preprocessing.json`.
+- First time, add `"--smoke"` to `EXTRA_ARGS`: the whole arm runs on fake data in under a minute.
+
 ## Environment modes
 
 - `locked` (default): installs exactly the versions in `uv.lock`. Use this for every result that goes
@@ -89,7 +128,10 @@ in about a minute and produces no bundle; if it prints no error, your setup work
 ## Later phases
 
 The same notebook serves every phase: each module gets its own runner under `ecgaug.experiments`, and
-you change only `MODULE_CLI` and `CONFIGS`. This file is updated when a phase adds a runner.
+you change only `MODULE_CLI` and `CONFIGS`. Runners so far: `ecgaug.experiments.m1` (Module 1) and
+`ecgaug.experiments.pretrain` (PTB-XL pretraining arm). This file is updated when a phase adds one.
 
 Status: the runner script was rehearsed in a fresh clone with the raw-data zip as input (locked
-environment, checksum check, two smoke runs). The notebook itself has not yet been executed on Kaggle.
+environment, checksum check, two smoke runs). The pretraining arm was run end to end on fake data, and
+its preprocessing and pretraining stage on 64 real PTB-XL recordings. Neither the notebook nor a full
+PTB-XL run has been executed on Kaggle yet, so run times are not known.

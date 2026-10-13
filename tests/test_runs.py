@@ -163,3 +163,30 @@ def test_kaggle_bundle_round_trips_through_ingest(tmp_path):
     nested.mkdir(parents=True)
     (nested / "100.dat").write_bytes(b"x")
     assert kaggle_run.find_raw(tmp_path / "input") == nested
+
+
+def test_ptbxl_report_travels_in_the_bundle_and_is_ingested(tmp_path):
+    import importlib.util
+
+    from conftest import REPO
+
+    spec = importlib.util.spec_from_file_location("kaggle_run", REPO / "kaggle" / "kaggle_run.py")
+    kaggle_run = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(kaggle_run)
+
+    fake_repo = tmp_path / "repo"
+    run_id = runs.make_run_id(2, 3, "preA", 0, now=NOW)
+    shutil.copytree(_write(run_id), fake_repo / "runs" / run_id)
+    shutil.rmtree(paths.runs_dir())
+    (fake_repo / "results" / "data").mkdir(parents=True)
+    (fake_repo / "results" / "data" / "ptbxl_preprocessing.json").write_text('{"recordings_kept": 5}')
+    (fake_repo / "results" / "data" / "something_else.json").write_text("{}")
+    (tmp_path / "out").mkdir()
+    archive = kaggle_run.bundle(tmp_path / "out", {"git_sha": "abcdef0123"}, repo=fake_repo)
+
+    report = runs.ingest([archive])
+    assert report["ingested"] == [run_id] and report["result_files"] == ["data/ptbxl_preprocessing.json"]
+    assert (paths.results_dir() / "data" / "ptbxl_preprocessing.json").read_text() == '{"recordings_kept": 5}'
+    assert not (paths.results_dir() / "data" / "something_else.json").exists()
+    (paths.results_dir() / "data" / "ptbxl_preprocessing.json").write_text('{"recordings_kept": 6}')
+    assert runs.ingest([archive])["result_conflicts"] == ["data/ptbxl_preprocessing.json"]

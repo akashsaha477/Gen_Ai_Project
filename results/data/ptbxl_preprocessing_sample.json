@@ -17,6 +17,26 @@
     "median": 10.0,
     "max": 14
   },
+  "quality_of_kept_recordings": {
+    "heart_rate_bpm": {
+      "p1": 54.71755881754424,
+      "p5": 57.55428571428572,
+      "p50": 72.72727272727273,
+      "p95": 91.18308514266225,
+      "p99": 96.8041062118579
+    },
+    "qrs_contrast": {
+      "p1": 6.607489423097372,
+      "p5": 8.577969094339084,
+      "p50": 15.7879562957456
+    },
+    "powerline_50hz_ratio": {
+      "p50": 1.6131504136479038,
+      "p90": 2.584830932104013,
+      "p99": 3.553829981497989,
+      "share_above_10": 0.0
+    }
+  },
   "per_split": {
     "train": {
       "recordings": 41,
@@ -93,7 +113,9 @@
       0.3,
       2.0
     ],
-    "min_qrs_contrast": 4.0
+    "min_qrs_contrast": 4.0,
+    "edge_pad_s": 2.0,
+    "edge_pad_mode": "reflect"
   },
   "content_sha256": "bac235470ac8f96ddb412f7a0825d16c430d0334a771a6044026841fc7f0bbfc",
   "partial_run": true,

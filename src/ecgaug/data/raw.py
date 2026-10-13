@@ -12,7 +12,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import time
 import urllib.request
+import zipfile
 from pathlib import Path
 
 import numpy as np
@@ -59,20 +61,30 @@ def file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _fetch_reference_checksums(timeout: float = 30.0) -> dict[str, str] | None:
-    """PhysioNet's published SHA-256 list as {filename: hash}, or None if it cannot be fetched."""
+def fetch_reference_checksums(
+    url: str = REFERENCE_SHA256_URL, timeout: float = 30.0, max_seconds: float = 180.0
+) -> dict[str, str] | None:
+    """A PhysioNet SHA-256 list as {filename: hash}, or None if it cannot be fetched in time."""
+    deadline = time.monotonic() + max_seconds
+    chunks = []
     try:
-        request = urllib.request.Request(REFERENCE_SHA256_URL, headers={"User-Agent": "ecgaug"})
+        request = urllib.request.Request(url, headers={"User-Agent": "ecgaug"})
         with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310 (fixed https URL)
-            text = response.read().decode()
+            while chunk := response.read(1 << 16):
+                chunks.append(chunk)
+                if time.monotonic() > deadline:
+                    return None
     except OSError:
         return None
     reference = {}
-    for line in text.splitlines():
+    for line in b"".join(chunks).decode().splitlines():
         parts = line.split()
         if len(parts) == 2:
             reference[parts[1]] = parts[0]
     return reference
+
+
+_fetch_reference_checksums = fetch_reference_checksums
 
 
 def read_header(record: int) -> dict:
@@ -163,6 +175,44 @@ def read_signal(record: int, access: str | None = None, lead: str = LEAD) -> np.
     if int(rec.fs) != FS:
         raise ValueError(f"Record {record}: fs {rec.fs} != {FS}")
     return np.asarray(rec.p_signal[:, 0], dtype=np.float64)
+
+
+PTBXL_ZIP_URL = "https://physionet.org/content/ptb-xl/get-zip/1.0.3/"
+PTBXL_NEEDED = ("ptbxl_database.csv", "scp_statements.csv")
+
+
+def download_ptbxl(dest: Path, url: str = PTBXL_ZIP_URL) -> Path:
+    """Download PTB-XL from PhysioNet as one zip and unpack what the pipeline needs.
+
+    Only the two metadata files and the 500 Hz recordings are extracted (the 100 Hz copies are
+    skipped), and the zip is deleted afterwards. Returns the folder that holds ptbxl_database.csv.
+    """
+    dest = Path(dest)
+    dest.mkdir(parents=True, exist_ok=True)
+    archive = dest / "ptbxl.zip"
+    request = urllib.request.Request(url, headers={"User-Agent": "ecgaug"})
+    with urllib.request.urlopen(request, timeout=60) as response, open(archive, "wb") as fh:  # noqa: S310
+        done, reported = 0, 0
+        while chunk := response.read(1 << 20):
+            fh.write(chunk)
+            done += len(chunk)
+            if done - reported >= 200 << 20:
+                reported = done
+                print(f"  PTB-XL download: {done / 1e6:.0f} MB", flush=True)
+    root = None
+    with zipfile.ZipFile(archive) as zf:
+        for info in zf.infolist():
+            name = info.filename
+            wanted = name.endswith(PTBXL_NEEDED) or "/records500/" in f"/{name}"
+            if info.is_dir() or not wanted:
+                continue
+            zf.extract(info, dest)
+            if name.endswith("ptbxl_database.csv"):
+                root = (dest / name).parent
+    archive.unlink()
+    if root is None:
+        raise FileNotFoundError(f"{url} did not contain ptbxl_database.csv")
+    return root
 
 
 def read_ptbxl_lead(root: Path, filename: str, lead: str = "II") -> tuple[np.ndarray, int]:

@@ -128,13 +128,13 @@ def test_beat_arrays_use_the_mitbih_representation(fake_ptbxl, spec):
 
 
 def test_cli_writes_hashed_output_that_reloads(fake_ptbxl):
-    assert ptbxl.main(["--root", str(fake_ptbxl[0])]) == 0
+    assert ptbxl.main(["--root", str(fake_ptbxl[0]), "--skip-verify"]) == 0
     report = json.loads((ptbxl.out_dir() / "report.json").read_text())
     loaded = ptbxl.load()
     assert report["content_sha256"] == content_sha256(loaded)
     assert not report["partial_run"] and (paths.results_dir() / "data" / "ptbxl_preprocessing.json").is_file()
     first = report["file_sha256"]
-    assert ptbxl.main(["--root", str(fake_ptbxl[0])]) == 0
+    assert ptbxl.main(["--root", str(fake_ptbxl[0]), "--skip-verify"]) == 0
     assert json.loads((ptbxl.out_dir() / "report.json").read_text())["file_sha256"] == first
     (ptbxl.out_dir() / "records.npz").write_bytes(b"tampered")
     with pytest.raises(RuntimeError, match="does not match"):
@@ -144,3 +144,111 @@ def test_cli_writes_hashed_output_that_reloads(fake_ptbxl):
 def test_ptbxl_code_cannot_reach_mitbih_records():
     text = (REPO / "src" / "ecgaug" / "data" / "ptbxl.py").read_text()
     assert "read_signal" not in text and "read_annotations" not in text and "load_test" not in text
+
+
+def test_result_does_not_depend_on_the_number_of_workers(tmp_root):
+    root = tmp_root / "ptbxl"
+    write_fake_ptbxl(root, n_extra=12)
+    one, report_one = ptbxl.build(root, workers=1)
+    two, report_two = ptbxl.build(root, workers=2)
+    assert report_one["content_sha256"] == report_two["content_sha256"]
+    assert content_sha256(one) == content_sha256(two) and report_one["recordings_kept"] == 16
+
+
+def test_root_is_found_below_an_attached_folder(fake_ptbxl, tmp_root):
+    assert ptbxl.find_root(fake_ptbxl[0]) == fake_ptbxl[0]
+    assert ptbxl.find_root(tmp_root) == fake_ptbxl[0]
+    with pytest.raises(FileNotFoundError, match="no ptbxl_database.csv"):
+        ptbxl.find_root(tmp_root / "records500")
+
+
+def test_report_carries_quality_measures(fake_ptbxl):
+    _, report = ptbxl.build(fake_ptbxl[0])
+    quality = report["quality_of_kept_recordings"]
+    assert 40 < quality["heart_rate_bpm"]["p50"] < 120  # the fake beats are 0.77-0.83 s apart
+    assert quality["qrs_contrast"]["p1"] >= ptbxl.MIN_QRS_CONTRAST
+    assert quality["powerline_50hz_ratio"]["share_above_10"] == 0.0
+    assert report["settings"]["edge_pad_mode"] == "reflect" and "checksums" not in report
+
+
+def test_powerline_ratio_detects_mains_interference():
+    time = np.arange(5000) / 500
+    clean = np.random.default_rng(0).standard_normal(5000)
+    assert ptbxl.powerline_ratio(clean, 500) < 10
+    assert ptbxl.powerline_ratio(clean + 0.5 * np.sin(2 * np.pi * 50 * time), 500) > 50
+    assert ptbxl.powerline_ratio(clean + 0.5 * np.sin(2 * np.pi * 60 * time), 500, f0=60.0) > 50
+
+
+def test_checksum_comparison_reports_matches_and_mismatches(fake_ptbxl):
+    root = fake_ptbxl[0]
+    arrays, report = ptbxl.build(root, verify=False)
+    hea, dat = "records500/00000/00001_hr.hea", "records500/00000/00001_hr.dat"
+    from ecgaug.data import raw
+
+    hashes = {hea: raw.file_sha256(root / hea), dat: raw.file_sha256(root / dat)}
+    reference = {hea: hashes[hea], dat: "0" * 64, "ptbxl_database.csv": raw.file_sha256(root / "ptbxl_database.csv")}
+    out = ptbxl.verify_checksums(root, hashes, reference=reference)
+    assert out["files_checked"] == 4 and out["matched"] == 2 and out["mismatched"] == 1 and out["not_in_reference"] == 1
+    assert out["examples_mismatched"] == [dat]
+    assert out["metadata_matches_reference"] == {"ptbxl_database.csv": True, "scp_statements.csv": False}
+
+
+def test_verified_build_hashes_the_files_it_read(fake_ptbxl, monkeypatch):
+    from ecgaug.data import raw
+
+    monkeypatch.setattr(raw, "fetch_reference_checksums", lambda *a, **k: None)  # offline
+    _, report = ptbxl.build(fake_ptbxl[0], verify=True)
+    assert report["checksums"]["reference_available"] is False
+    assert report["checksums"]["files_checked"] == 2 * report["processed_from_metadata"] + 2
+
+
+def test_download_extracts_only_what_the_pipeline_needs(tmp_root, fake_ptbxl):
+    import shutil
+
+    from ecgaug.data import raw
+
+    staging = tmp_root / "zip_src" / "ptb-xl-1.0.3"
+    shutil.copytree(fake_ptbxl[0], staging)
+    (staging / "records100" / "00000").mkdir(parents=True)
+    (staging / "records100" / "00000" / "00001_lr.dat").write_bytes(b"low rate copy")
+    archive = shutil.make_archive(str(tmp_root / "ptbxl_fake"), "zip", tmp_root / "zip_src")
+    root = raw.download_ptbxl(tmp_root / "downloaded", url=f"file://{archive}")
+    assert root == tmp_root / "downloaded" / "ptb-xl-1.0.3" and (root / "scp_statements.csv").is_file()
+    assert (root / "records500" / "00000" / "00001_hr.dat").is_file()
+    assert not (root / "records100").exists() and not (tmp_root / "downloaded" / "ptbxl.zip").exists()
+    assert ptbxl.build(ptbxl.find_root(tmp_root / "downloaded"))[1]["recordings_kept"] == 4
+
+
+def test_mirror_padding_reduces_the_edge_error_of_a_band_pass():
+    fs = 360
+    time = np.arange(30 * fs) / fs
+    beats = np.rint(np.arange(0.4, 29.6, 0.8) * fs).astype(int)
+    x = 2.0 + 0.5 * np.sin(2 * np.pi * 0.3 * time)  # offset and slow drift
+    for b in beats:
+        x += np.exp(-0.5 * ((time - b / fs) / 0.012) ** 2)
+    segment = x[3600:7200]
+    r = beats[(beats >= 3600 + 144) & (beats <= 7200 - 216)] - 3600
+    band = RepresentationSpec(name="B", window_pre_s=0.4, window_post_s=0.6, bandpass_hz=(0.5, 40.0))
+    from ecgaug.data.representation import transform_record
+
+    inside_long_record = transform_record(x, r + 3600, band)
+    padded = np.abs(ptbxl.windows_for_record(segment, r, band) - inside_long_record).max(axis=1)
+    unpadded = np.abs(transform_record(segment, r, band) - inside_long_record).max(axis=1)
+    # the worse of the two beats nearest the ends improves; on real data the gain is measured by
+    # `python -m ecgaug.data.checks` (results/data/ptbxl_method_checks_ds1.json)
+    assert max(padded[0], padded[-1]) < 0.5 * max(unpadded[0], unpadded[-1])
+    assert padded[len(r) // 2] < 0.05
+    # without a filter, padding changes nothing
+    np.testing.assert_array_equal(ptbxl.windows_for_record(segment, r, A), transform_record(segment, r, A))
+
+
+def test_alignment_report_hand_case():
+    centred = np.zeros((4, 180), dtype=np.float32)
+    centred[:, 90] = 1.0
+    shifted = np.zeros((4, 180), dtype=np.float32)
+    shifted[:2, 90] = 1.0
+    shifted[2:, 120] = 1.0
+    out = ptbxl.alignment_report(shifted, centred, A)
+    assert out["ptbxl_peak_at_centre"] == 0.5 and out["mitbih_peak_at_centre"] == 1.0
+    assert out["tolerance_samples"] == 2 and out["n_ptbxl_beats"] == 4
+    assert ptbxl.alignment_report(centred, centred, A)["mean_beat_correlation"] == pytest.approx(1.0)
