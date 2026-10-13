@@ -9,12 +9,13 @@ Start with `CLAUDE.md` (rules and data protocol), then `docs/PLAN.md`, `docs/PAP
 
 ## Status
 
-Updated 2026-10-09 (Day 3). Phase 1 of 6, data foundation.
+Updated 2026-10-13 (Day 7). Phase 1 of 6, data foundation.
 
 - Done: environment and lockfile, MIT-BIH download with checksum verification, beat extraction, per-record
   counts, the test lock, evaluation utilities, probe model, Module 1 runner with variants A-D, Kaggle setup.
-- Waiting on the team: choice of validation split (`results/data/val_options.md`) and approval of
-  `docs/PREREGISTRATION.md`. Module 1 variants cannot run before that.
+- Validation split: option V1 (records 115, 118, 201, 205, 223), in `configs/splits/approved.yaml`.
+  Variants are selected on S F1 with V F1 as tie-break.
+- Module 1 variants can be run now, locally or on Kaggle.
 - Next: draw variant assignments, run `/variant 1 A..D`, then `/gate 1`.
 
 ## Repository layout
@@ -55,8 +56,8 @@ uv run python -m ecgaug.experiments.m1 --config configs/m1/A.yaml --smoke   # fa
 uv run python -m ecgaug.experiments.m1 --config configs/m1/A.yaml           # the experiment
 ```
 
-The experiment refuses to start until the pre-registration is in force, the validation split is
-approved and the tree is committed. To run on Kaggle, follow `kaggle/README.md`.
+The experiment needs the approved validation split (`configs/splits/approved.yaml`, option V1) and a
+committed tree. Anyone with a clone can run it. To run on Kaggle, follow `kaggle/README.md`.
 
 ## Troubleshooting
 

@@ -42,3 +42,11 @@ Open human decisions before Module 1 variants may run (evidence in `results/data
 1. Validation split (options in `results/data/val_options.md`).
 2. Q-class handling and the selection-metric fallback (PREREGISTRATION §3).
 3. Approval of PREREGISTRATION v1, then commit, tag `prereg-v1` and push.
+
+## 2026-10-13 (Day 7) — decided by Akash Saha
+
+- Validation split: option V1, validation records 115, 118, 201, 205, 223 (`configs/splits/approved.yaml`).
+  Selection metric: S F1 with V F1 as tie-break, by the minimum-support rule.
+- The runner no longer requires `docs/PREREGISTRATION.md` to be in force. A run needs only the approved
+  split and a committed tree. The document stays as a description of the rules; it is not a
+  time-stamped pre-registration, and the paper should not call it one.
