@@ -60,3 +60,46 @@ Next:
    `prereg-v1`, push.
 3. Draw the Module 1 assignments (`docs/ASSIGNMENTS.md`); each member runs `/variant 1 <letter>`.
 4. `/gate 1`.
+
+## 2026-10-09 (Day 3) — Phase 1
+
+Done:
+- Commit messages rewritten as short one-liners; history pushed to GitHub.
+- Kaggle setup for the team: one notebook, a runner script, a raw-data zip builder (66 MB zip of the
+  verified MIT-BIH files) and a guide. Rehearsed in a fresh clone on a laptop; not yet run on Kaggle.
+- All Kaggle files moved to a top-level `kaggle/` folder (guide is `kaggle/README.md`).
+- README gained a status section and a folder map.
+
+Run IDs: none.
+
+Open issues / risks:
+- Validation split and variant assignments still undecided; Phase 1 was due today.
+
+Next:
+- Decide the validation split, draw assignments, run variants A–D.
+
+## 2026-10-13 (Day 7) — Phase 1
+
+Done:
+- Validation split decided: option V1 (validation records 115, 118, 201, 205, 223), stored in
+  `configs/splits/approved.yaml`. Selection metric: S F1 with V F1 as tie-break.
+- The runner no longer checks `docs/PREREGISTRATION.md`; a variant runs with the approved split and a
+  committed tree. The document is kept as a description of the rules.
+- Dataset decision recorded: MIT-BIH only. PTB-XL was considered and rejected as the main dataset
+  because it has no beat-level labels.
+- Tests: 121 pass.
+
+Run IDs: none. No variant has been run yet.
+
+Open issues / risks:
+- About four days behind the plan (Phase 2 was due to end on Day 8). The Day 15 buffer is used up.
+- Open question: pretrain on PTB-XL and fine-tune on MIT-BIH. Proposed as one extra baseline arm in
+  Phase 2, not as a change to the main study. Not decided; nothing built for it.
+- Variant assignments are still TBD in `docs/ASSIGNMENTS.md`.
+- The Kaggle notebook has not been executed on Kaggle. Wall-clock of a variant run is unmeasured.
+- Two commits are local only (approved split, dataset decision) until pushed.
+
+Next:
+1. Push, draw assignments, run `/variant 1 A..D` (locally or on Kaggle).
+2. `/gate 1`: pick the input representation and freeze the dataset.
+3. Decide the PTB-XL pretraining question before Phase 2 starts.
