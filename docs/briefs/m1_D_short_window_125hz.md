@@ -40,8 +40,8 @@ uv run python -m ecgaug.experiments.input_representation --config configs/m1_inp
 uv run python -m ecgaug.experiments.input_representation --config configs/m1_input_representation/D_short_window_125hz.yaml            # the experiment
 ```
 
-On Kaggle: follow `kaggle/README.md` with `GIT_REF = "variant/m1-D"` and
-`CONFIGS = ["configs/m1_input_representation/D_short_window_125hz.yaml"]`, then `python kaggle/ingest_runs.py <zip>` locally.
+On Kaggle: import `kaggle/module1_input_representation.ipynb`, set `VARIANTS = ["D"]` and
+`GIT_REF = "variant/m1-D"`, run all, then `python kaggle/ingest_runs.py <zip>` locally (`kaggle/README.md`).
 
 The experiment needs the approved validation split (`configs/validation_split/approved.yaml`) and a committed tree. Wall-clock has not been
 measured yet; the first run reports it.

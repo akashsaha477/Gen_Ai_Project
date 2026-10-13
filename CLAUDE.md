@@ -141,7 +141,7 @@ src/ecgaug/
   report/              note generator (template + LLM), fact checker, schemas
   demo/                end-to-end CLI
 scripts/               thin CLIs (python -m ecgaug.<...> --config ...)
-kaggle/                everything for Kaggle: guide (README.md), runner notebook, kaggle_run.py,
+kaggle/                everything for Kaggle: guide (README.md), one notebook per job, kaggle_run.py,
                        make_raw_dataset.py, ingest_runs.py; no logic in the notebook
 runs/<run_id>/         per-run outputs (gitignored except small summaries)
 results/               runs_index.csv, validation/, gates/, manifest.json, data/

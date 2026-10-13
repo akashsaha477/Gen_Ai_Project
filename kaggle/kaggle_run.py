@@ -1,6 +1,6 @@
 """Run one or more configs inside a Kaggle session (or any fresh checkout) and bundle the outputs.
 
-Called by kaggle/run_config.ipynb after it has cloned the repository. Uses only the
+Called by the notebooks in this folder after they have cloned the repository. Uses only the
 standard library, so it runs with the system Python before the project environment exists.
 
     python kaggle/kaggle_run.py --config configs/m1_input_representation/A_short_window.yaml -- --device cuda
