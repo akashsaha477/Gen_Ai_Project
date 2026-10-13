@@ -3,8 +3,8 @@
 Called by kaggle/run_config.ipynb after it has cloned the repository. Uses only the
 standard library, so it runs with the system Python before the project environment exists.
 
-    python kaggle/kaggle_run.py --config configs/m1/A.yaml -- --device cuda
-    python kaggle/kaggle_run.py --config configs/m1/A.yaml configs/m1/B.yaml --raw-dir /kaggle/input/mitdb-raw
+    python kaggle/kaggle_run.py --config configs/m1_input_representation/A_short_window.yaml -- --device cuda
+    python kaggle/kaggle_run.py --config configs/m1_input_representation/A_short_window.yaml configs/m1_input_representation/B_long_window_bandpass.yaml --raw-dir /kaggle/input/mitdb-raw
 
 Steps: install the environment, get and verify the raw data, run each config through its package
 CLI, and zip runs/ plus the variant result files for kaggle/ingest_runs.py.
@@ -101,7 +101,7 @@ def bundle(out_dir: Path, manifest: dict, repo: Path = REPO) -> Path | None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--config", nargs="+", required=True, help="one or more config files, run in order")
-    parser.add_argument("--cli", default="ecgaug.experiments.m1", help="package CLI that runs a config")
+    parser.add_argument("--cli", default="ecgaug.experiments.input_representation", help="package CLI that runs a config")
     parser.add_argument("--env", default="locked", choices=["locked", "kaggle", "none"])
     parser.add_argument("--raw-dir", default=None, help="folder with the raw MIT-BIH files (else download)")
     parser.add_argument("--out", default="/kaggle/working", help="where the bundle zip is written")

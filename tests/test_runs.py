@@ -108,19 +108,19 @@ def test_ingest_brings_back_variant_result_files_without_overwriting(tmp_path):
     bundle = tmp_path / "bundle"
     shutil.copytree(_write(run_id), bundle / "runs" / run_id)
     shutil.rmtree(paths.runs_dir())
-    result = bundle / "results" / "validation" / "m1"
+    result = bundle / "results" / "validation" / "m1_input_representation"
     result.mkdir(parents=True)
     (result / "A.json").write_text('{"variant": "A"}')
     (result / "A_notes.md").write_text("notes")
 
     report = runs.ingest([bundle])
-    assert report["ingested"] == [run_id] and sorted(report["result_files"]) == ["m1/A.json", "m1/A_notes.md"]
-    assert (paths.results_dir() / "validation" / "m1" / "A.json").read_text() == '{"variant": "A"}'
+    assert report["ingested"] == [run_id] and sorted(report["result_files"]) == ["m1_input_representation/A.json", "m1_input_representation/A_notes.md"]
+    assert (paths.results_dir() / "validation" / "m1_input_representation" / "A.json").read_text() == '{"variant": "A"}'
 
     (result / "A.json").write_text('{"variant": "A", "edited": true}')
     again = runs.ingest([bundle])
-    assert again["result_conflicts"] == ["m1/A.json"] and not again["result_files"]
-    assert (paths.results_dir() / "validation" / "m1" / "A.json").read_text() == '{"variant": "A"}'
+    assert again["result_conflicts"] == ["m1_input_representation/A.json"] and not again["result_files"]
+    assert (paths.results_dir() / "validation" / "m1_input_representation" / "A.json").read_text() == '{"variant": "A"}'
 
 
 def test_git_dirty_ignores_run_outputs_but_not_code(monkeypatch):
@@ -131,7 +131,7 @@ def test_git_dirty_ignores_run_outputs_but_not_code(monkeypatch):
     assert status([]) is False
     assert status(["?? runs/p1-m1-A-s0-abcdef0-202610081530/config.yaml", " M results/runs_index.csv"]) is False
     assert status(["?? runs/x/config.yaml", " M src/ecgaug/runs.py"]) is True
-    assert status(["?? configs/m1/E.yaml"]) is True
+    assert status(["?? configs/m1_input_representation/E.yaml"]) is True
     assert status(["R  results/a.json -> docs/a.json"]) is True
     monkeypatch.setattr(runs, "_git", lambda *args: None)
     assert runs.git_dirty() is True  # no git: cannot vouch for the tree
@@ -151,13 +151,13 @@ def test_kaggle_bundle_round_trips_through_ingest(tmp_path):
     run_id = runs.make_run_id(1, 1, "A", 0, now=NOW)
     shutil.copytree(_write(run_id), fake_repo / "runs" / run_id)
     shutil.rmtree(paths.runs_dir())
-    (fake_repo / "results" / "validation" / "m1").mkdir(parents=True)
-    (fake_repo / "results" / "validation" / "m1" / "A.json").write_text("{}")
+    (fake_repo / "results" / "validation" / "m1_input_representation").mkdir(parents=True)
+    (fake_repo / "results" / "validation" / "m1_input_representation" / "A.json").write_text("{}")
     (tmp_path / "out").mkdir(exist_ok=True)
     archive = kaggle_run.bundle(tmp_path / "out", {"git_sha": "abcdef0123"}, repo=fake_repo)
     assert archive.name.startswith("ecgaug_abcdef0_") and archive.suffix == ".zip"
     report = runs.ingest([archive])
-    assert report["ingested"] == [run_id] and report["result_files"] == ["m1/A.json"]
+    assert report["ingested"] == [run_id] and report["result_files"] == ["m1_input_representation/A.json"]
 
     nested = tmp_path / "input" / "mitdb-raw" / "files"
     nested.mkdir(parents=True)
@@ -175,7 +175,7 @@ def test_ptbxl_report_travels_in_the_bundle_and_is_ingested(tmp_path):
     spec.loader.exec_module(kaggle_run)
 
     fake_repo = tmp_path / "repo"
-    run_id = runs.make_run_id(2, 3, "preA", 0, now=NOW)
+    run_id = runs.make_run_id(2, 3, "pretrainA", 0, now=NOW)
     shutil.copytree(_write(run_id), fake_repo / "runs" / run_id)
     shutil.rmtree(paths.runs_dir())
     (fake_repo / "results" / "data").mkdir(parents=True)

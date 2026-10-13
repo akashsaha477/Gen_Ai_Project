@@ -1,4 +1,4 @@
-base: _shared.yaml
+base: shared_budget.yaml
 variant: B
 description: Window -0.4 s to +0.6 s (360 samples); 0.5-40 Hz zero-phase Butterworth band-pass on the continuous record before segmentation; per-beat z-score.
 representation:

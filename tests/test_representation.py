@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from conftest import FAKE_DS1, REPO
+from conftest import FAKE_DS1, REPO, variant_config
 from ecgaug.data.contract import build_arrays
 from ecgaug.data.representation import (
     RepresentationSpec,
@@ -12,10 +12,10 @@ from ecgaug.data.representation import (
     usable_mask,
     zscore_per_beat,
 )
-from ecgaug.experiments.m1 import load_config
+from ecgaug.experiments.input_representation import load_config
 
 SPECS = {
-    letter: RepresentationSpec(**load_config(REPO / "configs" / "m1" / f"{letter}.yaml")["representation"])
+    letter: RepresentationSpec(**load_config(variant_config(REPO / "configs" / "m1_input_representation", letter))["representation"])
     for letter in "ABCD"
 }
 

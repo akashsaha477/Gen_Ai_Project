@@ -45,7 +45,7 @@ Open human decisions before Module 1 variants may run (evidence in `results/data
 
 ## 2026-10-13 (Day 7) — decided by Akash Saha
 
-- Validation split: option V1, validation records 115, 118, 201, 205, 223 (`configs/splits/approved.yaml`).
+- Validation split: option V1, validation records 115, 118, 201, 205, 223 (`configs/validation_split/approved.yaml`).
   Selection metric: S F1 with V F1 as tie-break, by the minimum-support rule.
 - The runner no longer requires `docs/PREREGISTRATION.md` to be in force. A run needs only the approved
   split and a committed tree. The document stays as a description of the rules; it is not a

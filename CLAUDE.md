@@ -125,7 +125,8 @@ top_segments[{name, mass}], model_id}`. The low-confidence rule is pre-registere
 ```
 CLAUDE.md
 .claude/commands/      phase, variant, gate, status, final-eval, paper
-configs/               YAML per experiment; variants at configs/m<M>/<A-D>.yaml
+configs/               YAML per experiment, in folders named after what they hold: validation_split/,
+                       m<M>_<module name>/<letter>_<variant name>.yaml, ptbxl_pretraining/
 src/ecgaug/
   data/                download, beat extraction, splits, contract, guarded loaders
   eval/                metrics, record-level bootstrap, statistics, plotting helpers
