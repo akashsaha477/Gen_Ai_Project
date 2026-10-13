@@ -300,6 +300,7 @@ already in the repo) and no uncommitted code changes.
 |---|---|
 | `README.md` | quick start and current status |
 | `PROJECT_GUIDE.md` | this file |
+| `CODE_GUIDE.md` | what each code file and function does |
 | `docs/RULES.md` | the project rules and data protocol |
 | `docs/PLAN.md` | every phase, module and variant in detail |
 | `docs/PAPER_TRACK.md` | research questions, hypotheses, statistics plan, figures |
