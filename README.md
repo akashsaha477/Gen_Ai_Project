@@ -13,6 +13,7 @@ Updated 2026-10-13 (Day 7). Phase 1 of 6, data foundation.
 
 - Done: environment and lockfile, MIT-BIH download with checksum verification, beat extraction, per-record
   counts, the test lock, evaluation utilities, probe model, Module 1 runner with variants A-D, Kaggle setup.
+- Dataset: MIT-BIH Arrhythmia Database only (PhysioNet), inter-patient DS1/DS2 split.
 - Validation split: option V1 (records 115, 118, 201, 205, 223), in `configs/splits/approved.yaml`.
   Variants are selected on S F1 with V F1 as tie-break.
 - Module 1 variants can be run now, locally or on Kaggle.
