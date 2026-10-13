@@ -50,3 +50,10 @@ Open human decisions before Module 1 variants may run (evidence in `results/data
 - The runner no longer requires `docs/PREREGISTRATION.md` to be in force. A run needs only the approved
   split and a committed tree. The document stays as a description of the rules; it is not a
   time-stamped pre-registration, and the paper should not call it one.
+
+## 2026-10-13 (Day 7) — dataset — decided by Akash Saha
+
+- The project uses the MIT-BIH Arrhythmia Database only. PTB-XL was considered and not adopted: it has
+  no beat-level annotations, so it does not fit the beat-level task, the AAMI classes or the generators.
+- PTB-XL stays in the paper as related work. External validation, if added after the deadline, uses a
+  beat-annotated database (INCART), as listed in `docs/PAPER_TRACK.md`.
