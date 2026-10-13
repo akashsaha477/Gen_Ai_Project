@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import random
 import time
 from collections.abc import Callable
@@ -13,6 +14,10 @@ from torch import nn
 
 from ecgaug.eval.metrics import evaluate, multilabel_auroc
 from ecgaug.eval.selection import selection_value
+
+
+# cuBLAS is deterministic only with this setting, and it must be in place before CUDA is initialised.
+os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
 
 
 def set_seed(seed: int, deterministic: bool = True) -> None:

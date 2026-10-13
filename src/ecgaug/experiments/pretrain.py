@@ -269,7 +269,13 @@ def ensure_ptbxl(root: str | None, workers: int, verify: bool, download: bool = 
                 source = raw.download_ptbxl(paths.repo_root() / "data" / "raw" / "ptbxl_physionet")
         except (FileNotFoundError, OSError) as err:
             raise PreconditionError(str(err)) from err
-        report = ptbxl.prepare(source, workers=workers, verify=verify)
+        try:
+            report = ptbxl.prepare(source, workers=workers, verify=verify)
+        except FileNotFoundError as err:
+            raise PreconditionError(
+                f"The PTB-XL copy at {source} is incomplete: {err}. The pipeline needs the 500 Hz files "
+                "(records500/). Attach another copy or use --ptbxl-download."
+            ) from err
         print(
             f"PTB-XL preprocessed: {report['recordings_kept']} recordings, {report['beats_kept']} beats; "
             f"excluded {report['excluded_by_metadata']} and {report['excluded_by_signal']}"
