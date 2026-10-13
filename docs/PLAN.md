@@ -102,6 +102,24 @@ beats; document this as a limitation (S beats are largely defined by prematurity
 5. Toy cVAE and toy WGAN-GP smoke tests on one minority class (plumbing only; not selected).
 6. Measure wall-clock per run to re-estimate Phases 3–4.
 
+### PTB-XL pretraining arm (A12, added 2026-10-13)
+
+One extra condition for the selected `cnn` baseline: pretrain on PTB-XL, then fine-tune on MIT-BIH.
+
+1. **Data:** PTB-XL from PhysioNet, lead II (closest to MLII), resampled to 360 Hz. R peaks from a
+   detector (`wfdb.processing`), since PTB-XL has no beat annotations. Beats are cut with the Module 1
+   winning representation and the same usable-beat rule.
+2. **Labels:** each beat gets its recording's diagnostic superclasses (NORM, MI, STTC, CD, HYP,
+   multi-label). Noisy at beat level by construction.
+3. **Pretraining:** same architecture as `cnn` with a 5-output head, binary cross-entropy. PTB-XL's
+   official patient-wise folds: 1–8 train, 9 for early stopping, 10 unused.
+4. **Fine-tuning:** replace the head with the 4-class head and train on DS1 training records with the
+   Phase 2 trainer budget, seeds [0, 1, 2], selection on the approved validation split.
+5. **Comparison:** pretrained vs from scratch on the validation selection metric. It joins the Phase 4
+   grid as a second starting point only if it wins by the tie rule; otherwise it is reported as a
+   negative result.
+6. **Checks:** a test that no PTB-XL code path can read DS2; counts of detected beats per fold logged.
+
 ### Module 3 — Baseline classifier variants (real, imbalanced data, no reweighting)
 
 | Variant | Definition |
