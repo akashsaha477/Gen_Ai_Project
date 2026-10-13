@@ -1,0 +1,29 @@
+{
+  "note": "59 PTB-XL sample recordings vs MIT-BIH DS1 N beats; peak at centre = largest |value| within 6 ms of the R index",
+  "by_representation": {
+    "A": {
+      "ptbxl_beats": 587,
+      "mitbih_ds1_n_beats": 45824,
+      "mean_beat_correlation": 0.931948431409539,
+      "ptbxl_peak_at_centre_frac": 0.9574105621805792,
+      "mitbih_peak_at_centre_frac": 0.9686408868715084,
+      "non_finite": 0
+    },
+    "B": {
+      "ptbxl_beats": 587,
+      "mitbih_ds1_n_beats": 45824,
+      "mean_beat_correlation": 0.8913503215550473,
+      "ptbxl_peak_at_centre_frac": 0.9318568994889267,
+      "mitbih_peak_at_centre_frac": 0.892981843575419,
+      "non_finite": 0
+    },
+    "D": {
+      "ptbxl_beats": 587,
+      "mitbih_ds1_n_beats": 45824,
+      "mean_beat_correlation": 0.9280996292642417,
+      "ptbxl_peak_at_centre_frac": 0.9727427597955707,
+      "mitbih_peak_at_centre_frac": 0.9813634776536313,
+      "non_finite": 0
+    }
+  }
+}

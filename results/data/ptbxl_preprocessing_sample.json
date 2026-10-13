@@ -1,0 +1,101 @@
+{
+  "in_metadata": 64,
+  "eligible": 59,
+  "excluded_by_metadata": {
+    "no_diagnostic_superclass": 5
+  },
+  "processed_from_metadata": 59,
+  "excluded_by_signal": {},
+  "recordings_kept": 59,
+  "beats_kept": 587,
+  "beats_dropped": {
+    "edge_or_missing_rr": 118,
+    "implausible_rr": 9
+  },
+  "beats_per_recording": {
+    "min": 2,
+    "median": 10.0,
+    "max": 14
+  },
+  "per_split": {
+    "train": {
+      "recordings": 41,
+      "patients": 40,
+      "beats": 405,
+      "recordings_per_class": {
+        "NORM": 35,
+        "MI": 1,
+        "STTC": 2,
+        "CD": 4,
+        "HYP": 1
+      }
+    },
+    "val": {
+      "recordings": 12,
+      "patients": 10,
+      "beats": 130,
+      "recordings_per_class": {
+        "NORM": 4,
+        "MI": 2,
+        "STTC": 4,
+        "CD": 2,
+        "HYP": 1
+      }
+    },
+    "unused": {
+      "recordings": 6,
+      "patients": 6,
+      "beats": 52,
+      "recordings_per_class": {
+        "NORM": 5,
+        "MI": 1,
+        "STTC": 0,
+        "CD": 0,
+        "HYP": 0
+      }
+    }
+  },
+  "settings": {
+    "lead": "II",
+    "source_fs": 500,
+    "fs": 360,
+    "superclasses": [
+      "NORM",
+      "MI",
+      "STTC",
+      "CD",
+      "HYP"
+    ],
+    "train_folds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "val_folds": [
+      9
+    ],
+    "unused_folds": [
+      10
+    ],
+    "min_peak_to_peak_mv": 0.05,
+    "max_abs_mv": 10.0,
+    "max_flat_s": 1.0,
+    "peak_count_range": [
+      5,
+      33
+    ],
+    "rr_range_s": [
+      0.3,
+      2.0
+    ],
+    "min_qrs_contrast": 4.0
+  },
+  "content_sha256": "bac235470ac8f96ddb412f7a0825d16c430d0334a771a6044026841fc7f0bbfc",
+  "partial_run": true,
+  "file_sha256": "0970fecc770daacc2500e8348f07c763da27ad2d7ca14bbdf801f4044c1ca3e0"
+}

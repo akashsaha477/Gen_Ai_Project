@@ -104,3 +104,34 @@ Next:
 1. Push, draw assignments, run `/variant 1 A..D` (locally or on Kaggle).
 2. `/gate 1`: pick the input representation and freeze the dataset.
 3. Phase 2: baselines, quality metrics and the PTB-XL pretraining arm.
+
+## 2026-10-13 (Day 7), later — PTB-XL preprocessing
+
+Done:
+- R-peak detector (`src/ecgaug/data/rpeaks.py`) for data without beat annotations. Validated on MIT-BIH
+  DS1 against the reference annotations: sensitivity 0.9963, positive predictivity
+  0.9933 (TP 51,304, FN 189, FP 346); median timing offset 0.0 ms,
+  97% of matches within 10 ms (`results/data/rpeak_validation_ds1.json`). Parameters were set
+  once and not tuned. DS2 was not read.
+- PTB-XL pipeline (`src/ecgaug/data/ptbxl.py`): metadata exclusions, lead II by name, signal checks,
+  resampling to 360 Hz, peak detection, QRS-contrast check, RR and usable-beat filters, superclass
+  labels per beat, patient-wise folds (1–8 train, 9 validation, 10 unused), hashed output.
+- Run on a real sample of 59 PTB-XL recordings (ecg_id 1–64, 5 without a diagnostic superclass):
+  59 kept, 587 beats (`results/data/ptbxl_preprocessing_sample.json`).
+- Alignment with MIT-BIH on that sample (`results/data/ptbxl_alignment_sample.json`): correlation of the
+  mean PTB-XL beat with the mean DS1 normal beat is 0.93 (A), 0.89 (B), 0.93 (D); the largest
+  deflection sits at the window centre for 96% of PTB-XL beats against 97% of MIT-BIH beats (A).
+- Tests: 133 pass.
+
+Run IDs: none.
+
+Open issues / risks:
+- Only 64 of about 21,800 PTB-XL recordings have been processed. The full run should happen on Kaggle
+  with a PTB-XL dataset attached; PhysioNet is too slow from this laptop and disk is short.
+- The QRS-contrast threshold (4.0) was set from DS1 segments, the 59-recording sample and white noise.
+  Check how many recordings it removes on the full data.
+- Pretraining and fine-tuning are not built; they follow Gate 1.
+
+Next:
+1. Module 1 variants and Gate 1 (unchanged).
+2. Full PTB-XL preprocessing on Kaggle, then the pretraining runner in Phase 2.

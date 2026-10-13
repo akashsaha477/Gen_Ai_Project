@@ -165,6 +165,17 @@ def read_signal(record: int, access: str | None = None, lead: str = LEAD) -> np.
     return np.asarray(rec.p_signal[:, 0], dtype=np.float64)
 
 
+def read_ptbxl_lead(root: Path, filename: str, lead: str = "II") -> tuple[np.ndarray, int]:
+    """One lead of a PTB-XL recording in mV, selected by name, with its sampling rate.
+
+    PTB-XL is a separate database used only for pretraining; this cannot reach MIT-BIH files.
+    """
+    rec = wfdb.rdrecord(str(Path(root) / filename), channel_names=[lead])
+    if rec.sig_name != [lead]:
+        raise ValueError(f"{filename}: expected lead {lead}, header has {rec.sig_name}")
+    return np.asarray(rec.p_signal[:, 0], dtype=np.float64), int(rec.fs)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Download and verify the MIT-BIH Arrhythmia Database.")
     parser.add_argument("--skip-download", action="store_true", help="only verify what is on disk")
