@@ -5,6 +5,7 @@ classes on MIT-BIH when training and test patients are kept apart? A 30-day proj
 2026-11-05) run phase by phase.
 
 New to the project? Read `PROJECT_GUIDE.md` first: it explains the whole project and what is done.
+`CODE_GUIDE.md` then explains what each code file and function does.
 
 Then `docs/RULES.md` (rules and data protocol), then `docs/PLAN.md`, `docs/PAPER_TRACK.md` and
 `docs/PREREGISTRATION.md`. Live state is in `docs/PROGRESS.md` and `docs/DECISIONS.md`.
