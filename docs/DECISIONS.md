@@ -57,3 +57,20 @@ Open human decisions before Module 1 variants may run (evidence in `results/data
   no beat-level annotations, so it does not fit the beat-level task, the AAMI classes or the generators.
 - PTB-XL stays in the paper as related work. External validation, if added after the deadline, uses a
   beat-annotated database (INCART), as listed in `docs/PAPER_TRACK.md`.
+
+## 2026-10-13 (Day 7) — A12: PTB-XL pretraining arm — decided by Akash Saha
+
+This replaces "MIT-BIH only" above. MIT-BIH stays the dataset for training, validation, generators and
+the test. PTB-XL is added for one purpose: pretraining the classifier before fine-tuning on MIT-BIH.
+
+- **Method:** supervised. Every PTB-XL beat gets its recording's diagnosis as label. Chosen over
+  self-supervised pretraining because it is simpler; the labels are noisy at beat level, and that is
+  stated as a limitation.
+- **Task stays beat-level:** fine-tuning and all evaluation use MIT-BIH beat labels (N, S, V, F).
+- **Scope:** one extra condition for the baseline classifier in Phase 2, "pretrained on PTB-XL then
+  fine-tuned" against "trained from scratch", same budget and seeds. It enters the Phase 4 grid only if
+  it is better on validation by the usual tie rule.
+- **Leakage:** PTB-XL never touches DS2 and the test lock is unchanged. PTB-XL patients are not
+  MIT-BIH patients.
+- **Order:** built in Phase 2, after Gate 1, because the beat window comes from the Module 1 winner.
+  Details are in `docs/PLAN.md`, Phase 2.

@@ -93,8 +93,9 @@ Run IDs: none. No variant has been run yet.
 
 Open issues / risks:
 - About four days behind the plan (Phase 2 was due to end on Day 8). The Day 15 buffer is used up.
-- Open question: pretrain on PTB-XL and fine-tune on MIT-BIH. Proposed as one extra baseline arm in
-  Phase 2, not as a change to the main study. Not decided; nothing built for it.
+- PTB-XL pretraining decided (DECISIONS A12): supervised, each beat labelled with its recording's
+  diagnosis, then fine-tuning on MIT-BIH; one extra baseline arm in Phase 2. Design is in
+  `docs/PLAN.md`. Nothing is built for it yet; it waits for Gate 1 because it needs the winning beat window.
 - Variant assignments are still TBD in `docs/ASSIGNMENTS.md`.
 - The Kaggle notebook has not been executed on Kaggle. Wall-clock of a variant run is unmeasured.
 - Two commits are local only (approved split, dataset decision) until pushed.
@@ -102,4 +103,4 @@ Open issues / risks:
 Next:
 1. Push, draw assignments, run `/variant 1 A..D` (locally or on Kaggle).
 2. `/gate 1`: pick the input representation and freeze the dataset.
-3. Decide the PTB-XL pretraining question before Phase 2 starts.
+3. Phase 2: baselines, quality metrics and the PTB-XL pretraining arm.
