@@ -196,3 +196,16 @@ Open issues / risks:
 - Anyone with an older clone or notebook must use the new paths and module names.
 
 Next: unchanged (push, Module 1 variants, Gate 1, Kaggle run of the pretraining arm).
+
+## 2026-10-13 (Day 7), night — Kaggle notebooks
+
+Done:
+- The single generic notebook is replaced by one per job: `kaggle/module1_input_representation.ipynb`
+  and `kaggle/ptbxl_pretraining.ipynb`. The user sets variant letters (`VARIANTS = ["A"]`), a
+  `SMOKE_TEST` switch and, for pretraining, `PTBXL_SOURCE`; config paths are resolved in the notebook.
+- `kaggle/README.md` rewritten for the two notebooks and the new file names.
+- The run cell of both notebooks was executed on this laptop against a fresh clone in smoke mode.
+
+Run IDs: none.
+
+Open issues / risks: the notebooks have still not been run on Kaggle itself.
