@@ -209,3 +209,5 @@ Done:
 Run IDs: none.
 
 Open issues / risks: the notebooks have still not been run on Kaggle itself.
+
+- 2026-10-13: added `PROJECT_GUIDE.md`, a full explanation of the project and of every part built so far, linked from the README.
