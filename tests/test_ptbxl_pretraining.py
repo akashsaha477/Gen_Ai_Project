@@ -161,7 +161,7 @@ def test_arm_end_to_end_on_fake_data(tmp_root):
         runs_of_arm = result["arms"][arm]["per_seed"]
         assert [r["seed"] for r in runs_of_arm] == [0, 1]
         for r in runs_of_arm:
-            config = yaml.safe_load((paths.runs_dir() / r["run_id"] / "config.yaml").read_text())
+            config = yaml.safe_load((runs.find_run_dir(r["run_id"]) / "config.yaml").read_text())
             if arm == "pretrained":  # each seed starts from the pretraining run of the same seed
                 assert config["init"]["run_id"] == pre[r["seed"]] and config["init"]["tensors_copied"] > 0
             else:
@@ -180,6 +180,14 @@ def test_arm_end_to_end_on_fake_data(tmp_root):
         rows = list(csv.DictReader(fh))
     assert sorted({r["variant"] for r in rows}) == ["finetuneC", "pretrainC", "scratchC"] and len(rows) == 6
     assert {r["phase"] for r in rows} == {"2"} and {r["module"] for r in rows} == {"3"}
+    # one folder per experiment, variant and kind of run
+    assert {r["folder"] for r in rows} == {
+        "ptbxl_pretraining/C_short_window_rr_features/pretrain",
+        "ptbxl_pretraining/C_short_window_rr_features/scratch",
+        "ptbxl_pretraining/C_short_window_rr_features/finetune",
+    }
+    for r in rows:
+        assert (paths.runs_dir() / r["folder"] / r["run_id"] / "config.yaml").is_file()
 
 
 def test_scratch_arm_matches_a_module_1_run_exactly(tmp_root):
@@ -200,6 +208,7 @@ def test_smoke_run_from_the_cli(letter, capsys, monkeypatch):
     assert pretrain.main(["--config", str(variant_config(CONFIGS, letter)), "--smoke"]) == 0
     report = json.loads(capsys.readouterr().out)
     assert report["variant"] == letter and len(report["runs"]) == 3
+    assert [f.split("/")[-1] for f in report["run_folders"]] == ["finetune", "pretrain", "scratch"]
     assert report["pretrained_init"]["kind"] == "ptbxl_pretrained" and report["pretrained_init"]["run_id"] == report["runs"][0]
     assert "ECGAUG_ROOT" not in os.environ
     after = {(str(p), p.stat().st_mtime_ns) for d in ("runs", "results", "data/processed") for p in (REPO / d).rglob("*") if p.is_file()}

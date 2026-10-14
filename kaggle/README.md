@@ -99,7 +99,7 @@ What comes back in the zip:
 |---|---|
 | `results/data/ptbxl_preprocessing.json` | recordings and beats kept, every exclusion by reason, heart-rate and noise statistics, and how many files match PhysioNet's checksums |
 | `results/validation/ptbxl_pretraining/<letter>.json` | both arms (from scratch, pretrained): per-seed validation metrics, mean ± SD, the pretraining AUROC, and which arm the selection rule picks |
-| `runs/` | per letter: 3 `pretrain<letter>`, 6 `scratch<letter>` and 6 `finetune<letter>` run folders |
+| `runs/ptbxl_pretraining/<variant>/` | `pretrain/` (3 runs), `scratch/` (6 runs) and `finetune/` (6 runs) |
 
 Things to know:
 
