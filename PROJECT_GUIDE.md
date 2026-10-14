@@ -194,7 +194,8 @@ The first real experiment. It asks: how should a beat be presented to the model?
 ### 5.6 Training and run logging (`src/ecgaug/train/`, `src/ecgaug/runs.py`)
 
 - One training loop with early stopping, fixed seeds and deterministic settings.
-- Every run gets its own folder under `runs/` with its config, software versions, training curve,
+- Every run gets its own folder, grouped by experiment, variant and kind of run (for example
+  `runs/ptbxl_pretraining/D_short_window_125hz/finetune/`), with its config, software versions, training curve,
   validation metrics, predictions and model checkpoint. `results/runs_index.csv` lists all runs.
 
 ### 5.7 PTB-XL preprocessing (`src/ecgaug/data/ptbxl.py`, `rpeaks.py`, `checks.py`)
@@ -232,9 +233,11 @@ Asks: does pretraining on a large ECG dataset help rare-beat detection on MIT-BI
 4. **Decide** with the selection rule. Pretraining has to beat from-scratch by more than the tie margin.
 
 - One command does all four steps, including the PTB-XL preprocessing.
-- **State:** built and run end to end on fake data. No real run yet. Results will be marked
-  provisional until the input representation is fixed, and the arm uses the small probe network for
-  now.
+- **State:** one real run, variant D, done on Kaggle on 2026-10-14 by kartheek2159
+  (`results/validation/ptbxl_pretraining/D.json`). Pretraining reached a macro AUROC of 0.83 on PTB-XL,
+  but fine-tuning did not beat from-scratch on MIT-BIH, so the rule picked from-scratch. Both arms
+  detect S beats at chance level with this input (S F1 about 0.03). The result is provisional and uses
+  the small probe network.
 
 ### 5.9 Kaggle setup (`kaggle/`)
 
@@ -317,7 +320,7 @@ already in the repo) and no uncommitted code changes.
 | `kaggle/` | notebooks, scripts and guide for Kaggle |
 | `results/data/` | counts, checks and validation reports produced by code |
 | `results/validation/` | variant results (empty until variants are run) |
-| `runs/` | one folder per training run |
+| `runs/` | training runs, in folders by experiment, variant and kind of run |
 | `tests/` | the automated tests |
 | `Papers/` | reference papers |
 
@@ -348,13 +351,14 @@ Full reasons are in `docs/DECISIONS.md`.
 - The four input variants build correctly on real DS1 data and produce the same 50,969 beats.
 - The R-peak detector and the padding choice were measured on DS1 (section 5.7).
 - Both runners work end to end on fake data, also through the Kaggle runner script in a fresh clone.
-- 159 tests pass, including tests that the test set cannot be read by accident.
+- 162 tests pass, including tests that the test set cannot be read by accident.
+- The pretraining arm ran on Kaggle for variant D, including full PTB-XL preprocessing (20,918 recordings kept).
 
 **Not checked yet**
 
-- No model has been trained on real data. There are no results of any kind.
-- Nothing has been run on Kaggle; run times are unknown.
-- The full PTB-XL dataset has not been processed.
+- No Module 1 variant has been run, so Gate 1 cannot happen yet.
+- Only one real experiment exists: the pretraining arm for variant D (section 5.8).
+- PTB-XL file checksums were not compared on Kaggle (PhysioNet's list could not be fetched there).
 - One metric convention (AAMI positive predictivity for V) is implemented from memory of the original
   paper and must be verified before it is quoted.
 

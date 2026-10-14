@@ -32,8 +32,9 @@ REQUIRED_RUN_FILES = ("config.yaml", "env.json", "train_log.csv", "metrics_val.j
 INGESTED_DATA_REPORTS = ("ptbxl_preprocessing.json",)
 RUNS_INDEX_COLUMNS = [
     "run_id", "phase", "module", "variant", "tag", "seed", "status",
-    "selection_metric", "selection_value", "rare_macro_f1", "wall_clock_s", "git_sha",
+    "selection_metric", "selection_value", "rare_macro_f1", "wall_clock_s", "git_sha", "folder",
 ]  # fmt: skip
+ARM_KINDS = ("pretrain", "scratch", "finetune")  # the three kinds of run of the PTB-XL pretraining arm
 _PACKAGES = ("numpy", "scipy", "pandas", "scikit-learn", "torch", "wfdb", "imbalanced-learn", "captum", "dtaidistance")
 
 
@@ -113,6 +114,37 @@ def capture_env(device: str) -> dict:
     }
 
 
+def _variant_folder(letter: str) -> str:
+    """The config name of a variant letter, e.g. A -> A_short_window (the letter if no config is found)."""
+    hits = sorted((paths.configs_dir() / "m1_input_representation").glob(f"{letter}_*.yaml"))
+    return hits[0].stem if hits else letter
+
+
+def default_group(run_id: str) -> tuple[str, ...]:
+    """The folder a run belongs in, worked out from its ID (for runs saved before folders existed).
+
+    Module 1 runs go to ``m1_input_representation/<variant>/``; pretraining-arm runs to
+    ``ptbxl_pretraining/<variant>/<pretrain|scratch|finetune>/``.
+    """
+    parts = parse_run_id(run_id)
+    label = parts["variant"]
+    arm = re.fullmatch(rf"({'|'.join(ARM_KINDS)})([A-Z])", label)
+    if arm:
+        return ("ptbxl_pretraining", _variant_folder(arm.group(2)), arm.group(1))
+    if parts["module"] == 1 and re.fullmatch(r"[A-Z]", label):
+        return ("m1_input_representation", _variant_folder(label))
+    return (f"m{parts['module']}", label)
+
+
+def find_run_dir(run_id: str) -> Path | None:
+    """Where a run is saved, in whichever subfolder of ``runs/``; None if it does not exist."""
+    root = paths.runs_dir()
+    if not root.is_dir():
+        return None
+    hits = sorted(p for p in root.rglob(run_id) if p.is_dir() and p.name == run_id)
+    return hits[0] if hits else None
+
+
 def write_run(
     run_id: str,
     config: dict,
@@ -121,11 +153,18 @@ def write_run(
     metrics: dict,
     preds: dict[str, np.ndarray],
     state_dict: dict,
+    group: tuple[str, ...] = (),
 ) -> Path:
-    """Create ``runs/<run_id>/`` with the files CLAUDE.md §8 lists. Never overwrites a run."""
+    """Create ``runs/<group...>/<run_id>/`` with the files CLAUDE.md §8 lists. Never overwrites a run.
+
+    ``group`` is the folder path inside ``runs/``, e.g. ``("m1_input_representation", "A_short_window")``.
+    """
     import torch
 
-    run_dir = paths.runs_dir() / run_id
+    existing = find_run_dir(run_id)
+    if existing is not None:
+        raise FileExistsError(f"Run {run_id} already exists at {existing}")
+    run_dir = paths.runs_dir().joinpath(*group, run_id)
     run_dir.mkdir(parents=True, exist_ok=False)
     (run_dir / "config.yaml").write_text(yaml.safe_dump(config, sort_keys=False))
     with (run_dir / "train_log.csv").open("w", newline="") as fh:
@@ -162,8 +201,10 @@ def upsert_runs_index(row: dict) -> Path:
     return index
 
 
-def index_row(run_id: str, metrics: dict, wall_clock_s: float, status: str = "done") -> dict:
-    """Build a runs-index row from a run's validation metrics."""
+def index_row(
+    run_id: str, metrics: dict, wall_clock_s: float, status: str = "done", group: tuple[str, ...] = ()
+) -> dict:
+    """Build a runs-index row from a run's validation metrics; ``folder`` is its path inside runs/."""
     parts = parse_run_id(run_id)
     return {
         "run_id": run_id,
@@ -178,7 +219,17 @@ def index_row(run_id: str, metrics: dict, wall_clock_s: float, status: str = "do
         "rare_macro_f1": metrics.get("rare_macro_f1", ""),
         "wall_clock_s": round(float(wall_clock_s), 1),
         "git_sha": parts["sha"],
+        "folder": "/".join(group),
     }
+
+
+def _group_in_bundle(run_dir: Path) -> tuple[str, ...]:
+    """The folders between ``runs/`` and the run inside a bundle; empty for a flat (older) bundle."""
+    parts = run_dir.parts
+    if "runs" not in parts[:-1]:
+        return ()
+    start = len(parts) - 1 - parts[:-1][::-1].index("runs")
+    return tuple(parts[start:-1])
 
 
 def _find_run_dirs(root: Path) -> list[Path]:
@@ -215,22 +266,24 @@ def ingest(sources: list[Path]) -> dict:
 
         for run_dir in candidates:
             run_id = run_dir.name
+            group = _group_in_bundle(run_dir) or default_group(run_id)
             if any(run_dir.rglob("preds_test*")) or any(run_dir.rglob("metrics_test*")):
                 report["refused"].append(run_id)
                 continue
             if any(not (run_dir / name).is_file() for name in REQUIRED_RUN_FILES):
                 report["incomplete"].append(run_id)
                 continue
-            destination = paths.runs_dir() / run_id
-            if destination.exists():
-                same = (destination / "metrics_val.json").read_bytes() == (run_dir / "metrics_val.json").read_bytes()
+            existing = find_run_dir(run_id)
+            if existing is not None:
+                same = (existing / "metrics_val.json").read_bytes() == (run_dir / "metrics_val.json").read_bytes()
                 report["skipped_identical" if same else "conflicts"].append(run_id)
                 continue
+            destination = paths.runs_dir().joinpath(*group, run_id)
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copytree(run_dir, destination)
             metrics = json.loads((destination / "metrics_val.json").read_text())
             env = json.loads((destination / "env.json").read_text())
-            upsert_runs_index(index_row(run_id, metrics, env.get("wall_clock_s", 0.0)))
+            upsert_runs_index(index_row(run_id, metrics, env.get("wall_clock_s", 0.0), group=group))
             report["ingested"].append(run_id)
 
         # Variant result files (results/validation/m<M>/<X>.json and notes) travel with the runs.
