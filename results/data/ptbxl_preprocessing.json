@@ -1,0 +1,139 @@
+{
+  "in_metadata": 21837,
+  "eligible": 21387,
+  "excluded_by_metadata": {
+    "no_diagnostic_superclass": 407,
+    "electrodes_problems": 28,
+    "pacemaker": 15
+  },
+  "processed_from_metadata": 21387,
+  "excluded_by_signal": {
+    "low_qrs_contrast": 447,
+    "no_usable_beat": 16,
+    "implausible_peak_count": 4,
+    "implausible_amplitude": 2
+  },
+  "recordings_kept": 20918,
+  "beats_kept": 213133,
+  "beats_dropped": {
+    "edge_or_missing_rr": 42086,
+    "implausible_rr": 3626
+  },
+  "beats_per_recording": {
+    "min": 1,
+    "median": 10.0,
+    "max": 28
+  },
+  "quality_of_kept_recordings": {
+    "heart_rate_bpm": {
+      "p1": 49.66488631403516,
+      "p5": 54.203262233375156,
+      "p50": 71.64179104477611,
+      "p95": 106.4039408866995,
+      "p99": 136.70886075949366
+    },
+    "qrs_contrast": {
+      "p1": 4.633703340112816,
+      "p5": 6.289990862374635,
+      "p50": 14.820745548512772
+    },
+    "powerline_50hz_ratio": {
+      "p50": 1.7058251660869646,
+      "p90": 2.838782955207427,
+      "p99": 13.113741046371384,
+      "share_above_10": 0.012381680849029544
+    }
+  },
+  "per_split": {
+    "train": {
+      "recordings": 16713,
+      "patients": 14541,
+      "beats": 170083,
+      "recordings_per_class": {
+        "NORM": 7524,
+        "MI": 4193,
+        "STTC": 4127,
+        "CD": 3754,
+        "HYP": 2080
+      }
+    },
+    "val": {
+      "recordings": 2098,
+      "patients": 1880,
+      "beats": 21490,
+      "recordings_per_class": {
+        "NORM": 946,
+        "MI": 519,
+        "STTC": 518,
+        "CD": 472,
+        "HYP": 259
+      }
+    },
+    "unused": {
+      "recordings": 2107,
+      "patients": 1845,
+      "beats": 21560,
+      "recordings_per_class": {
+        "NORM": 953,
+        "MI": 524,
+        "STTC": 512,
+        "CD": 478,
+        "HYP": 257
+      }
+    }
+  },
+  "settings": {
+    "lead": "II",
+    "source_fs": 500,
+    "fs": 360,
+    "superclasses": [
+      "NORM",
+      "MI",
+      "STTC",
+      "CD",
+      "HYP"
+    ],
+    "train_folds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "val_folds": [
+      9
+    ],
+    "unused_folds": [
+      10
+    ],
+    "min_peak_to_peak_mv": 0.05,
+    "max_abs_mv": 10.0,
+    "max_flat_s": 1.0,
+    "peak_count_range": [
+      5,
+      33
+    ],
+    "rr_range_s": [
+      0.3,
+      2.0
+    ],
+    "min_qrs_contrast": 4.0,
+    "edge_pad_s": 2.0,
+    "edge_pad_mode": "reflect"
+  },
+  "content_sha256": "756d2c53064cc273612fe0d55675a1441cec0e4ed6dc82e15a014270d3ca7854",
+  "checksums": {
+    "reference_url": "https://physionet.org/files/ptb-xl/1.0.3/SHA256SUMS.txt",
+    "files_checked": 42776,
+    "metadata_sha256": {
+      "ptbxl_database.csv": "cd9bf4e6445c5e022605857c4d6f90c90ff0e62df847da52efaebe94de786156",
+      "scp_statements.csv": "ad05b0b1fcae83bb1230755ad9cfc7c96f303feddc08a4a9ad5bdc9ca63bac8f"
+    },
+    "reference_available": false
+  },
+  "partial_run": false,
+  "file_sha256": "de72b44c240337058c191e0ad509bb595046dc14e37ebf69971ad4ac60ffddd8"
+}
