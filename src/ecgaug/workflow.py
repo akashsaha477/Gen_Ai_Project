@@ -8,6 +8,7 @@
     python -m ecgaug.workflow phase3-gate [--approve ...]    # check and freeze the synthetic banks
     python -m ecgaug.workflow phase4a-gate [--approve ...]   # choose the augmentation policy; approval writes the full grid
     python -m ecgaug.workflow phase4-gate [--approve ...]    # strengths per condition on validation; then /final-eval
+    python -m ecgaug.workflow phase5-gate [--approve ...]    # explanation method per architecture, note variant, demo
 
 Approving the phase 1 gate freezes the dataset of the winning variant (``data/processed/v1``, test part
 included; a logged construction access) and records it in ``results/manifest.json``. Later steps read
@@ -41,6 +42,9 @@ from ecgaug.names import (
     PHASE4_FULL_GRID,
     PHASE4_GATE,
     PHASE4A_GATE,
+    PHASE5_CLINICAL_NOTES,
+    PHASE5_EXPLAINABILITY,
+    PHASE5_GATE,
     FINAL_EVAL,
     PHASES,
 )
@@ -896,6 +900,114 @@ def _phase4_lines() -> tuple[list[str], str | None]:
     return lines, first
 
 
+# --------------------------------------------------------------------------------------------------
+# phase 5: explanation method per architecture, note variant, demo
+# --------------------------------------------------------------------------------------------------
+
+
+def note_ratings() -> dict[str, float]:
+    """Mean blinded readability rating per note variant, if the team has filled the rating sheet."""
+    folder = paths.results_for(PHASE5_CLINICAL_NOTES) / "rating"
+    ratings, key = folder / "ratings.csv", folder / "key.csv"
+    if not (ratings.is_file() and key.is_file()):
+        return {}
+    import csv as _csv
+
+    with key.open(newline="") as fh:
+        variant_of = {row["item"]: row["variant"] for row in _csv.DictReader(fh)}
+    scores: dict[str, list[float]] = {}
+    with ratings.open(newline="") as fh:
+        for row in _csv.DictReader(fh):
+            values = [float(row[k]) for k in ("clarity_1_5", "accuracy_of_emphasis_1_5", "brevity_1_5") if row.get(k)]
+            if values and row["item"] in variant_of:
+                scores.setdefault(variant_of[row["item"]], []).append(sum(values) / len(values))
+    return {v: sum(s) / len(s) for v, s in scores.items()}
+
+
+def evaluate_phase5_gate() -> dict:
+    """Saliency method per architecture by faithfulness (ties: stability); note variant by the hard gate, coverage and ratings."""
+    explain = experiment_results(PHASE5_EXPLAINABILITY)
+    notes = experiment_results(PHASE5_CLINICAL_NOTES)
+    for name, results in ((PHASE5_EXPLAINABILITY, explain), (PHASE5_CLINICAL_NOTES, notes)):
+        missing = [letter for letter, r in results.items() if r is None]
+        if not results or missing:
+            raise GateError(f"{name} variants not run yet: {', '.join(missing) or 'all'}")
+    methods = {}
+    archs = sorted({a for r in explain.values() for a in r["per_architecture"]})
+    for arch in archs:
+        candidates = [
+            Candidate(name=letter, mean=r["per_architecture"][arch]["mean_gain"], sd=r["per_architecture"][arch]["sd_gain"], complexity=r["cost"],
+                      tie_mean=r["per_architecture"][arch]["mean_stability"], tie_sd=0.0)  # fmt: skip
+            for letter, r in explain.items() if r["per_architecture"].get(arch, {}).get("applicable")
+        ]
+        decision = select_winner(candidates)
+        methods[arch] = {"variant": decision["winner"], "method": explain[decision["winner"]]["method"], "decision": decision}
+    ratings = note_ratings()
+    template_ok = bool(notes.get("A")) and notes["A"].get("passes_hard_gate", False)
+    eligible = [l for l, r in notes.items() if l != "A" and not r.get("not_run") and r.get("passes_hard_gate")]
+    ranked = sorted(eligible, key=lambda l: (-notes[l]["coverage"], -ratings.get(l, 0.0), notes[l]["latency_s_mean"], notes[l]["output_tokens"]))
+    notes_variant = ranked[0] if ranked else "A"
+    from ecgaug import demo
+
+    try:
+        demo_check = {"passed": demo.smoke()["unsupported_claims"] == 0, "detail": "python -m ecgaug.demo --smoke"}
+    except Exception as err:  # noqa: BLE001 (reported in the gate)
+        demo_check = {"passed": False, "detail": str(err)}
+    checks = [
+        {"check": "every explainability variant scored", "passed": True},
+        {"check": "the template note (A) has zero unsupported claims (offline fallback)", "passed": template_ok},
+        {"check": f"chosen note variant {notes_variant} has zero unsupported claims", "passed": notes_variant == "A" and template_ok or notes_variant in eligible},
+        {"check": "the demo runs (smoke)", "passed": demo_check["passed"]},
+        {"check": "no provisional results", "passed": not any(r.get("provisional") for r in (*explain.values(), *notes.values()))},
+    ]  # fmt: skip
+    return {"explain": explain, "notes": notes, "methods": methods, "notes_variant": notes_variant, "ratings": ratings,
+            "checks": checks, "passed": all(c["passed"] for c in checks)}  # fmt: skip
+
+
+def phase5_gate_markdown(gate: dict) -> str:
+    lines = ["# Phase 5 gate: explanations, notes, demo", "", f"Generated by `python -m ecgaug.workflow phase5-gate` on {_dt.date.today()}.", "",
+             "## Checks", "", *[f"- {'PASS' if c['passed'] else 'FAIL'}: {c['check']}" for c in gate["checks"]], "", "## Saliency method per architecture", "",
+             "| variant | method | " + " | ".join(f"{a} gain | {a} stability" for a in gate["methods"]) + " |",
+             "|---|---|" + "---|---|" * len(gate["methods"])]  # fmt: skip
+    for letter, r in gate["explain"].items():
+        cells = []
+        for arch in gate["methods"]:
+            e = r["per_architecture"].get(arch, {})
+            cells += [f"{e['mean_gain']:+.4f}", f"{e['mean_stability']:.3f}"] if e.get("applicable") else ["n/a", "n/a"]
+        lines.append(f"| {letter} | {r['method']} | " + " | ".join(cells) + " |")
+    lines += ["", *[f"**{arch}: variant {m['variant']} ({m['method']})**" for arch, m in gate["methods"].items()], "", "## Notes", "",
+              "| variant | ran | unsupported claims | coverage | fell back | mean latency (s) | output tokens | rating |", "|---|---|---|---|---|---|---|---|"]  # fmt: skip
+    for letter, r in gate["notes"].items():
+        if r.get("not_run"):
+            lines.append(f"| {letter} | no ({r['reason']}) | | | | | | |")
+        else:
+            lines.append(f"| {letter} | yes | {r['unsupported_claims']} | {r['coverage']:.2f} | {r['fell_back_to_template']} | {r['latency_s_mean']:.2f} | "
+                         f"{r['output_tokens']} | {gate['ratings'].get(letter, '-')} |")  # fmt: skip
+    lines += ["", f"**Note variant: {gate['notes_variant']}**", "",
+              "Status: " + ("PENDING APPROVAL. Approve with `python -m ecgaug.workflow phase5-gate --approve \"Name\" \"Name\"`, then freeze the code: `git tag v1.0`."
+                            if gate["passed"] else "NOT READY: fix the failed checks above."), ""]  # fmt: skip
+    return "\n".join(lines)
+
+
+def approve_phase5_gate(approvers: list[str]) -> dict:
+    if not approvers:
+        raise GateError("Name at least one approver")
+    if manifest().get(PHASE5_GATE):
+        raise GateError("The phase 5 gate is already approved")
+    gate = evaluate_phase5_gate()
+    if not gate["passed"]:
+        raise GateError("Phase 5 gate checks failed; run `python -m ecgaug.workflow phase5-gate` and read the report")
+    entry = {"explainability": {a: m["method"] for a, m in gate["methods"].items()}, "notes_variant": gate["notes_variant"],
+             "approved_by": list(approvers), "approved_on": str(_dt.date.today()), "git_sha": runs.git_sha()}  # fmt: skip
+    (paths.results_dir() / "manifest.json").write_text(json.dumps({**manifest(), PHASE5_GATE: entry}, indent=2) + "\n")
+    paths.docs_dir().mkdir(parents=True, exist_ok=True)
+    with (paths.docs_dir() / "DECISIONS.md").open("a") as fh:
+        fh.write(f"\n## the phase 5 gate — {entry['approved_on']} — status: APPROVED by {', '.join(approvers)}\n"
+                 f"Saliency: {entry['explainability']}; notes: variant {entry['notes_variant']} — evidence: results/phase5_gate/report.md — "
+                 "rule: PLAN Phase 5\nNext: code freeze (git tag v1.0) and phase 6.\n")  # fmt: skip
+    return entry
+
+
 def _phase3_lines() -> tuple[list[str], str | None]:
     """Checklist lines for phase 3 and its first unfinished item."""
     lines, first = [], None
@@ -989,7 +1101,14 @@ def status(today: _dt.date | None = None) -> tuple[list[str], str]:
                      (phase2_gate, 'Team reads results/phase2_gate/report.md, then: python -m ecgaug.workflow phase2-gate --approve "<names>"')]  # fmt: skip
     phase3, phase3_next = _phase3_lines()
     phase4, phase4_next = _phase4_lines()
-    lines += ["", f"Phase 3  {PHASES[3]}", *phase3, "", f"Phase 4  {PHASES[4]}", *phase4, "", "Phases 5-6: see README (phase5_explainability, phase5_clinical_notes, the paper)."]
+    phase5 = []
+    for experiment in (PHASE5_EXPLAINABILITY, PHASE5_CLINICAL_NOTES):
+        configs = experiment_configs(experiment)
+        for letter, r in experiment_results(experiment).items():
+            phase5.append(_check(bool(r) and not r.get("not_run"), f"{experiment} variant {letter} ({configs[letter].stem})", f"python -m ecgaug.experiments.{experiment} --config {configs[letter].relative_to(paths.repo_root())}"))
+    phase5.append(_check(bool(manifest().get(PHASE5_GATE)), "phase 5 gate: approved (method, notes, demo)", "python -m ecgaug.workflow phase5-gate"))
+    lines += ["", f"Phase 3  {PHASES[3]}", *phase3, "", f"Phase 4  {PHASES[4]}", *phase4, "", f"Phase 5  {PHASES[5]}", *phase5,
+              "", f"Phase 6  {PHASES[6]}: python -m ecgaug.paper (tables and numbers for the draft in paper/)"]  # fmt: skip
 
     if not data_ok:
         nxt = "Download and verify MIT-BIH: python -m ecgaug.data.raw"
@@ -1024,10 +1143,12 @@ def _phase3_command(command: str, approve: list[str] | None) -> int:
                 gate = write_phase2_gate_report()
                 print(phase2_gate_markdown(gate))
                 print("Written to results/phase2_gate/report.md. Approve only after the team has read it.")
-        elif command in ("phase4a-gate", "phase4-gate"):
-            folder = PHASE4A_GATE if command == "phase4a-gate" else PHASE4_GATE
-            evaluate, markdown, approve_fn = ((evaluate_phase4a_gate, phase4a_gate_markdown, approve_phase4a_gate) if command == "phase4a-gate"
-                                              else (evaluate_phase4_gate, phase4_gate_markdown, approve_phase4_gate))  # fmt: skip
+        elif command in ("phase4a-gate", "phase4-gate", "phase5-gate"):
+            folder, evaluate, markdown, approve_fn = {
+                "phase4a-gate": (PHASE4A_GATE, evaluate_phase4a_gate, phase4a_gate_markdown, approve_phase4a_gate),
+                "phase4-gate": (PHASE4_GATE, evaluate_phase4_gate, phase4_gate_markdown, approve_phase4_gate),
+                "phase5-gate": (PHASE5_GATE, evaluate_phase5_gate, phase5_gate_markdown, approve_phase5_gate),
+            }[command]
             if approve:
                 approve_fn(approve)
                 print(f"{command} approved by {', '.join(approve)}; recorded in results/manifest.json and docs/DECISIONS.md.")
@@ -1077,7 +1198,8 @@ def main(argv: list[str] | None = None) -> int:
                        ("phase3a-gate", "choose one generator per family from the pilots; with --approve, record it"),
                        ("phase3-gate", "check the final banks; with --approve, freeze them"),
                        ("phase4a-gate", "choose the augmentation policy; with --approve, record it and write the full grid"),
-                       ("phase4-gate", "validation summary of the full grid; with --approve, fix what the final evaluation tests")):  # fmt: skip
+                       ("phase4-gate", "validation summary of the full grid; with --approve, fix what the final evaluation tests"),
+                       ("phase5-gate", "saliency method per architecture, note variant, demo; with --approve, record them")):  # fmt: skip
         sub.add_parser(name, help=text).add_argument("--approve", nargs="+", metavar="NAME", help="approvers' names")
     args = parser.parse_args(argv)
 
@@ -1085,7 +1207,7 @@ def main(argv: list[str] | None = None) -> int:
         lines, _ = status()
         print("\n".join(lines))
         return 0
-    if args.command in ("phase2-gate", "phase3a-gate", "phase3-gate", "phase4a-gate", "phase4-gate"):
+    if args.command in ("phase2-gate", "phase3a-gate", "phase3-gate", "phase4a-gate", "phase4-gate", "phase5-gate"):
         return _phase3_command(args.command, args.approve)
     try:
         if args.approve:

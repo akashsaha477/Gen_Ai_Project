@@ -24,7 +24,7 @@ REPO = Path(__file__).resolve().parents[1]
 # Kept in step with ecgaug.names (this script runs before the package is installed; a test checks it).
 EXPERIMENTS = (
     "phase1_input_representation", "phase2_baseline_classifiers", "phase2_quality_metrics", "phase2_ptbxl_pretraining",
-    "phase3_cvae", "phase3_wgan_gp", "phase4_augmentation_policy",
+    "phase3_cvae", "phase3_wgan_gp", "phase4_augmentation_policy", "phase5_explainability", "phase5_clinical_notes",
 )  # fmt: skip
 RESULT_FOLDERS = (*EXPERIMENTS, "phase4_full_grid")  # every experiment's results, plus the full grid's ledger
 EXTRA_RESULT_FILES = ("results/phase2_ptbxl_data/ptbxl_preprocessing.json",)
@@ -79,8 +79,10 @@ def setup_data(run: list[str], raw_dir: str | None) -> None:
 
 
 def setup_artifacts(artifacts_dir: str, repo: Path = REPO) -> list[str]:
-    """Copy synthetic banks from an attached Kaggle dataset into ``data/synthetic/`` (each folder holding a
-    bank.json). The runs check every bank against its recorded SHA-256 before using it."""
+    """Copy artifacts from an attached Kaggle dataset (an extracted Kaggle zip, or several):
+    synthetic banks (folders holding a bank.json) into ``data/synthetic/``, and files of run folders
+    (checkpoints, predictions) into ``runs/`` where they are missing. Nothing is overwritten; every run
+    checks banks and checkpoints against their recorded SHA-256 before using them."""
     copied = []
     for meta in sorted(Path(artifacts_dir).rglob("bank.json")):
         target = repo / BANKS / meta.parent.name
@@ -89,6 +91,13 @@ def setup_artifacts(artifacts_dir: str, repo: Path = REPO) -> list[str]:
             if not (target / path.name).exists():
                 shutil.copy2(path, target / path.name)
                 copied.append(f"{BANKS}/{meta.parent.name}/{path.name}")
+    for runs_root in sorted(p for p in Path(artifacts_dir).rglob("runs") if p.is_dir()):
+        for path in sorted(p for p in runs_root.rglob("*") if p.is_file()):
+            target = repo / "runs" / path.relative_to(runs_root)
+            if not target.exists():
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(path, target)
+                copied.append(str(target.relative_to(repo)))
     return copied
 
 
@@ -157,7 +166,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cli", default="ecgaug.experiments.phase1_input_representation", help="package CLI that runs a config")
     parser.add_argument("--env", default="locked", choices=["locked", "kaggle", "none"])
     parser.add_argument("--raw-dir", default=None, help="folder with the raw MIT-BIH files (else download)")
-    parser.add_argument("--artifacts-dir", default=None, help="attached dataset holding synthetic banks (phase 4 runs need them)")
+    parser.add_argument("--artifacts-dir", default=None, help="attached dataset holding banks and run checkpoints (phase 4 and 5 runs need them)")
     parser.add_argument("--out", default="/kaggle/working", help="where the bundle zip is written")
     parser.add_argument("--push-to", default=None, metavar="BRANCH", help="commit the outputs and push them to this branch")
     parser.add_argument("--git-name", default="", help="author name for the results commit")
@@ -169,7 +178,7 @@ def main(argv: list[str] | None = None) -> int:
     setup_data(run, args.raw_dir)
     if args.artifacts_dir:
         copied = setup_artifacts(args.artifacts_dir)
-        print(f"banks copied from {args.artifacts_dir}: {len(copied)} files", flush=True)
+        print(f"artifacts copied from {args.artifacts_dir}: {len(copied)} files", flush=True)
 
     results = {}
     for config in args.config:

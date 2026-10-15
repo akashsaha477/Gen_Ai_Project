@@ -1,0 +1,5 @@
+base: shared_settings.yaml
+variant: B
+description: LLM with the JSON input and a constrained system prompt (restate only;
+  fixed disclaimer).
+generator: B

@@ -1,0 +1,5 @@
+base: shared_settings.yaml
+variant: B
+description: Integrated gradients, 50 steps, zero and per-beat-mean baselines averaged.
+method: integrated_gradients
+cost: 3

@@ -1,0 +1,17 @@
+# Shared by every phase5_explainability variant (PLAN Phase 5). A variant sets only its letter,
+# description and method. Selection: faithfulness gain over random order (mean over the three models
+# of an architecture), ties within the margin broken by stability, then the cheaper method.
+experiment: phase5_explainability
+conditions: [none, cvae, wgan_gp]       # per architecture: the best checkpoint of each (phase 4 gate, validation)
+beats_per_class: 200                     # validation beats per class, stratified (all of a class if fewer)
+sample_seed: 0
+deletion_fractions: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
+random_orders: 3
+synthetic_beats_per_class: 200           # RQ4: saliency of augmented models on bank beats (artifact reliance)
+method_settings:
+  ig_steps: 50
+  smoothgrad_samples: 25
+  smoothgrad_sd: 0.1                     # x the beat's SD
+  occlusion_window_ms: 50
+  occlusion_stride_ms: 25
+  batch_size: 64
