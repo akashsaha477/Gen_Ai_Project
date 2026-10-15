@@ -72,7 +72,7 @@ def _save(fig, path: Path, title: str, caption: str) -> Path:
 # --------------------------------------------------------------------------------------------------
 
 
-def _m1_specs() -> dict:
+def _phase1_specs() -> dict:
     from ecgaug.data.representation import RepresentationSpec
     from ecgaug.experiments.phase1_input_representation import load_config
     from ecgaug.workflow import variant_configs
@@ -98,7 +98,7 @@ def phase1_data_figures() -> list[Path]:
 
     plt = _plt()
     out, written = paths.figures_for(PHASE1_DATA), []
-    specs = _m1_specs()
+    specs = _phase1_specs()
     train = _train_records()
     counts = pd.read_csv(paths.results_for(PHASE1_DATA) / "record_counts.csv")
     counts = counts[counts["record"].isin(train)]
@@ -442,8 +442,67 @@ def phase1_gate_figure() -> list[Path]:
     ax.set_xticks(range(len(results)), [f"{k}\n{v['complexity_inputs_per_beat']} inputs" for k, v in results.items()])
     metric = next(iter(results.values()))["selection_metric"]
     ax.set_ylabel("S F1 on validation" if metric == "s_f1" else metric)
-    return [_save(fig, paths.figures_for(PHASE1_GATE) / "variants.png", "Phase 1 gate: the phase1_input_representation variants on the validation split",
-                  "Small dots: seeds. Black: mean ± SD. The rule picks the best mean; ties within the margin go to fewer inputs.")]  # fmt: skip
+    out = paths.figures_for(PHASE1_GATE)
+    written = [_save(fig, out / "variants.png", "Phase 1 gate: the phase1_input_representation variants on the validation split",
+                     "Small dots: seeds. Black: mean ± SD. The rule picks the best mean; ties within the margin go to fewer inputs.")]  # fmt: skip
+    return written + _phase1_per_class_figure(results, out) + _phase1_early_stopping_figure(results, out)
+
+
+def _phase1_per_class_figure(results: dict, out: Path) -> list[Path]:
+    """Per-class F1 (decisions) and PR-AUC (ranking) for each variant at its chosen learning rate."""
+    plt = _plt()
+    letters = list(results)
+    fig, axes = plt.subplots(1, 4, figsize=(11, 3.2), sharey=True)
+    panels = [("S", "S"), ("V", "V"), ("F", "F"), ("N", "N recall")]
+    for ax, (cls, title) in zip(axes, panels):
+        color = CLASS_COLORS[cls]
+        for i, letter in enumerate(letters):
+            seeds = results[letter]["per_seed"]
+            if cls == "N":
+                pairs = [("recall", [s["n_recall"] for s in seeds], "o")]
+            else:
+                pairs = [("F1", [s["f1"][cls] for s in seeds], "o"), ("PR-AUC", [s["pr_auc"][cls] for s in seeds], "D")]
+            for j, (name, values, marker) in enumerate(pairs):
+                x = i + (j - (len(pairs) - 1) / 2) * 0.28
+                filled = name != "PR-AUC"
+                ax.scatter([x] * len(values), values, s=26, marker=marker, zorder=3, linewidth=1.4,
+                           color=color if filled else SURFACE, edgecolor=color,
+                           label=name if i == 0 else None)  # fmt: skip
+                ax.hlines(np.mean(values), x - 0.11, x + 0.11, color=INK, linewidth=1.6, zorder=4)
+        ax.set_xticks(range(len(letters)), letters)
+        ax.set_ylim(-0.03, 1.03)
+        ax.set_title(title, loc="left")
+        ax.legend(loc="upper left")
+    axes[0].set_ylabel("validation score")
+    return [_save(fig, out / "per_class.png", "Phase 1 gate: what each variant gets right, per class",
+                  "Each mark is one seed at the chosen learning rate; black ticks are means. F1 uses argmax decisions; "
+                  "PR-AUC measures ranking and does not depend on the decision threshold.")]  # fmt: skip
+
+
+def _phase1_early_stopping_figure(results: dict, out: Path) -> list[Path]:
+    """Kept epoch vs epochs run for every run of the grid; runs that kept epoch 1 stopped as early as patience allows."""
+    plt = _plt()
+    fig, ax = plt.subplots(figsize=(9, 3.2))
+    labels = []
+    for letter, r in results.items():
+        for tag, point in r["lr_grid"].items():
+            k = len(labels)
+            labels.append(f"{letter}\n{tag.removeprefix('lr')}")
+            for s in point["per_seed"]:
+                x = k + (s["seed"] - 1) * 0.18
+                ax.vlines(x, 0, s["epochs_run"], color=GRID, linewidth=3, zorder=2)
+                stuck = s["best_epoch"] == 1
+                ax.scatter(x, s["best_epoch"], s=30, zorder=3, color=CLASS_COLORS["S"] if stuck else INK,
+                           label=("kept epoch 1 (S F1 was 0 for all of its first 6 epochs)" if stuck else "kept a later epoch")
+                           if s["seed"] == 0 or stuck else None)  # fmt: skip
+    handles, names = ax.get_legend_handles_labels()
+    unique = dict(zip(names, handles))
+    ax.legend(unique.values(), unique.keys(), loc="upper left")
+    ax.set_xticks(range(len(labels)), labels)
+    ax.set_ylabel("epoch")
+    return [_save(fig, out / "early_stopping.png", "Phase 1 gate: where early stopping ended each run",
+                  "Grey bar: epochs run (one bar per seed 0, 1, 2). Dot: epoch kept. With patience 5, a run whose "
+                  "validation S F1 stays at 0 for its first epochs keeps epoch 1 and stops at epoch 6.")]  # fmt: skip
 
 
 def for_result(result_path: Path) -> list[Path]:
