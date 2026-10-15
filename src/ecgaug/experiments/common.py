@@ -114,6 +114,7 @@ def train_grid(
                 patience=cfg["patience"],
                 batch_size=cfg["batch_size"],
                 weight_decay=cfg["weight_decay"],
+                min_epochs=int(cfg.get("min_epochs", 0)),
             )
             fit = fit_classifier(model, train, val, train_cfg, selection, seed=seed, device=device)
             metrics = {

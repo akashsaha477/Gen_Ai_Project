@@ -1,0 +1,4 @@
+base: metric_settings.yaml
+variant: A
+family: dtw
+description: "DTW: mean DTW distance from each synthetic beat to its 5 nearest real training beats of its class, relative to real beats."

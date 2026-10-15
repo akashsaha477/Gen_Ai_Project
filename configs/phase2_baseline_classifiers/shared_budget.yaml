@@ -1,0 +1,11 @@
+# Budget shared by every phase2_baseline_classifiers variant (docs/RULES.md rule 7, PLAN Phase 2).
+# Variant files may set only their letter, description, role and model; the runner rejects anything else.
+experiment: phase2_baseline_classifiers
+seeds: [0, 1, 2]
+lr_grid: [1.0e-3, 3.0e-4]
+max_epochs: 40
+patience: 5
+min_epochs: 0                  # 0 = the pre-registered rule; 10 is the fix proposed in docs/PHASE1_REPORT.md §6 (team decision)
+batch_size: 256
+weight_decay: 0.01
+device: auto

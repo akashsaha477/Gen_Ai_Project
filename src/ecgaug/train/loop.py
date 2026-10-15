@@ -44,6 +44,7 @@ class TrainConfig:
     patience: int = 5
     batch_size: int = 256
     weight_decay: float = 0.01
+    min_epochs: int = 0  # no early stop before this epoch; 0 keeps the pre-registered rule (PHASE1_REPORT.md §6)
 
 
 @dataclass
@@ -144,7 +145,7 @@ def _fit(
             best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
         else:
             stale += 1
-            if stale >= cfg.patience:
+            if stale >= cfg.patience and epoch >= cfg.min_epochs:
                 break
 
     return FitResult(

@@ -25,8 +25,11 @@ from ecgaug.names import (
     PHASE1_DATA,
     PHASE1_GATE,
     PHASE1_INPUT_REPRESENTATION,
+    PHASE2_BASELINE_CLASSIFIERS,
+    PHASE2_GATE,
     PHASE2_PTBXL_DATA,
     PHASE2_PTBXL_PRETRAINING,
+    PHASE2_QUALITY_METRICS,
     PHASE3_CVAE,
     PHASE3_WGAN_GP,
     PHASE3A_GATE,
@@ -414,16 +417,19 @@ def phase2_pretraining_figures(result_path: Path) -> list[Path]:
 
 
 def phase1_variant_figures(result_path: Path) -> list[Path]:
-    """Figures for one phase1_input_representation variant: training curves and the confusion matrix."""
+    """Figures for one classifier variant (phase1_input_representation, phase2_baseline_classifiers):
+    training curves and the validation confusion matrix."""
     plt = _plt()
     result = json.loads(Path(result_path).read_text())
     letter = result["variant"]
-    out, written = paths.figures_for(PHASE1_INPUT_REPRESENTATION) / letter, []
+    experiment = result.get("experiment", PHASE1_INPUT_REPRESENTATION)
+    out, written = paths.figures_for(experiment) / letter, []
     metric = "S F1" if result["selection_metric"] == "s_f1" else result["selection_metric"]
+    tag = " (provisional preview)" if result.get("provisional") else ""
     fig, axes = plt.subplots(1, 3, figsize=(14, 3.6), gridspec_kw={"width_ratios": [1, 1, 0.8]})
     _curves(axes[0], axes[1], f"variant {letter}", result["run_ids"], CLASS_COLORS["N"], metric)
     _confusion_panel(axes[2], _confusion(result["run_ids"]), "validation confusion (mean over seeds)")
-    written.append(_save(fig, out / "training_and_confusion.png", f"phase1_input_representation, variant {letter}: {metric} {result['mean']:.3f} ± {result['sd']:.3f}",
+    written.append(_save(fig, out / "training_and_confusion.png", f"{experiment}, variant {letter}: {metric} {result['mean']:.3f} ± {result['sd']:.3f}{tag}",
                          f"One line per seed at the chosen learning rate ({result['chosen_lr']:g})."))  # fmt: skip
     return written
 
@@ -655,6 +661,49 @@ def phase3_variant_figures(result_path: Path) -> list[Path]:
     return written
 
 
+def phase2_quality_figures(result_path: Path) -> list[Path]:
+    """One metric family's sanity test: score against severity for every degradation."""
+    plt = _plt()
+    result = json.loads(Path(result_path).read_text())
+    letter, family = result["variant"], result["family"]
+    scores = result["scores"]
+    reference = scores["reference:0"]
+    kinds = sorted({v["kind"] for v in scores.values() if v["kind"] != "reference"})
+    fig, axes = plt.subplots(1, len(kinds), figsize=(3.4 * len(kinds), 3.2), sharey=True, squeeze=False)
+    for ax, kind in zip(axes[0], kinds):
+        rows = sorted((v for v in scores.values() if v["kind"] == kind), key=lambda v: v["severity"])
+        x = [0] + [v["severity"] for v in rows]
+        y = [reference["mean"]] + [v["mean"] for v in rows]
+        err = [reference["sd"]] + [v["sd"] for v in rows]
+        ax.errorbar(x, y, yerr=err, color=INK, marker="o", capsize=3)
+        ax.set_xticks(x, ["real"] + [f"{v['level']:g}" for v in rows])
+        ax.set_title(f"{kind.replace('_', ' ')} (rho {result['spearman'][kind]:.2f})", loc="left")
+        ax.set_xlabel("severity")
+    axes[0][0].set_ylabel(f"{family} ({'higher' if result['higher_is_better'] else 'lower'} is better)")
+    verdict = "passes" if result["passed"] else "fails"
+    tag = " (provisional preview)" if result.get("provisional") else ""
+    return [_save(fig, paths.figures_for(PHASE2_QUALITY_METRICS) / letter / "sanity.png",
+                  f"phase2_quality_metrics, variant {letter} ({family}): {verdict} the sanity harness{tag}",
+                  "Mean ± SD over resamples. 'real' is the unchanged held-out beats; the score should get worse to the right.")]  # fmt: skip
+
+
+def phase2_gate_figure(gate: dict) -> list[Path]:
+    """The baseline classifiers side by side, grouped by role (cnn: A, B; rnn: C, D)."""
+    plt = _plt()
+    results = gate["baselines"]["results"]
+    fig, ax = plt.subplots(figsize=(7, 3.4))
+    for i, (letter, r) in enumerate(results.items()):
+        seeds = [s["selection_value"] for s in r["per_seed"]]
+        ax.scatter([i] * len(seeds), seeds, s=22, color=CLASS_COLORS["N"], alpha=0.6, zorder=3)
+        ax.errorbar(i, r["mean"], yerr=r["sd"], fmt="o", color=INK, markersize=6, capsize=3, zorder=4)
+        ax.annotate(f"{r['mean']:.3f}", (i, r["mean"]), xytext=(8, 0), textcoords="offset points", va="center", fontsize=8)
+    ax.set_xticks(range(len(results)), [f"{k} ({v['role']})\n{v['n_parameters']:,} params" for k, v in results.items()])
+    ax.set_ylabel("S F1 on validation")
+    picks = ", ".join(f"{role}: {gate['baselines'][role]['winner']}" for role in ("cnn", "rnn"))
+    return [_save(fig, paths.figures_for(PHASE2_GATE) / "baselines.png", f"Phase 2 gate: baseline classifiers ({picks})",
+                  "Small dots: seeds. Black: mean ± SD. The cnn is chosen from A and B, the rnn from C and D; ties go to fewer parameters.")]  # fmt: skip
+
+
 def phase3a_gate_figure(gate: dict) -> list[Path]:
     """Both families' variants side by side: pilot score per seed, and whether the hard gates passed."""
     plt = _plt()
@@ -688,6 +737,10 @@ def for_result(result_path: Path) -> list[Path]:
         return phase1_variant_figures(path) + phase1_gate_figure()
     if path.parent.name in (PHASE3_CVAE, PHASE3_WGAN_GP):
         return phase3_variant_figures(path)
+    if path.parent.name == PHASE2_BASELINE_CLASSIFIERS:
+        return phase1_variant_figures(path)
+    if path.parent.name == PHASE2_QUALITY_METRICS:
+        return phase2_quality_figures(path)
     return []
 
 
