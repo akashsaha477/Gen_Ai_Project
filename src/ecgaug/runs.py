@@ -56,13 +56,13 @@ def git_sha(short: bool = False) -> str:
     return sha[:7] if short else sha
 
 
-OUTPUT_DIRS = ("runs/", "results/")
+OUTPUT_DIRS = ("runs/", "results/", "figures/")
 
 
 def git_dirty() -> bool:
     """True if code, configs or docs differ from the commit (or git is unavailable).
 
-    Files under ``runs/`` and ``results/`` are outputs of earlier runs and do not count.
+    Files under ``runs/``, ``results/`` and ``figures/`` are outputs of earlier runs and do not count.
     """
     status = _git("status", "--porcelain", "--untracked-files=all")
     if status is None:
