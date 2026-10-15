@@ -1,0 +1,48 @@
+experiment: phase1_input_representation
+seeds:
+- 0
+- 1
+- 2
+lr_grid:
+- 0.001
+- 0.0003
+max_epochs: 40
+patience: 5
+batch_size: 256
+weight_decay: 0.01
+device: cpu
+model:
+  name: probe_cnn
+  channels:
+  - 16
+  - 32
+  - 64
+  kernel: 7
+  side_hidden: 16
+variant: A
+description: Window -0.25 s to +0.25 s around R (180 samples at 360 Hz); per-beat
+  z-score; no filtering.
+representation:
+  name: A_short_window
+  window_pre_s: 0.25
+  window_post_s: 0.25
+  bandpass_hz: null
+  target_fs: null
+  normalization: per_beat_zscore
+  rr_features: false
+config_name: A_short_window
+lr: 0.001
+seed: 2
+run_id: phase1_input_representation-A.lr1e-03-s2-b463e88-202610152050
+split:
+  name: V1
+  val:
+  - 115
+  - 118
+  - 201
+  - 205
+  - 223
+  selection_metric: s_f1
+dataset:
+  path: /kaggle/working/repo/data/processed/candidates/A_short_window
+  content_sha256: 2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896
