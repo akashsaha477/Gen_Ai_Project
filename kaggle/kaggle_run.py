@@ -85,6 +85,8 @@ def bundle(out_dir: Path, manifest: dict, repo: Path = REPO) -> Path | None:
         if (repo / rel).is_dir() and any((repo / rel).rglob("*")):
             shutil.copytree(repo / rel, staging / rel)
             found = True
+    if found and (repo / "figures").is_dir():  # figures made at the end of each run
+        shutil.copytree(repo / "figures", staging / "figures")
     for rel in EXTRA_RESULT_FILES:  # small reports that exist only where the full data was processed
         if found and (repo / rel).is_file():
             (staging / rel).parent.mkdir(parents=True, exist_ok=True)

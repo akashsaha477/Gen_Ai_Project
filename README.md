@@ -37,6 +37,11 @@ Each step needs the one before it. The code refuses to skip ahead and says what 
 After each Kaggle run: download the zip, `python kaggle/ingest_runs.py <zip>`, commit and push, then
 run `status` again.
 
+**Figures at every step:** each run, and Gate 1, draws before-and-after figures into `figures/`
+(how the data looks before and after preprocessing, training curves, confusion matrices, before and
+after pretraining). They travel back from Kaggle in the zip. `python -m ecgaug.figures all` redraws
+everything; `figures/README.md` lists what each folder shows.
+
 **Current state (2026-10-15, Day 9):** steps 1 and 2 are done. Step 3 has not been run. One preview of
 step 6 exists (pretraining with variant D): pretraining did not help, and without RR timing the model
 detects S beats at chance level. It is marked provisional because Gate 1 has not happened.
@@ -56,6 +61,7 @@ for pretraining.
 | `configs/` | experiment configs (`validation_split/`, `m1_input_representation/`, `ptbxl_pretraining/`) |
 | `kaggle/` | everything for running on Kaggle; start with `kaggle/README.md` |
 | `runs/` | one folder per training run, grouped by experiment, variant and kind of run |
+| `figures/` | before-and-after figures for each stage, made by code |
 | `results/` | generated summaries: counts, variant results, gate reports, `manifest.json` (what is frozen) |
 | `docs/` | plan, pre-registration, decisions, progress log, variant briefs |
 | `tests/` | leakage, test lock, contract, metrics, bootstrap, runners, workflow |

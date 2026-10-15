@@ -174,6 +174,11 @@ def test_arm_end_to_end_on_fake_data(tmp_root):
     assert result["alignment_with_mitbih_train"]["n_ptbxl_beats"] > 0
     assert result["budget"] == {k: cfg[k] for k in BUDGET_KEYS} and result["budget_deviations"] == []
 
+    figure_dir = paths.repo_root() / "figures" / "ptbxl_pretraining" / "C"
+    assert sorted(f.name for f in figure_dir.glob("*.png")) == [
+        "01_pretraining_curves.png", "02_finetune_vs_scratch_curves.png",
+        "03_confusion_matrices.png", "04_f1_per_class_before_after_pretraining.png",
+    ]  # fmt: skip
     written = json.loads((paths.results_dir() / "validation" / "ptbxl_pretraining" / "C.json").read_text())
     assert written["winner"] == result["winner"]
     with (paths.results_dir() / "runs_index.csv").open() as fh:

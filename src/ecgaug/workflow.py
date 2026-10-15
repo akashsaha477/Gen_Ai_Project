@@ -150,6 +150,12 @@ def write_gate1_report() -> dict:
     summary = {k: gate[k] for k in ("checks", "decision", "winner")}
     summary["run_ids"] = {letter: r["run_ids"] for letter, r in gate["results"].items()}
     (out / "gate1.json").write_text(json.dumps(summary, indent=2) + "\n")
+    from ecgaug import figures
+
+    try:
+        figures.gate1_figure()
+    except Exception as err:  # noqa: BLE001 (the report is written; the figure is extra)
+        print(f"WARNING: Gate 1 figure was not made: {err}")
     return gate
 
 

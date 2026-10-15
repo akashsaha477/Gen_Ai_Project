@@ -260,3 +260,18 @@ Run IDs: none.
 Open issues / risks: unchanged. Phase 1 still needs the four Module 1 runs.
 
 Next: step 3, run Module 1 variants A–D (one Kaggle session).
+
+## 2026-10-15 (Day 9) — before-and-after figures
+
+Done:
+- `src/ecgaug/figures.py` and `figures/`: 12 figures now (MIT-BIH preprocessing, PTB-XL
+  preprocessing, the variant D pretraining preview). Every runner draws its figures at the end, Gate 1
+  draws the variant comparison, and the Kaggle bundle and ingest carry figures back.
+- What the variant D figures show: S beats are split almost evenly between "N" and "V" predictions
+  (about 10% correct from scratch, 5% fine-tuned), and 14% of normal beats are called S from scratch;
+  PTB-XL pretraining plateaus at macro AUROC 0.83 from the second epoch.
+- Tests: 173 pass.
+
+Run IDs: none new.
+
+Next: step 3, Module 1 variants A–D; their figures will appear in `figures/phase1/variant_<letter>/`.
