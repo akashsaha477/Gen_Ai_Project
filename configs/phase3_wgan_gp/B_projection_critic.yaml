@@ -1,0 +1,5 @@
+base: generator_settings.yaml
+variant: B
+description: Projection critic, whose score adds the inner product of a class embedding with the critic features; generator conditioned as in A.
+generator:
+  conditioning: projection

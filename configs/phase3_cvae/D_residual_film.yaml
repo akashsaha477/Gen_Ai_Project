@@ -1,0 +1,5 @@
+base: generator_settings.yaml
+variant: D
+description: Residual encoder and decoder with FiLM class conditioning (a learned per-class scale and shift in every residual block).
+generator:
+  architecture: residual_film

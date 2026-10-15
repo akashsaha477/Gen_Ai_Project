@@ -1,0 +1,5 @@
+base: generator_settings.yaml
+variant: D
+description: A separate unconditional WGAN-GP for each of S, V and F; the step budget is shared, a third per class.
+generator:
+  conditioning: per_class

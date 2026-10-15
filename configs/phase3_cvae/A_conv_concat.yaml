@@ -1,0 +1,4 @@
+base: generator_settings.yaml
+variant: A
+description: Convolutional encoder and decoder; class one-hot concatenated to the input and to the latent code; latent 16; KL weight annealed over the first 30% of steps.
+generator: {}

@@ -1,0 +1,5 @@
+base: generator_settings.yaml
+variant: C
+description: As A plus a spectral reconstruction term, the L1 distance between FFT magnitudes of the beat and its reconstruction.
+generator:
+  spectral_weight: 1.0
