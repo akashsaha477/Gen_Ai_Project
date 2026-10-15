@@ -78,7 +78,7 @@ def _approved(tmp_root, **overrides) -> None:
         "selection_metric": FALLBACK,
         "approved_by": ["A", "B"],
         "approved_on": "2026-10-09",
-        "decision": "docs/DECISIONS.md Gate 1",
+        "decision": "docs/DECISIONS.md the phase 1 gate",
     }
     data.update(overrides)
     path = paths.configs_dir() / "validation_split" / "approved.yaml"

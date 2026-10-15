@@ -4,7 +4,7 @@ Entries are append-only. Gate entries follow the template in `docs/PLAN.md`.
 
 ---
 
-## Plan amendments after the kickoff review — 2026-10-08 (Day 2) — status: ADOPTED by Akash Saha, PENDING TEAM CONFIRMATION at Gate 1
+## Plan amendments after the kickoff review — 2026-10-08 (Day 2) — status: ADOPTED by Akash Saha, PENDING TEAM CONFIRMATION at the phase 1 gate
 
 **Context.** The kickoff review of `docs/RULES.md`, `docs/PLAN.md` and `docs/PAPER_TRACK.md` found ten gaps.
 Akash delegated the choice of fixes ("do what you think is best"). All ten were adopted and written into
@@ -19,9 +19,9 @@ approved and committed.
 | A1 | The selection metric uses F only if the validation split holds at least the minimum F support fixed in PREREGISTRATION (proposed: 100 beats from 2 records); otherwise S F1 with V F1 as tie-break. The tie margin becomes max(0.02, pooled across-seed SD). | Record 208 holds 373 of DS1's 415 F beats, so validation F is either the bulk of the class or a few dozen beats. The old fallback only covered F being absent. | docs/RULES.md §4, PLAN.md conventions |
 | A2 | **Plan change.** Two test families instead of one family of 10: confirmatory (H1: cVAE vs none, WGAN-GP vs none, per architecture = 4 tests) and secondary (the other comparisons). Holm within each family on two-sided bootstrap p-values. Replicates in which S or F has no true beats are excluded and counted. The dominant-record-absent fraction and per-record results for S and F are reported. | Record 213 holds 362 of DS2's 388 F beats and record 232 holds 1,382 of its 1,837 S beats, so intervals will be wide. The old plan did not define the metric for a class-absent replicate or how Holm applies to intervals. | PAPER_TRACK.md statistics |
 | A3 | Records 201 (DS1) and 202 (DS2) are the same subject. The de Chazal split is kept, the overlap is disclosed, and test results are also reported without record 202. | MIT-BIH has 48 records from 47 subjects; "record (patient)" in rule 1 was not exact. | docs/RULES.md §3, PAPER_TRACK.md |
-| A4 | The leakage-audit arm runs only after `/final-eval`, in `runs/audit/` and `data/synthetic/audit/`, with each run logged in TEST_ACCESS_LOG. The main grid refuses audit artifacts. | It trains and evaluates on DS2 beats, so before `/final-eval` it would be a second test access. | docs/RULES.md §3, PLAN.md Phase 4 |
-| A5 | Every "best" (generative condition, checkpoint, strength, cVAE, WGAN-GP) means highest validation selection metric, recorded in DECISIONS.md before `/final-eval`. | Read off the test table, "best" would be selection on test. | PAPER_TRACK.md, PLAN.md Module 8 |
-| A6 | Test access has three kinds: construction (labels counted, arrays built, no model involved), evaluation (only `/final-eval`) and audit (A4). Each is logged. Gate 1 requires zero evaluation accesses instead of an empty log. All raw-file reads go through one module that enforces the lock. | Phase 1 has to read DS2 to count classes and build `test.npz`, which contradicted "every access is logged" plus "log empty at Gate 1". | docs/RULES.md §3, PLAN.md Gate 1, `/final-eval` |
+| A4 | The leakage-audit experiment runs only after `/final-eval`, in `runs/audit/` and `data/synthetic/audit/`, with each run logged in TEST_ACCESS_LOG. The main grid refuses audit artifacts. | It trains and evaluates on DS2 beats, so before `/final-eval` it would be a second test access. | docs/RULES.md §3, PLAN.md Phase 4 |
+| A5 | Every "best" (generative condition, checkpoint, strength, cVAE, WGAN-GP) means highest validation selection metric, recorded in DECISIONS.md before `/final-eval`. | Read off the test table, "best" would be selection on test. | PAPER_TRACK.md, PLAN.md phase5_explainability |
+| A6 | Test access has three kinds: construction (labels counted, arrays built, no model involved), evaluation (only `/final-eval`) and audit (A4). Each is logged. Phase 1 gate requires zero evaluation accesses instead of an empty log. All raw-file reads go through one module that enforces the lock. | Phase 1 has to read DS2 to count classes and build `test.npz`, which contradicted "every access is logged" plus "log empty at the phase 1 gate". | docs/RULES.md §3, PLAN.md the phase 1 gate, `/final-eval` |
 | A7 | **Plan change.** The grid gains random oversampling of real minority beats at the same three strengths, and class-weighted loss gets three pre-registered weightings instead of one. Runs at 3 seeds: 96 instead of 66. Decisions are argmax with no threshold tuning in any condition. | Without a matched-count control, a gain from generated beats cannot be separated from rebalancing. The baselines had one configuration each while the generative arms had many. | PLAN.md Phase 3–4, PAPER_TRACK.md |
 | A8 | Each synthetic bank is exported from the final checkpoint of its step budget. Earlier checkpoints are scored for RQ3 only. | The pilot scores every quarter-checkpoint on validation; leaving the choice open added an unstated selection. | PLAN.md Phase 3 |
 | A9 | In RQ3, TSTR is analysed separately from the fidelity and diversity metrics, and intervals come from resampling generator training runs, not checkpoints. | TSTR and the downstream pilot score are both validation F1 of a CNN trained on the same synthetic beats, and checkpoints of one run are dependent. | PAPER_TRACK.md RQ3 |
@@ -35,11 +35,11 @@ optionally deposit PREREGISTRATION v1 on OSF for an independent timestamp.
 
 ---
 
-## Gate 1 — status: NOT STARTED
+## Phase 1 gate — status: NOT STARTED
 
-Open human decisions before Module 1 variants may run (evidence in `results/data/`):
+Open human decisions before phase1_input_representation variants may run (evidence in `results/phase1_data/`):
 
-1. Validation split (options in `results/data/val_options.md`).
+1. Validation split (options in `results/phase1_data/val_options.md`).
 2. Q-class handling and the selection-metric fallback (PREREGISTRATION §3).
 3. Approval of PREREGISTRATION v1, then commit, tag `prereg-v1` and push.
 
@@ -58,7 +58,7 @@ Open human decisions before Module 1 variants may run (evidence in `results/data
 - PTB-XL stays in the paper as related work. External validation, if added after the deadline, uses a
   beat-annotated database (INCART), as listed in `docs/PAPER_TRACK.md`.
 
-## 2026-10-13 (Day 7) — A12: PTB-XL pretraining arm — decided by Akash Saha
+## 2026-10-13 (Day 7) — A12: phase2_ptbxl_pretraining experiment — decided by Akash Saha
 
 This replaces "MIT-BIH only" above. MIT-BIH stays the dataset for training, validation, generators and
 the test. PTB-XL is added for one purpose: pretraining the classifier before fine-tuning on MIT-BIH.
@@ -72,24 +72,46 @@ the test. PTB-XL is added for one purpose: pretraining the classifier before fin
   it is better on validation by the usual tie rule.
 - **Leakage:** PTB-XL never touches DS2 and the test lock is unchanged. PTB-XL patients are not
   MIT-BIH patients.
-- **Order:** built in Phase 2, after Gate 1, because the beat window comes from the Module 1 winner.
+- **Order:** built in Phase 2, after the phase 1 gate, because the beat window comes from the phase1_input_representation winner.
   Details are in `docs/PLAN.md`, Phase 2.
 
-## 2026-10-13 (Day 7) — A13: pretraining arm built and may run before Gate 1 — decided by Akash Saha
+## 2026-10-13 (Day 7) — A13: phase2_ptbxl_pretraining experiment built and may run before the phase 1 gate — decided by Akash Saha
 
 - The PTB-XL preprocessing for Kaggle and the supervised pretraining plus fine-tuning runner were built
   now, at Akash's instruction, so the team can run both in one Kaggle session.
 - This is ahead of the phase order (rule 9: no next phase before the gate). Consequences, recorded so
   they are not forgotten:
-  - The input representation is not frozen. Every result file of the arm carries `provisional: true`
-    until `data/processed/v1` exists. The arm is rerun for the Gate 1 winner.
-  - The architecture is the probe CNN, the only classifier that exists. The arm is rerun with the
-    `cnn` chosen in Module 3.
-  - Results of the arm are not an input to Gate 1. Gate 1 is decided from the Module 1 variants alone.
+  - The input representation is not frozen. Every result file of the experiment carries `provisional: true`
+    until `data/processed/v1` exists. The experiment is rerun for the phase 1 gate winner.
+  - The architecture is the probe CNN, the only classifier that exists. The experiment is rerun with the
+    `cnn` chosen in phase2_baseline_classifiers.
+  - Results of the experiment are not an input to the phase 1 gate. Phase 1 gate is decided from the phase1_input_representation variants alone.
 - Protocol fixed before any run (details in `docs/PLAN.md`, Phase 2): one pretraining run per seed;
-  fine-tuning seed s starts from pretraining seed s; full fine-tuning with a new head; both arms use
-  the Module 1 budget; pretraining stops on PTB-XL fold 9 only; from scratch is the simpler option in
+  fine-tuning seed s starts from pretraining seed s; full fine-tuning with a new head; both methods use
+  the phase1_input_representation budget; pretraining stops on PTB-XL fold 9 only; from scratch is the simpler option in
   the tie rule.
 - Edge treatment for 10-second recordings: mirror padding of 2 s, chosen from a DS1 measurement
-  (`results/data/ptbxl_method_checks_ds1.json`). No mains notch filter is applied to PTB-XL: the
+  (`results/phase2_ptbxl_data/method_checks_ds1.json`). No mains notch filter is applied to PTB-XL: the
   64-recording sample shows no 50 Hz interference; the full-data figure is in the preprocessing report.
+
+## 2026-10-15 (Day 9) — the phase order is enforced in code — decided by Akash Saha
+
+- `python -m ecgaug.workflow status` shows every checklist item and the next action; `python -m ecgaug.workflow
+  gate1` writes the phase 1 gate report, and `--approve` freezes the winner's dataset and records it in
+  `results/manifest.json`.
+- The PTB-XL pretraining runner now refuses to run before the phase 1 gate is approved, or for a variant that the phase 1 gate
+  did not choose, unless `--preview` is given. Preview results are marked provisional. This replaces
+  the open-ended exception of A13: the variant D run stays on record as a preview.
+
+## 2026-10-15 (Day 9) — one naming scheme — decided by Akash Saha
+
+- Every name follows `docs/NAMING.md`: phase (1–6) → experiment `phase<N>_<what>` → variant A–D → run.
+  The words "stage", "step", "module" and "arm" are no longer used.
+- Old → new: Module 1 → `phase1_input_representation`; the PTB-XL pretraining arm →
+  `phase2_ptbxl_pretraining`; Module 3 → `phase2_baseline_classifiers`; Module 4 →
+  `phase2_quality_metrics`; Module 5 → `phase3_cvae`; Module 6 → `phase3_wgan_gp`; Module 7 →
+  `phase4_augmentation_policy`; Module 8 → `phase5_explainability`; Module 9 → `phase5_clinical_notes`;
+  Gate N → the phase N gate.
+- Each experiment's name is used for its config folder, runner, notebook, run folders, results and
+  figures. Run IDs now start with the experiment name; the 15 runs of the variant D preview were renamed
+  (for example `p2-m3-scratchD...` → `phase2_ptbxl_pretraining-scratchD...`), with no other change.

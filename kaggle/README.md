@@ -1,16 +1,16 @@
 # Running the project on Kaggle
 
 There is one notebook per job. Each clones this repository at the branch or commit you name, installs
-the environment, checks the raw data, runs the experiment and produces one zip. You bring the zip back
-with `kaggle/ingest_runs.py`. No logic lives in the notebooks.
+the environment, checks the raw data, runs the experiment, then commits the results and pushes them
+to GitHub, so you only `git pull`. No logic lives in the notebooks.
 
 | Notebook | What it runs | Data |
 |---|---|---|
-| `module1_input_representation.ipynb` | Module 1: the probe model on one or more input variants (A–D) | MIT-BIH DS1 |
-| `ptbxl_pretraining.ipynb` | PTB-XL preprocessing, pretraining, MIT-BIH fine-tuning, and from scratch for comparison | PTB-XL, then MIT-BIH DS1 |
+| `phase1_input_representation.ipynb` | phase1_input_representation: the probe model on one or more input variants (A–D) | MIT-BIH DS1 |
+| `phase2_ptbxl_pretraining.ipynb` | PTB-XL preprocessing, pretraining, MIT-BIH fine-tuning, and from scratch for comparison | PTB-XL, then MIT-BIH DS1 |
 
 Other files in this folder: `kaggle_run.py` (the script both notebooks call), `make_raw_dataset.py`
-(builds the MIT-BIH zip to upload once) and `ingest_runs.py` (brings results back).
+(builds the MIT-BIH zip to upload once) and `ingest_runs.py` (the backup way to bring results back from the zip).
 
 The four input variants, used by both notebooks:
 
@@ -36,7 +36,7 @@ The four input variants, used by both notebooks:
 
 1. Kaggle account with a verified phone number (needed for Internet and GPU in notebooks).
 2. A GitHub token that can read the repo: GitHub > Settings > Developer settings > Fine-grained
-   tokens > only this repository > Contents: Read-only. Copy it once.
+   tokens > only this repository > Contents: **Read and write** (the notebook pushes the results). Copy it once.
 3. On kaggle.com: Create > New Notebook > File > Import Notebook > upload the notebook you need from
    this folder.
 4. In the notebook:
@@ -55,35 +55,43 @@ The token is read from Kaggle Secrets, never printed and never put in a URL. Do 
    |---|---|
    | `VARIANTS` | the letters to run, e.g. `["A"]` or `["A", "B", "C", "D"]` |
    | `SMOKE_TEST` | `True` runs the whole pipeline on fake data in about a minute and produces no results |
-   | `GIT_REF` | your branch (`variant/m1-A`) or a full commit SHA |
+   | `GIT_REF` | your branch (`variant/phase1_input_representation_A`) or a full commit SHA |
    | `DEVICE` | `"auto"` uses the GPU when the session has one |
    | `ENV_MODE` | `locked` (exact `uv.lock` versions) or `kaggle` (see below) |
    | `RAW_DATASET_DIR` | leave as `/kaggle/input`; `""` downloads MIT-BIH from PhysioNet instead |
    | `PTBXL_SOURCE` | pretraining notebook only: `"download"` or a folder holding a PTB-XL copy |
+   | `PREVIEW` | pretraining notebook only: `True` to run before the phase 1 gate or for another variant |
+   | `PUSH_RESULTS` | `True` (default) commits the results and pushes them to `GIT_REF` |
+   | `GIT_NAME`, `GIT_EMAIL` | your name and GitHub email for that commit (required for the push) |
 
 3. Run All. For long runs use Save Version > Save & Run All (Commit): it keeps running with the
    browser closed.
-4. Download `ecgaug_<sha>_<time>.zip` from the notebook's Output.
-5. In your clone:
-   ```
-   uv run python kaggle/ingest_runs.py ~/Downloads/ecgaug_<sha>_<time>.zip
-   git add results runs && git commit -m "m1 A results" && git push
-   ```
-   Ingest never overwrites an existing run or result file and refuses any run that carries test
-   predictions.
+4. When the run ends, the notebook commits the run folders, result files, figures and runs index
+   (never model weights) and pushes them to `GIT_REF`. The last lines of the output say where. In your
+   clone: `git pull`.
+   - If someone pushed to that branch while you were running, the results go to a new branch
+     `<GIT_REF>-kaggle-<time>` instead, and you merge it with a pull request. Nothing is overwritten.
+   - Nothing is pushed if a run failed, if a run carries test predictions, or for a smoke test.
+5. Backup: the same outputs are in `ecgaug_<sha>_<time>.zip` in the notebook's Output. If the push did not
+   happen, download it and run `uv run python kaggle/ingest_runs.py <zip>` in your clone, then commit
+   and push. Ingest never overwrites an existing run or result file and refuses test predictions.
 
 First time: set `SMOKE_TEST = True` and run once. If it prints no error, your setup works.
 
-## Module 1 notebook
+## phase1_input_representation notebook
 
 Each letter is 6 training runs (3 seeds × 2 learning rates) on MIT-BIH DS1 with the approved
-validation split. A GPU is optional. Results: `results/validation/m1_input_representation/<letter>.json`.
+validation split. A GPU is optional. Results: `results/phase1_input_representation/<letter>.json`.
 
 ## PTB-XL pretraining notebook
 
 One run does all of it for each letter in `VARIANTS`: PTB-XL preprocessing (once per session, reused
 for every letter), pretraining on PTB-XL beats, fine-tuning on MIT-BIH, and the same model trained
 from scratch for comparison. Turn the GPU on.
+
+Run it **after the phase 1 gate**, with the letter phase 1 gate chose (`python -m ecgaug.workflow status` shows it).
+Before that, or for another letter, the run is refused unless you set `PREVIEW = True`; preview
+results are marked provisional and do not count.
 
 PTB-XL comes from one of two places:
 
@@ -97,14 +105,14 @@ What comes back in the zip:
 
 | file | content |
 |---|---|
-| `results/data/ptbxl_preprocessing.json` | recordings and beats kept, every exclusion by reason, heart-rate and noise statistics, and how many files match PhysioNet's checksums |
-| `results/validation/ptbxl_pretraining/<letter>.json` | both arms (from scratch, pretrained): per-seed validation metrics, mean ± SD, the pretraining AUROC, and which arm the selection rule picks |
-| `runs/ptbxl_pretraining/<variant>/` | `pretrain/` (3 runs), `scratch/` (6 runs) and `finetune/` (6 runs) |
+| `results/phase2_ptbxl_data/ptbxl_preprocessing.json` | recordings and beats kept, every exclusion by reason, heart-rate and noise statistics, and how many files match PhysioNet's checksums |
+| `results/phase2_ptbxl_pretraining/<letter>.json` | both methods (from scratch, fine-tuned): per-seed validation metrics, mean ± SD, the pretraining AUROC, and which arm the selection rule picks |
+| `runs/phase2_ptbxl_pretraining/<variant>/` | `pretrain/` (3 runs), `scratch/` (6 runs) and `finetune/` (6 runs) |
 
 Things to know:
 
-- Until Gate 1 fixes the input variant, the result is marked `provisional`. Rerun the winning letter
-  after Gate 1, and again when Phase 2 has chosen the baseline architecture.
+- Until phase 1 gate fixes the input variant, the result is marked `provisional`. Rerun the winning letter
+  after the phase 1 gate, and again when Phase 2 has chosen the baseline architecture.
 - If an attached copy is not version 1.0.3, the checksum comparison reports mismatches. That is a
   warning, not an error; read the numbers in `ptbxl_preprocessing.json`.
 
@@ -126,7 +134,7 @@ Things to know:
   notebook). Turn the accelerator off when you do not need it, and ask the team before anything
   estimated above 2 GPU-hours.
 - Same seeds, same budget, same commit for every seed of a variant. Do not edit
-  `configs/m1_input_representation/shared_budget.yaml`.
+  `configs/phase1_input_representation/shared_budget.yaml`.
 
 ## When something fails
 
@@ -134,7 +142,7 @@ Things to know:
 |---|---|
 | `git clone` fails | the `GITHUB_TOKEN` secret is missing, not ticked for this notebook, expired, or you are not a collaborator |
 | `no MIT-BIH record files` or a checksum problem | the `mitdb-raw` dataset is not attached or is damaged; re-attach it, or set `RAW_DATASET_DIR = ""` |
-| exit code 2, "Refusing to run" | approved split missing, checkout differs from the commit, or PTB-XL not available (the message says which) |
+| exit code 2, "Refusing to run" | approved split missing, checkout differs from the commit, PTB-XL not available, or (pretraining) phase 1 gate not approved or a different variant chosen; the message says which |
 | "The PTB-XL copy ... is incomplete" | the attached copy has no `records500/` folder; attach another or set `PTBXL_SOURCE = "download"` |
 | the PTB-XL download is very slow | attach a Kaggle copy and set `PTBXL_SOURCE = "/kaggle/input"` |
 | `uv sync` fails or is too slow | Internet is off, or try `ENV_MODE = "kaggle"` for debugging |
@@ -142,9 +150,9 @@ Things to know:
 
 ## Later phases
 
-Each new module gets its own runner under `ecgaug.experiments` and its own notebook here.
+Each new experiment gets its own runner under `ecgaug.experiments` and its own notebook here.
 
 Status: the runner script was rehearsed in a fresh clone with the raw-data zip as input (locked
-environment, checksum check, smoke runs of both runners). The pretraining arm was run end to end on
-fake data, and its preprocessing and pretraining stage on 64 real PTB-XL recordings. Neither notebook
+environment, checksum check, smoke runs of both runners). The phase2_ptbxl_pretraining experiment was run end to end on
+fake data, and its preprocessing and pretraining part on 64 real PTB-XL recordings. Neither notebook
 nor a full PTB-XL run has been executed on Kaggle yet, so run times are not known.

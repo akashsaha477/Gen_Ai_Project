@@ -4,10 +4,10 @@ One folder per training run, grouped by experiment, variant and kind of run:
 
 ```
 runs/
-  m1_input_representation/
-    A_short_window/              <- one folder per Module 1 run of variant A
+  phase1_input_representation/
+    A_short_window/              <- one folder per phase1_input_representation run of variant A
     B_long_window_bandpass/ ...
-  ptbxl_pretraining/
+  phase2_ptbxl_pretraining/
     D_short_window_125hz/
       pretrain/                  <- pretraining on PTB-XL, one run per seed
       scratch/                   <- MIT-BIH from scratch, 6 runs

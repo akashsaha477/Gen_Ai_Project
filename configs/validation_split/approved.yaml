@@ -1,5 +1,5 @@
-# Validation split used by every module. Option V1 of configs/validation_split/options.yaml.
-# Evidence: results/data/val_options.md (DS1 counts only).
+# Validation split used by every experiment. Option V1 of configs/validation_split/options.yaml.
+# Evidence: results/phase1_data/val_options.md (DS1 counts only).
 name: V1
 val: [115, 118, 201, 205, 223]
 # Validation holds 27 F beats, below the minimum support (100 beats from 2 records),
@@ -7,4 +7,4 @@ val: [115, 118, 201, 205, 223]
 selection_metric: s_f1
 approved_by: [Akash Saha]
 approved_on: "2026-10-13"
-decision: docs/DECISIONS.md, Gate 1
+decision: docs/DECISIONS.md, phase 1 gate

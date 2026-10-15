@@ -3,8 +3,8 @@
 Called by the notebooks in this folder after they have cloned the repository. Uses only the
 standard library, so it runs with the system Python before the project environment exists.
 
-    python kaggle/kaggle_run.py --config configs/m1_input_representation/A_short_window.yaml -- --device cuda
-    python kaggle/kaggle_run.py --config configs/m1_input_representation/A_short_window.yaml configs/m1_input_representation/B_long_window_bandpass.yaml --raw-dir /kaggle/input/mitdb-raw
+    python kaggle/kaggle_run.py --config configs/phase1_input_representation/A_short_window.yaml -- --device cuda
+    python kaggle/kaggle_run.py --config configs/phase1_input_representation/A_short_window.yaml configs/phase1_input_representation/B_long_window_bandpass.yaml --raw-dir /kaggle/input/mitdb-raw
 
 Steps: install the environment, get and verify the raw data, run each config through its package
 CLI, and zip runs/ plus the variant result files for kaggle/ingest_runs.py.
@@ -21,7 +21,9 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-EXTRA_RESULT_FILES = ("results/data/ptbxl_preprocessing.json",)
+# Kept in step with ecgaug.names (this script runs before the package is installed; a test checks it).
+EXPERIMENTS = ("phase1_input_representation", "phase2_ptbxl_pretraining")
+EXTRA_RESULT_FILES = ("results/phase2_ptbxl_data/ptbxl_preprocessing.json",)
 
 
 def sh(cmd: list[str], check: bool = True) -> int:
@@ -77,14 +79,16 @@ def git_sha() -> str:
 
 
 def bundle(out_dir: Path, manifest: dict, repo: Path = REPO) -> Path | None:
-    """Zip runs/, results/validation/ and the PTB-XL report into ``out_dir``; None if no run produced output."""
+    """Zip runs/, each experiment's results/ folder, figures and the PTB-XL report; None if nothing ran."""
     staging = out_dir / "_bundle"
     shutil.rmtree(staging, ignore_errors=True)
     found = False
-    for rel in ("runs", "results/validation"):
+    for rel in ("runs", *(f"results/{name}" for name in EXPERIMENTS)):
         if (repo / rel).is_dir() and any((repo / rel).rglob("*")):
             shutil.copytree(repo / rel, staging / rel)
             found = True
+    if found and (repo / "figures").is_dir():  # figures made at the end of each run
+        shutil.copytree(repo / "figures", staging / "figures")
     for rel in EXTRA_RESULT_FILES:  # small reports that exist only where the full data was processed
         if found and (repo / rel).is_file():
             (staging / rel).parent.mkdir(parents=True, exist_ok=True)
@@ -98,13 +102,43 @@ def bundle(out_dir: Path, manifest: dict, repo: Path = REPO) -> Path | None:
     return Path(archive)
 
 
+RESULT_PATHS = ("runs", "figures", "results/runs_index.csv", *EXTRA_RESULT_FILES)
+
+
+def push_results(branch: str, message: str, name: str, email: str, repo: Path = REPO) -> str | None:
+    """Commit the run outputs in the clone and push them to GitHub; return the branch pushed to.
+
+    This replaces downloading the zip and running ingest_runs.py. Only run outputs are committed
+    (run folders without weights, result files, figures, the runs index), and nothing is pushed if a
+    run carries test predictions. The push goes to ``branch`` if that is a fast-forward; otherwise to a
+    new branch ``<branch>-kaggle-<time>`` so nobody's work is overwritten. Returns None if there was
+    nothing to commit.
+    """
+    if any((repo / "runs").rglob("preds_test*")):
+        raise RuntimeError("A run carries test predictions; nothing is pushed. Stop and report this to the team.")
+    paths = [p for p in (*RESULT_PATHS, *(f"results/{e}" for e in EXPERIMENTS)) if (repo / p).exists()]
+    subprocess.run(["git", "add", "--", *paths], cwd=repo, check=True)
+    if subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=repo).returncode == 0:
+        return None
+    subprocess.run(["git", "-c", f"user.name={name}", "-c", f"user.email={email}", "commit", "--quiet", "-m", message],
+                   cwd=repo, check=True)  # fmt: skip
+    if subprocess.run(["git", "push", "--quiet", "origin", f"HEAD:refs/heads/{branch}"], cwd=repo).returncode == 0:
+        return branch
+    fallback = f"{branch}-kaggle-{dt.datetime.now(dt.timezone.utc).strftime('%Y%m%d%H%M')}"
+    subprocess.run(["git", "push", "--quiet", "origin", f"HEAD:refs/heads/{fallback}"], cwd=repo, check=True)
+    return fallback
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--config", nargs="+", required=True, help="one or more config files, run in order")
-    parser.add_argument("--cli", default="ecgaug.experiments.input_representation", help="package CLI that runs a config")
+    parser.add_argument("--cli", default="ecgaug.experiments.phase1_input_representation", help="package CLI that runs a config")
     parser.add_argument("--env", default="locked", choices=["locked", "kaggle", "none"])
     parser.add_argument("--raw-dir", default=None, help="folder with the raw MIT-BIH files (else download)")
     parser.add_argument("--out", default="/kaggle/working", help="where the bundle zip is written")
+    parser.add_argument("--push-to", default=None, metavar="BRANCH", help="commit the outputs and push them to this branch")
+    parser.add_argument("--git-name", default="", help="author name for the results commit")
+    parser.add_argument("--git-email", default="", help="author email for the results commit")
     parser.add_argument("extra", nargs="*", help="arguments after -- are passed to the CLI")
     args = parser.parse_args(argv)
 
@@ -123,12 +157,25 @@ def main(argv: list[str] | None = None) -> int:
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
     archive = bundle(out_dir, manifest)
+    ok = all(code == 0 for code in results.values()) and len(results) == len(args.config)
     if archive:
-        print(f"bundle: {archive} ({archive.stat().st_size / 1e6:.1f} MB)")
-        print("next: download it and run `python kaggle/ingest_runs.py <zip>` in your clone")
+        print(f"bundle (backup copy of the outputs): {archive} ({archive.stat().st_size / 1e6:.1f} MB)")
     else:
         print("no run outputs to bundle")
-    return 0 if all(code == 0 for code in results.values()) and len(results) == len(args.config) else 1
+    if args.push_to and archive and ok:
+        if not (args.git_name and args.git_email):
+            print("not pushed: set GIT_NAME and GIT_EMAIL; download the zip and run kaggle/ingest_runs.py instead")
+            return 1
+        names = " ".join(Path(c).stem for c in args.config)
+        experiment = Path(args.config[0]).parent.name
+        branch = push_results(args.push_to, f"add {experiment} results: {names}", args.git_name, args.git_email)
+        if branch:
+            print(f"results committed and pushed to branch '{branch}'. In your clone: git pull origin {branch}")
+            if branch != args.push_to:
+                print(f"('{args.push_to}' had moved on since this run started, so a new branch was used; merge it with a pull request)")
+    elif archive:
+        print("next: download the zip and run `python kaggle/ingest_runs.py <zip>` in your clone")
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":
