@@ -339,3 +339,42 @@ Next:
 - The team approves the phase 1 gate.
 - Decide the early-stopping fix.
 - Re-run phase2_ptbxl_pretraining with C.
+
+## 2026-10-16 (Day 10) — phases 2-6 built (branch `finish-project`)
+
+Done (at Akash's instruction: "do the phase 3 coding ... push to a different branch", then "finish the project"):
+- Phase 2: four baseline classifiers (`models/baselines.py`) and their runner; four quality-metric
+  families (DTW, spectral, FID-analog with a frozen feature network, TSTR), the sanity harness and its
+  runner; `phase2-gate`; `min_epochs` option for the early-stopping fix (off by default).
+- Phase 3: cVAE and WGAN-GP with four variants each, the pilot harness (diagnostics, quality metrics,
+  pilot classifier at every quarter checkpoint), final runs and synthetic banks, `phase3a-gate`,
+  `phase3-gate`; the grid runner (resumable, one ledger file per cell).
+- Phase 4: augmentation policies and the DTW quality screen, `phase4_augmentation_policy`, `phase4a-gate`
+  (writes the full grid), `phase4-gate`, the final evaluation (`python -m ecgaug.final_eval`) with the
+  pre-registered statistics.
+- Phase 5: saliency methods and their scores, `phase5_explainability`; notes with the fact checker and
+  an LLM client from the environment, `phase5_clinical_notes`; error analysis from saved predictions;
+  the demo; `phase5-gate`.
+- Phase 6: `python -m ecgaug.paper` (tables and numbers from results), `paper/main.tex` (compiles; red
+  placeholders where results are missing), `scripts/reproduce.sh`.
+- Kaggle: a notebook per new experiment plus the full grid; banks and checkpoints travel in the zips
+  and come back with `ingest_runs.py` or an attached artifacts dataset.
+- Docs: a brief per variant (32 in all), DECISIONS A14 (the design choices to confirm), the proposed
+  v2/v3/phase 5 values in PREREGISTRATION §10, README, guides, NAMING, Kaggle guide.
+- Tests: 271 pass (95 new), including an end-to-end final evaluation on fake data that runs once and
+  refuses a second time. Real-data checks: a short CPU preview of a cVAE pilot, and the DTW and
+  spectral metrics on real DS1 beats (DTW passes the sanity harness; spectral passes with one swap).
+
+Fixed on the way: the memorization threshold now uses leave-one-out distances (a 10% hold-out was too
+noisy for F); a rounding bug made Spearman 0.8 fail the >= 0.8 rule; generator weights were not seeded
+before construction.
+
+Run IDs: none official (smoke and scratch previews only, outside the repository).
+
+Open issues:
+- Every run waits for the phase 1 gate approval. The team should confirm DECISIONS A14 and fix the
+  PREREGISTRATION v2 values at the phase 2 gate.
+- `git_dirty` on the phase 1 Kaggle runs is still unexplained (docs/PHASE1_REPORT.md §7).
+- Kaggle run times of phases 2-5 are not measured; the LLM notes are untried with a real key.
+
+Next: the team approves the phase 1 gate (and decides `min_epochs`); then phase 2 on Kaggle.
