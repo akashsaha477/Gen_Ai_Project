@@ -17,6 +17,12 @@ phase1_input_representation-D.lr1e-03-s2-ab0b7c1-202610152053,1,phase1_input_rep
 phase1_input_representation-D.lr3e-04-s0-ab0b7c1-202610152053,1,phase1_input_representation,D,lr3e-04,0,done,s_f1,0.0,0.0,3.5,ab0b7c1,phase1_input_representation/D_short_window_125hz
 phase1_input_representation-D.lr3e-04-s1-ab0b7c1-202610152053,1,phase1_input_representation,D,lr3e-04,1,done,s_f1,0.017241379310344827,0.008620689655172414,8.3,ab0b7c1,phase1_input_representation/D_short_window_125hz
 phase1_input_representation-D.lr3e-04-s2-ab0b7c1-202610152053,1,phase1_input_representation,D,lr3e-04,2,done,s_f1,0.053456221198156684,0.026728110599078342,18.9,ab0b7c1,phase1_input_representation/D_short_window_125hz
+phase1_input_representation-A.lr1e-03-s0-b463e88-202610152111,1,phase1_input_representation,A,lr1e-03,0,done,s_f1,0.09256661991584852,0.054978962131837304,30.4,b463e88,phase1_input_representation/A_short_window
+phase1_input_representation-A.lr1e-03-s1-b463e88-202610152112,1,phase1_input_representation,A,lr1e-03,1,done,s_f1,0.1518324607329843,0.07591623036649214,30.0,b463e88,phase1_input_representation/A_short_window
+phase1_input_representation-A.lr1e-03-s2-b463e88-202610152112,1,phase1_input_representation,A,lr1e-03,2,done,s_f1,0.24649859943977592,0.12324929971988796,34.2,b463e88,phase1_input_representation/A_short_window
+phase1_input_representation-A.lr3e-04-s0-b463e88-202610152113,1,phase1_input_representation,A,lr3e-04,0,done,s_f1,0.0,0.0,11.5,b463e88,phase1_input_representation/A_short_window
+phase1_input_representation-A.lr3e-04-s1-b463e88-202610152113,1,phase1_input_representation,A,lr3e-04,1,done,s_f1,0.0,0.0,11.5,b463e88,phase1_input_representation/A_short_window
+phase1_input_representation-A.lr3e-04-s2-b463e88-202610152113,1,phase1_input_representation,A,lr3e-04,2,done,s_f1,0.0,0.0,11.6,b463e88,phase1_input_representation/A_short_window
 phase2_ptbxl_pretraining-finetuneD.lr1e-03-s0-32b9464-202610140206,2,phase2_ptbxl_pretraining,finetuneD,lr1e-03,0,done,s_f1,0.04128440366972477,0.020642201834862386,29.4,32b9464,phase2_ptbxl_pretraining/D_short_window_125hz/finetune
 phase2_ptbxl_pretraining-finetuneD.lr1e-03-s1-32b9464-202610140206,2,phase2_ptbxl_pretraining,finetuneD,lr1e-03,1,done,s_f1,0.02917046490428441,0.024389154020769657,24.5,32b9464,phase2_ptbxl_pretraining/D_short_window_125hz/finetune
 phase2_ptbxl_pretraining-finetuneD.lr1e-03-s2-32b9464-202610140207,2,phase2_ptbxl_pretraining,finetuneD,lr1e-03,2,done,s_f1,0.018115942028985508,0.009057971014492754,25.0,32b9464,phase2_ptbxl_pretraining/D_short_window_125hz/finetune
