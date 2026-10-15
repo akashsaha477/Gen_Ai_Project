@@ -166,3 +166,21 @@ def train_grid(
 def best_grid_point(grid: dict[str, dict]) -> dict:
     """The learning rate with the higher seed-mean selection metric; the first one wins exact ties."""
     return grid[max(grid, key=lambda tag: grid[tag]["mean"])]
+
+
+def load_run_classifier(run_id: str, rr_features: bool) -> nn.Module:
+    """The trained classifier of a run (its ``checkpoints/best.pt``), in evaluation mode.
+
+    Works for every classifier run: the model block is ``classifier.model`` in grid and policy runs and
+    ``model`` in experiment runs.
+    """
+    import yaml
+
+    run_dir = runs.find_run_dir(run_id)
+    if run_dir is None or not (run_dir / "checkpoints" / "best.pt").is_file():
+        raise FileNotFoundError(f"No checkpoint for run {run_id}; ingest the Kaggle zip that produced it")
+    config = yaml.safe_load((run_dir / "config.yaml").read_text())
+    block = (config.get("classifier") or {}).get("model") or config["model"]
+    model = build_model(block, len(CLASSES), len(SIDE_FIELDS) if rr_features else 0)
+    model.load_state_dict(torch.load(run_dir / "checkpoints" / "best.pt", map_location="cpu", weights_only=True))
+    return model.eval()

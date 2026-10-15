@@ -1,0 +1,5 @@
+base: shared_settings.yaml
+variant: C
+description: As B plus two few-shot examples and a fixed JSON output schema, rendered
+  to a note.
+generator: C

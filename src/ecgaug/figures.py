@@ -704,6 +704,64 @@ def phase2_gate_figure(gate: dict) -> list[Path]:
                   "Small dots: seeds. Black: mean ± SD. The cnn is chosen from A and B, the rnn from C and D; ties go to fewer parameters.")]  # fmt: skip
 
 
+def phase5_saliency_figure(result_path: Path) -> list[Path]:
+    """Class-average absolute saliency aligned on R: none versus augmented models, per architecture (paper figure)."""
+    plt = _plt()
+    result = json.loads(Path(result_path).read_text())
+    letter = result["variant"]
+    averages = json.loads((Path(result_path).parent / f"{letter}_class_average_saliency.json").read_text())
+    archs = [a for a in averages["maps"] if averages["maps"][a]]
+    if not archs:
+        return []
+    fig, axes = plt.subplots(len(archs), 4, figsize=(13, 2.6 * len(archs)), squeeze=False, sharex=True)
+    colors = {"none": INK, "cvae": CLASS_COLORS["S"], "wgan_gp": CLASS_COLORS["V"]}
+    for row, arch in enumerate(archs):
+        for col, cls in enumerate(("N", "S", "V", "F")):
+            ax = axes[row][col]
+            for condition, maps in averages["maps"][arch].items():
+                if cls in maps:
+                    values = np.asarray(maps[cls])
+                    ms = (np.arange(len(values)) - averages["pre_samples"]) / averages["fs"] * 1000
+                    ax.plot(ms, values / max(values.max(), 1e-12), color=colors.get(condition, INK_2), label=condition)
+            ax.axvline(0, color=GRID, linewidth=1)
+            ax.set_title(f"{arch} · {cls}", loc="left")
+            if row == len(archs) - 1:
+                ax.set_xlabel("ms from R peak")
+        axes[row][0].legend(loc="upper left", fontsize=7)
+    tag = " (provisional preview)" if result.get("provisional") else ""
+    return [_save(fig, paths.figures_for("phase5_explainability") / letter / "class_average_saliency.png",
+                  f"phase5_explainability, variant {letter} ({result['method']}): where the models look{tag}",
+                  "Mean absolute saliency over validation beats of each class, scaled to a peak of 1; aligned on the R peak.")]  # fmt: skip
+
+
+def error_analysis_figures(result: dict, split: str) -> list[Path]:
+    """Confusion matrices per architecture and condition, and the RR context of N/S confusions."""
+    plt = _plt()
+    out, written = paths.figures_for("error_analysis"), []
+    keys = list(result)
+    cols = min(3, len(keys))
+    rows = int(np.ceil(len(keys) / cols))
+    fig, axes = plt.subplots(rows, cols, figsize=(4.3 * cols, 3.9 * rows), squeeze=False)
+    for ax, key in zip(axes.ravel(), keys):
+        _confusion_panel(ax, np.asarray(result[key]["confusion_matrix"]), key)
+    for ax in axes.ravel()[len(keys):]:
+        ax.axis("off")
+    written.append(_save(fig, out / f"confusion_{split}.png", f"Error analysis ({split}): confusion matrices, mean over seeds",
+                         "Each row shows where the beats of one true class went; the diagonal is correct."))  # fmt: skip
+    fig, axes = plt.subplots(1, len(keys), figsize=(4.3 * len(keys), 3.3), squeeze=False, sharey=True)
+    for ax, key in zip(axes[0], keys):
+        groups = [(name, g["rr_ratio_values"]) for name, g in result[key]["rr_context"].items() if g["rr_ratio_values"]]
+        if groups:
+            ax.boxplot([g[1] for g in groups], showfliers=False)
+            ax.set_xticks(range(1, len(groups) + 1), [g[0] for g in groups], rotation=35, ha="right")
+        ax.axhline(1.0, color=GRID, linewidth=1)
+        ax.set_title(key, loc="left")
+    axes[0][0].set_ylabel("rr_ratio (below 1 = premature)")
+    written.append(_save(fig, out / f"rr_context_{split}.png", f"Error analysis ({split}): how premature the confused beats were",
+                         "rr_ratio is the preceding RR interval over the mean of the 10 before it; S beats are early (below 1)."))  # fmt: skip
+    return written
+
+
 def final_eval_figures(stats: dict) -> list[Path]:
     """Forest plot of the pre-registered differences, and per-record S and F recall on the test set."""
     plt = _plt()
@@ -796,6 +854,8 @@ def for_result(result_path: Path) -> list[Path]:
         return phase1_variant_figures(path)
     if path.parent.name == PHASE2_QUALITY_METRICS:
         return phase2_quality_figures(path)
+    if path.parent.name == "phase5_explainability":
+        return phase5_saliency_figure(path)
     return []
 
 
