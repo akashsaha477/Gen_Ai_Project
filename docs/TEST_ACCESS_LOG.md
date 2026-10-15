@@ -2,7 +2,7 @@
 
 Every read of DS2 (the locked test set) is appended here by `ecgaug.data.access`.
 Kinds: `construction` (labels counted or arrays built, no model involved), `evaluation`
-(only `/final-eval`), `audit` (leakage-audit arm, only after `/final-eval`).
+(only `/final-eval`), `audit` (leakage-audit experiment, only after `/final-eval`).
 
 | date | kind | git SHA | command | purpose | run IDs | approved by |
 |---|---|---|---|---|---|---|

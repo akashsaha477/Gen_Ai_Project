@@ -3,8 +3,8 @@
 Called by the notebooks in this folder after they have cloned the repository. Uses only the
 standard library, so it runs with the system Python before the project environment exists.
 
-    python kaggle/kaggle_run.py --config configs/m1_input_representation/A_short_window.yaml -- --device cuda
-    python kaggle/kaggle_run.py --config configs/m1_input_representation/A_short_window.yaml configs/m1_input_representation/B_long_window_bandpass.yaml --raw-dir /kaggle/input/mitdb-raw
+    python kaggle/kaggle_run.py --config configs/phase1_input_representation/A_short_window.yaml -- --device cuda
+    python kaggle/kaggle_run.py --config configs/phase1_input_representation/A_short_window.yaml configs/phase1_input_representation/B_long_window_bandpass.yaml --raw-dir /kaggle/input/mitdb-raw
 
 Steps: install the environment, get and verify the raw data, run each config through its package
 CLI, and zip runs/ plus the variant result files for kaggle/ingest_runs.py.
@@ -21,7 +21,9 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-EXTRA_RESULT_FILES = ("results/data/ptbxl_preprocessing.json",)
+# Kept in step with ecgaug.names (this script runs before the package is installed; a test checks it).
+EXPERIMENTS = ("phase1_input_representation", "phase2_ptbxl_pretraining")
+EXTRA_RESULT_FILES = ("results/phase2_ptbxl_data/ptbxl_preprocessing.json",)
 
 
 def sh(cmd: list[str], check: bool = True) -> int:
@@ -77,11 +79,11 @@ def git_sha() -> str:
 
 
 def bundle(out_dir: Path, manifest: dict, repo: Path = REPO) -> Path | None:
-    """Zip runs/, results/validation/ and the PTB-XL report into ``out_dir``; None if no run produced output."""
+    """Zip runs/, each experiment's results/ folder, figures and the PTB-XL report; None if nothing ran."""
     staging = out_dir / "_bundle"
     shutil.rmtree(staging, ignore_errors=True)
     found = False
-    for rel in ("runs", "results/validation"):
+    for rel in ("runs", *(f"results/{name}" for name in EXPERIMENTS)):
         if (repo / rel).is_dir() and any((repo / rel).rglob("*")):
             shutil.copytree(repo / rel, staging / rel)
             found = True
@@ -103,7 +105,7 @@ def bundle(out_dir: Path, manifest: dict, repo: Path = REPO) -> Path | None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--config", nargs="+", required=True, help="one or more config files, run in order")
-    parser.add_argument("--cli", default="ecgaug.experiments.input_representation", help="package CLI that runs a config")
+    parser.add_argument("--cli", default="ecgaug.experiments.phase1_input_representation", help="package CLI that runs a config")
     parser.add_argument("--env", default="locked", choices=["locked", "kaggle", "none"])
     parser.add_argument("--raw-dir", default=None, help="folder with the raw MIT-BIH files (else download)")
     parser.add_argument("--out", default="/kaggle/working", help="where the bundle zip is written")

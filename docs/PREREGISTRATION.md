@@ -29,13 +29,13 @@ Items marked **(new)** were not in the kit and need the team's explicit agreemen
 - **Usable beats (new):** a beat is kept if the window from 0.4 s before to 0.6 s after the R peak lies
   inside the record and both RR intervals exist. The rule is the same for every representation, so
   the beat set never depends on the input representation.
-- **Counts:** `results/data/record_counts.csv` and `results/data/sanity_check.json`, produced by
+- **Counts:** `results/phase1_data/record_counts.csv` and `results/phase1_data/sanity_check.json`, produced by
   `python -m ecgaug.data.counts`.
 
 ## 2. Validation split
 
 Options and their DS1 per-record counts are in
-`results/data/val_options.md`. The choice is justified from DS1 counts alone; DS2 counts are not read
+`results/phase1_data/val_options.md`. The choice is justified from DS1 counts alone; DS2 counts are not read
 by the proposal tool.
 
 - Chosen option: V1
@@ -51,7 +51,7 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 - **Selection metric (validation):** the primary metric, if validation holds at least **100 F beats
   from at least 2 records (new)**. Otherwise the fallback: S F1, with V F1 as tie-break. The numbers
   are chosen so that one F beat moves F recall by at most 0.01, below the tie margin of §4. The
-  selection metric is fixed once, at approval of §2, and is the same for every module.
+  selection metric is fixed once, at approval of §2, and is the same for every experiment.
 - **Secondary metrics:** per-class precision, recall and F1; one-vs-rest PR-AUC; AAMI-style Se and +P
   for S and V; N recall; macro-F1 over N, S, V, F.
 - **Decision rule:** argmax of the class probabilities in every condition. No threshold is tuned.
@@ -59,7 +59,7 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 - **Undefined values:** a class with no true beats has no recall or F1 (NaN, not 0). A class that is
   present but never predicted has F1 = 0.
 
-## 4. Selection conventions (all modules)
+## 4. Selection conventions (all experiments)
 
 - **Seeds:** [0, 1, 2]. The selection value of a variant is the mean over seeds.
 - **Tuning grid:** learning rate in {1e-3, 3e-4}, nothing else. **(new)** For each variant, every seed
@@ -74,23 +74,23 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
      margin of it is tied with it.
   2. Under the fallback metric, keep the tied variants whose V F1 is within the tie margin of the
      best V F1 among them.
-  3. Among the remaining variants the simplest wins, as defined per module; then lower wall-clock.
+  3. Among the remaining variants the simplest wins, as defined per experiment; then lower wall-clock.
 - **"Best" always means validation.** Any "best" condition, checkpoint, strength or variant is the one
   with the highest validation selection metric, recorded in `docs/DECISIONS.md` before `/final-eval`.
-- **Equal budgets:** variants of a module get identical data, seeds, epoch cap, tuning grid and
+- **Equal budgets:** variants of an experiment get identical data, seeds, epoch cap, tuning grid and
   early-stopping rule. Deviations are flagged in the gate report.
 - **Losing variants are kept** and reported in the variation-study tables.
 - The rule is applied by `ecgaug.eval.selection.select_winner`. If it is ambiguous for the actual
   results, the gate stops and asks.
 
-## 5. Module 1 (input representation)
+## 5. phase1_input_representation (input representation)
 
-- **Variants:** A, B, C and D as defined in `docs/PLAN.md` and `configs/m1_input_representation/`. The band-pass of B is a
+- **Variants:** A, B, C and D as defined in `docs/PLAN.md` and `configs/phase1_input_representation/`. The band-pass of B is a
   4th-order Butterworth applied forward and backward **(new: the order was unspecified)**. D resamples
   the continuous record to 125 Hz with a polyphase filter before windowing **(new)**.
 - **Probe:** the fixed probe CNN of `src/ecgaug/models/probe.py`, unweighted cross-entropy, AdamW,
   batch 256, weight decay 0.01, at most 40 epochs **(new: epoch cap)**; budget in
-  `configs/m1_input_representation/shared_budget.yaml`.
+  `configs/phase1_input_representation/shared_budget.yaml`.
 - **Selection:** §4 with the selection metric of §3. Simplicity = fewer input values per beat:
   D 63, A 180, C 183, B 360.
 - The winner defines contract v1. If C wins, every downstream classifier takes the RR side input and
@@ -140,8 +140,8 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
   kind and its environment flag. `ecgaug.data.load_test()` is the only reader of `test.npz`.
 - **Construction** (`ALLOW_TEST_BUILD=1`): counting DS2 labels and building `test.npz`. No model sees
   the data. Each use is logged.
-- **Evaluation** (`ALLOW_TEST=1`): exactly one, by `/final-eval`, after Gate 4 approval.
-- **Audit:** the optional intra-patient leakage-audit arm runs only after `/final-eval`, in its own
+- **Evaluation** (`ALLOW_TEST=1`): exactly one, by `/final-eval`, after the phase 4 gate approval.
+- **Audit:** the optional intra-patient leakage-audit experiment runs only after `/final-eval`, in its own
   directories, logged, and its artifacts cannot enter the main grid.
 - Every access is appended to `docs/TEST_ACCESS_LOG.md`. No decision of any kind uses test data.
 - After `/final-eval` nothing is retrained, re-selected or re-tuned. A bug found later is documented
@@ -158,9 +158,9 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 
 ## 10. Deferred to later versions
 
-- **v2, at Gate 2 and before any Phase 3 run:** the composite quality metric, the diversity floor, the
+- **v2, at the phase 2 gate and before any Phase 3 run:** the composite quality metric, the diversity floor, the
   memorization threshold, the class-weight exponents, and the rule that decides 3 or 5 seeds.
-- **v3, before the Module 7 pilot:** the three augmentation strengths, how the chosen policy applies to
+- **v3, before the phase4_augmentation_policy pilot:** the three augmentation strengths, how the chosen policy applies to
   SMOTE and random oversampling, and the quality screen of policy D.
 - **Before Phase 5 runs:** the low-confidence rule for notes and the explainability evaluation sets.
 

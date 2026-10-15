@@ -1,4 +1,4 @@
-"""Classification metrics (Module 2).
+"""Classification metrics (the evaluation code).
 
 All F1, precision and recall values come from argmax decisions; no threshold is tuned. Functions
 that take a confusion matrix accept leading batch dimensions (``[..., C, C]``, rows = true class,

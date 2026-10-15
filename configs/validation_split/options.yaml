@@ -1,6 +1,6 @@
 # Candidate validation splits for the Phase 1 decision point (a).
 # Each option lists the DS1 records that form validation; the rest of DS1 is training.
-# Rationales cite DS1 per-record counts only (results/data/val_options.md is generated from this file).
+# Rationales cite DS1 per-record counts only (results/phase1_data/val_options.md is generated from this file).
 options:
   - name: V1
     val: [115, 118, 201, 205, 223]
