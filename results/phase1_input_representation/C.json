@@ -1,0 +1,300 @@
+{
+  "experiment": "phase1_input_representation",
+  "variant": "C",
+  "description": "Variant A plus RR features (rr_prev, rr_next, rr_prev over the mean RR of the previous 10 beats) fed to the probe's side branch.",
+  "representation": {
+    "name": "C_short_window_rr_features",
+    "window_pre_s": 0.25,
+    "window_post_s": 0.25,
+    "bandpass_hz": null,
+    "bandpass_order": 4,
+    "target_fs": null,
+    "normalization": "per_beat_zscore",
+    "rr_features": true,
+    "effective_fs": 360,
+    "window_samples": [
+      90,
+      90
+    ],
+    "n_samples": 180
+  },
+  "complexity_inputs_per_beat": 183,
+  "n_parameters": 18762,
+  "split": {
+    "name": "V1",
+    "val": [
+      115,
+      118,
+      201,
+      205,
+      223
+    ]
+  },
+  "selection_metric": "s_f1",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "chosen_lr": 0.001,
+  "mean": 0.2960978798661217,
+  "sd": 0.03808502604910847,
+  "tie_break_mean": 0.6718966652342999,
+  "tie_break_sd": 0.05549188070809678,
+  "per_seed": [
+    {
+      "seed": 0,
+      "run_id": "phase1_input_representation-C.lr1e-03-s0-b20a522-202610152033",
+      "selection_value": 0.25572519083969464,
+      "tie_break_value": 0.6638537271448663,
+      "rare_macro_f1": 0.15208404870704456,
+      "f1": {
+        "N": 0.9711934156378601,
+        "S": 0.25572519083969464,
+        "V": 0.6638537271448663,
+        "F": 0.04844290657439446
+      },
+      "pr_auc": {
+        "N": 0.9912349121802317,
+        "S": 0.1388459695628613,
+        "V": 0.6191414166175874,
+        "F": 0.022643964309780745
+      },
+      "n_recall": 0.9681467181467182,
+      "best_epoch": 5,
+      "epochs_run": 10,
+      "wall_clock_s": 20.198208123999848
+    },
+    {
+      "seed": 1,
+      "run_id": "phase1_input_representation-C.lr1e-03-s1-b20a522-202610152033",
+      "selection_value": 0.3313840155945419,
+      "tie_break_value": 0.7309711286089239,
+      "rare_macro_f1": 0.16569200779727095,
+      "f1": {
+        "N": 0.98000768935025,
+        "S": 0.3313840155945419,
+        "V": 0.7309711286089239,
+        "F": 0.0
+      },
+      "pr_auc": {
+        "N": 0.997808912954029,
+        "S": 0.2903992135409141,
+        "V": 0.7128964092098463,
+        "F": 0.022360600376346636
+      },
+      "n_recall": 0.9841698841698842,
+      "best_epoch": 20,
+      "epochs_run": 25,
+      "wall_clock_s": 49.28276914300022
+    },
+    {
+      "seed": 2,
+      "run_id": "phase1_input_representation-C.lr1e-03-s2-b20a522-202610152034",
+      "selection_value": 0.3011844331641286,
+      "tie_break_value": 0.6208651399491094,
+      "rare_macro_f1": 0.17020005971931917,
+      "f1": {
+        "N": 0.96952988972722,
+        "S": 0.3011844331641286,
+        "V": 0.6208651399491094,
+        "F": 0.0392156862745098
+      },
+      "pr_auc": {
+        "N": 0.9932982675731973,
+        "S": 0.21779307075300486,
+        "V": 0.5295745968033932,
+        "F": 0.07096198776664059
+      },
+      "n_recall": 0.9674710424710424,
+      "best_epoch": 6,
+      "epochs_run": 11,
+      "wall_clock_s": 21.766175515000214
+    }
+  ],
+  "run_ids": [
+    "phase1_input_representation-C.lr1e-03-s0-b20a522-202610152033",
+    "phase1_input_representation-C.lr1e-03-s1-b20a522-202610152033",
+    "phase1_input_representation-C.lr1e-03-s2-b20a522-202610152034"
+  ],
+  "lr_grid": {
+    "lr1e-03": {
+      "lr": 0.001,
+      "per_seed": [
+        {
+          "seed": 0,
+          "run_id": "phase1_input_representation-C.lr1e-03-s0-b20a522-202610152033",
+          "selection_value": 0.25572519083969464,
+          "tie_break_value": 0.6638537271448663,
+          "rare_macro_f1": 0.15208404870704456,
+          "f1": {
+            "N": 0.9711934156378601,
+            "S": 0.25572519083969464,
+            "V": 0.6638537271448663,
+            "F": 0.04844290657439446
+          },
+          "pr_auc": {
+            "N": 0.9912349121802317,
+            "S": 0.1388459695628613,
+            "V": 0.6191414166175874,
+            "F": 0.022643964309780745
+          },
+          "n_recall": 0.9681467181467182,
+          "best_epoch": 5,
+          "epochs_run": 10,
+          "wall_clock_s": 20.198208123999848
+        },
+        {
+          "seed": 1,
+          "run_id": "phase1_input_representation-C.lr1e-03-s1-b20a522-202610152033",
+          "selection_value": 0.3313840155945419,
+          "tie_break_value": 0.7309711286089239,
+          "rare_macro_f1": 0.16569200779727095,
+          "f1": {
+            "N": 0.98000768935025,
+            "S": 0.3313840155945419,
+            "V": 0.7309711286089239,
+            "F": 0.0
+          },
+          "pr_auc": {
+            "N": 0.997808912954029,
+            "S": 0.2903992135409141,
+            "V": 0.7128964092098463,
+            "F": 0.022360600376346636
+          },
+          "n_recall": 0.9841698841698842,
+          "best_epoch": 20,
+          "epochs_run": 25,
+          "wall_clock_s": 49.28276914300022
+        },
+        {
+          "seed": 2,
+          "run_id": "phase1_input_representation-C.lr1e-03-s2-b20a522-202610152034",
+          "selection_value": 0.3011844331641286,
+          "tie_break_value": 0.6208651399491094,
+          "rare_macro_f1": 0.17020005971931917,
+          "f1": {
+            "N": 0.96952988972722,
+            "S": 0.3011844331641286,
+            "V": 0.6208651399491094,
+            "F": 0.0392156862745098
+          },
+          "pr_auc": {
+            "N": 0.9932982675731973,
+            "S": 0.21779307075300486,
+            "V": 0.5295745968033932,
+            "F": 0.07096198776664059
+          },
+          "n_recall": 0.9674710424710424,
+          "best_epoch": 6,
+          "epochs_run": 11,
+          "wall_clock_s": 21.766175515000214
+        }
+      ],
+      "mean": 0.2960978798661217,
+      "sd": 0.03808502604910847,
+      "tie_break_mean": 0.6718966652342999,
+      "tie_break_sd": 0.05549188070809678,
+      "wall_clock_s": 91.24715278200028
+    },
+    "lr3e-04": {
+      "lr": 0.0003,
+      "per_seed": [
+        {
+          "seed": 0,
+          "run_id": "phase1_input_representation-C.lr3e-04-s0-b20a522-202610152034",
+          "selection_value": 0.0,
+          "tie_break_value": 0.14489311163895488,
+          "rare_macro_f1": 0.0,
+          "f1": {
+            "N": 0.9535472584135168,
+            "S": 0.0,
+            "V": 0.14489311163895488,
+            "F": 0.0
+          },
+          "pr_auc": {
+            "N": 0.9601139250492403,
+            "S": 0.020772535338630924,
+            "V": 0.4972782682927006,
+            "F": 0.171091849480628
+          },
+          "n_recall": 0.9996138996138996,
+          "best_epoch": 1,
+          "epochs_run": 6,
+          "wall_clock_s": 11.936768716000188
+        },
+        {
+          "seed": 1,
+          "run_id": "phase1_input_representation-C.lr3e-04-s1-b20a522-202610152034",
+          "selection_value": 0.28618968386023297,
+          "tie_break_value": 0.6852756454989533,
+          "rare_macro_f1": 0.14309484193011648,
+          "f1": {
+            "N": 0.9719832764669134,
+            "S": 0.28618968386023297,
+            "V": 0.6852756454989533,
+            "F": 0.0
+          },
+          "pr_auc": {
+            "N": 0.9920063752090132,
+            "S": 0.17150784500564895,
+            "V": 0.7007890020352151,
+            "F": 0.025939090502688666
+          },
+          "n_recall": 0.9761583011583012,
+          "best_epoch": 23,
+          "epochs_run": 28,
+          "wall_clock_s": 55.93837444599967
+        },
+        {
+          "seed": 2,
+          "run_id": "phase1_input_representation-C.lr3e-04-s2-b20a522-202610152035",
+          "selection_value": 0.2976190476190476,
+          "tie_break_value": 0.740356937248129,
+          "rare_macro_f1": 0.1707875457875458,
+          "f1": {
+            "N": 0.9717105584599599,
+            "S": 0.2976190476190476,
+            "V": 0.740356937248129,
+            "F": 0.04395604395604396
+          },
+          "pr_auc": {
+            "N": 0.9972214948231878,
+            "S": 0.22562976596123022,
+            "V": 0.7394379562568896,
+            "F": 0.01916622272179193
+          },
+          "n_recall": 0.9598455598455599,
+          "best_epoch": 18,
+          "epochs_run": 23,
+          "wall_clock_s": 46.282014234000144
+        }
+      ],
+      "mean": 0.19460291049309353,
+      "sd": 0.16862792523265552,
+      "tie_break_mean": 0.5235085647953457,
+      "tie_break_sd": 0.32904518413403927,
+      "wall_clock_s": 114.157157396
+    }
+  },
+  "wall_clock_s": 205.4043101780003,
+  "budget": {
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "lr_grid": [
+      0.001,
+      0.0003
+    ],
+    "max_epochs": 40,
+    "patience": 5,
+    "batch_size": 256,
+    "weight_decay": 0.01
+  },
+  "budget_deviations": [],
+  "device": "cuda",
+  "git_sha": "b20a522359a96857ccfc508a90f99f42f72d7d82",
+  "dataset_content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896"
+}
