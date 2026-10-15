@@ -130,6 +130,7 @@ def test_git_dirty_ignores_run_outputs_but_not_code(monkeypatch):
 
     assert status([]) is False
     assert status(["?? runs/p1-m1-A-s0-abcdef0-202610081530/config.yaml", " M results/runs_index.csv"]) is False
+    assert status(["?? figures/phase1_input_representation/A/training_and_confusion.png"]) is False  # drawn by an earlier run
     assert status(["?? runs/x/config.yaml", " M src/ecgaug/runs.py"]) is True
     assert status(["?? configs/phase1_input_representation/E.yaml"]) is True
     assert status(["R  results/a.json -> docs/a.json"]) is True
@@ -242,3 +243,58 @@ def test_one_naming_scheme_everywhere():
     assert run_id.startswith("phase1_input_representation-A.lr1e-03-s0-")
     with pytest.raises(ValueError):
         names.phase_of("m1_input_representation")
+
+
+def test_kaggle_results_are_committed_and_pushed(tmp_path):
+    """The notebook's push step: outputs go to the run's branch, or to a new branch if it moved on."""
+    import importlib.util
+    import subprocess
+
+    from conftest import REPO
+
+    spec = importlib.util.spec_from_file_location("kaggle_run", REPO / "kaggle" / "kaggle_run.py")
+    kaggle_run = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(kaggle_run)
+
+    def git(*args, cwd):
+        return subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True, text=True).stdout.strip()
+
+    remote, clone = tmp_path / "remote.git", tmp_path / "clone"
+    git("init", "--quiet", "--bare", "-b", "main", str(remote), cwd=tmp_path)
+    git("clone", "--quiet", str(remote), str(clone), cwd=tmp_path)
+    (clone / ".gitignore").write_text("/runs/**/*.pt\n/runs/**/*.npz\n")
+    (clone / "README.md").write_text("x\n")
+    git("add", ".", cwd=clone)
+    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "--quiet", "-m", "init", cwd=clone)
+    git("push", "--quiet", "origin", "main", cwd=clone)
+
+    run_dir = clone / "runs" / "phase1_input_representation" / "A_short_window" / "phase1_input_representation-A.lr1e-03-s0-abcdef0-202610151200"
+    (run_dir / "checkpoints").mkdir(parents=True)
+    (run_dir / "metrics_val.json").write_text("{}")
+    (run_dir / "checkpoints" / "best.pt").write_bytes(b"weights")
+    (clone / "results" / "phase1_input_representation").mkdir(parents=True)
+    (clone / "results" / "phase1_input_representation" / "A.json").write_text("{}")
+    (clone / "results" / "phase1_data").mkdir(parents=True)
+    (clone / "results" / "phase1_data" / "raw_checksums.json").write_text("changed on Kaggle")  # must not be committed
+
+    assert kaggle_run.push_results("main", "add results: A", "Ann", "ann@x", repo=clone) == "main"
+    pushed = git("ls-tree", "-r", "--name-only", "main", cwd=remote).split("\n")
+    assert "results/phase1_input_representation/A.json" in pushed and any(p.endswith("metrics_val.json") for p in pushed)
+    assert not any(p.endswith(".pt") for p in pushed) and "results/phase1_data/raw_checksums.json" not in pushed
+    assert git("log", "-1", "--format=%an %s", "main", cwd=remote) == "Ann add results: A"
+    assert kaggle_run.push_results("main", "again", "Ann", "ann@x", repo=clone) is None  # nothing new
+
+    # someone else pushed to main meanwhile: the results go to a new branch instead
+    other = tmp_path / "other"
+    git("clone", "--quiet", str(remote), str(other), cwd=tmp_path)
+    (other / "NOTE.md").write_text("teammate\n")
+    git("add", ".", cwd=other)
+    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "--quiet", "-m", "teammate", cwd=other)
+    git("push", "--quiet", "origin", "main", cwd=other)
+    (clone / "results" / "phase1_input_representation" / "B.json").write_text("{}")
+    branch = kaggle_run.push_results("main", "add results: B", "Ann", "ann@x", repo=clone)
+    assert branch.startswith("main-kaggle-") and "results/phase1_input_representation/B.json" in git("ls-tree", "-r", "--name-only", branch, cwd=remote)
+
+    (run_dir / "preds_test.npz").write_bytes(b"x")
+    with pytest.raises(RuntimeError, match="test predictions"):
+        kaggle_run.push_results("main", "bad", "Ann", "ann@x", repo=clone)

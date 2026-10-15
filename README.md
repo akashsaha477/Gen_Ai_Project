@@ -37,8 +37,9 @@ the one before it; the code refuses to skip ahead and says what is missing.
 | 2 baselines | run `phase2_ptbxl_pretraining` for the phase 1 winner | Kaggle: `kaggle/phase2_ptbxl_pretraining.ipynb` with the winner's letter | one preview (variant D) |
 | 2 baselines | `phase2_baseline_classifiers`, `phase2_quality_metrics` | not built yet | |
 
-After each Kaggle run: download the zip, `python kaggle/ingest_runs.py <zip>`, commit and push, then
-run `status` again.
+After each Kaggle run the notebook pushes the results to GitHub itself: `git pull`, then run `status`
+again. (If the push did not happen: download the zip from the notebook's Output and run
+`python kaggle/ingest_runs.py <zip>`.)
 
 **Figures for every phase:** each run, and the phase 1 gate, draws before-and-after figures into
 `figures/<experiment or phase folder>/` (data before and after preprocessing, training curves,

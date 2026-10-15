@@ -1,8 +1,8 @@
 # Running the project on Kaggle
 
 There is one notebook per job. Each clones this repository at the branch or commit you name, installs
-the environment, checks the raw data, runs the experiment and produces one zip. You bring the zip back
-with `kaggle/ingest_runs.py`. No logic lives in the notebooks.
+the environment, checks the raw data, runs the experiment, then commits the results and pushes them
+to GitHub, so you only `git pull`. No logic lives in the notebooks.
 
 | Notebook | What it runs | Data |
 |---|---|---|
@@ -10,7 +10,7 @@ with `kaggle/ingest_runs.py`. No logic lives in the notebooks.
 | `phase2_ptbxl_pretraining.ipynb` | PTB-XL preprocessing, pretraining, MIT-BIH fine-tuning, and from scratch for comparison | PTB-XL, then MIT-BIH DS1 |
 
 Other files in this folder: `kaggle_run.py` (the script both notebooks call), `make_raw_dataset.py`
-(builds the MIT-BIH zip to upload once) and `ingest_runs.py` (brings results back).
+(builds the MIT-BIH zip to upload once) and `ingest_runs.py` (the backup way to bring results back from the zip).
 
 The four input variants, used by both notebooks:
 
@@ -36,7 +36,7 @@ The four input variants, used by both notebooks:
 
 1. Kaggle account with a verified phone number (needed for Internet and GPU in notebooks).
 2. A GitHub token that can read the repo: GitHub > Settings > Developer settings > Fine-grained
-   tokens > only this repository > Contents: Read-only. Copy it once.
+   tokens > only this repository > Contents: **Read and write** (the notebook pushes the results). Copy it once.
 3. On kaggle.com: Create > New Notebook > File > Import Notebook > upload the notebook you need from
    this folder.
 4. In the notebook:
@@ -61,17 +61,20 @@ The token is read from Kaggle Secrets, never printed and never put in a URL. Do 
    | `RAW_DATASET_DIR` | leave as `/kaggle/input`; `""` downloads MIT-BIH from PhysioNet instead |
    | `PTBXL_SOURCE` | pretraining notebook only: `"download"` or a folder holding a PTB-XL copy |
    | `PREVIEW` | pretraining notebook only: `True` to run before the phase 1 gate or for another variant |
+   | `PUSH_RESULTS` | `True` (default) commits the results and pushes them to `GIT_REF` |
+   | `GIT_NAME`, `GIT_EMAIL` | your name and GitHub email for that commit (required for the push) |
 
 3. Run All. For long runs use Save Version > Save & Run All (Commit): it keeps running with the
    browser closed.
-4. Download `ecgaug_<sha>_<time>.zip` from the notebook's Output.
-5. In your clone:
-   ```
-   uv run python kaggle/ingest_runs.py ~/Downloads/ecgaug_<sha>_<time>.zip
-   git add results runs && git commit -m "m1 A results" && git push
-   ```
-   Ingest never overwrites an existing run or result file and refuses any run that carries test
-   predictions.
+4. When the run ends, the notebook commits the run folders, result files, figures and runs index
+   (never model weights) and pushes them to `GIT_REF`. The last lines of the output say where. In your
+   clone: `git pull`.
+   - If someone pushed to that branch while you were running, the results go to a new branch
+     `<GIT_REF>-kaggle-<time>` instead, and you merge it with a pull request. Nothing is overwritten.
+   - Nothing is pushed if a run failed, if a run carries test predictions, or for a smoke test.
+5. Backup: the same outputs are in `ecgaug_<sha>_<time>.zip` in the notebook's Output. If the push did not
+   happen, download it and run `uv run python kaggle/ingest_runs.py <zip>` in your clone, then commit
+   and push. Ingest never overwrites an existing run or result file and refuses test predictions.
 
 First time: set `SMOKE_TEST = True` and run once. If it prints no error, your setup works.
 

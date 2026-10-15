@@ -407,7 +407,10 @@ scored in one call.
   verifies it; then it runs each config through its runner; `bundle` zips `runs/` and the result
   files.
 - `make_raw_dataset.py`: zips the verified MIT-BIH files for upload as a Kaggle dataset.
-- `ingest_runs.py`: calls `runs.ingest` on a downloaded zip.
+- `push_results(branch, message, name, email)` in `kaggle_run.py`: after the runs, commits only run
+  outputs (run folders without weights, results, figures, runs index) and pushes them to the branch, or
+  to a new `<branch>-kaggle-<time>` branch if the branch moved on. Refuses if a run carries test predictions.
+- `ingest_runs.py`: the backup path; calls `runs.ingest` on a downloaded zip.
 
 ---
 
