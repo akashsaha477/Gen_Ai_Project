@@ -1,7 +1,7 @@
-"""Input representations: one config-driven code path for every Module 1 variant.
+"""Input representations: one config-driven code path for every phase1_input_representation variant.
 
 A representation turns the continuous MLII signal of a record plus R-peak indices into one fixed-length
-window per beat. Only the representation differs between Module 1 variants; the beat set, labels and
+window per beat. Only the representation differs between phase1_input_representation variants; the beat set, labels and
 splits do not, because the usable-beat rule below never depends on the representation.
 """
 
@@ -60,7 +60,7 @@ class RepresentationSpec:
 
     @property
     def n_inputs(self) -> int:
-        """Input values per beat: samples plus RR side features (Module 1 tie-break)."""
+        """Input values per beat: samples plus RR side features (phase1_input_representation tie-break)."""
         return self.n_samples + (3 if self.rr_features else 0)
 
     def to_dict(self) -> dict:

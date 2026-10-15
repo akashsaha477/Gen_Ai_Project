@@ -5,7 +5,7 @@
 | File | Purpose |
 |---|---|
 | `CLAUDE.md` | Project brain. Claude Code loads it automatically every session: mission, rules, data protocol, contract, repo layout, conventions. |
-| `docs/PLAN.md` | Phase-by-phase spec: shared infrastructure, modules, variants A–D, selection rules, gate checklists. |
+| `docs/PLAN.md` | Phase-by-phase spec: shared infrastructure, experiments, variants A–D, selection rules, gate checklists. |
 | `docs/PAPER_TRACK.md` | Research questions, hypotheses, statistics plan, figures/tables, threats to validity. |
 | `.claude/commands/*.md` | Custom commands: `/phase`, `/variant`, `/gate`, `/status`, `/final-eval`, `/paper`. |
 | `KICKOFF_PROMPT.md` | This file. |
@@ -35,13 +35,13 @@ Then, in this order:
 2. Wait for my reply to your review.
 3. Then run Phase 1 exactly as /phase 1 describes: scaffold, environment + lockfile, tests, MIT-BIH
    download from PhysioNet, beat extraction with the AAMI mapping, per-record class counts with the
-   sanity check, the guarded test loader, Module 2 eval utilities with tests, the probe CNN, the Kaggle
+   sanity check, the guarded test loader, the evaluation code eval utilities with tests, the probe CNN, the Kaggle
    runner + ingest script, and a draft docs/PREREGISTRATION.md.
 4. Stop at the Phase 1 decision points and show evidence for each:
    (a) validation-split options with per-record class counts,
    (b) Q-class handling and the primary-metric fallback if F is missing from validation,
-   (c) Module 1 variants A–D stubbed, briefed and runnable.
-   Do not run Module 1 variants until PREREGISTRATION.md v1 is committed. Do not start Phase 2.
+   (c) phase1_input_representation variants A–D stubbed, briefed and runnable.
+   Do not run phase1_input_representation variants until PREREGISTRATION.md v1 is committed. Do not start Phase 2.
 
 Compute: Kaggle GPU sessions with a weekly quota, plus laptops. Keep runs short, measure wall-clock,
 and ask before anything over 2 GPU-hours.
@@ -53,15 +53,15 @@ Today is Day <N>.
 
 1. **Shared build** — one person on `main`: `/phase N`. Review the plan it shows, reply `go`.
 2. **Draw assignments** — record who takes which variant in `docs/ASSIGNMENTS.md`.
-3. **Variants in parallel** — each member on their own branch: `/variant <module> <letter>`.
+3. **Variants in parallel** — each member on their own branch: `/variant <experiment> <letter>`.
    Push the result files and open a PR.
 4. **Gate** — when all variants are in, merge result files to `main` and run `/gate N`
-   (`/gate 3a` on Day 12 for generator selection). Read `results/gates/gateN.md`.
+   (`/gate 3a` on Day 12 for generator selection). Read `results/phase<N>_gate/report.md`.
 5. **Decide together** — short meeting, then reply `approve gate N` (or request changes).
    Claude Code freezes artifacts, tags `gate-N` and updates `docs/PROGRESS.md`.
 6. `/status`, then `/phase N+1`.
 
-After Gate 4 approval: `/final-eval` exactly once. Phase 6: `/paper all`, then section by section.
+After the phase 4 gate approval: `/final-eval` exactly once. Phase 6: `/paper all`, then section by section.
 
 | Phase | Commands in order |
 |---|---|
@@ -76,7 +76,7 @@ After Gate 4 approval: `/final-eval` exactly once. Phase 6: `/paper all`, then s
 
 ```
 /status
-Today is Day <N>. I'm working on <module / variant>. Continue from docs/PROGRESS.md and tell me the
+Today is Day <N>. I'm working on <experiment / variant>. Continue from docs/PROGRESS.md and tell me the
 next concrete step before writing code.
 ```
 

@@ -10,35 +10,66 @@ New to the project? Read `PROJECT_GUIDE.md` first: it explains the whole project
 Then `CLAUDE.md` (rules and data protocol), then `docs/PLAN.md`, `docs/PAPER_TRACK.md` and
 `docs/PREREGISTRATION.md`. Live state is in `docs/PROGRESS.md` and `docs/DECISIONS.md`.
 
-## Status
+## Where we are and what to do next
 
-Updated 2026-10-14 (Day 8). Phase 1 of 6, data foundation.
+One command answers both:
 
-- Done: environment and lockfile, MIT-BIH download with checksum verification, beat extraction, per-record
-  counts, the test lock, evaluation utilities, probe model, Module 1 runner with variants A-D, Kaggle setup.
-- Dataset: MIT-BIH Arrhythmia Database (PhysioNet), inter-patient DS1/DS2 split, for training,
-  validation and test. PTB-XL is used only to pretrain the classifier. Its preprocessing and the
-  pretraining plus fine-tuning runner are built; the first real run (variant D, on Kaggle) is in
-  `results/validation/ptbxl_pretraining/D.json`.
-- Validation split: option V1 (records 115, 118, 201, 205, 223), in `configs/validation_split/approved.yaml`.
-  Variants are selected on S F1 with V F1 as tie-break.
-- Module 1 variants can be run now, locally or on Kaggle.
-- The PTB-XL pretraining arm can be run on Kaggle: one run does preprocessing, pretraining and
-  fine-tuning. Its results are provisional until Gate 1 fixes the input representation.
-- First real result (pretraining arm, variant D): pretraining did not help. Both arms detect S beats at
-  chance level (S F1 about 0.03), as expected for an input without RR timing. No Module 1 run yet.
-- Next: draw variant assignments, run `/variant 1 A..D`, then `/gate 1`.
+```
+uv run python -m ecgaug.workflow status
+```
+
+It prints the checklist below, ticked where done, with the command for each item, and one line
+starting with `NEXT:`. Run it at the start of every work session.
+
+## The checklist, phase by phase
+
+Names follow `docs/NAMING.md`: **phase** (1–6) → **experiment** (`phase<N>_<what>`) → **variant**
+(A–D) → **run**. Each phase ends with a **gate**, where the team approves the winner. Each item needs
+the one before it; the code refuses to skip ahead and says what is missing.
+
+| Phase | Item | Command | State |
+|---|---|---|---|
+| 1 data | download and verify MIT-BIH | `python -m ecgaug.data.raw` | done |
+| 1 data | approve the validation split | `configs/validation_split/approved.yaml` | done (V1) |
+| 1 data | run `phase1_input_representation`, variants A–D | Kaggle: `kaggle/phase1_input_representation.ipynb`, `VARIANTS = ["A", "B", "C", "D"]` | **next** |
+| 1 data | phase 1 gate: report | `python -m ecgaug.workflow phase1-gate` | |
+| 1 data | phase 1 gate: team approves, the winner's dataset is frozen | `ALLOW_TEST_BUILD=1 python -m ecgaug.workflow phase1-gate --approve "Name" "Name"` | |
+| 2 baselines | run `phase2_ptbxl_pretraining` for the phase 1 winner | Kaggle: `kaggle/phase2_ptbxl_pretraining.ipynb` with the winner's letter | one preview (variant D) |
+| 2 baselines | `phase2_baseline_classifiers`, `phase2_quality_metrics` | not built yet | |
+
+After each Kaggle run the notebook pushes the results to GitHub itself: `git pull`, then run `status`
+again. (If the push did not happen: download the zip from the notebook's Output and run
+`python kaggle/ingest_runs.py <zip>`.)
+
+**Figures for every phase:** each run, and the phase 1 gate, draws before-and-after figures into
+`figures/<experiment or phase folder>/` (data before and after preprocessing, training curves,
+confusion matrices, before and after pretraining). They travel back from Kaggle in the zip.
+`python -m ecgaug.figures all` redraws everything; `figures/README.md` lists what each folder shows.
+
+**Current state (2026-10-15, Day 9):** phase 1 data is ready and the split is approved, but
+`phase1_input_representation` has not been run. One preview of `phase2_ptbxl_pretraining` exists
+(variant D): pretraining did not help, and without RR timing the model detects S beats at chance
+level. It is marked provisional because the phase 1 gate has not happened.
+
+**Previews:** the pretraining runner refuses to run before the phase 1 gate, or for a variant that the phase 1 gate did not
+pick, unless you add `--preview` (`PREVIEW = True` in the notebook). Preview results are marked
+provisional and do not count.
+
+**Datasets:** MIT-BIH (inter-patient DS1/DS2 split) for training, validation and test. PTB-XL only
+for pretraining.
 
 ## Repository layout
 
 | Path | Contents |
 |---|---|
-| `src/ecgaug/` | the package: `data` (MIT-BIH pipeline, PTB-XL preprocessing, R-peak detector), `eval`, `models`, `train`, `experiments` (`m1`, `pretrain`) |
-| `configs/` | experiment configs (`m1/` variants, `pretrain/` PTB-XL arm, `splits/` validation split) |
+| `src/ecgaug/` | the package: `data` (MIT-BIH pipeline, PTB-XL preprocessing, R-peak detector), `eval`, `models`, `train`, `experiments` (`phase1_input_representation`, `phase2_ptbxl_pretraining`), `workflow` (status and gates) |
+| `configs/` | experiment configs (`validation_split/`, `phase1_input_representation/`, `phase2_ptbxl_pretraining/`) |
 | `kaggle/` | everything for running on Kaggle; start with `kaggle/README.md` |
+| `runs/` | one folder per training run, grouped by experiment, variant and kind of run |
+| `figures/` | before-and-after figures for each phase, made by code |
+| `results/` | generated summaries: counts, variant results, gate reports, `manifest.json` (what is frozen) |
 | `docs/` | plan, pre-registration, decisions, progress log, variant briefs |
-| `results/` | generated summaries (counts, validation results, gate reports) |
-| `tests/` | leakage, test lock, contract, metrics, bootstrap, runner |
+| `tests/` | leakage, test lock, contract, metrics, bootstrap, runners, workflow |
 | `Papers/` | reference papers |
 
 ## Names
@@ -46,34 +77,35 @@ Updated 2026-10-14 (Day 8). Phase 1 of 6, data foundation.
 | Name | Meaning |
 |---|---|
 | `configs/validation_split/approved.yaml` | the validation records every experiment uses |
-| `configs/m1_input_representation/` | Module 1: four ways to present a beat to the model |
+| `configs/phase1_input_representation/` | phase1_input_representation: four ways to present a beat to the model |
 | `A_short_window` | 0.5 s window around the R peak (180 samples) |
 | `B_long_window_bandpass` | 1 s window, 0.5–40 Hz band-pass (360 samples) |
 | `C_short_window_rr_features` | A plus three RR-interval features |
 | `D_short_window_125hz` | A resampled to 125 Hz (63 samples) |
 | `shared_budget.yaml` | seeds, learning rates and epochs, identical for A–D |
-| `configs/ptbxl_pretraining/` | the same four inputs, with PTB-XL pretraining before MIT-BIH |
-| `ecgaug.experiments.input_representation` | runs a Module 1 config |
-| `ecgaug.experiments.ptbxl_pretraining` | runs a pretraining config |
+| `configs/phase2_ptbxl_pretraining/` | the same four inputs, with PTB-XL pretraining before MIT-BIH |
+| `ecgaug.experiments.phase1_input_representation` | runs a phase1_input_representation config |
+| `ecgaug.experiments.phase2_ptbxl_pretraining` | runs a pretraining config |
+| `ecgaug.workflow` | `status` (where we are) and `gate1` (pick and freeze the winning input) |
 
 Runs are saved in folders by experiment, variant and kind of run:
 
 ```
 runs/
-  m1_input_representation/
-    A_short_window/              <- one folder per Module 1 run of variant A
+  phase1_input_representation/
+    A_short_window/              <- one folder per phase1_input_representation run of variant A
     B_long_window_bandpass/ ...
-  ptbxl_pretraining/
+  phase2_ptbxl_pretraining/
     D_short_window_125hz/
       pretrain/                  <- pretraining on PTB-XL, one run per seed
       scratch/                   <- MIT-BIH from scratch, 6 runs
       finetune/                  <- MIT-BIH from the pretrained weights, 6 runs
 ```
 
-Each run folder is named `p<phase>-m<module>-<kind><letter>.<learning rate>-s<seed>-<commit>-<time>`
+Each run folder is named `<experiment>-<kind><letter>.<learning rate>-s<seed>-<commit>-<time>`
 and holds the config, software versions, training curve, validation metrics and predictions.
 `results/runs_index.csv` lists every run with its folder. Variant results keep the letter:
-`results/validation/ptbxl_pretraining/D.json`.
+`results/phase2_ptbxl_pretraining/D.json`.
 
 ## Setup
 
@@ -96,25 +128,26 @@ access is appended to `docs/TEST_ACCESS_LOG.md`. Do not set either flag by hand 
 ## Running a variant
 
 ```
-uv run python -m ecgaug.experiments.input_representation --config configs/m1_input_representation/A_short_window.yaml --check   # DS1 inputs, no training
-uv run python -m ecgaug.experiments.input_representation --config configs/m1_input_representation/A_short_window.yaml --smoke   # fake data, end to end
-uv run python -m ecgaug.experiments.input_representation --config configs/m1_input_representation/A_short_window.yaml           # the experiment
+uv run python -m ecgaug.experiments.phase1_input_representation --config configs/phase1_input_representation/A_short_window.yaml --check   # DS1 inputs, no training
+uv run python -m ecgaug.experiments.phase1_input_representation --config configs/phase1_input_representation/A_short_window.yaml --smoke   # fake data, end to end
+uv run python -m ecgaug.experiments.phase1_input_representation --config configs/phase1_input_representation/A_short_window.yaml           # the experiment
 ```
 
 The experiment needs the approved validation split (`configs/validation_split/approved.yaml`, option V1) and a
 committed tree. Anyone with a clone can run it. To run on Kaggle, follow `kaggle/README.md`.
 
-## PTB-XL pretraining arm
+## phase2_ptbxl_pretraining experiment
 
 ```
-uv run python -m ecgaug.experiments.ptbxl_pretraining --config configs/ptbxl_pretraining/A_short_window.yaml --smoke          # fake data
-uv run python -m ecgaug.experiments.ptbxl_pretraining --config configs/ptbxl_pretraining/A_short_window.yaml --ptbxl-root DIR  # real run
+uv run python -m ecgaug.experiments.phase2_ptbxl_pretraining --config configs/phase2_ptbxl_pretraining/A_short_window.yaml --smoke          # fake data
+uv run python -m ecgaug.experiments.phase2_ptbxl_pretraining --config configs/phase2_ptbxl_pretraining/A_short_window.yaml --ptbxl-root DIR  # real run
 ```
 
 One command preprocesses PTB-XL (lead II, 360 Hz, detected R peaks, quality checks), pretrains the
 classifier on the recordings' diagnostic superclasses, fine-tunes it on MIT-BIH, and trains the same
 model from scratch for comparison. `DIR` is a PTB-XL copy; `--ptbxl-download` fetches it from PhysioNet
-instead. Results go to `results/validation/ptbxl_pretraining/`. Design: `docs/PLAN.md`, Phase 2.
+instead. Results go to `results/phase2_ptbxl_pretraining/`. Design: `docs/PLAN.md`, Phase 2.
+It runs only for the variant the phase 1 gate chose; add `--preview` to run it earlier or for another variant.
 
 ## Troubleshooting
 

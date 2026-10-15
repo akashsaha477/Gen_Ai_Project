@@ -3,7 +3,7 @@
 Usage:
     python kaggle/ingest_runs.py <bundle.zip | directory> [...]
 
-Runs go to runs/<run_id>/ and variant result files to results/validation/. Existing runs and result
+Runs go to runs/<run_id>/ and variant result files to results/<experiment>/. Existing runs and result
 files are never overwritten. The logic lives in ecgaug.runs.ingest.
 """
 

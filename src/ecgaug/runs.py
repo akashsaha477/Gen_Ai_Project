@@ -23,18 +23,20 @@ import numpy as np
 import yaml
 
 from ecgaug import paths
+from ecgaug.names import EXPERIMENTS as EXPERIMENT_RESULTS
 
 RUN_ID_RE = re.compile(
-    r"^p(?P<phase>\d+)-m(?P<module>\d+)-(?P<variant>[A-Za-z0-9]+?)(?:\.(?P<tag>.+?))?"
+    r"^(?P<experiment>phase(?P<phase>\d)_[a-z0-9_]+)-(?P<variant>[A-Za-z0-9]+?)(?:\.(?P<tag>.+?))?"
     r"-s(?P<seed>\d+)-(?P<sha>[0-9a-f]{7})-(?P<stamp>\d{12})$"
 )
 REQUIRED_RUN_FILES = ("config.yaml", "env.json", "train_log.csv", "metrics_val.json")
-INGESTED_DATA_REPORTS = ("ptbxl_preprocessing.json",)
+# Data reports that exist only where the full data was processed (PTB-XL on Kaggle): folder -> files.
+INGESTED_DATA_REPORTS = {"phase2_ptbxl_data": ("ptbxl_preprocessing.json",)}
 RUNS_INDEX_COLUMNS = [
-    "run_id", "phase", "module", "variant", "tag", "seed", "status",
+    "run_id", "phase", "experiment", "variant", "tag", "seed", "status",
     "selection_metric", "selection_value", "rare_macro_f1", "wall_clock_s", "git_sha", "folder",
 ]  # fmt: skip
-ARM_KINDS = ("pretrain", "scratch", "finetune")  # the three kinds of run of the PTB-XL pretraining arm
+ARM_KINDS = ("pretrain", "scratch", "finetune")  # the three kinds of run of phase2_ptbxl_pretraining
 _PACKAGES = ("numpy", "scipy", "pandas", "scikit-learn", "torch", "wfdb", "imbalanced-learn", "captum", "dtaidistance")
 
 
@@ -54,13 +56,13 @@ def git_sha(short: bool = False) -> str:
     return sha[:7] if short else sha
 
 
-OUTPUT_DIRS = ("runs/", "results/")
+OUTPUT_DIRS = ("runs/", "results/", "figures/")
 
 
 def git_dirty() -> bool:
     """True if code, configs or docs differ from the commit (or git is unavailable).
 
-    Files under ``runs/`` and ``results/`` are outputs of earlier runs and do not count.
+    Files under ``runs/``, ``results/`` and ``figures/`` are outputs of earlier runs and do not count.
     """
     status = _git("status", "--porcelain", "--untracked-files=all")
     if status is None:
@@ -70,12 +72,15 @@ def git_dirty() -> bool:
 
 
 def make_run_id(
-    phase: int, module: int, variant: str, seed: int, tag: str | None = None, now: _dt.datetime | None = None
+    experiment: str, variant: str, seed: int, tag: str | None = None, now: _dt.datetime | None = None
 ) -> str:
-    """``p<phase>-m<module>-<variant>[.<tag>]-s<seed>-<gitsha7>-<yyyymmddHHMM>``."""
+    """``<experiment>-<variant>[.<tag>]-s<seed>-<gitsha7>-<yyyymmddHHMM>``.
+
+    Example: ``phase1_input_representation-A.lr1e-03-s0-32b9464-202610151200``.
+    """
     stamp = (now or _dt.datetime.now()).strftime("%Y%m%d%H%M")
     label = f"{variant}.{tag}" if tag else variant
-    run_id = f"p{phase}-m{module}-{label}-s{seed}-{git_sha(short=True)}-{stamp}"
+    run_id = f"{experiment}-{label}-s{seed}-{git_sha(short=True)}-{stamp}"
     if not RUN_ID_RE.match(run_id):
         raise ValueError(f"Malformed run id {run_id!r}")
     return run_id
@@ -86,7 +91,7 @@ def parse_run_id(run_id: str) -> dict:
     if not match:
         raise ValueError(f"Malformed run id {run_id!r}")
     parts = match.groupdict()
-    return {**parts, "phase": int(parts["phase"]), "module": int(parts["module"]), "seed": int(parts["seed"])}
+    return {**parts, "phase": int(parts["phase"]), "seed": int(parts["seed"])}
 
 
 def capture_env(device: str) -> dict:
@@ -116,24 +121,24 @@ def capture_env(device: str) -> dict:
 
 def _variant_folder(letter: str) -> str:
     """The config name of a variant letter, e.g. A -> A_short_window (the letter if no config is found)."""
-    hits = sorted((paths.configs_dir() / "m1_input_representation").glob(f"{letter}_*.yaml"))
+    hits = sorted((paths.configs_dir() / "phase1_input_representation").glob(f"{letter}_*.yaml"))
     return hits[0].stem if hits else letter
 
 
 def default_group(run_id: str) -> tuple[str, ...]:
-    """The folder a run belongs in, worked out from its ID (for runs saved before folders existed).
+    """The folder a run belongs in, worked out from its ID: ``<experiment>/<variant>[/<kind>]``.
 
-    Module 1 runs go to ``m1_input_representation/<variant>/``; pretraining-arm runs to
-    ``ptbxl_pretraining/<variant>/<pretrain|scratch|finetune>/``.
+    Used for runs that arrive without a folder. Phase 2 PTB-XL runs also get their kind:
+    ``pretrain``, ``scratch`` or ``finetune``.
     """
     parts = parse_run_id(run_id)
     label = parts["variant"]
-    arm = re.fullmatch(rf"({'|'.join(ARM_KINDS)})([A-Z])", label)
-    if arm:
-        return ("ptbxl_pretraining", _variant_folder(arm.group(2)), arm.group(1))
-    if parts["module"] == 1 and re.fullmatch(r"[A-Z]", label):
-        return ("m1_input_representation", _variant_folder(label))
-    return (f"m{parts['module']}", label)
+    kind = re.fullmatch(rf"({'|'.join(ARM_KINDS)})([A-Z])", label)
+    if kind:
+        return (parts["experiment"], _variant_folder(kind.group(2)), kind.group(1))
+    if re.fullmatch(r"[A-Z]", label):
+        return (parts["experiment"], _variant_folder(label))
+    return (parts["experiment"], label)
 
 
 def find_run_dir(run_id: str) -> Path | None:
@@ -157,7 +162,7 @@ def write_run(
 ) -> Path:
     """Create ``runs/<group...>/<run_id>/`` with the files CLAUDE.md §8 lists. Never overwrites a run.
 
-    ``group`` is the folder path inside ``runs/``, e.g. ``("m1_input_representation", "A_short_window")``.
+    ``group`` is the folder path inside ``runs/``, e.g. ``("phase1_input_representation", "A_short_window")``.
     """
     import torch
 
@@ -209,7 +214,7 @@ def index_row(
     return {
         "run_id": run_id,
         "phase": parts["phase"],
-        "module": parts["module"],
+        "experiment": parts["experiment"],
         "variant": parts["variant"],
         "tag": parts["tag"] or "",
         "seed": parts["seed"],
@@ -286,32 +291,43 @@ def ingest(sources: list[Path]) -> dict:
             upsert_runs_index(index_row(run_id, metrics, env.get("wall_clock_s", 0.0), group=group))
             report["ingested"].append(run_id)
 
-        # Variant result files (results/validation/m<M>/<X>.json and notes) travel with the runs.
+        # Result files of each experiment (results/<experiment>/<letter>.json and notes) travel with the runs.
         for root in roots:
-            for validation in root.rglob("validation"):
-                if validation.parent.name != "results":
-                    continue
-                for src in sorted(p for p in validation.rglob("*") if p.is_file()):
-                    relative = src.relative_to(validation)
-                    dst = paths.results_dir() / "validation" / relative
-                    if dst.exists():
-                        if dst.read_bytes() != src.read_bytes():
-                            report["result_conflicts"].append(str(relative))
+            for results in root.rglob("results"):
+                for folder in sorted(p for p in results.iterdir() if p.is_dir() and p.name in EXPERIMENT_RESULTS):
+                    for src in sorted(p for p in folder.rglob("*") if p.is_file()):
+                        relative = src.relative_to(results)
+                        dst = paths.results_dir() / relative
+                        if dst.exists():
+                            if dst.read_bytes() != src.read_bytes():
+                                report["result_conflicts"].append(str(relative))
+                            continue
+                        dst.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(src, dst)
+                        report["result_files"].append(str(relative))
+            # Figures made at the end of each run.
+            figures_dir = root / "figures"
+            if figures_dir.is_dir():
+                for src in sorted(p for p in figures_dir.rglob("*") if p.is_file()):
+                    relative = src.relative_to(figures_dir)
+                    dst = paths.repo_root() / "figures" / relative
+                    if dst.exists() and dst.read_bytes() == src.read_bytes():
                         continue
                     dst.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copy2(src, dst)
-                    report["result_files"].append(str(relative))
+                    shutil.copy2(src, dst)  # figures are regenerated output, so a newer one replaces an older one
+                    report["result_files"].append(f"figures/{relative}")
             # Reports that only exist where the full data was processed (PTB-XL on Kaggle).
-            for name in INGESTED_DATA_REPORTS:
-                for src in root.rglob(name):
-                    if src.parent.name != "data" or src.parent.parent.name != "results":
-                        continue
-                    dst = paths.results_dir() / "data" / name
-                    if dst.exists():
-                        if dst.read_bytes() != src.read_bytes():
-                            report["result_conflicts"].append(f"data/{name}")
-                        continue
-                    dst.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copy2(src, dst)
-                    report["result_files"].append(f"data/{name}")
+            for folder, files in INGESTED_DATA_REPORTS.items():
+                for name in files:
+                    for src in root.rglob(name):
+                        if src.parent.name != folder or src.parent.parent.name != "results":
+                            continue
+                        dst = paths.results_dir() / folder / name
+                        if dst.exists():
+                            if dst.read_bytes() != src.read_bytes():
+                                report["result_conflicts"].append(f"{folder}/{name}")
+                            continue
+                        dst.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(src, dst)
+                        report["result_files"].append(f"{folder}/{name}")
     return report

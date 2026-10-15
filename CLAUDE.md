@@ -1,7 +1,7 @@
 # CLAUDE.md — Rare-Arrhythmia Detection with Generative ECG Augmentation
 
 This file is loaded every session. Read it fully before acting.
-Detailed specs: `docs/PLAN.md` (phases, modules, variants, gates) and `docs/PAPER_TRACK.md`
+Detailed specs: `docs/PLAN.md` (phases, experiments, variants, gates) and `docs/PAPER_TRACK.md`
 (research questions, statistics, paper artifacts). Live state: `docs/PROGRESS.md`, `docs/DECISIONS.md`.
 Amended 2026-10-08 after the kickoff review: see `docs/DECISIONS.md` (A1–A11).
 
@@ -21,7 +21,7 @@ reveal about when and why it helps?
 
 ## 2. Team model
 
-- Four members, **no fixed owners**. Each module has four variants (A–D). Assignments are drawn per
+- Four members, **no fixed owners**. Each experiment has four variants (A–D). Assignments are drawn per
   phase and recorded in `docs/ASSIGNMENTS.md`.
 - Shared infrastructure lands on `main` via `/phase N`. Members implement variants on their own
   branches via `/variant M X`. Winners are chosen at `/gate N` by pre-registered rules.
@@ -39,7 +39,7 @@ reveal about when and why it helps?
    `ecgaug.data.raw`, which refuses DS2 records without a matching permission. Access has three kinds,
    each appended to `docs/TEST_ACCESS_LOG.md`: *construction* (counting labels and building arrays
    under `ALLOW_TEST_BUILD=1`; no model sees the data), *evaluation* (only `/final-eval`) and *audit*
-   (the leakage-audit arm, only after `/final-eval`). No decision of any kind (model, variant, epoch,
+   (the leakage-audit experiment, only after `/final-eval`). No decision of any kind (model, variant, epoch,
    threshold, strength, prompt) may use test data. If you see test metrics anywhere before final eval,
    stop and report.
 3. **Selection on validation, by pre-registered rules.** Rules in `docs/PREREGISTRATION.md` are
@@ -52,9 +52,9 @@ reveal about when and why it helps?
    code from logged runs and traceable to run IDs. Never estimate or fill in a value. Unknown = `TODO`.
 6. **Report what happened.** Failed variants, collapsed generators, unsupported hypotheses and bugs
    are recorded plainly. Negative results go in the paper.
-7. **Equal budgets.** Variants within a module get identical data, seeds, epoch/step caps, tuning grid
+7. **Equal budgets.** Variants within an experiment get identical data, seeds, epoch/step caps, tuning grid
    and early-stopping rule. Any deviation is flagged in the gate report.
-8. **Seeds.** Default `[0, 1, 2]` (extend to `[0..4]` if approved at Gate 3). Seed Python, NumPy and
+8. **Seeds.** Default `[0, 1, 2]` (extend to `[0..4]` if approved at the phase 3 gate). Seed Python, NumPy and
    PyTorch; enable deterministic algorithms where available; log known nondeterminism.
 9. **Gates are human-approved.** End each phase with `/gate N` and wait for the exact reply
    `approve gate N`. Do not start the next phase before that.
@@ -88,16 +88,16 @@ reveal about when and why it helps?
   from per-record counts first. The validation split, the bootstrap design and the paper's limitations
   all depend on this.
 - **Validation:** a patient-wise subset of DS1 records, proposed in Phase 1 from per-record counts and
-  approved at Gate 1. Generators never see validation records.
+  approved at the phase 1 gate. Generators never see validation records.
 - **Primary metric (pre-registered):** rare-class macro-F1 = mean F1 over S and F (validation for
   selection, test for final results). If the approved validation split holds fewer F beats than the
   minimum support fixed in `docs/PREREGISTRATION.md` (beats and records), selection uses S F1 with
-  V F1 as tie-break, and this is recorded at Gate 1. The test primary metric is unchanged either way.
+  V F1 as tie-break, and this is recorded at the phase 1 gate. The test primary metric is unchanged either way.
   Decisions are argmax in every condition; no threshold is tuned.
 - **Secondary metrics:** per-class F1, one-vs-rest PR-AUC, AAMI-style sensitivity (Se) and positive
   predictivity (+P) for S and V (for comparison with prior work), N recall, macro-F1 over N/S/V/F.
 
-## 5. Data contract (frozen at Gate 1)
+## 5. Data contract (frozen at the phase 1 gate)
 
 `data/processed/v{K}/`
 - `trainval.npz` — `X` float32 [n, L] (or [n, C, L]); `y` int8 (0 N, 1 S, 2 V, 3 F); `record` int16;
@@ -126,13 +126,13 @@ top_segments[{name, mass}], model_id}`. The low-confidence rule is pre-registere
 CLAUDE.md
 .claude/commands/      phase, variant, gate, status, final-eval, paper
 configs/               YAML per experiment, in folders named after what they hold: validation_split/,
-                       m<M>_<module name>/<letter>_<variant name>.yaml, ptbxl_pretraining/
+                       <experiment>/<letter>_<variant name>.yaml, e.g. phase1_input_representation/
 src/ecgaug/
   data/                download, beat extraction, splits, contract, guarded loaders
   eval/                metrics, record-level bootstrap, statistics, plotting helpers
   models/              probe, cnn, resnet1d, bilstm, hybrid (+ feature hooks)
   train/               seeding, training loop with early stopping
-  experiments/         per-module variant runners (m1, ...)
+  experiments/         one runner per experiment (phase1_input_representation, ...)
   runs.py              run IDs, env capture, runs_index, ingest
   generators/          cvae/, wgan_gp/, smote.py
   quality/             dtw, spectral, fid_analog, tstr, diversity, memorization, c2st
@@ -165,19 +165,19 @@ tests/                 leakage, test lock, contract hashes, metrics, bootstrap
 
 ## 8. Experiment logging
 
-- `run_id = <phase>-m<module>-<variant>[.<tag>]-s<seed>-<gitsha7>-<yyyymmddHHMM>`; the optional tag
+- `run_id = <experiment>-<variant>[.<tag>]-s<seed>-<gitsha7>-<yyyymmddHHMM>`; the optional tag
   names a point of the tuning grid (e.g. `lr1e-03`). A run directory is never overwritten.
 - `runs/<run_id>/`: `config.yaml`, `env.json` (packages, GPU type, wall-clock), `train_log.csv`,
   `metrics_val.json`, `preds_val.npz` (probabilities + record/beat ids), checkpoint path + hash.
   `preds_test.npz` exists only after `/final-eval`.
-- `results/runs_index.csv`: one row per run (run_id, phase, module, variant, seed, status, primary
+- `results/runs_index.csv`: one row per run (run_id, phase, experiment, variant, seed, status, primary
   metric, wall-clock). All tables and figures are generated from this index.
 
 ## 9. Compute
 
 Kaggle GPU sessions (weekly quota) plus laptops. Targets: classifier run ≤ 15 min, generator pilot
 ≤ 45 min, full generator training ≤ 2 h per seed. Measure real run times in Phase 2 and re-estimate
-the grid budget at Gate 3. Early stopping on the validation primary metric.
+the grid budget at the phase 3 gate. Early stopping on the validation primary metric.
 Kaggle flow: a notebook clones the repo at a given SHA, runs one config, and packages
 `runs/<run_id>/`; `kaggle/ingest_runs.py` brings outputs back and updates `results/runs_index.csv`.
 
@@ -196,20 +196,22 @@ when you don't.
 ## 11. Commands
 
 - `/phase N` — shared infrastructure for phase N + variant stubs and implementer briefs.
-- `/variant M X` — implement and evaluate variant X of module M on its own branch.
+- `/variant <experiment> X` — implement and evaluate variant X of an experiment on its own branch.
 - `/gate N` — checks, pre-registered selection, decision draft; then wait for approval.
 - `/status` — progress vs timeline, blockers, compute, next actions.
-- `/final-eval` — the only test-set evaluation, after Gate 4 approval.
+- `/final-eval` — the only test-set evaluation, after the phase 4 gate approval.
 - `/paper <section>` — update the paper draft from generated artifacts.
 
 ## 12. Timeline
 
-| Phase | Days | Dates | Modules | Gate |
+| Phase | Days | Dates | Experiments | Gate |
 |---|---|---|---|---|
-| 1 Data foundation | 1–3 | Oct 7–9 | 1 data pipeline, 2 eval utilities | data contract frozen |
-| 2 Baselines + metrics | 4–8 | Oct 10–14 | 3 baselines, 4 quality metrics | baselines + metrics frozen |
-| 3 Generators | 9–14 | Oct 15–20 | 5 cVAE, 6 WGAN-GP, grid runner | synthetic banks frozen (3a on Day 12) |
+| 1 data | 1–3 | Oct 7–9 | data pipeline, evaluation code, phase1_input_representation | data contract frozen |
+| 2 baselines | 4–8 | Oct 10–14 | phase2_baseline_classifiers, phase2_quality_metrics, phase2_ptbxl_pretraining | baselines + metrics frozen |
+| 3 generators | 9–14 | Oct 15–20 | phase3_cvae, phase3_wgan_gp, grid runner | synthetic banks frozen (3a on Day 12) |
 | Buffer | 15 | Oct 21 | — | — |
-| 4 Integration + ablation | 16–21 | Oct 22–27 | 7 augmentation policy, full grid | grid done → final eval |
-| 5 Explainability + LLM + demo | 22–26 | Oct 28–Nov 1 | 8 explainability, 9 LLM layer | code freeze |
-| 6 Report + paper | 27–30 | Nov 2–5 | 10 report, paper draft | submission (29–30 buffer) |
+| 4 comparison | 16–21 | Oct 22–27 | phase4_augmentation_policy, full grid | grid done → final eval |
+| 5 explanations | 22–26 | Oct 28–Nov 1 | phase5_explainability, phase5_clinical_notes, demo | code freeze |
+| 6 paper | 27–30 | Nov 2–5 | report, paper draft | submission (29–30 buffer) |
+
+Names follow `docs/NAMING.md`: phase → experiment (`phase<N>_<what>`) → variant (A–D) → run.

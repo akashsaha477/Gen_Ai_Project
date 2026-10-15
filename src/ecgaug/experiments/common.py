@@ -83,8 +83,7 @@ def train_grid(
     train: dict[str, np.ndarray],
     val: dict[str, np.ndarray],
     *,
-    phase: int,
-    module: int,
+    experiment: str,
     label: str,
     device: torch.device,
     dataset: dict,
@@ -104,7 +103,7 @@ def train_grid(
         tag = f"lr{lr:.0e}"
         per_seed = []
         for seed in cfg["seeds"]:
-            run_id = runs.make_run_id(phase, module, label, seed, tag=tag)
+            run_id = runs.make_run_id(experiment, label, seed, tag=tag)
             set_seed(seed)
             model = build_model(cfg["model"], len(CLASSES), len(SIDE_FIELDS) if spec.rr_features else 0)
             n_params = count_parameters(model)

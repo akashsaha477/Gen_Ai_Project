@@ -42,3 +42,13 @@ def docs_dir() -> Path:
 
 def configs_dir() -> Path:
     return repo_root() / "configs"
+
+
+def results_for(name: str) -> Path:
+    """``results/<name>/``, where name is an experiment or phase folder such as phase1_data."""
+    return results_dir() / name
+
+
+def figures_for(name: str) -> Path:
+    """``figures/<name>/``, named like the results folder of the same experiment or phase."""
+    return repo_root() / "figures" / name
