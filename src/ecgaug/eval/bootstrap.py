@@ -1,4 +1,4 @@
-"""Record-level (cluster) bootstrap and multiplicity correction (Module 2).
+"""Record-level (cluster) bootstrap and multiplicity correction (the evaluation code).
 
 The unit of resampling is the record (patient), never the beat: beats of one patient are correlated
 and a beat-level bootstrap would understate uncertainty. Each replicate draws as many records as the

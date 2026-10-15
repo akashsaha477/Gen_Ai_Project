@@ -107,7 +107,7 @@ exploratory and are reported as such.
 | Fig 4 | Augmentation-strength curves | 4 |
 | Fig 5 | RQ3: quality metric vs downstream gain | 4 |
 | Fig 6 | Class-average saliency aligned on R, baseline vs augmented | 5 |
-| Appendix | Per-record counts, variation-study tables for every module, training curves, failure modes | all |
+| Appendix | Per-record counts, variation-study tables for every experiment, training curves, failure modes | all |
 
 ## Threats to validity (write these into the paper, specifically)
 - Small test population (22 records: 21 from patients not seen in training, plus record 202, whose
@@ -156,5 +156,5 @@ Check scope, page limits and deadlines directly; don't assume them.
 2. External validation: train on MIT-BIH DS1, test on another beat-annotated database (e.g. INCART on
    PhysioNet), with class mapping and resampling documented.
 3. Diffusion baseline as a third generator family.
-4. Leakage-audit arm, if skipped.
+4. Leakage-audit experiment, if skipped.
 5. Clinician rating of a sample of LLM notes.

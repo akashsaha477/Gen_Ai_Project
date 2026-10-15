@@ -132,7 +132,7 @@ def test_cli_writes_hashed_output_that_reloads(fake_ptbxl):
     report = json.loads((ptbxl.out_dir() / "report.json").read_text())
     loaded = ptbxl.load()
     assert report["content_sha256"] == content_sha256(loaded)
-    assert not report["partial_run"] and (paths.results_dir() / "data" / "ptbxl_preprocessing.json").is_file()
+    assert not report["partial_run"] and (paths.results_for("phase2_ptbxl_data") / "ptbxl_preprocessing.json").is_file()
     first = report["file_sha256"]
     assert ptbxl.main(["--root", str(fake_ptbxl[0]), "--skip-verify"]) == 0
     assert json.loads((ptbxl.out_dir() / "report.json").read_text())["file_sha256"] == first
@@ -235,7 +235,7 @@ def test_mirror_padding_reduces_the_edge_error_of_a_band_pass():
     padded = np.abs(ptbxl.windows_for_record(segment, r, band) - inside_long_record).max(axis=1)
     unpadded = np.abs(transform_record(segment, r, band) - inside_long_record).max(axis=1)
     # the worse of the two beats nearest the ends improves; on real data the gain is measured by
-    # `python -m ecgaug.data.checks` (results/data/ptbxl_method_checks_ds1.json)
+    # `python -m ecgaug.data.checks` (results/phase2_ptbxl_data/method_checks_ds1.json)
     assert max(padded[0], padded[-1]) < 0.5 * max(unpadded[0], unpadded[-1])
     assert padded[len(r) // 2] < 0.05
     # without a filter, padding changes nothing

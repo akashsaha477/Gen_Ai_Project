@@ -8,7 +8,7 @@ can be answered with DS1 because its records can be cut into 10-second pieces:
 2. Mains interference: how strong is it in each database? (MIT-BIH: 60 Hz. PTB-XL: 50 Hz, reported
    by ``ecgaug.data.ptbxl``.)
 
-Usage: ``python -m ecgaug.data.checks`` writes ``results/data/ptbxl_method_checks_ds1.json``.
+Usage: ``python -m ecgaug.data.checks`` writes ``results/phase2_ptbxl_data/method_checks_ds1.json``.
 """
 
 from __future__ import annotations
@@ -19,6 +19,7 @@ import json
 import numpy as np
 
 from ecgaug import paths
+from ecgaug.names import PHASE2_PTBXL_DATA
 from ecgaug.data import raw
 from ecgaug.data.beats import extract_beats
 from ecgaug.data.ptbxl import EDGE_PAD_MODE, EDGE_PAD_S, N_SAMPLES, powerline_ratio
@@ -96,7 +97,7 @@ def main(argv: list[str] | None = None) -> int:
         "edge_effect_bandpass": edge_effect(band),
         "powerline": powerline_ds1(),
     }
-    out = paths.results_dir() / "data" / "ptbxl_method_checks_ds1.json"
+    out = paths.results_for(PHASE2_PTBXL_DATA) / "method_checks_ds1.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2) + "\n")
     table = report["edge_effect_bandpass"]["correlation_by_distance_to_end"]

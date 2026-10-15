@@ -23,7 +23,7 @@ def load_trainval(version: str = "v1") -> dict[str, np.ndarray]:
 
 
 def load_candidate(name: str) -> dict[str, np.ndarray]:
-    """Training and validation arrays of a Module 1 candidate dataset (DS1 only)."""
+    """Training and validation arrays of a phase1_input_representation candidate dataset (DS1 only)."""
     return _load(paths.processed_dir() / "candidates" / name, TRAINVAL_FILE)
 
 
