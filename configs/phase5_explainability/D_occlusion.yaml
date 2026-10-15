@@ -1,0 +1,5 @@
+base: shared_settings.yaml
+variant: D
+description: Occlusion with a sliding 50 ms window (stride 25 ms), zero baseline.
+method: occlusion
+cost: 4

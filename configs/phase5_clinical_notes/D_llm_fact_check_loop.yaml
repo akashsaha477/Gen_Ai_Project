@@ -1,0 +1,5 @@
+base: shared_settings.yaml
+variant: D
+description: As B plus the fact checker and a regenerate loop (at most 2 retries,
+  then the template).
+generator: D

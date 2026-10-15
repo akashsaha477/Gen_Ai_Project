@@ -34,16 +34,13 @@ import os
 
 import numpy as np
 import torch
-import yaml
-
 from ecgaug import paths, runs, workflow
 from ecgaug.data.access import LockedTestDataError
 from ecgaug.data.loaders import load_test
 from ecgaug.data.records import CLASS_INDEX, CLASSES
 from ecgaug.eval import metrics as M
 from ecgaug.eval.bootstrap import cluster_bootstrap_confusion, holm, paired_cluster_bootstrap_diff_confusion
-from ecgaug.experiments.common import SIDE_FIELDS
-from ecgaug.models import build_model
+from ecgaug.experiments.common import SIDE_FIELDS, load_run_classifier
 from ecgaug.names import FINAL_EVAL, PHASE4_GATE
 from ecgaug.train.loop import predict_proba
 
@@ -182,14 +179,6 @@ def statistics(preds: dict[tuple[str, str], list[np.ndarray]], y: np.ndarray, re
     return out
 
 
-def _load_classifier(run_id: str, rr: bool) -> torch.nn.Module:
-    run_dir = runs.find_run_dir(run_id)
-    config = yaml.safe_load((run_dir / "config.yaml").read_text())
-    model = build_model(config["classifier"]["model"], len(CLASSES), len(SIDE_FIELDS) if rr else 0)
-    model.load_state_dict(torch.load(run_dir / "checkpoints" / "best.pt", map_location="cpu", weights_only=True))
-    return model.eval()
-
-
 def run(confirm: str, n_boot: int = N_BOOT) -> dict:
     """The final evaluation. Every check comes before the first test byte is read."""
     info = plan()
@@ -211,8 +200,9 @@ def run(confirm: str, n_boot: int = N_BOOT) -> dict:
     side = torch.from_numpy(np.stack([test[f] for f in SIDE_FIELDS], axis=1)) if rr else None
     preds: dict[tuple[str, str], list[np.ndarray]] = {}
     for c in info["checkpoints"]:
-        probs = predict_proba(_load_classifier(c["run_id"], rr), x, side, torch.device("cpu"))
-        np.savez_compressed(runs.find_run_dir(c["run_id"]) / "preds_test.npz", probs=probs, y=test["y"], record=test["record"], r_idx=test["r_idx"])
+        probs = predict_proba(load_run_classifier(c["run_id"], rr), x, side, torch.device("cpu"))
+        np.savez_compressed(runs.find_run_dir(c["run_id"]) / "preds_test.npz", probs=probs, y=test["y"], record=test["record"], r_idx=test["r_idx"],
+                            rr_prev=test["rr_prev"], rr_ratio=test["rr_ratio"])  # RR saved so error analysis never reads the test set again
         preds.setdefault((c["architecture"], c["condition"]), []).append(probs)
     stats = statistics(preds, test["y"], test["record"], gate, n_boot=n_boot)
     stats.update({"run_ids": run_ids, "git_sha": runs.git_sha(), "phase4_gate": {"approved_by": gate["approved_by"], "best_generative": gate["best_generative"]}})
