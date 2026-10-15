@@ -373,6 +373,18 @@ scored in one call.
 - `gate1_winner()`: the approved winner, read from the manifest. The pretraining runner uses it to
   refuse running before Gate 1 or for another variant (unless `--preview`).
 
+## 7c. `src/ecgaug/figures.py`: before-and-after figures
+
+- `phase1_figures()`: raw versus band-passed signal of the training record with the most S beats; the
+  same N and S beat as variants A–D present them; beats per class in training and validation; the
+  median beat per class and variant (training records only).
+- `ptbxl_figures(root)`: one recording before and after resampling, with kept and dropped beats;
+  PTB-XL versus MIT-BIH beat shape; recordings kept and excluded; label shares per split.
+- `pretraining_figures(result)`, `module1_figures(result)`, `gate1_figure()`: training curves,
+  confusion matrices, per-class F1 before and after pretraining, and the Gate 1 comparison.
+- `safe_for_result(result)`: called by both runners at the end of every experiment; a plotting error is
+  reported but never fails a run.
+
 ## 8. `configs/`: the settings files
 
 | File | Sets |

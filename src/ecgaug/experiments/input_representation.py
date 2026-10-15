@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from ecgaug import paths, runs
+from ecgaug import figures, paths, runs
 from ecgaug.data.contract import build_arrays, build_candidate, content_sha256
 from ecgaug.data.counts import count_record
 from ecgaug.data.fake import write_fake_mitdb
@@ -113,6 +113,7 @@ def run_variant(cfg: dict, split: Split, device_name: str | None = None, require
     out_dir = paths.results_dir() / "validation" / RESULTS_DIR
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / f"{variant}.json").write_text(json.dumps(result, indent=2) + "\n")
+    figures.safe_for_result(out_dir / f"{variant}.json")
     notes = out_dir / f"{variant}_notes.md"
     if not notes.exists():
         notes.write_text(
