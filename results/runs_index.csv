@@ -1,4 +1,10 @@
 run_id,phase,experiment,variant,tag,seed,status,selection_metric,selection_value,rare_macro_f1,wall_clock_s,git_sha,folder
+phase1_input_representation-B.lr1e-03-s0-3c76528-202610152057,1,phase1_input_representation,B,lr1e-03,0,done,s_f1,0.0034965034965034965,0.0017482517482517483,9.0,3c76528,phase1_input_representation/B_long_window_bandpass
+phase1_input_representation-B.lr1e-03-s1-3c76528-202610152057,1,phase1_input_representation,B,lr1e-03,1,done,s_f1,0.0,0.0,5.1,3c76528,phase1_input_representation/B_long_window_bandpass
+phase1_input_representation-B.lr1e-03-s2-3c76528-202610152057,1,phase1_input_representation,B,lr1e-03,2,done,s_f1,0.0,0.0,5.1,3c76528,phase1_input_representation/B_long_window_bandpass
+phase1_input_representation-B.lr3e-04-s0-3c76528-202610152057,1,phase1_input_representation,B,lr3e-04,0,done,s_f1,0.0,0.0,5.1,3c76528,phase1_input_representation/B_long_window_bandpass
+phase1_input_representation-B.lr3e-04-s1-3c76528-202610152057,1,phase1_input_representation,B,lr3e-04,1,done,s_f1,0.0,0.0,5.1,3c76528,phase1_input_representation/B_long_window_bandpass
+phase1_input_representation-B.lr3e-04-s2-3c76528-202610152057,1,phase1_input_representation,B,lr3e-04,2,done,s_f1,0.0,0.0,5.1,3c76528,phase1_input_representation/B_long_window_bandpass
 phase1_input_representation-C.lr1e-03-s0-b20a522-202610152033,1,phase1_input_representation,C,lr1e-03,0,done,s_f1,0.25572519083969464,0.15208404870704456,20.2,b20a522,phase1_input_representation/C_short_window_rr_features
 phase1_input_representation-C.lr1e-03-s1-b20a522-202610152033,1,phase1_input_representation,C,lr1e-03,1,done,s_f1,0.3313840155945419,0.16569200779727095,49.3,b20a522,phase1_input_representation/C_short_window_rr_features
 phase1_input_representation-C.lr1e-03-s2-b20a522-202610152034,1,phase1_input_representation,C,lr1e-03,2,done,s_f1,0.3011844331641286,0.17020005971931917,21.8,b20a522,phase1_input_representation/C_short_window_rr_features

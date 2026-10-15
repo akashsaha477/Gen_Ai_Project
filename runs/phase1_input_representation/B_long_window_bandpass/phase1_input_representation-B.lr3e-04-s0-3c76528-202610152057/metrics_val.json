@@ -1,0 +1,82 @@
+{
+  "n_beats": 11445,
+  "accuracy": 0.9051987767584098,
+  "rare_macro_f1": 0.0,
+  "macro_f1": 0.2375601926163724,
+  "n_recall": 1.0,
+  "aami": {
+    "se_S": 0.0,
+    "ppv_S": NaN,
+    "se_V": 0.0,
+    "ppv_V": NaN
+  },
+  "per_class": {
+    "N": {
+      "support": 10360,
+      "predicted": 11445,
+      "precision": 0.9051987767584098,
+      "recall": 1.0,
+      "f1": 0.9502407704654896
+    },
+    "S": {
+      "support": 300,
+      "predicted": 0,
+      "precision": NaN,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "V": {
+      "support": 758,
+      "predicted": 0,
+      "precision": NaN,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "F": {
+      "support": 27,
+      "predicted": 0,
+      "precision": NaN,
+      "recall": 0.0,
+      "f1": 0.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      10360,
+      0,
+      0,
+      0
+    ],
+    [
+      300,
+      0,
+      0,
+      0
+    ],
+    [
+      758,
+      0,
+      0,
+      0
+    ],
+    [
+      27,
+      0,
+      0,
+      0
+    ]
+  ],
+  "pr_auc": {
+    "N": 0.9851160737378267,
+    "S": 0.08697900868325278,
+    "V": 0.7657298919886216,
+    "F": 0.004146931191443202
+  },
+  "macro_pr_auc": 0.46049297640028614,
+  "rare_macro_pr_auc": 0.04556296993734799,
+  "selection_metric": "s_f1",
+  "selection_value": 0.0,
+  "best_epoch": 1,
+  "epochs_run": 6,
+  "stopped_early": true
+}
