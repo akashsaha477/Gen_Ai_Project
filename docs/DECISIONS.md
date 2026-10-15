@@ -93,3 +93,12 @@ the test. PTB-XL is added for one purpose: pretraining the classifier before fin
 - Edge treatment for 10-second recordings: mirror padding of 2 s, chosen from a DS1 measurement
   (`results/data/ptbxl_method_checks_ds1.json`). No mains notch filter is applied to PTB-XL: the
   64-recording sample shows no 50 Hz interference; the full-data figure is in the preprocessing report.
+
+## 2026-10-15 (Day 9) — the phase order is enforced in code — decided by Akash Saha
+
+- `python -m ecgaug.workflow status` shows every step and the next action; `python -m ecgaug.workflow
+  gate1` writes the Gate 1 report, and `--approve` freezes the winner's dataset and records it in
+  `results/manifest.json`.
+- The PTB-XL pretraining runner now refuses to run before Gate 1 is approved, or for a variant Gate 1
+  did not choose, unless `--preview` is given. Preview results are marked provisional. This replaces
+  the open-ended exception of A13: the variant D run stays on record as a preview.

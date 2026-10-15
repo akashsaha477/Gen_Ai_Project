@@ -129,6 +129,10 @@ These come from `docs/RULES.md`. In plain terms:
 
 We are on Day 7 and about four days behind: Phase 1 was due on Day 3.
 
+**Where are we?** `python -m ecgaug.workflow status` prints every step, ticked or not, and the next
+action. The code enforces the order: Gate 1 needs all four Module 1 results, and the pretraining arm
+needs an approved Gate 1 (or `--preview`, which marks the result provisional).
+
 **The phase loop.** One person builds the shared code for a phase. Each member runs one variant on
 their own branch. A gate report applies the selection rule. The team approves, and the next phase
 starts. Details are in `KICKOFF_PROMPT.md`.

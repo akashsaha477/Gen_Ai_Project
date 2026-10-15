@@ -357,6 +357,22 @@ scored in one call.
 
 ---
 
+## 7b. `src/ecgaug/workflow.py`: status and Gate 1
+
+- `status()`: builds the checklist from what exists on disk (verified data, approved split, the four
+  Module 1 result files, the Gate 1 report, `results/manifest.json`, pretraining results) and returns
+  the single next action. `python -m ecgaug.workflow status` prints it.
+- `evaluate_gate1()`: refuses unless all four Module 1 variants have results; checks they used the same
+  split, selection metric and budget with no reported deviations; then calls `select_winner`.
+- `write_gate1_report()`: writes `results/gates/gate1.md` (table per variant, each step of the rule,
+  the winner) and `gate1.json`.
+- `approve_gate1(approvers)`: re-checks that the results have not changed since the report, builds the
+  frozen dataset of the winner (`data/processed/v1`, needs `ALLOW_TEST_BUILD=1` and is logged), writes
+  the winner and the file hashes to `results/manifest.json`, and appends the approval to
+  `docs/DECISIONS.md`.
+- `gate1_winner()`: the approved winner, read from the manifest. The pretraining runner uses it to
+  refuse running before Gate 1 or for another variant (unless `--preview`).
+
 ## 8. `configs/`: the settings files
 
 | File | Sets |
