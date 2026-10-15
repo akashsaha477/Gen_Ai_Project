@@ -70,15 +70,15 @@ def test_ingest_from_a_zip_then_skip_and_conflict(tmp_path, monkeypatch):
 
     report = runs.ingest([archive])
     assert report["ingested"] == [run_id] and not report["conflicts"]
-    assert (paths.runs_dir() / run_id / "checkpoints" / "best.pt").is_file()
+    assert (runs.find_run_dir(run_id) / "checkpoints" / "best.pt").is_file()
     with (paths.results_dir() / "runs_index.csv").open() as fh:
         rows = list(csv.DictReader(fh))
     assert rows[0]["run_id"] == run_id and rows[0]["wall_clock_s"] == "12.3" and rows[0]["selection_value"] == "0.52"
 
     assert runs.ingest([archive])["skipped_identical"] == [run_id]
-    (paths.runs_dir() / run_id / "metrics_val.json").write_text(json.dumps({"rare_macro_f1": 0.99}))
+    (runs.find_run_dir(run_id) / "metrics_val.json").write_text(json.dumps({"rare_macro_f1": 0.99}))
     assert runs.ingest([archive])["conflicts"] == [run_id]
-    assert json.loads((paths.runs_dir() / run_id / "metrics_val.json").read_text()) == {"rare_macro_f1": 0.99}
+    assert json.loads((runs.find_run_dir(run_id) / "metrics_val.json").read_text()) == {"rare_macro_f1": 0.99}
 
 
 def test_ingest_refuses_runs_that_carry_test_predictions(tmp_path):
@@ -89,7 +89,7 @@ def test_ingest_refuses_runs_that_carry_test_predictions(tmp_path):
     np.savez(source / run_id / "preds_test.npz", probs=np.zeros((1, 4)))
     report = runs.ingest([source])
     assert report["refused"] == [run_id] and not report["ingested"]
-    assert not (paths.runs_dir() / run_id).exists()
+    assert runs.find_run_dir(run_id) is None
 
 
 def test_ingest_reports_incomplete_runs_and_bad_sources(tmp_path):
@@ -190,3 +190,33 @@ def test_ptbxl_report_travels_in_the_bundle_and_is_ingested(tmp_path):
     assert not (paths.results_dir() / "data" / "something_else.json").exists()
     (paths.results_dir() / "data" / "ptbxl_preprocessing.json").write_text('{"recordings_kept": 6}')
     assert runs.ingest([archive])["result_conflicts"] == ["data/ptbxl_preprocessing.json"]
+
+
+def test_runs_are_saved_in_their_group_folder_and_found_by_id():
+    run_id = runs.make_run_id(1, 1, "A", 0, now=NOW)
+    run_dir = runs.write_run(run_id, {}, {}, [{"epoch": 1}], {}, {"y": np.zeros(1)}, {}, group=("m1_input_representation", "A_short_window"))
+    assert run_dir == paths.runs_dir() / "m1_input_representation" / "A_short_window" / run_id
+    assert runs.find_run_dir(run_id) == run_dir
+    with pytest.raises(FileExistsError, match="already exists"):  # IDs are unique across folders
+        runs.write_run(run_id, {}, {}, [{"epoch": 1}], {}, {"y": np.zeros(1)}, {}, group=("elsewhere",))
+    row = runs.index_row(run_id, {}, 1.0, group=("m1_input_representation", "A_short_window"))
+    assert row["folder"] == "m1_input_representation/A_short_window"
+
+
+def test_default_group_sorts_older_flat_runs():
+    assert runs.default_group(runs.make_run_id(1, 1, "B", 2, tag="lr1e-03", now=NOW)) == ("m1_input_representation", "B")
+    assert runs.default_group(runs.make_run_id(2, 3, "pretrainD", 0, now=NOW)) == ("ptbxl_pretraining", "D", "pretrain")
+    assert runs.default_group(runs.make_run_id(2, 3, "finetuneC", 1, now=NOW)) == ("ptbxl_pretraining", "C", "finetune")
+    assert runs.default_group(runs.make_run_id(2, 3, "scratchA", 1, now=NOW)) == ("ptbxl_pretraining", "A", "scratch")
+
+
+def test_ingest_keeps_the_folder_layout_of_a_bundle(tmp_path):
+    run_id = runs.make_run_id(2, 3, "finetuneD", 0, tag="lr1e-03", now=NOW)
+    nested = tmp_path / "bundle" / "runs" / "ptbxl_pretraining" / "D_short_window_125hz" / "finetune"
+    nested.mkdir(parents=True)
+    shutil.copytree(_write(run_id), nested / run_id)
+    shutil.rmtree(paths.runs_dir())
+    assert runs.ingest([tmp_path / "bundle"])["ingested"] == [run_id]
+    assert runs.find_run_dir(run_id) == paths.runs_dir() / "ptbxl_pretraining" / "D_short_window_125hz" / "finetune" / run_id
+    with (paths.results_dir() / "runs_index.csv").open() as fh:
+        assert next(csv.DictReader(fh))["folder"] == "ptbxl_pretraining/D_short_window_125hz/finetune"

@@ -88,12 +88,14 @@ def train_grid(
     label: str,
     device: torch.device,
     dataset: dict,
+    group: tuple[str, ...],
     init: InitFn | None = None,
 ) -> tuple[dict[str, dict], int]:
     """Train the classifier for every learning rate and seed of the budget and log every run.
 
     Returns the grid ``{tag: {lr, per_seed, mean, sd, ...}}`` and the model's parameter count.
     With ``init``, each freshly built model gets weights loaded before training (fine-tuning).
+    Runs are saved under ``runs/<group...>/``.
     """
     selection = split.selection_metric
     grid: dict[str, dict] = {}
@@ -135,8 +137,8 @@ def train_grid(
             if origin is not None:
                 run_config["init"] = origin
             preds = {"probs": fit.val_probs, "y": val["y"], "record": val["record"], "r_idx": val["r_idx"]}
-            runs.write_run(run_id, run_config, env, fit.history, metrics, preds, fit.state_dict)
-            runs.upsert_runs_index(runs.index_row(run_id, metrics, fit.wall_clock_s))
+            runs.write_run(run_id, run_config, env, fit.history, metrics, preds, fit.state_dict, group=group)
+            runs.upsert_runs_index(runs.index_row(run_id, metrics, fit.wall_clock_s, group=group))
             per_seed.append(
                 {
                     "seed": seed,
