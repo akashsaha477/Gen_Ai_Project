@@ -1,0 +1,5 @@
+base: shared_budget.yaml
+variant: A
+role: cnn                      # the phase 2 gate picks the cnn from A and B, the rnn from C and D
+description: Shallow 1D-CNN, three conv blocks (conv-BN-ReLU-pool), global average pooling, linear head.
+model: {name: shallow_cnn, channels: [32, 64, 128], kernel: 7, side_hidden: 16}

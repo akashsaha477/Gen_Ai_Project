@@ -1,0 +1,35 @@
+# Shared by every phase2_quality_metrics variant (PLAN Phase 2). A variant file sets only its letter,
+# description and metric family. The sanity harness and pass rule are in src/ecgaug/quality/sanity.py.
+experiment: phase2_quality_metrics
+resamples: 3                                  # new random halves of the training beats
+degradations:                                 # three severities each (PLAN Phase 2, item 3)
+  noise: [0.1, 0.3, 1.0]                      # Gaussian noise SD on z-scored beats
+  label_shuffle: [0.25, 0.5, 1.0]             # share of each class's beats replaced by other classes' beats
+  time_shift: [5, 15, 40]                     # samples
+  smoothing: [3, 9, 27]                       # moving-average width in samples
+pass_rule:
+  spearman_min: 0.8                           # badness against severity, for every degradation
+  cv_max: 0.10                                # median coefficient of variation over the resamples
+metrics:                                      # used everywhere these families are scored later (phase 3, RQ3)
+  dtw_max_beats: 200                          # synthetic beats per class scored by DTW
+  dtw_candidates: 20                          # Euclidean nearest beats searched for the 5 nearest by DTW
+  dtw_neighbours: 5
+  dtw_window_fraction: 0.1                    # Sakoe-Chiba band as a fraction of the beat length
+  spectral_nperseg: 64                        # Welch segment length (samples)
+  fid_max_beats: 1000                         # beats per class and side for the Frechet distance
+  tstr_classifier:                            # the probe CNN, fixed recipe
+    model: {name: probe_cnn, channels: [16, 32, 64], kernel: 7, side_hidden: 16}
+    lr: 1.0e-3
+    max_epochs: 10
+    patience: 3
+    batch_size: 256
+    weight_decay: 0.01
+    seed: 0
+feature_net:                                  # the frozen FID-analog feature network (waveform only)
+  model: {name: probe_cnn, channels: [16, 32, 64], kernel: 7, side_hidden: 16}
+  lr: 1.0e-3
+  max_epochs: 10
+  patience: 3
+  batch_size: 256
+  weight_decay: 0.01
+  seed: 0

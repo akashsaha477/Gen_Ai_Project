@@ -32,14 +32,13 @@ import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-import numpy as np
 import torch
 import yaml
 
 from ecgaug import augment, paths, runs, workflow
 from ecgaug.data.records import CLASSES
 from ecgaug.experiments.common import SIDE_FIELDS, PreconditionError, check_preconditions, split_part
-from ecgaug.experiments.generator_runs import DataSource, load_data
+from ecgaug.experiments.data_source import DataSource, load_data
 from ecgaug.generators.bank import BankError, concat_parts, load_bank
 from ecgaug.generators.base import training_beats
 from ecgaug.models import build_model

@@ -39,26 +39,20 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import torch
 import yaml
 
 from ecgaug import augment, figures, paths, quality, runs, workflow
-from ecgaug.data.contract import TRAINVAL_FILE, build_candidate, content_sha256
-from ecgaug.data.counts import count_record
-from ecgaug.data.fake import write_fake_mitdb
-from ecgaug.data.loaders import load_candidate, load_trainval
 from ecgaug.data.records import CLASSES
-from ecgaug.data.representation import RepresentationSpec
-from ecgaug.data.splits import Split, check_split, selection_metric_for
+from ecgaug.data.splits import Split
 from ecgaug.eval.selection import tie_break_value
-from ecgaug.experiments import phase1_input_representation as phase1
-from ecgaug.experiments.common import SIDE_FIELDS, PreconditionError, check_preconditions, mean_sd, split_part, temporary_root
+from ecgaug.experiments.common import SIDE_FIELDS, PreconditionError, check_preconditions, mean_sd, split_part
+from ecgaug.experiments.data_source import DataSource, load_data, smoke_data
 from ecgaug.generators import GENERATED_CLASSES, build_generator
 from ecgaug.generators.bank import bank_counts, export_bank, sample_bank
 from ecgaug.generators.base import BeatGenerator, training_beats
 from ecgaug.models import build_model
-from ecgaug.names import PHASE1_GATE, PHASE2_GATE, PHASE3_CVAE, PHASE3_WGAN_GP, PHASE3A_GATE
+from ecgaug.names import PHASE2_GATE, PHASE3_CVAE, PHASE3_WGAN_GP, PHASE3A_GATE
 from ecgaug.quality.diagnostics import prepare_references, score_beats
 from ecgaug.train.loop import FitResult, TrainConfig, fit_classifier, resolve_device, set_seed
 
@@ -133,64 +127,6 @@ def generator_id(cfg: dict, setting: str) -> str:
 # --------------------------------------------------------------------------------------------------
 
 
-@dataclass
-class DataSource:
-    arrays: dict[str, np.ndarray]
-    spec: RepresentationSpec
-    info: dict
-    provisional: str | None = None  # why this is not the frozen dataset
-
-
-def reported_phase1_winner() -> str | None:
-    """The winner in the written (not necessarily approved) phase 1 gate report."""
-    report = paths.results_for(PHASE1_GATE) / "report.json"
-    return json.loads(report.read_text())["winner"] if report.is_file() else None
-
-
-def load_data(split: Split, preview: bool, representation: str | None = None) -> DataSource:
-    """The training and validation beats a run uses.
-
-    After the phase 1 gate: the frozen dataset, from ``data/processed/v1`` or, where that is not on
-    disk (Kaggle), rebuilt from the raw records and checked against the frozen hash. In a preview:
-    the candidate dataset of ``representation`` or of the phase 1 gate report's winner.
-    """
-    winner = workflow.phase1_winner()
-    letter = representation or winner or reported_phase1_winner()
-    if letter is None:
-        raise PreconditionError(
-            "No input representation to use: the phase 1 gate is not approved, its report is not written, "
-            "and --representation was not given."
-        )
-    configs = workflow.variant_configs()
-    if letter not in configs:
-        raise PreconditionError(f"No phase1_input_representation variant {letter!r}")
-    spec = RepresentationSpec(**phase1.load_config(configs[letter])["representation"])
-    if winner is not None and letter == winner:
-        expected = workflow.manifest()[PHASE1_GATE]["files"][TRAINVAL_FILE]["content_sha256"]
-        if (paths.processed_dir() / "v1" / TRAINVAL_FILE).is_file():
-            arrays, source = load_trainval("v1"), "data/processed/v1 (frozen at the phase 1 gate)"
-        else:
-            build_candidate(spec, split)
-            arrays, source = load_candidate(spec.name), f"rebuilt from the raw records ({spec.name}) and checked against the frozen hash"
-        actual = content_sha256(arrays)
-        if actual != expected:
-            raise PreconditionError(
-                f"The training data ({actual[:12]}...) does not match the frozen dataset ({expected[:12]}..., "
-                "results/manifest.json). Use the frozen files (data/processed/v1) instead of rebuilding."
-            )
-        return DataSource(arrays, spec, {"source": source, "representation": spec.name, "content_sha256": actual, "frozen": True})
-    if not preview:
-        raise PreconditionError(
-            "Phase 1 is not finished: the phase 1 gate has not frozen the dataset. Approve the phase 1 gate first "
-            "(python -m ecgaug.workflow status), or add --preview."
-        )
-    build_candidate(spec, split)
-    arrays = load_candidate(spec.name)
-    reason = "the phase 1 gate has not been approved" if winner is None else f"the phase 1 gate chose {winner}, not {letter}"
-    info = {"source": f"candidate dataset {spec.name}", "representation": spec.name, "content_sha256": content_sha256(arrays), "frozen": False}
-    return DataSource(arrays, spec, info, f"{reason}: the beats come from the candidate dataset {spec.name}")
-
-
 def pilot_classifier(cfg: dict, preview: bool) -> tuple[dict, str | None]:
     """The pilot classifier's model and training settings, and why it is a stand-in (or None)."""
     name = cfg["pilot"]["classifier"]
@@ -206,20 +142,36 @@ def pilot_classifier(cfg: dict, preview: bool) -> tuple[dict, str | None]:
     return stand_in, f"the phase 2 gate has not chosen the {name}: the pilot classifier is the phase1_input_representation probe CNN"
 
 
-def quality_families(preview: bool) -> tuple[list[str], str | None]:
+@dataclass
+class QualitySetup:
+    """The composite's metric families, their settings and the frozen feature network, from the phase 2 gate."""
+
+    families: list[str]
+    settings: dict
+    feature_net: object | None = None
+
+
+def quality_families(preview: bool) -> tuple[QualitySetup, str | None]:
     """The metric families of the composite quality rank, fixed at the phase 2 gate."""
-    families = (workflow.manifest().get(PHASE2_GATE) or {}).get("quality_composite")
-    if families:
+    from ecgaug.quality.feature_net import load_feature_net
+
+    gate = workflow.manifest().get(PHASE2_GATE) or {}
+    if "quality_composite" in gate:
+        families = list(gate["quality_composite"])
         missing = [f for f in families if f not in quality.METRIC_FAMILIES]
         if missing:
             raise PreconditionError(f"The quality composite names metric families that are not implemented: {missing}")
-        return list(families), None
+        net = None
+        if "fid_analog" in families:
+            info = gate["feature_net"]
+            net = load_feature_net(info["path"], info["sha256"], info["settings"])
+        return QualitySetup(families, gate["quality_settings"], net), None
     if not preview:
         raise PreconditionError(
             "Phase 2 is not finished: the phase 2 gate has not fixed the quality composite (phase2_quality_metrics). "
             "Finish phase 2 first, or add --preview."
         )
-    return [], "the quality composite is not fixed yet (phase2_quality_metrics): only the diagnostics are measured"
+    return QualitySetup([], {}), "the quality composite is not fixed yet (phase 2 gate): only the diagnostics are measured"
 
 
 def chosen_setting(cfg: dict, preview: bool) -> tuple[str, str | None]:
@@ -246,25 +198,22 @@ def chosen_setting(cfg: dict, preview: bool) -> tuple[str, str | None]:
 class PilotHarness:
     """Scores a generator at a checkpoint: diagnostics, quality metrics and the downstream pilot score."""
 
-    def __init__(self, cfg: dict, split: Split, data: DataSource, classifier: dict, families: list[str], device: torch.device) -> None:
+    def __init__(self, cfg: dict, split: Split, data: DataSource, classifier: dict, setup: QualitySetup, device: torch.device) -> None:
         self.cfg, self.split, self.spec, self.device = cfg, split, data.spec, device
         self.train = training_beats(data.arrays)
         self.val = split_part(data.arrays, "val", data.spec.rr_features)
         self.counts = augment.class_counts(self.train["y"])
         self.targets = augment.fraction_of_n_targets(self.counts, cfg["pilot"]["policy_fraction_of_n"])
         self.references = prepare_references(self.train, GENERATED_CLASSES, cfg["diagnostics"], REFERENCE_SEED)
-        self.classifier, self.families = classifier, families
+        self.classifier, self.families = classifier, setup.families
+        self.context = quality.QualityContext(
+            train=self.train, settings=setup.settings, val=self.val, spec=data.spec, selection=split.selection_metric,
+            feature_net=setup.feature_net, device=str(device), seed=REFERENCE_SEED,
+        )  # fmt: skip
 
     def quality_values(self, bank: dict[str, np.ndarray]) -> dict[str, float]:
-        """Each composite metric family, averaged over the generated classes."""
-        out = {}
-        for family in self.families:
-            scores = [
-                quality.METRIC_FAMILIES[family].score(self.train["X"][self.train["y"] == CLASSES.index(c)], bank["X"][bank["y"] == CLASSES.index(c)])
-                for c in GENERATED_CLASSES
-            ]
-            out[family] = float(np.mean(scores))
-        return out
+        """Each composite metric family on the synthetic beats (the RQ3 data)."""
+        return {family: float(quality.METRIC_FAMILIES[family].evaluate(self.context, bank)) for family in self.families}
 
     def score(self, generator: BeatGenerator, seed: int) -> tuple[dict, dict, FitResult, dict]:
         bank = sample_bank(generator, self.train, self.targets, seed=seed, source="pilot")
@@ -478,9 +427,9 @@ def choose_setting(settings: dict[str, dict]) -> str:
     return max(pool, key=lambda k: settings[k]["mean"]) if pool else next(iter(settings))
 
 
-def run_pilot(cfg: dict, split: Split, data: DataSource, classifier: dict, families: list[str], device: torch.device, reasons: list[str]) -> dict:
+def run_pilot(cfg: dict, split: Split, data: DataSource, classifier: dict, setup: QualitySetup, device: torch.device, reasons: list[str]) -> dict:
     """Pilot every setting of a variant on the pilot seeds and write ``results/<experiment>/<letter>.json``."""
-    harness = PilotHarness(cfg, split, data, classifier, families, device)
+    harness = PilotHarness(cfg, split, data, classifier, setup, device)
     grid = settings_grid(cfg)
     steps = int(cfg["training"]["pilot_steps"]) // len(grid)  # several settings share the variant's pilot budget
     settings = {}
@@ -500,7 +449,7 @@ def run_pilot(cfg: dict, split: Split, data: DataSource, classifier: dict, famil
         "dataset": data.info, "split": {"name": split.name, "val": list(split.val)}, "selection_metric": split.selection_metric,
         "pilot": {"steps": int(cfg["training"]["pilot_steps"]), "seeds": list(cfg["pilot_seeds"]),
                   "policy": f"each of S, V, F up to {cfg['pilot']['policy_fraction_of_n']:g} x the training N count",
-                  "targets": harness.targets, "classifier": classifier, "quality_families": families},
+                  "targets": harness.targets, "classifier": classifier, "quality_families": setup.families},
         "hard_gate_thresholds": cfg["hard_gates"], "settings": settings, "chosen_setting": chosen,
         "mean": best["mean"], "sd": best["sd"], "tie_break_mean": best["tie_break_mean"], "tie_break_sd": best["tie_break_sd"],
         "per_seed": best["per_seed"], "run_ids": best["run_ids"], "hard_gates": best["hard_gates"],
@@ -524,10 +473,10 @@ def run_pilot(cfg: dict, split: Split, data: DataSource, classifier: dict, famil
     return result
 
 
-def run_final(cfg: dict, split: Split, data: DataSource, classifier: dict, families: list[str], device: torch.device,
+def run_final(cfg: dict, split: Split, data: DataSource, classifier: dict, setup: QualitySetup, device: torch.device,
               reasons: list[str], setting: str) -> dict:  # fmt: skip
     """Train the chosen setting at the full budget for every grid seed and export the banks."""
-    harness = PilotHarness(cfg, split, data, classifier, families, device)
+    harness = PilotHarness(cfg, split, data, classifier, setup, device)
     grid = dict(settings_grid(cfg))
     if setting not in grid:
         raise ValueError(f"Variant {cfg['variant']} has no setting {setting!r}; it has {sorted(grid)}")
@@ -553,25 +502,15 @@ def run_final(cfg: dict, split: Split, data: DataSource, classifier: dict, famil
 
 def smoke(cfg: dict, final: bool = False) -> dict:
     """The pilot (and with ``final`` the final run and bank) on fake records in a temporary root."""
-    train_records, val_records = (101, 106, 108, 114), (118, 201)
     small = {
         **cfg, "pilot_seeds": [0], "final_seeds": [0],
         "training": {**cfg["training"], "pilot_steps": 8, "final_steps": 8, "batch_size": 16, "log_every": 2},
         "diagnostics": {**cfg["diagnostics"], "max_beats": 60, "c2st_folds": 2},
     }  # fmt: skip
     classifier = {**cfg["pilot"]["preview_classifier"], "max_epochs": 1, "source": "smoke run"}
-    with temporary_root():
-        write_fake_mitdb(paths.raw_dir(), train_records + val_records, seconds=120.0)
-        counts = pd.DataFrame([count_record(r) for r in train_records + val_records])
-        split = Split(name="smoke", train=train_records, val=val_records)
-        check_split(split, require_all_ds1=False)
-        split = Split(name="smoke", train=train_records, val=val_records, selection_metric=selection_metric_for(counts, split))
-        spec = RepresentationSpec(name="smoke_short_window_rr", window_pre_s=0.25, window_post_s=0.25, rr_features=True)
-        build_candidate(spec, split, require_all_ds1=False)
-        arrays = load_candidate(spec.name)
-        data = DataSource(arrays, spec, {"source": "fake records (smoke run)", "representation": spec.name}, "smoke run on fake data")
-        reasons = ["smoke run on fake data"]
-        result = run_pilot(small, split, data, classifier, [], torch.device("cpu"), reasons)
+    with smoke_data() as (split, data):
+        reasons = [data.provisional]
+        result = run_pilot(small, split, data, classifier, QualitySetup([], {}), torch.device("cpu"), reasons)
         run_dirs = [runs.find_run_dir(r) for s in result["settings"].values() for r in s["run_ids"]]
         expected = {"config.yaml", "env.json", "train_log.csv", "checkpoints.csv", "metrics_val.json", "checkpoints", "pilot_classifier"}
         missing = sorted({name for d in run_dirs for name in expected - {p.name for p in d.iterdir()}})
@@ -585,7 +524,7 @@ def smoke(cfg: dict, final: bool = False) -> dict:
             "result_file": f"results/{cfg['experiment']}/{cfg['variant']}.json",
         }  # fmt: skip
         if final:
-            final_result = run_final(small, split, data, classifier, [], torch.device("cpu"), reasons, result["chosen_setting"])
+            final_result = run_final(small, split, data, classifier, QualitySetup([], {}), torch.device("cpu"), reasons, result["chosen_setting"])
             bank = final_result["banks"][0]
             if bank is None:
                 raise RuntimeError("Smoke final run exported no bank")
@@ -618,7 +557,7 @@ def main(experiment: str, argv: list[str] | None = None) -> int:
         if not args.preview and workflow.phase1_winner() is None:
             raise PreconditionError("Phase 1 is not finished: approve the phase 1 gate first (python -m ecgaug.workflow status), or add --preview.")
         classifier, why_classifier = pilot_classifier(cfg, args.preview)
-        families, why_quality = quality_families(args.preview)
+        setup, why_quality = quality_families(args.preview)
         setting, why_setting = chosen_setting(cfg, args.preview) if args.final else (None, None)
         split = check_preconditions()
         data = load_data(split, args.preview, args.representation)
@@ -628,12 +567,12 @@ def main(experiment: str, argv: list[str] | None = None) -> int:
         return 2
     device = resolve_device(args.device or "auto")
     if args.final:
-        result = run_final(cfg, split, data, classifier, families, device, reasons, setting)
+        result = run_final(cfg, split, data, classifier, setup, device, reasons, setting)
         for s in result["per_seed"]:
             bank = s.get("bank")
             print(f"seed {s['seed']}: {s['run_id']}" + (f"; bank {bank['generator_id']} {bank['counts']}" if bank else "; DIVERGED, no bank"))
     else:
-        result = run_pilot(cfg, split, data, classifier, families, device, reasons)
+        result = run_pilot(cfg, split, data, classifier, setup, device, reasons)
         for name, s in result["settings"].items():
             gates = "pass" if s["hard_gates"]["passed"] else "FAIL: " + "; ".join(c["check"] for c in s["hard_gates"]["checks"] if not c["passed"])
             print(f"{cfg['variant']} {name}: pilot {result['selection_metric']} = {s['mean']:.4f} ± {s['sd']:.4f}; hard gates {gates}; runs: {', '.join(s['run_ids'])}")

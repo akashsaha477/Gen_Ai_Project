@@ -22,7 +22,10 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 # Kept in step with ecgaug.names (this script runs before the package is installed; a test checks it).
-EXPERIMENTS = ("phase1_input_representation", "phase2_ptbxl_pretraining", "phase3_cvae", "phase3_wgan_gp")
+EXPERIMENTS = (
+    "phase1_input_representation", "phase2_baseline_classifiers", "phase2_quality_metrics", "phase2_ptbxl_pretraining",
+    "phase3_cvae", "phase3_wgan_gp",
+)  # fmt: skip
 EXTRA_RESULT_FILES = ("results/phase2_ptbxl_data/ptbxl_preprocessing.json",)
 BANKS = "data/synthetic"  # synthetic banks of final generator runs: in the zip, never pushed (too big for git)
 
