@@ -306,11 +306,15 @@ scored in one call.
 - `make_run_id(...)`: builds names like `p1-m1-A.lr1e-03-s0-<commit>-<time>`: phase, module, variant,
   learning rate, seed, commit, timestamp. `parse_run_id` reverses it.
 - `capture_env(device)`: Python and package versions, hardware, lockfile hash.
-- `write_run(...)`: creates `runs/<run_id>/` with `config.yaml`, `env.json`, `train_log.csv`,
-  `metrics_val.json`, `preds_val.npz` and the checkpoint. It never overwrites an existing run.
-- `upsert_runs_index(row)`: adds the run to `results/runs_index.csv`.
-- `ingest(sources)`: copies runs and result files from a Kaggle zip into the repo. It refuses any run
-  carrying test predictions and never overwrites a differing file.
+- `write_run(..., group)`: creates `runs/<group...>/<run_id>/` with `config.yaml`, `env.json`,
+  `train_log.csv`, `metrics_val.json`, `preds_val.npz` and the checkpoint. `group` is the folder path,
+  for example `("ptbxl_pretraining", "D_short_window_125hz", "finetune")`. It never overwrites a run and
+  refuses a run ID that already exists in any folder.
+- `find_run_dir(run_id)`: finds a run in whichever folder it is.
+- `default_group(run_id)`: works out the folder from the run ID, for runs saved before folders existed.
+- `upsert_runs_index(row)`: adds the run to `results/runs_index.csv`, including its `folder`.
+- `ingest(sources)`: copies runs and result files from a Kaggle zip into the repo, keeping the folder
+  layout of the zip. It refuses any run carrying test predictions and never overwrites a differing file.
 
 ---
 
@@ -416,7 +420,7 @@ uv run python -m ecgaug.experiments.input_representation --config configs/m1_inp
    `usable_mask`, `transform_record`. The result is saved with its hash.
 4. `load_candidate` verifies the hash and loads; `split_part` separates training from validation.
 5. `train_grid` runs 6 trainings (2 learning rates × 3 seeds). Each one: `set_seed`, `build_model`,
-   `fit_classifier`, `write_run`, `upsert_runs_index`.
+   `fit_classifier`, `write_run` into `runs/m1_input_representation/A_short_window/`, `upsert_runs_index`.
 6. `best_grid_point` picks the learning rate; the summary is written to
    `results/validation/m1_input_representation/A.json`.
 

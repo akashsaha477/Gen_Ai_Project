@@ -12,19 +12,21 @@ Then `CLAUDE.md` (rules and data protocol), then `docs/PLAN.md`, `docs/PAPER_TRA
 
 ## Status
 
-Updated 2026-10-13 (Day 7). Phase 1 of 6, data foundation.
+Updated 2026-10-14 (Day 8). Phase 1 of 6, data foundation.
 
 - Done: environment and lockfile, MIT-BIH download with checksum verification, beat extraction, per-record
   counts, the test lock, evaluation utilities, probe model, Module 1 runner with variants A-D, Kaggle setup.
 - Dataset: MIT-BIH Arrhythmia Database (PhysioNet), inter-patient DS1/DS2 split, for training,
   validation and test. PTB-XL is used only to pretrain the classifier. Its preprocessing and the
-  pretraining plus fine-tuning runner are built and tested on fake data and a 64-recording sample;
-  the full run is meant for Kaggle (`kaggle/README.md`) and has not been done yet.
+  pretraining plus fine-tuning runner are built; the first real run (variant D, on Kaggle) is in
+  `results/validation/ptbxl_pretraining/D.json`.
 - Validation split: option V1 (records 115, 118, 201, 205, 223), in `configs/validation_split/approved.yaml`.
   Variants are selected on S F1 with V F1 as tie-break.
 - Module 1 variants can be run now, locally or on Kaggle.
 - The PTB-XL pretraining arm can be run on Kaggle: one run does preprocessing, pretraining and
   fine-tuning. Its results are provisional until Gate 1 fixes the input representation.
+- First real result (pretraining arm, variant D): pretraining did not help. Both arms detect S beats at
+  chance level (S F1 about 0.03), as expected for an input without RR timing. No Module 1 run yet.
 - Next: draw variant assignments, run `/variant 1 A..D`, then `/gate 1`.
 
 ## Repository layout
@@ -54,9 +56,24 @@ Updated 2026-10-13 (Day 7). Phase 1 of 6, data foundation.
 | `ecgaug.experiments.input_representation` | runs a Module 1 config |
 | `ecgaug.experiments.ptbxl_pretraining` | runs a pretraining config |
 
-Run folders are named `p<phase>-m<module>-<what><letter>...`, for example `scratchA`, `pretrainA`
-and `finetuneA` for the three kinds of run in the pretraining arm. Results keep the letter:
-`results/validation/m1_input_representation/A.json`.
+Runs are saved in folders by experiment, variant and kind of run:
+
+```
+runs/
+  m1_input_representation/
+    A_short_window/              <- one folder per Module 1 run of variant A
+    B_long_window_bandpass/ ...
+  ptbxl_pretraining/
+    D_short_window_125hz/
+      pretrain/                  <- pretraining on PTB-XL, one run per seed
+      scratch/                   <- MIT-BIH from scratch, 6 runs
+      finetune/                  <- MIT-BIH from the pretrained weights, 6 runs
+```
+
+Each run folder is named `p<phase>-m<module>-<kind><letter>.<learning rate>-s<seed>-<commit>-<time>`
+and holds the config, software versions, training curve, validation metrics and predictions.
+`results/runs_index.csv` lists every run with its folder. Variant results keep the letter:
+`results/validation/ptbxl_pretraining/D.json`.
 
 ## Setup
 

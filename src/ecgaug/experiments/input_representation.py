@@ -64,6 +64,7 @@ def load_config(path: Path) -> dict:
         "variant": str(variant["variant"]),
         "description": variant.get("description", ""),
         "representation": variant["representation"],
+        "config_name": path.stem,
     }
 
 
@@ -81,6 +82,7 @@ def run_variant(cfg: dict, split: Split, device_name: str | None = None, require
     grid, n_params = train_grid(
         cfg, split, spec, train, val, phase=PHASE, module=MODULE, label=variant, device=device,
         dataset={"path": str(dataset_dir), "content_sha256": dataset_hash},
+        group=(RESULTS_DIR, cfg.get("config_name", variant)),
     )  # fmt: skip
     chosen = best_grid_point(grid)
     result = {
@@ -160,7 +162,7 @@ def smoke(cfg: dict) -> dict:
         )
         smoke_cfg = {**cfg, "seeds": [0], "lr_grid": [1e-3], "max_epochs": 2}
         result = run_variant(smoke_cfg, split, device_name="cpu", require_all_ds1=False)
-        run_dir = root / "runs" / result["run_ids"][0]
+        run_dir = runs.find_run_dir(result["run_ids"][0])
         produced = sorted(p.name for p in run_dir.iterdir())
         expected = {"config.yaml", "env.json", "train_log.csv", "metrics_val.json", "preds_val.npz", "checkpoints"}
         missing = sorted(expected - set(produced))
