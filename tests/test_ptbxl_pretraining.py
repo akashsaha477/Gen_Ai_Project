@@ -226,7 +226,7 @@ def _approve(full_fake_root):
 
 def test_real_run_is_refused_without_split_or_ptbxl(full_fake_root, capsys, monkeypatch):
     monkeypatch.setattr(runs, "git_dirty", lambda: False)
-    config = ["--config", str(variant_config(CONFIGS, "A"))]
+    config = ["--config", str(variant_config(CONFIGS, "A")), "--preview"]
     assert pretrain.main(config) == 2
     assert "approved" in capsys.readouterr().out
 

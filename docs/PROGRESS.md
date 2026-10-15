@@ -245,3 +245,18 @@ Open issues / risks:
 - Re-fetching PhysioNet's checksum list failed on Kaggle; investigate or accept unverified PTB-XL files.
 
 Next: Module 1 variants A–D and Gate 1.
+
+## 2026-10-15 (Day 9) — streamlined workflow
+
+Done:
+- `src/ecgaug/workflow.py`: `status` (checklist and next action), `gate1` (report), `gate1 --approve`
+  (freeze the winner's dataset, record it in `results/manifest.json`, log the decision).
+- The pretraining runner waits for Gate 1 unless `--preview`; its notebook has a `PREVIEW` switch.
+- README rewritten around six numbered steps and the status command.
+- Tests: 169 pass.
+
+Run IDs: none.
+
+Open issues / risks: unchanged. Phase 1 still needs the four Module 1 runs.
+
+Next: step 3, run Module 1 variants A–D (one Kaggle session).
