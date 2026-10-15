@@ -1,0 +1,11 @@
+base: pilot_settings.yaml
+variant: B
+description: Bring each minority class up to a fixed fraction of the training N count.
+policy:
+  kind: fraction_of_n
+pilot_strength: 0.5
+grid_strengths:
+- 0.1
+- 0.25
+- 0.5
+complexity: 2

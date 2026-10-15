@@ -238,7 +238,7 @@ def test_one_naming_scheme_everywhere():
     spec = importlib.util.spec_from_file_location("kaggle_run", REPO / "kaggle" / "kaggle_run.py")
     kaggle_run = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(kaggle_run)
-    assert kaggle_run.EXPERIMENTS == names.EXPERIMENTS
+    assert kaggle_run.EXPERIMENTS == names.EXPERIMENTS and kaggle_run.RESULT_FOLDERS == names.RESULT_FOLDERS
     run_id = runs.make_run_id(names.PHASE1_INPUT_REPRESENTATION, "A", 0, tag="lr1e-03", now=NOW)
     assert run_id.startswith("phase1_input_representation-A.lr1e-03-s0-")
     with pytest.raises(ValueError):
