@@ -1,11 +1,11 @@
-"""Before-and-after figures for every stage, so the team can see how the data and models change.
+"""Before-and-after figures for every phase, so the team can see how the data and models change.
 
-    python -m ecgaug.figures phase1        # MIT-BIH: raw signal, filtering, the four inputs, class counts
-    python -m ecgaug.figures ptbxl         # PTB-XL: resampling and detected beats, exclusions, labels
-    python -m ecgaug.figures results       # every result file: training curves, confusion matrices, Gate 1
+    python -m ecgaug.figures phase1_data          # MIT-BIH: raw signal, filtering, the four inputs, class counts
+    python -m ecgaug.figures phase2_ptbxl_data    # PTB-XL: resampling and detected beats, exclusions, labels
+    python -m ecgaug.figures results              # every experiment result: curves, confusion matrices, the phase 1 gate
     python -m ecgaug.figures all
 
-Figures are written to ``figures/<stage>/`` as PNG files and are committed. The runners also call
+Figures are written to ``figures/<experiment or phase folder>/``, named like ``results/`` as PNG files and are committed. The runners also call
 :func:`for_result` at the end of every experiment, so a Kaggle bundle brings its figures back.
 Only DS1 records are plotted (training records for anything learned from data); DS2 never is.
 """
@@ -20,6 +20,14 @@ from pathlib import Path
 import numpy as np
 
 from ecgaug import paths, runs
+from ecgaug.names import (
+    EXPERIMENTS,
+    PHASE1_DATA,
+    PHASE1_GATE,
+    PHASE1_INPUT_REPRESENTATION,
+    PHASE2_PTBXL_DATA,
+    PHASE2_PTBXL_PRETRAINING,
+)
 
 # Light reference palette (validated: adjacent CVD ΔE >= 9.1; aqua and yellow need direct labels).
 CLASS_COLORS = {"N": "#2a78d6", "S": "#eb6834", "V": "#1baf7a", "F": "#eda100"}
@@ -59,18 +67,14 @@ def _save(fig, path: Path, title: str, caption: str) -> Path:
     return path
 
 
-def figures_dir(*parts: str) -> Path:
-    return paths.repo_root().joinpath("figures", *parts)
-
-
 # --------------------------------------------------------------------------------------------------
-# Phase 1: MIT-BIH data, before and after each preprocessing step
+# phase1_data: MIT-BIH data, before and after each preprocessing step
 # --------------------------------------------------------------------------------------------------
 
 
 def _m1_specs() -> dict:
     from ecgaug.data.representation import RepresentationSpec
-    from ecgaug.experiments.input_representation import load_config
+    from ecgaug.experiments.phase1_input_representation import load_config
     from ecgaug.workflow import variant_configs
 
     return {letter: (path.stem, RepresentationSpec(**load_config(path)["representation"])) for letter, path in variant_configs().items()}
@@ -82,7 +86,7 @@ def _train_records() -> tuple[int, ...]:
     return load_approved_split().train
 
 
-def phase1_figures() -> list[Path]:
+def phase1_data_figures() -> list[Path]:
     """Raw versus filtered signal, the four inputs for the same beats, class counts, class averages."""
     import pandas as pd
 
@@ -93,10 +97,10 @@ def phase1_figures() -> list[Path]:
     from ecgaug.data.representation import bandpass, transform_record
 
     plt = _plt()
-    out, written = figures_dir("phase1"), []
+    out, written = paths.figures_for(PHASE1_DATA), []
     specs = _m1_specs()
     train = _train_records()
-    counts = pd.read_csv(paths.results_dir() / "data" / "record_counts.csv")
+    counts = pd.read_csv(paths.results_for(PHASE1_DATA) / "record_counts.csv")
     counts = counts[counts["record"].isin(train)]
     record = int(counts.sort_values("S", ascending=False)["record"].iloc[0])  # the training record with most S beats
 
@@ -152,7 +156,7 @@ def phase1_figures() -> list[Path]:
     from ecgaug.data.splits import load_approved_split
 
     split = load_approved_split()
-    all_counts = pd.read_csv(paths.results_dir() / "data" / "record_counts.csv")
+    all_counts = pd.read_csv(paths.results_for(PHASE1_DATA) / "record_counts.csv")
     for part, records in (("train", split.train), ("validation", split.val)):
         rows = all_counts[all_counts["record"].isin(records)]
         split_counts[part] = [int(rows[c].sum()) for c in CLASSES]
@@ -193,17 +197,17 @@ def phase1_figures() -> list[Path]:
 
 
 # --------------------------------------------------------------------------------------------------
-# PTB-XL preprocessing
+# phase2_ptbxl_data: PTB-XL preprocessing
 # --------------------------------------------------------------------------------------------------
 
 
-def ptbxl_figures(root: Path | None = None) -> list[Path]:
+def phase2_ptbxl_data_figures(root: Path | None = None) -> list[Path]:
     """Raw 500 Hz versus resampled signal with detected beats; exclusions; labels; shape versus MIT-BIH."""
     from ecgaug.data import ptbxl, raw
     from ecgaug.data.representation import RepresentationSpec
 
     plt = _plt()
-    out, written = figures_dir("ptbxl"), []
+    out, written = paths.figures_for(PHASE2_PTBXL_DATA), []
     root = Path(root or paths.repo_root() / "data" / "raw" / "ptbxl")
     files = sorted(root.rglob("*_hr.hea")) if root.is_dir() else []
 
@@ -262,10 +266,10 @@ def ptbxl_figures(root: Path | None = None) -> list[Path]:
             written.append(_save(fig, out / "02_ptbxl_vs_mitbih_beat_shape.png", f"Do PTB-XL beats look like MIT-BIH beats? (correlation of medians {corr:.2f})",
                                  "Variant A window. Median with the middle 50% shaded. PTB-XL beats here are from the recordings on this machine."))  # fmt: skip
 
-    report_path = paths.results_dir() / "data" / "ptbxl_preprocessing.json"
+    report_path = paths.results_for(PHASE2_PTBXL_DATA) / "ptbxl_preprocessing.json"
     if report_path.is_file():
         report = json.loads(report_path.read_text())
-        # 3. what was kept at each stage
+        # 3. what was kept after each check
         stages = [("in metadata", report["in_metadata"]), ("eligible (labels, no pacemaker, electrodes ok)", report["eligible"]),
                   ("kept after signal checks", report["recordings_kept"])]  # fmt: skip
         reasons = {**report["excluded_by_metadata"], **report["excluded_by_signal"]}
@@ -274,7 +278,7 @@ def ptbxl_figures(root: Path | None = None) -> list[Path]:
         bars = axes[0].barh(labels[::-1], values[::-1], color="#2a78d6", height=0.5)
         for bar, v in zip(bars, values[::-1]):
             axes[0].annotate(f"{v:,}", (v, bar.get_y() + bar.get_height() / 2), xytext=(4, 0), textcoords="offset points", va="center", fontsize=8)
-        axes[0].set_title("recordings kept at each stage", loc="left")
+        axes[0].set_title("recordings kept after each check", loc="left")
         axes[0].set_xlabel("recordings")
         names, counts = zip(*sorted(reasons.items(), key=lambda kv: kv[1]))
         bars = axes[1].barh([n.replace("_", " ") for n in names], counts, color="#e34948", height=0.5)
@@ -284,7 +288,7 @@ def ptbxl_figures(root: Path | None = None) -> list[Path]:
         axes[1].set_xlabel("recordings")
         written.append(_save(fig, out / "03_recordings_kept_and_excluded.png",
                              f"PTB-XL preprocessing: {report['recordings_kept']:,} recordings and {report['beats_kept']:,} beats kept",
-                             "From results/data/ptbxl_preprocessing.json (the full run on Kaggle)."))  # fmt: skip
+                             "From results/phase2_ptbxl_data/ptbxl_preprocessing.json (the full run on Kaggle)."))  # fmt: skip
 
         # 4. labels per split
         classes = list(report["settings"]["superclasses"])
@@ -306,7 +310,7 @@ def ptbxl_figures(root: Path | None = None) -> list[Path]:
 
 
 # --------------------------------------------------------------------------------------------------
-# Results: training curves, confusion matrices, Gate 1
+# Experiment results: training curves, confusion matrices, the phase 1 gate
 # --------------------------------------------------------------------------------------------------
 
 
@@ -352,12 +356,12 @@ def _confusion_panel(ax, cm: np.ndarray, title: str) -> None:
     ax.set_title(title, loc="left")
 
 
-def pretraining_figures(result_path: Path) -> list[Path]:
-    """Figures for one pretraining-arm result: curves, confusion matrices, per-class F1 before and after."""
+def phase2_pretraining_figures(result_path: Path) -> list[Path]:
+    """Figures for one phase2_ptbxl_pretraining result: curves, confusion matrices, per-class F1 before and after."""
     plt = _plt()
     result = json.loads(Path(result_path).read_text())
     letter = result["variant"]
-    out, written = figures_dir("ptbxl_pretraining", letter), []
+    out, written = paths.figures_for(PHASE2_PTBXL_PRETRAINING) / letter, []
     metric = "S F1" if result["selection_metric"] == "s_f1" else result["selection_metric"]
     tag = " (provisional preview)" if result.get("provisional") else ""
 
@@ -372,20 +376,20 @@ def pretraining_figures(result_path: Path) -> list[Path]:
     axes[1].set_title("macro AUROC on PTB-XL fold 9", loc="left")
     for ax in axes:
         ax.set_xlabel("epoch")
-    written.append(_save(fig, out / "01_pretraining_curves.png", f"Pretraining on PTB-XL, variant {letter}{tag}",
+    written.append(_save(fig, out / "01_pretraining_curves.png", f"phase2_ptbxl_pretraining, variant {letter}: pretraining on PTB-XL{tag}",
                          f"One line per seed. Best macro AUROC {result['pretraining']['val_macro_auroc_mean']:.3f}."))  # fmt: skip
 
     fig, axes = plt.subplots(1, 2, figsize=(11, 3.4))
     for arm, kind in (("scratch", "scratch"), ("pretrained", "finetune")):
         _curves(axes[0], axes[1], kind, result["arms"][arm]["run_ids"], ARM_COLORS[kind], metric)
     axes[1].legend(loc="upper right")
-    written.append(_save(fig, out / "02_finetune_vs_scratch_curves.png", f"MIT-BIH training from scratch versus from pretrained weights, variant {letter}{tag}",
+    written.append(_save(fig, out / "02_finetune_vs_scratch_curves.png", f"phase2_ptbxl_pretraining, variant {letter}: from scratch versus fine-tuned{tag}",
                          "One line per seed at the chosen learning rate. Blue: from scratch. Orange: fine-tuned from PTB-XL."))  # fmt: skip
 
     fig, axes = plt.subplots(1, 2, figsize=(9, 4))
     _confusion_panel(axes[0], _confusion(result["arms"]["scratch"]["run_ids"]), "from scratch")
     _confusion_panel(axes[1], _confusion(result["arms"]["pretrained"]["run_ids"]), "fine-tuned from PTB-XL")
-    written.append(_save(fig, out / "03_confusion_matrices.png", f"Validation confusion matrices, variant {letter}{tag}",
+    written.append(_save(fig, out / "03_confusion_matrices.png", f"phase2_ptbxl_pretraining, variant {letter}: validation confusion matrices{tag}",
                          "Mean over seeds. Each row shows where the beats of one true class went; the diagonal is correct."))  # fmt: skip
 
     fig, ax = plt.subplots(figsize=(7, 3.4))
@@ -401,28 +405,28 @@ def pretraining_figures(result_path: Path) -> list[Path]:
     ax.set_ylim(0, 1.05)
     ax.set_ylabel("F1 on validation")
     ax.legend(loc="upper right")
-    written.append(_save(fig, out / "04_f1_per_class_before_after_pretraining.png", f"F1 per class: from scratch versus fine-tuned, variant {letter}{tag}",
+    written.append(_save(fig, out / "04_f1_per_class_before_after_pretraining.png", f"phase2_ptbxl_pretraining, variant {letter}: F1 per class, from scratch versus fine-tuned{tag}",
                          f"Mean ± SD over seeds. Winner by the selection rule: {result['winner']}."))  # fmt: skip
     return written
 
 
-def module1_figures(result_path: Path) -> list[Path]:
-    """Figures for one Module 1 variant: training curves and the confusion matrix."""
+def phase1_variant_figures(result_path: Path) -> list[Path]:
+    """Figures for one phase1_input_representation variant: training curves and the confusion matrix."""
     plt = _plt()
     result = json.loads(Path(result_path).read_text())
     letter = result["variant"]
-    out, written = figures_dir("phase1", f"variant_{letter}"), []
+    out, written = paths.figures_for(PHASE1_INPUT_REPRESENTATION) / letter, []
     metric = "S F1" if result["selection_metric"] == "s_f1" else result["selection_metric"]
     fig, axes = plt.subplots(1, 3, figsize=(14, 3.6), gridspec_kw={"width_ratios": [1, 1, 0.8]})
     _curves(axes[0], axes[1], f"variant {letter}", result["run_ids"], CLASS_COLORS["N"], metric)
     _confusion_panel(axes[2], _confusion(result["run_ids"]), "validation confusion (mean over seeds)")
-    written.append(_save(fig, out / "training_and_confusion.png", f"Module 1 variant {letter}: {metric} {result['mean']:.3f} ± {result['sd']:.3f}",
+    written.append(_save(fig, out / "training_and_confusion.png", f"phase1_input_representation, variant {letter}: {metric} {result['mean']:.3f} ± {result['sd']:.3f}",
                          f"One line per seed at the chosen learning rate ({result['chosen_lr']:g})."))  # fmt: skip
     return written
 
 
-def gate1_figure() -> list[Path]:
-    """All four Module 1 variants side by side: the evidence Gate 1 decides on."""
+def phase1_gate_figure() -> list[Path]:
+    """All four phase1_input_representation variants side by side: what the phase 1 gate decides on."""
     from ecgaug.workflow import phase1_results
 
     results = {k: v for k, v in phase1_results().items() if v}
@@ -438,17 +442,17 @@ def gate1_figure() -> list[Path]:
     ax.set_xticks(range(len(results)), [f"{k}\n{v['complexity_inputs_per_beat']} inputs" for k, v in results.items()])
     metric = next(iter(results.values()))["selection_metric"]
     ax.set_ylabel("S F1 on validation" if metric == "s_f1" else metric)
-    return [_save(fig, figures_dir("gates", "gate1_variants.png"), "Gate 1 evidence: Module 1 variants on the validation split",
+    return [_save(fig, paths.figures_for(PHASE1_GATE) / "variants.png", "Phase 1 gate: the phase1_input_representation variants on the validation split",
                   "Small dots: seeds. Black: mean ± SD. The rule picks the best mean; ties within the margin go to fewer inputs.")]  # fmt: skip
 
 
 def for_result(result_path: Path) -> list[Path]:
     """The figures for a result file, chosen by the experiment it belongs to."""
     path = Path(result_path)
-    if path.parent.name == "ptbxl_pretraining":
-        return pretraining_figures(path)
-    if path.parent.name == "m1_input_representation":
-        return module1_figures(path) + gate1_figure()
+    if path.parent.name == PHASE2_PTBXL_PRETRAINING:
+        return phase2_pretraining_figures(path)
+    if path.parent.name == PHASE1_INPUT_REPRESENTATION:
+        return phase1_variant_figures(path) + phase1_gate_figure()
     return []
 
 
@@ -463,21 +467,22 @@ def safe_for_result(result_path: Path) -> list[Path]:
 
 def results_figures() -> list[Path]:
     written = []
-    for path in sorted((paths.results_dir() / "validation").glob("*/[A-Z].json")):
-        written += for_result(path)
+    for experiment in EXPERIMENTS:
+        for path in sorted(paths.results_for(experiment).glob("[A-Z].json")):
+            written += for_result(path)
     return written
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Before-and-after figures for each stage.")
-    parser.add_argument("what", choices=["phase1", "ptbxl", "results", "all"])
+    parser = argparse.ArgumentParser(description="Before-and-after figures for each phase.")
+    parser.add_argument("what", choices=["phase1_data", "phase2_ptbxl_data", "results", "all"])
     parser.add_argument("--ptbxl-root", default=None, help="folder with PTB-XL recordings (default data/raw/ptbxl)")
     args = parser.parse_args(argv)
     written = []
-    if args.what in ("phase1", "all"):
-        written += phase1_figures()
-    if args.what in ("ptbxl", "all"):
-        written += ptbxl_figures(args.ptbxl_root)
+    if args.what in ("phase1_data", "all"):
+        written += phase1_data_figures()
+    if args.what in ("phase2_ptbxl_data", "all"):
+        written += phase2_ptbxl_data_figures(args.ptbxl_root)
     if args.what in ("results", "all"):
         written += results_figures()
     for path in written:

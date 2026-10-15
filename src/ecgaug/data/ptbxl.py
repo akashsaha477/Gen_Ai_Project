@@ -1,4 +1,4 @@
-"""PTB-XL preprocessing for the pretraining arm (DECISIONS A12).
+"""PTB-XL preprocessing for the phase2_ptbxl_pretraining experiment (DECISIONS A12).
 
 PTB-XL has 10-second 12-lead recordings with one set of diagnostic statements per recording and no
 beat annotations. This module turns it into beats that look like the MIT-BIH beats:
@@ -33,6 +33,7 @@ import pandas as pd
 from scipy import signal as sps
 
 from ecgaug import paths
+from ecgaug.names import PHASE2_PTBXL_DATA
 from ecgaug.data import raw
 from ecgaug.data.beats import rr_intervals
 from ecgaug.data.contract import content_sha256, save_npz_deterministic, sha256_file
@@ -60,7 +61,7 @@ POWERLINE_HZ = 50.0  # PTB-XL was recorded in Germany
 # Mirror padding before filtering a 10-second recording. MIT-BIH records are 30 minutes long, so their
 # beats never see a filter's start-up transient; PTB-XL beats near the ends of a recording would.
 # Mirror (even) reflection was the best of four treatments measured on MIT-BIH DS1
-# (results/data/ptbxl_method_checks_ds1.json, from ``python -m ecgaug.data.checks``).
+# (results/phase2_ptbxl_data/method_checks_ds1.json, from ``python -m ecgaug.data.checks``).
 EDGE_PAD_S = 2.0
 EDGE_PAD_MODE = "reflect"
 
@@ -404,7 +405,7 @@ def load() -> dict[str, np.ndarray]:
 def prepare(
     root: Path, workers: int = 1, limit: int | None = None, allow_missing: bool = False, verify: bool = True
 ) -> dict:
-    """Build, save and report. Writes ``data/processed/ptbxl/`` and a summary under ``results/data/``."""
+    """Build, save and report. Writes ``data/processed/ptbxl/`` and a summary under ``results/phase2_ptbxl_data/``."""
     arrays, report = build(Path(root), limit=limit, allow_missing=allow_missing, workers=workers, verify=verify)
     partial = bool(limit) or report["excluded_by_signal"].get("file_missing", 0) > 0
     report["partial_run"] = partial
@@ -413,7 +414,7 @@ def prepare(
     report["file_sha256"] = sha256_file(out_dir() / OUT_NAME)
     (out_dir() / "report.json").write_text(json.dumps(report, indent=2) + "\n")
     name = "ptbxl_preprocessing_sample.json" if partial else "ptbxl_preprocessing.json"
-    summary = paths.results_dir() / "data" / name
+    summary = paths.results_for(PHASE2_PTBXL_DATA) / name
     summary.parent.mkdir(parents=True, exist_ok=True)
     summary.write_text(json.dumps(report, indent=2) + "\n")
     return report
@@ -483,7 +484,7 @@ def alignment_report(ptbxl_x: np.ndarray, mitbih_x: np.ndarray, spec: Representa
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Preprocess PTB-XL into beats for the pretraining arm.")
+    parser = argparse.ArgumentParser(description="Preprocess PTB-XL into beats for the phase2_ptbxl_pretraining experiment.")
     parser.add_argument("--root", default=str(paths.repo_root() / "data" / "raw" / "ptbxl"),
                         help="folder that holds ptbxl_database.csv, or any folder above it")  # fmt: skip
     parser.add_argument("--download", action="store_true",

@@ -34,7 +34,7 @@ TRAINVAL_FILE = "trainval.npz"
 TEST_FILE = "test.npz"
 CONTRACT_FILE = "contract.json"
 
-# R-relative segment windows in milliseconds (PLAN.md Module 8), used by the saliency summaries.
+# R-relative segment windows in milliseconds (PLAN.md phase5_explainability), used by the saliency summaries.
 SEGMENT_WINDOWS_MS: dict[str, tuple[int, int]] = {
     "P": (-250, -100),
     "QRS": (-50, 50),
@@ -230,7 +230,7 @@ def verify_file(dataset_dir: Path, filename: str) -> dict:
 
 
 def build_candidate(spec: RepresentationSpec, split: Split, require_all_ds1: bool = True) -> Path:
-    """Build a Module 1 candidate dataset from DS1 records only (no test data is read)."""
+    """Build a phase1_input_representation candidate dataset from DS1 records only (no test data is read)."""
     check_split(split, require_all_ds1=require_all_ds1)
     records = sorted(split.train + split.val)
     out_dir = paths.processed_dir() / "candidates" / spec.name
@@ -242,7 +242,7 @@ def build_frozen(version: str, spec: RepresentationSpec, split: Split) -> Path:
     """Build the frozen contract ``data/processed/<version>/`` including ``test.npz``.
 
     Reading DS2 here is a construction access: it needs ``ALLOW_TEST_BUILD=1`` and is logged. Run it
-    once, at the Gate 1 freeze, for the representation selected by rule.
+    once, at the phase 1 gate freeze, for the representation selected by rule.
     """
     check_split(split)
     out_dir = paths.processed_dir() / version

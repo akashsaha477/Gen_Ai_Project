@@ -41,7 +41,7 @@ PhysioNet files                                   PTB-XL files
    runs.py  (save the run)  -->  eval/selection.py (pick the winner at the gate)
 ```
 
-The runners in `experiments/` string these steps together for one experiment.
+The runner of each experiment in `experiments/` strings these parts together.
 
 `paths.py` is used by everything: it returns the project folders (`data/`, `runs/`, `results/`,
 `docs/`, `configs/`). Setting the environment variable `ECGAUG_ROOT` redirects them, which is how the
@@ -73,7 +73,7 @@ No logic, only definitions that the rest of the code imports:
 
 ### `raw.py` — the only file that opens raw data
 
-Every other module gets signals and annotations through this one, so the lock cannot be skipped.
+Every other file gets signals and annotations through this one, so the lock cannot be skipped.
 
 - `_guard(record, access)`: called before any read. For a DS2 record it calls `require_test_access`;
   for a paced or unknown record it raises an error.
@@ -87,7 +87,7 @@ Every other module gets signals and annotations through this one, so the lock ca
 - `read_header(record)`: sampling rate and lead names only (no signal, so not locked).
 - `download_ptbxl(dest)` and `read_ptbxl_lead(root, filename, lead)`: the same two jobs for PTB-XL.
 - `main()`: `python -m ecgaug.data.raw` downloads, verifies and writes
-  `results/data/raw_checksums.json`.
+  `results/phase1_data/raw_checksums.json`.
 
 ### `beats.py` — from annotations to labelled beats
 
@@ -106,7 +106,7 @@ Every other module gets signals and annotations through this one, so the lock ca
   construction permission and is logged).
 - `sanity_check(counts)`: compares our totals with the reference numbers in `CLAUDE.md`; passes if
   every class is within 1%.
-- `main()`: writes `results/data/record_counts.csv` and `sanity_check.json`.
+- `main()`: writes `results/phase1_data/record_counts.csv` and `sanity_check.json`.
 
 ### `splits.py` — who is in training, validation and test
 
@@ -119,12 +119,12 @@ Every other module gets signals and annotations through this one, so the lock ca
   what the rule gives for those records.
 - `selection_metric_for(counts, split)`: applies the rule "F counts only if validation has at least
   100 F beats from at least 2 records".
-- `summarize` and `options_report`: produce `results/data/val_options.md`, the comparison of the three
+- `summarize` and `options_report`: produce `results/phase1_data/val_options.md`, the comparison of the three
   candidate validation splits. They read DS1 rows only.
 
 ### `representation.py` — cutting a window around each beat
 
-This one file implements all four Module 1 variants; a variant is only a set of parameters.
+This one file implements all four phase1_input_representation variants; a variant is only a set of parameters.
 
 - `RepresentationSpec`: the parameters: seconds before and after the R peak, optional band-pass
   limits, optional target sampling rate, and whether RR features are used. It computes the window
@@ -149,9 +149,9 @@ This one file implements all four Module 1 variants; a variant is only a set of 
 - `write_dataset(...)`: writes `trainval.npz` (and `test.npz` if given) plus `contract.json`, which
   records how the data was made, the split, the class counts and the file hashes.
 - `verify_file(dir, filename)`: recomputes a file's hash and raises `ContractError` if it differs.
-- `build_candidate(spec, split)`: builds a DS1-only dataset for a Module 1 variant. No test data.
+- `build_candidate(spec, split)`: builds a DS1-only dataset for a phase1_input_representation variant. No test data.
 - `build_frozen(version, spec, split)`: builds the final dataset including `test.npz`. Needs the
-  construction permission, logs the access, and refuses to overwrite an existing one. Used at Gate 1.
+  construction permission, logs the access, and refuses to overwrite an existing one. Used at the phase 1 gate.
 
 ### `loaders.py` — reading dataset files
 
@@ -179,7 +179,7 @@ This one file implements all four Module 1 variants; a variant is only a set of 
 - `match_peaks(reference, detected, tolerance)`: pairs detected peaks with true ones and counts hits,
   misses and false detections.
 - `validate_on_ds1()` / `main()`: runs the detector on every DS1 record and compares with the
-  cardiologists' annotations. Writes `results/data/rpeak_validation_ds1.json`.
+  cardiologists' annotations. Writes `results/phase2_ptbxl_data/rpeak_validation_ds1.json`.
 
 ### `ptbxl.py` — the PTB-XL pipeline
 
@@ -203,7 +203,7 @@ In the order the code runs:
   (`check_patient_split`), and assembles a report with every exclusion counted.
 - `verify_checksums(root, hashes)`: compares the files read with PhysioNet's checksum list.
 - `prepare(root, ...)`: `build`, then save to `data/processed/ptbxl/` with a hash, and write the
-  report to `results/data/`.
+  report to `results/phase1_data/`.
 - `load()` and `is_full_build()`: read the saved arrays (after checking the hash), and tell whether a
   complete build exists.
 - `windows_for_record(signal, r_idx, spec)`: mirror-pads the 10-second recording by 2 s, then calls
@@ -218,7 +218,7 @@ In the order the code runs:
 - `edge_effect(spec)`: cuts 10-second pieces out of DS1 records, filters them alone with four kinds
   of padding, and compares each beat with the same beat filtered inside the full record.
 - `powerline_ds1()`: measures 60 Hz mains interference in DS1.
-- `main()`: writes `results/data/ptbxl_method_checks_ds1.json`.
+- `main()`: writes `results/phase2_ptbxl_data/method_checks_ds1.json`.
 
 ---
 
@@ -303,12 +303,12 @@ scored in one call.
 
 - `git_sha()`, `git_dirty()`: the current commit, and whether code, configs or docs have uncommitted
   changes (files under `runs/` and `results/` do not count).
-- `make_run_id(...)`: builds names like `p1-m1-A.lr1e-03-s0-<commit>-<time>`: phase, module, variant,
+- `make_run_id(...)`: builds names like `phase1_input_representation-A.lr1e-03-s0-<commit>-<time>`: experiment, variant,
   learning rate, seed, commit, timestamp. `parse_run_id` reverses it.
 - `capture_env(device)`: Python and package versions, hardware, lockfile hash.
 - `write_run(..., group)`: creates `runs/<group...>/<run_id>/` with `config.yaml`, `env.json`,
   `train_log.csv`, `metrics_val.json`, `preds_val.npz` and the checkpoint. `group` is the folder path,
-  for example `("ptbxl_pretraining", "D_short_window_125hz", "finetune")`. It never overwrites a run and
+  for example `("phase2_ptbxl_pretraining", "D_short_window_125hz", "finetune")`. It never overwrites a run and
   refuses a run ID that already exists in any folder.
 - `find_run_dir(run_id)`: finds a run in whichever folder it is.
 - `default_group(run_id)`: works out the folder from the run ID, for runs saved before folders existed.
@@ -331,47 +331,47 @@ scored in one call.
 - `best_grid_point(grid)`: the learning rate with the better seed-mean score.
 - `temporary_root()`: redirects all folders to a temporary directory for smoke runs.
 
-### `input_representation.py` — Module 1
+### `input_representation.py` — phase1_input_representation
 
 - `load_config(path)`: merges a variant file with `shared_budget.yaml`, and rejects a variant file
   that tries to change the budget.
 - `run_variant(cfg, split)`: builds the DS1 dataset for the variant, calls `train_grid`, and writes
-  `results/validation/m1_input_representation/<letter>.json` with per-seed scores, mean, spread and
+  `results/phase1_input_representation/<letter>.json` with per-seed scores, mean, spread and
   run IDs.
 - `representation_check(cfg)`: `--check` mode: builds the inputs for all of DS1 and reports shapes and
   counts, without training.
 - `smoke(cfg)`: `--smoke` mode: the whole thing on fake data in a temporary folder.
 - `main()`: reads the command line and calls one of the three.
 
-### `ptbxl_pretraining.py` — the pretraining arm
+### `phase2_ptbxl_pretraining.py` — the phase2_ptbxl_pretraining experiment
 
 - `load_config(path)`: takes the input representation and the training budget from the matching
-  Module 1 config, and the pretraining settings from `pretraining_settings.yaml`.
+  phase1_input_representation config, and the pretraining settings from `pretraining_settings.yaml`.
 - `ensure_ptbxl(root, workers, verify, download)`: returns the preprocessed PTB-XL data, building it
   first (from an attached copy or by download) if it is not on disk.
 - `pretrain(cfg, spec, train, val, device)`: trains on PTB-XL once per seed and saves each run.
-- `run(cfg, split, ptbxl_arrays)`: the whole arm: build MIT-BIH data, cut PTB-XL beats, measure
+- `run(cfg, split, ptbxl_arrays)`: the whole experiment: build MIT-BIH data, cut PTB-XL beats, measure
   alignment, pretrain, run `train_grid` twice (from scratch, and with `load_encoder` as the starting
-  point), apply `select_winner`, write `results/validation/ptbxl_pretraining/<letter>.json`.
+  point), apply `select_winner`, write `results/phase2_ptbxl_pretraining/<letter>.json`.
 - `smoke(cfg)` and `main()`: as above.
 
 ---
 
-## 7b. `src/ecgaug/workflow.py`: status and Gate 1
+## 7b. `src/ecgaug/workflow.py`: status and the phase 1 gate
 
 - `status()`: builds the checklist from what exists on disk (verified data, approved split, the four
-  Module 1 result files, the Gate 1 report, `results/manifest.json`, pretraining results) and returns
+  phase1_input_representation result files, the phase 1 gate report, `results/manifest.json`, pretraining results) and returns
   the single next action. `python -m ecgaug.workflow status` prints it.
-- `evaluate_gate1()`: refuses unless all four Module 1 variants have results; checks they used the same
+- `evaluate_gate1()`: refuses unless all four phase1_input_representation variants have results; checks they used the same
   split, selection metric and budget with no reported deviations; then calls `select_winner`.
-- `write_gate1_report()`: writes `results/gates/gate1.md` (table per variant, each step of the rule,
+- `write_gate1_report()`: writes `results/phase1_gate/report.md` (table per variant, each step of the rule,
   the winner) and `gate1.json`.
 - `approve_gate1(approvers)`: re-checks that the results have not changed since the report, builds the
   frozen dataset of the winner (`data/processed/v1`, needs `ALLOW_TEST_BUILD=1` and is logged), writes
   the winner and the file hashes to `results/manifest.json`, and appends the approval to
   `docs/DECISIONS.md`.
 - `gate1_winner()`: the approved winner, read from the manifest. The pretraining runner uses it to
-  refuse running before Gate 1 or for another variant (unless `--preview`).
+  refuse running before the phase 1 gate or for another variant (unless `--preview`).
 
 ## 7c. `src/ecgaug/figures.py`: before-and-after figures
 
@@ -381,7 +381,7 @@ scored in one call.
 - `ptbxl_figures(root)`: one recording before and after resampling, with kept and dropped beats;
   PTB-XL versus MIT-BIH beat shape; recordings kept and excluded; label shares per split.
 - `pretraining_figures(result)`, `module1_figures(result)`, `gate1_figure()`: training curves,
-  confusion matrices, per-class F1 before and after pretraining, and the Gate 1 comparison.
+  confusion matrices, per-class F1 before and after pretraining, and the phase 1 gate comparison.
 - `safe_for_result(result)`: called by both runners at the end of every experiment; a plotting error is
   reported but never fails a run.
 
@@ -391,16 +391,16 @@ scored in one call.
 |---|---|
 | `validation_split/approved.yaml` | the validation records, the selection metric, who approved |
 | `validation_split/options.yaml` | the three candidate splits that were compared |
-| `m1_input_representation/shared_budget.yaml` | seeds, learning rates, epochs, patience, batch size, network size |
-| `m1_input_representation/<letter>_<name>.yaml` | one variant's window, filter, sampling rate, RR features |
-| `ptbxl_pretraining/pretraining_settings.yaml` | learning rate, epochs and patience for the PTB-XL stage |
-| `ptbxl_pretraining/<letter>_<name>.yaml` | which Module 1 variant this pretraining run uses |
+| `phase1_input_representation/shared_budget.yaml` | seeds, learning rates, epochs, patience, batch size, network size |
+| `phase1_input_representation/<letter>_<name>.yaml` | one variant's window, filter, sampling rate, RR features |
+| `phase2_ptbxl_pretraining/pretraining_settings.yaml` | learning rate, epochs and patience for the PTB-XL pretraining part |
+| `phase2_ptbxl_pretraining/<letter>_<name>.yaml` | which phase1_input_representation variant this pretraining run uses |
 
 ---
 
 ## 9. `kaggle/`: running on Kaggle
 
-- `module1_input_representation.ipynb`, `ptbxl_pretraining.ipynb`: parameter cell, a cell that clones
+- `phase1_input_representation.ipynb`, `phase2_ptbxl_pretraining.ipynb`: parameter cell, a cell that clones
   the repo at your branch using the GitHub token from Kaggle Secrets, and a cell that turns your
   variant letters into config files and calls `kaggle_run.py`.
 - `kaggle_run.py`: `setup_env` installs the environment; `setup_data` copies or downloads MIT-BIH and
@@ -427,8 +427,8 @@ scored in one call.
 | `test_probe_training.py` | network shapes; training is deterministic; early stopping |
 | `test_runs.py` | run IDs, run folders, the index, ingest, the Kaggle bundle |
 | `test_input_representation.py` | equal budgets; refusals; smoke runs of A–D |
-| `test_ptbxl.py` | the detector; every PTB-XL step; patient-wise folds; padding; checksums |
-| `test_ptbxl_pretraining.py` | weight transfer; config; the arm end to end on fake data |
+| `test_ptbxl.py` | the detector; every PTB-XL check; patient-wise folds; padding; checksums |
+| `test_ptbxl_pretraining.py` | weight transfer; config; the experiment end to end on fake data |
 
 `conftest.py` makes every test run in a temporary folder with the test lock closed.
 
@@ -436,10 +436,10 @@ scored in one call.
 
 ## 11. Two walkthroughs: what happens when you run a command
 
-### Module 1, variant A
+### phase1_input_representation, variant A
 
 ```
-uv run python -m ecgaug.experiments.input_representation --config configs/m1_input_representation/A_short_window.yaml
+uv run python -m ecgaug.experiments.phase1_input_representation --config configs/phase1_input_representation/A_short_window.yaml
 ```
 
 1. `load_config` merges `A_short_window.yaml` with `shared_budget.yaml`.
@@ -448,23 +448,23 @@ uv run python -m ecgaug.experiments.input_representation --config configs/m1_inp
    `usable_mask`, `transform_record`. The result is saved with its hash.
 4. `load_candidate` verifies the hash and loads; `split_part` separates training from validation.
 5. `train_grid` runs 6 trainings (2 learning rates × 3 seeds). Each one: `set_seed`, `build_model`,
-   `fit_classifier`, `write_run` into `runs/m1_input_representation/A_short_window/`, `upsert_runs_index`.
+   `fit_classifier`, `write_run` into `runs/phase1_input_representation/A_short_window/`, `upsert_runs_index`.
 6. `best_grid_point` picks the learning rate; the summary is written to
-   `results/validation/m1_input_representation/A.json`.
+   `results/phase1_input_representation/A.json`.
 
-### PTB-XL pretraining arm, variant A
+### phase2_ptbxl_pretraining experiment, variant A
 
 ```
-uv run python -m ecgaug.experiments.ptbxl_pretraining --config configs/ptbxl_pretraining/A_short_window.yaml --ptbxl-download
+uv run python -m ecgaug.experiments.phase2_ptbxl_pretraining --config configs/phase2_ptbxl_pretraining/A_short_window.yaml --ptbxl-download
 ```
 
-1. `load_config` reads the representation and budget from Module 1's A config.
+1. `load_config` reads the representation and budget from phase1_input_representation's A config.
 2. `check_preconditions`, as above.
 3. `ensure_ptbxl`: `download_ptbxl`, then `prepare` (metadata, signal checks, resampling, peak
    detection, beat filtering, labels, folds, checksum comparison), then `load`.
-4. `run` builds the MIT-BIH dataset (as in Module 1) and cuts PTB-XL beats with `beat_arrays`.
+4. `run` builds the MIT-BIH dataset (as in phase1_input_representation) and cuts PTB-XL beats with `beat_arrays`.
 5. `pretrain`: 3 runs of `fit_multilabel` on PTB-XL, one per seed.
 6. `train_grid` from scratch: 6 runs. `train_grid` with `load_encoder`: 6 runs, each starting from the
    pretraining run of the same seed.
 7. `select_winner` compares the two; the summary is written to
-   `results/validation/ptbxl_pretraining/A.json`.
+   `results/phase2_ptbxl_pretraining/A.json`.

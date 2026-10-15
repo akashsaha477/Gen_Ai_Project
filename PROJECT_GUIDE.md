@@ -44,7 +44,7 @@ careful answer, not a new generator.
    prediction, a saliency map and a short clinician-readable note come out.
 2. Evidence solid enough to publish, including negative results.
 
-**Team.** Four members. Each module has four variants (A–D); each member takes one, and the winner is
+**Team.** Four members. Each experiment has four variants (A–D); each member takes one, and the winner is
 chosen at a "gate" by a written rule.
 
 ---
@@ -100,7 +100,7 @@ These come from `CLAUDE.md`. In plain terms:
 | Split by patient | No record is in two of training, validation and test. Anything fitted (generators, oversamplers) sees training records only. |
 | The test set is locked | Code cannot read DS2 without an explicit permission, and every access is written to `docs/TEST_ACCESS_LOG.md`. The test set is evaluated once, at the end. |
 | Choose on validation, by written rules | Which variant wins is decided by a rule fixed beforehand and applied by code, not by looking at results and picking. |
-| Equal budgets | Variants of a module get the same data, seeds, epochs and learning rates. |
+| Equal budgets | Variants of an experiment get the same data, seeds, epochs and learning rates. |
 | No invented numbers | Every number in a document comes from code output. Unknown values are written as unknown. |
 | Report what happened | Failures and negative results are recorded and go in the paper. |
 | Humans approve gates | A phase ends with a gate report; the team approves it before the next phase starts. |
@@ -120,18 +120,18 @@ These come from `CLAUDE.md`. In plain terms:
 
 | Phase | Planned days | What happens | State |
 |---|---|---|---|
-| 1. Data foundation | 1–3 | data pipeline, evaluation code, choose the input representation (Module 1) | infrastructure built; variants not run |
-| 2. Baselines and quality metrics | 4–8 | baseline classifiers (Module 3), metrics for judging synthetic beats (Module 4) | not started, except the PTB-XL arm |
-| 3. Generators | 9–14 | cVAE (Module 5) and WGAN-GP (Module 6), synthetic beat banks | not started |
-| 4. Integration and ablation | 16–21 | augmentation policy (Module 7), the full comparison grid, the single test evaluation | not started |
-| 5. Explainability, notes, demo | 22–26 | saliency maps (Module 8), clinical-note generator (Module 9), demo | not started |
-| 6. Report and paper | 27–30 | paper draft, course report, reproducibility package | not started |
+| 1 data | 1–3 | data pipeline, evaluation code, choose the input representation (phase1_input_representation) | infrastructure built; variants not run |
+| 2 baselines | 4–8 | baseline classifiers (phase2_baseline_classifiers), metrics for judging synthetic beats (phase2_quality_metrics), PTB-XL pretraining (phase2_ptbxl_pretraining) | one preview of phase2_ptbxl_pretraining; the rest not started |
+| 3 generators | 9–14 | cVAE (phase3_cvae) and WGAN-GP (phase3_wgan_gp), synthetic beat banks | not started |
+| 4 comparison | 16–21 | augmentation policy (phase4_augmentation_policy), the full comparison grid, the single test evaluation | not started |
+| 5 explanations | 22–26 | saliency maps (phase5_explainability), clinical-note generator (phase5_clinical_notes), demo | not started |
+| 6 paper | 27–30 | paper draft, course report, reproducibility package | not started |
 
 We are on Day 7 and about four days behind: Phase 1 was due on Day 3.
 
 **Where are we?** `python -m ecgaug.workflow status` prints every step, ticked or not, and the next
-action. The code enforces the order: Gate 1 needs all four Module 1 results, and the pretraining arm
-needs an approved Gate 1 (or `--preview`, which marks the result provisional).
+action. The code enforces the order: Phase 1 gate needs all four phase1_input_representation results, and the phase2_ptbxl_pretraining experiment
+needs an approved phase 1 gate (or `--preview`, which marks the result provisional).
 
 **The phase loop.** One person builds the shared code for a phase. Each member runs one variant on
 their own branch. A gate report applies the selection rule. The team approves, and the next phase
@@ -162,13 +162,13 @@ A beat is used only if its window fits inside the record and both RR intervals e
 
 ### 5.3 The test lock (`src/ecgaug/data/access.py`, `raw.py`)
 
-- All raw-file reading goes through one module. It refuses any DS2 record unless the caller declares
+- All raw-file reading goes through one file. It refuses any DS2 record unless the caller declares
   why and a matching environment flag is set.
 - Two kinds of access exist: *construction* (counting labels, building files; no model involved) and
   *evaluation* (the final test, once).
 - So far the log has one entry: counting DS2 labels for the dataset table. No model has seen DS2.
 
-### 5.4 Evaluation code (`src/ecgaug/eval/`) — this is Module 2
+### 5.4 Evaluation code (`src/ecgaug/eval/`) — this is the evaluation code
 
 - **Metrics:** per-class precision, recall and F1, PR-AUC, the AAMI sensitivity and positive
   predictivity used in older papers, and the confusion matrix. Tested against hand-computed cases.
@@ -177,7 +177,7 @@ A beat is used only if its window fits inside the record and both RR intervals e
   the Holm correction for multiple comparisons.
 - **Selection rule:** the tie margin and tie-breaks described in section 3.
 
-### 5.5 Module 1: input representation (`configs/m1_input_representation/`)
+### 5.5 phase1_input_representation: input representation (`configs/phase1_input_representation/`)
 
 The first real experiment. It asks: how should a beat be presented to the model?
 
@@ -199,7 +199,7 @@ The first real experiment. It asks: how should a beat be presented to the model?
 
 - One training loop with early stopping, fixed seeds and deterministic settings.
 - Every run gets its own folder, grouped by experiment, variant and kind of run (for example
-  `runs/ptbxl_pretraining/D_short_window_125hz/finetune/`), with its config, software versions, training curve,
+  `runs/phase2_ptbxl_pretraining/D_short_window_125hz/finetune/`), with its config, software versions, training curve,
   validation metrics, predictions and model checkpoint. `results/runs_index.csv` lists all runs.
 
 ### 5.7 PTB-XL preprocessing (`src/ecgaug/data/ptbxl.py`, `rpeaks.py`, `checks.py`)
@@ -227,7 +227,7 @@ What was measured to justify these choices:
 - **State:** built and tested on 64 real recordings (59 kept, 587 beats). The full dataset has not been
   processed; that happens in the Kaggle run.
 
-### 5.8 PTB-XL pretraining arm (`src/ecgaug/experiments/ptbxl_pretraining.py`)
+### 5.8 phase2_ptbxl_pretraining experiment (`src/ecgaug/experiments/phase2_ptbxl_pretraining.py`)
 
 Asks: does pretraining on a large ECG dataset help rare-beat detection on MIT-BIH?
 
@@ -238,14 +238,14 @@ Asks: does pretraining on a large ECG dataset help rare-beat detection on MIT-BI
 
 - One command does all four steps, including the PTB-XL preprocessing.
 - **State:** one real run, variant D, done on Kaggle on 2026-10-14 by kartheek2159
-  (`results/validation/ptbxl_pretraining/D.json`). Pretraining reached a macro AUROC of 0.83 on PTB-XL,
-  but fine-tuning did not beat from-scratch on MIT-BIH, so the rule picked from-scratch. Both arms
+  (`results/phase2_ptbxl_pretraining/D.json`). Pretraining reached a macro AUROC of 0.83 on PTB-XL,
+  but fine-tuning did not beat from-scratch on MIT-BIH, so the rule picked from-scratch. Both methods
   detect S beats at chance level with this input (S F1 about 0.03). The result is provisional and uses
   the small probe network.
 
 ### 5.9 Kaggle setup (`kaggle/`)
 
-- `module1_input_representation.ipynb` and `ptbxl_pretraining.ipynb`: one notebook per job. You set the
+- `phase1_input_representation.ipynb` and `phase2_ptbxl_pretraining.ipynb`: one notebook per job. You set the
   variant letters and run all cells.
 - `make_raw_dataset.py`: packs the verified MIT-BIH files into a 66 MB zip to upload once as a private
   Kaggle dataset, so sessions do not re-download from PhysioNet.
@@ -258,14 +258,14 @@ Asks: does pretraining on a large ECG dataset help rare-beat detection on MIT-BI
 
 | Part | Phase | What it will be |
 |---|---|---|
-| Module 1 results and Gate 1 | 1 | the four variant runs, then the choice of input representation and the frozen dataset |
-| Module 3: baseline classifiers | 2 | shallow CNN, 1D ResNet, BiLSTM, CNN+BiLSTM; pick one CNN and one recurrent model |
-| Module 4: synthetic-quality metrics | 2 | DTW, spectral distance, a Fréchet-style distance, train-on-synthetic test |
-| Modules 5 and 6: generators | 3 | conditional VAE and conditional WGAN-GP, four variants each |
-| Module 7: augmentation policy and the grid | 4 | how many synthetic beats to add; then 96 runs comparing all conditions |
+| phase1_input_representation results and the phase 1 gate | 1 | the four variant runs, then the choice of input representation and the frozen dataset |
+| phase2_baseline_classifiers: baseline classifiers | 2 | shallow CNN, 1D ResNet, BiLSTM, CNN+BiLSTM; pick one CNN and one recurrent model |
+| phase2_quality_metrics: synthetic-quality metrics | 2 | DTW, spectral distance, a Fréchet-style distance, train-on-synthetic test |
+| phase3_cvae and phase3_wgan_gp: generators | 3 | conditional VAE and conditional WGAN-GP, four variants each |
+| phase4_augmentation_policy: augmentation policy and the grid | 4 | how many synthetic beats to add; then 96 runs comparing all conditions |
 | Final test evaluation | 4 | the single DS2 evaluation with patient-level statistics |
-| Module 8: explainability | 5 | Grad-CAM, integrated gradients and others, compared for faithfulness |
-| Module 9: clinical notes | 5 | template and LLM note generators with an automatic fact check |
+| phase5_explainability: explainability | 5 | Grad-CAM, integrated gradients and others, compared for faithfulness |
+| phase5_clinical_notes: clinical notes | 5 | template and LLM note generators with an automatic fact check |
 | Demo, report, paper | 5–6 | command-line demo, course report, paper draft |
 
 ---
@@ -280,18 +280,18 @@ uv run pytest
 uv run python -m ecgaug.data.raw      # download and verify MIT-BIH (about 30 minutes)
 ```
 
-**Module 1, your variant**
+**phase1_input_representation, your variant**
 
 ```
-uv run python -m ecgaug.experiments.input_representation --config configs/m1_input_representation/A_short_window.yaml
+uv run python -m ecgaug.experiments.phase1_input_representation --config configs/phase1_input_representation/A_short_window.yaml
 ```
 
 Add `--smoke` for a one-minute check on fake data, or `--check` to build the inputs without training.
 
-**PTB-XL pretraining arm**
+**phase2_ptbxl_pretraining experiment**
 
 ```
-uv run python -m ecgaug.experiments.ptbxl_pretraining --config configs/ptbxl_pretraining/A_short_window.yaml --ptbxl-download
+uv run python -m ecgaug.experiments.phase2_ptbxl_pretraining --config configs/phase2_ptbxl_pretraining/A_short_window.yaml --ptbxl-download
 ```
 
 **On Kaggle:** follow `kaggle/README.md`.
@@ -309,21 +309,21 @@ already in the repo) and no uncommitted code changes.
 | `PROJECT_GUIDE.md` | this file |
 | `CODE_GUIDE.md` | what each code file and function does |
 | `CLAUDE.md` | the project rules and data protocol |
-| `docs/PLAN.md` | every phase, module and variant in detail |
+| `docs/PLAN.md` | every phase, experiment and variant in detail |
 | `docs/PAPER_TRACK.md` | research questions, hypotheses, statistics plan, figures |
 | `docs/PROGRESS.md` | what was done each day |
 | `docs/DECISIONS.md` | every decision and plan change, with the reason |
 | `docs/PREREGISTRATION.md` | the selection and statistics rules written out |
-| `docs/briefs/` | one page per Module 1 variant for the person running it |
+| `docs/briefs/` | one page per phase1_input_representation variant for the person running it |
 | `docs/TEST_ACCESS_LOG.md` | every access to the test set |
 | `configs/` | experiment settings |
 | `src/ecgaug/data/` | MIT-BIH pipeline, test lock, PTB-XL preprocessing |
 | `src/ecgaug/eval/` | metrics, bootstrap, selection rule |
 | `src/ecgaug/models/`, `train/` | the probe network and the training loop |
-| `src/ecgaug/experiments/` | the runners: `input_representation`, `ptbxl_pretraining` |
+| `src/ecgaug/experiments/` | the runners: `input_representation`, `phase2_ptbxl_pretraining` |
 | `kaggle/` | notebooks, scripts and guide for Kaggle |
-| `results/data/` | counts, checks and validation reports produced by code |
-| `results/validation/` | variant results (empty until variants are run) |
+| `results/phase1_data/` | counts, checks and validation reports produced by code |
+| `results/<experiment>/` | variant results (empty until variants are run) |
 | `runs/` | training runs, in folders by experiment, variant and kind of run |
 | `tests/` | the automated tests |
 | `Papers/` | reference papers |
@@ -343,7 +343,7 @@ Full reasons are in `docs/DECISIONS.md`.
 | MIT-BIH is the main dataset | The task, the classes and the generators are all beat-level, and PTB-XL has no beat labels. |
 | PTB-XL for supervised pretraining | Simple to do; each beat takes its recording's diagnosis. The labels are noisy at beat level, which is stated as a limitation. |
 | The pre-registration document is not enforced by code | The runner needs only the approved split. The document stays as a description of the rules; the paper cannot call it a time-stamped pre-registration. |
-| Pretraining arm built before Gate 1 | To use Kaggle time now. Its results are provisional until the input representation is fixed. |
+| phase2_ptbxl_pretraining built before the phase 1 gate | To use Kaggle time now. Its results are provisional until the input representation is fixed. |
 
 ---
 
@@ -356,12 +356,12 @@ Full reasons are in `docs/DECISIONS.md`.
 - The R-peak detector and the padding choice were measured on DS1 (section 5.7).
 - Both runners work end to end on fake data, also through the Kaggle runner script in a fresh clone.
 - 162 tests pass, including tests that the test set cannot be read by accident.
-- The pretraining arm ran on Kaggle for variant D, including full PTB-XL preprocessing (20,918 recordings kept).
+- The phase2_ptbxl_pretraining experiment ran on Kaggle for variant D, including full PTB-XL preprocessing (20,918 recordings kept).
 
 **Not checked yet**
 
-- No Module 1 variant has been run, so Gate 1 cannot happen yet.
-- Only one real experiment exists: the pretraining arm for variant D (section 5.8).
+- No phase1_input_representation variant has been run, so the phase 1 gate cannot happen yet.
+- Only one real experiment exists: the phase2_ptbxl_pretraining experiment for variant D (section 5.8).
 - PTB-XL file checksums were not compared on Kaggle (PhysioNet's list could not be fetched there).
 - One metric convention (AAMI positive predictivity for V) is implemented from memory of the original
   paper and must be verified before it is quoted.
@@ -387,8 +387,8 @@ Full reasons are in `docs/DECISIONS.md`.
 | F1 | A score between 0 and 1 that balances missed beats against false alarms. |
 | Validation set | Data used to choose between options; never the test set. |
 | Seed | The number that fixes a run's randomness. We use 0, 1 and 2 and average. |
-| Variant | One of four alternatives (A–D) within a module. |
-| Module | One piece of the project with its own four variants and selection rule. |
+| Variant | One of four alternatives (A–D) within an experiment. |
+| Experiment | One comparison inside a phase, named `phase<N>_<what>`, with its own variants and selection rule. |
 | Gate | The checkpoint at the end of a phase where the winner is chosen and the team approves. |
 | Probe network | The small fixed classifier used only to compare input representations. |
 | cVAE, WGAN-GP | The two kinds of generative model we will train to produce synthetic beats. |

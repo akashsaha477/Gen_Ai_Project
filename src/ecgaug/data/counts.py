@@ -16,11 +16,12 @@ import json
 import pandas as pd
 
 from ecgaug import paths
+from ecgaug.names import PHASE1_DATA
 from ecgaug.data.access import log_test_access, require_test_access
 from ecgaug.data.beats import UNMAPPED, extract_beats
 from ecgaug.data.records import CLASSES, DS1, DS2, dataset_of
 
-# CLAUDE.md §4, "Sanity counts". Gate 1 asks for class totals within 1% of these.
+# CLAUDE.md §4, "Sanity counts". Phase 1 gate asks for class totals within 1% of these.
 SANITY_COUNTS: dict[str, dict[str, int]] = {
     "DS1": {"N": 45868, "S": 942, "V": 3787, "F": 415},
     "DS2": {"N": 44258, "S": 1837, "V": 3221, "F": 388},
@@ -84,7 +85,7 @@ def main(argv: list[str] | None = None) -> int:
     counts = record_counts(include_test=args.include_test)
     if args.include_test:
         log_test_access("construction", "per-record class counts from DS2 annotations (labels only, no signals)")
-    out_dir = paths.results_dir() / "data"
+    out_dir = paths.results_for(PHASE1_DATA)
     out_dir.mkdir(parents=True, exist_ok=True)
     counts.to_csv(out_dir / "record_counts.csv", index=False)
     report = sanity_check(counts)

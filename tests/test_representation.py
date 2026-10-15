@@ -12,10 +12,10 @@ from ecgaug.data.representation import (
     usable_mask,
     zscore_per_beat,
 )
-from ecgaug.experiments.input_representation import load_config
+from ecgaug.experiments.phase1_input_representation import load_config
 
 SPECS = {
-    letter: RepresentationSpec(**load_config(variant_config(REPO / "configs" / "m1_input_representation", letter))["representation"])
+    letter: RepresentationSpec(**load_config(variant_config(REPO / "configs" / "phase1_input_representation", letter))["representation"])
     for letter in "ABCD"
 }
 

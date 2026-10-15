@@ -1,10 +1,10 @@
-"""The project's step-by-step workflow: where we are, what to run next, and Gate 1.
+"""The project's step-by-step workflow: where we are, what to run next, and the phase 1 gate.
 
     python -m ecgaug.workflow status                     # checklist of every step and the next action
-    python -m ecgaug.workflow gate1                      # compare variants A-D and write the Gate 1 report
-    ALLOW_TEST_BUILD=1 python -m ecgaug.workflow gate1 --approve "Name One" "Name Two"
+    python -m ecgaug.workflow phase1-gate                      # compare variants A-D and write the phase 1 gate report
+    ALLOW_TEST_BUILD=1 python -m ecgaug.workflow phase1-gate --approve "Name One" "Name Two"
 
-Approving Gate 1 freezes the dataset of the winning variant (``data/processed/v1``, test part
+Approving the phase 1 gate freezes the dataset of the winning variant (``data/processed/v1``, test part
 included; a logged construction access) and records it in ``results/manifest.json``. Later steps read
 the winner from there, so nobody has to remember which variant won.
 """
@@ -19,19 +19,19 @@ from pathlib import Path
 import yaml
 
 from ecgaug import paths, runs
+from ecgaug.names import (
+    PHASE1_DATA,
+    PHASE1_GATE,
+    PHASE1_INPUT_REPRESENTATION,
+    PHASE2_PTBXL_PRETRAINING,
+    PHASES,
+)
 from ecgaug.eval.selection import Candidate, select_winner
 
-M1_RESULTS = "m1_input_representation"
-PRETRAIN_RESULTS = "ptbxl_pretraining"
+M1_RESULTS = PHASE1_INPUT_REPRESENTATION
+PRETRAIN_RESULTS = PHASE2_PTBXL_PRETRAINING
 DAY_ONE = _dt.date(2026, 10, 7)
-PLAN = (  # phase, name, last planned day
-    (1, "Data foundation", 3),
-    (2, "Baselines and quality metrics", 8),
-    (3, "Generators", 14),
-    (4, "Integration and ablation", 21),
-    (5, "Explainability, notes, demo", 26),
-    (6, "Report and paper", 30),
-)
+LAST_DAY = {1: 3, 2: 8, 3: 14, 4: 21, 5: 26, 6: 30}  # last planned day of each phase
 
 
 class GateError(RuntimeError):
@@ -39,14 +39,14 @@ class GateError(RuntimeError):
 
 
 def variant_configs() -> dict[str, Path]:
-    """Module 1 variant letter -> config file, e.g. {"A": .../A_short_window.yaml}."""
+    """phase1_input_representation variant letter -> config file, e.g. {"A": .../A_short_window.yaml}."""
     folder = paths.configs_dir() / M1_RESULTS
     return {p.name[0]: p for p in sorted(folder.glob("[A-Z]_*.yaml"))}
 
 
 def phase1_results() -> dict[str, dict | None]:
-    """The Module 1 result file of each variant, or None where the variant has not been run."""
-    folder = paths.results_dir() / "validation" / M1_RESULTS
+    """The phase1_input_representation result file of each variant, or None where the variant has not been run."""
+    folder = paths.results_for(M1_RESULTS)
     out = {}
     for letter in variant_configs():
         path = folder / f"{letter}.json"
@@ -59,18 +59,18 @@ def manifest() -> dict:
     return json.loads(path.read_text()) if path.is_file() else {}
 
 
-def gate1_winner() -> str | None:
-    """The variant letter chosen and approved at Gate 1, or None before that."""
-    entry = manifest().get("gate1")
+def phase1_winner() -> str | None:
+    """The variant letter chosen and approved at the phase 1 gate, or None before that."""
+    entry = manifest().get(PHASE1_GATE)
     return entry["winner"] if entry else None
 
 
-def evaluate_gate1() -> dict:
-    """Check the four Module 1 results and apply the selection rule. Raises GateError if not ready."""
+def evaluate_phase1_gate() -> dict:
+    """Check the four phase1_input_representation results and apply the selection rule. Raises GateError if not ready."""
     results = phase1_results()
     missing = [letter for letter, r in results.items() if r is None]
     if missing:
-        raise GateError(f"Module 1 variants not run yet: {', '.join(missing)}")
+        raise GateError(f"phase1_input_representation variants not run yet: {', '.join(missing)}")
     checks = []
 
     def same(field: str, label: str) -> None:
@@ -85,7 +85,7 @@ def evaluate_gate1() -> dict:
     checks.append({"check": "no budget deviations reported", "passed": not deviations, "detail": deviations or "none"})
     failed = [c["check"] for c in checks if not c["passed"]]
     if failed:
-        raise GateError(f"Gate 1 checks failed: {'; '.join(failed)}. See the result files.")
+        raise GateError(f"Phase 1 gate checks failed: {'; '.join(failed)}. See the result files.")
 
     candidates = [
         Candidate(
@@ -98,13 +98,13 @@ def evaluate_gate1() -> dict:
     return {"results": results, "checks": checks, "decision": decision, "winner": decision["winner"]}
 
 
-def gate1_markdown(gate: dict) -> str:
+def phase1_gate_markdown(gate: dict) -> str:
     results, decision = gate["results"], gate["decision"]
     metric = next(iter(results.values()))["selection_metric"]
     lines = [
-        "# Gate 1: input representation",
+        "# Phase 1 gate: phase1_input_representation",
         "",
-        f"Generated by `python -m ecgaug.workflow gate1` on {_dt.date.today()}. Selection metric: `{metric}`",
+        f"Generated by `python -m ecgaug.workflow phase1-gate` on {_dt.date.today()}. Selection metric: `{metric}`",
         "(validation, mean over seeds). Rule: `docs/PREREGISTRATION.md` §4–5, applied by",
         "`ecgaug.eval.selection.select_winner`.",
         "",
@@ -135,32 +135,32 @@ def gate1_markdown(gate: dict) -> str:
         f"**Winner: variant {gate['winner']}** (`{variant_configs()[gate['winner']].name}`).",
         "",
         "Status: PENDING APPROVAL. After the team agrees, approve with",
-        '`ALLOW_TEST_BUILD=1 python -m ecgaug.workflow gate1 --approve "Name" "Name"`.',
+        '`ALLOW_TEST_BUILD=1 python -m ecgaug.workflow phase1-gate --approve "Name" "Name"`.',
         "",
     ]
     return "\n".join(lines)
 
 
-def write_gate1_report() -> dict:
-    """Evaluate Gate 1 and write ``results/gates/gate1.md`` and ``gate1.json``."""
-    gate = evaluate_gate1()
-    out = paths.results_dir() / "gates"
+def write_phase1_gate_report() -> dict:
+    """Evaluate the phase 1 gate and write ``results/phase1_gate/report.md`` and ``report.json``."""
+    gate = evaluate_phase1_gate()
+    out = paths.results_for(PHASE1_GATE)
     out.mkdir(parents=True, exist_ok=True)
-    (out / "gate1.md").write_text(gate1_markdown(gate))
+    (out / "report.md").write_text(phase1_gate_markdown(gate))
     summary = {k: gate[k] for k in ("checks", "decision", "winner")}
     summary["run_ids"] = {letter: r["run_ids"] for letter, r in gate["results"].items()}
-    (out / "gate1.json").write_text(json.dumps(summary, indent=2) + "\n")
+    (out / "report.json").write_text(json.dumps(summary, indent=2) + "\n")
     from ecgaug import figures
 
     try:
-        figures.gate1_figure()
+        figures.phase1_gate_figure()
     except Exception as err:  # noqa: BLE001 (the report is written; the figure is extra)
-        print(f"WARNING: Gate 1 figure was not made: {err}")
+        print(f"WARNING: the phase 1 gate figure was not made: {err}")
     return gate
 
 
-def approve_gate1(approvers: list[str]) -> dict:
-    """Freeze the winner's dataset as ``data/processed/v1`` and record Gate 1 in the manifest.
+def approve_phase1_gate(approvers: list[str]) -> dict:
+    """Freeze the winner's dataset as ``data/processed/v1`` and record the phase 1 gate in the manifest.
 
     Needs ``ALLOW_TEST_BUILD=1``, because building the test file reads DS2 (a logged construction
     access; no model sees it).
@@ -168,18 +168,18 @@ def approve_gate1(approvers: list[str]) -> dict:
     from ecgaug.data.contract import build_frozen
     from ecgaug.data.representation import RepresentationSpec
     from ecgaug.experiments.common import check_preconditions
-    from ecgaug.experiments.input_representation import load_config
+    from ecgaug.experiments.phase1_input_representation import load_config
 
     if not approvers:
         raise GateError("Name at least one approver")
-    if gate1_winner():
-        raise GateError(f"Gate 1 is already approved (winner {gate1_winner()})")
-    report = paths.results_dir() / "gates" / "gate1.json"
+    if phase1_winner():
+        raise GateError(f"The phase 1 gate is already approved (winner {phase1_winner()})")
+    report = paths.results_for(PHASE1_GATE) / "report.json"
     if not report.is_file():
-        raise GateError("Write the Gate 1 report first: python -m ecgaug.workflow gate1")
-    gate = evaluate_gate1()
+        raise GateError("Write the phase 1 gate report first: python -m ecgaug.workflow phase1-gate")
+    gate = evaluate_phase1_gate()
     if gate["winner"] != json.loads(report.read_text())["winner"]:
-        raise GateError("The results changed since the report was written; run `gate1` again and re-read it")
+        raise GateError("The results changed since the report was written; run `phase1-gate` again and re-read it")
     split = check_preconditions()
     config = variant_configs()[gate["winner"]]
     spec = RepresentationSpec(**load_config(config)["representation"])
@@ -196,12 +196,12 @@ def approve_gate1(approvers: list[str]) -> dict:
         "counts": contract["counts"],
     }
     path = paths.results_dir() / "manifest.json"
-    path.write_text(json.dumps({**manifest(), "gate1": entry}, indent=2) + "\n")
+    path.write_text(json.dumps({**manifest(), PHASE1_GATE: entry}, indent=2) + "\n")
     decisions = paths.docs_dir() / "DECISIONS.md"
     with decisions.open("a") as fh:
         fh.write(
-            f"\n## Gate 1 — {entry['approved_on']} — status: APPROVED by {', '.join(approvers)}\n"
-            f"Module 1: winner {gate['winner']} ({config.stem}) — evidence: results/gates/gate1.md — "
+            f"\n## the phase 1 gate — {entry['approved_on']} — status: APPROVED by {', '.join(approvers)}\n"
+            f"phase1_input_representation: winner {gate['winner']} ({config.stem}) — evidence: results/phase1_gate/report.md — "
             "rule: PREREGISTRATION §4–5\n"
             f"Frozen artifacts (hashes): data/processed/v1, see results/manifest.json\n"
         )
@@ -216,40 +216,40 @@ def status(today: _dt.date | None = None) -> tuple[list[str], str]:
     """Checklist lines for every step, and the single next action."""
     today = today or _dt.date.today()
     day = (today - DAY_ONE).days + 1
-    planned = next((n for n, _, last in PLAN if day <= last), 6)
-    lines = [f"Day {day} of 30. By plan we should be in phase {planned}."]
+    planned = next((n for n, last in LAST_DAY.items() if day <= last), 6)
+    lines = [f"Day {day} of 30. By plan we should be in phase {planned} ({PHASES[planned]})."]
 
-    raw = paths.results_dir() / "data" / "raw_checksums.json"
+    raw = paths.results_for(PHASE1_DATA) / "raw_checksums.json"
     data_ok = raw.is_file() and not json.loads(raw.read_text())["problems"]
     split_ok = (paths.configs_dir() / "validation_split" / "approved.yaml").is_file()
     results = phase1_results()
-    gate_report = (paths.results_dir() / "gates" / "gate1.md").is_file()
-    winner = gate1_winner()
+    gate_report = (paths.results_for(PHASE1_GATE) / "report.md").is_file()
+    winner = phase1_winner()
 
-    lines += ["", "Phase 1  Data foundation"]
+    lines += ["", f"Phase 1  {PHASES[1]}"]
     lines.append(_check(data_ok, "MIT-BIH downloaded and verified", "python -m ecgaug.data.raw"))
     lines.append(_check(split_ok, "validation split approved", "write configs/validation_split/approved.yaml"))
     for letter, r in results.items():
-        text = f"Module 1 variant {letter} ({variant_configs()[letter].stem})"
+        text = f"{M1_RESULTS} variant {letter} ({variant_configs()[letter].stem})"
         if r:
             text += f": {r['selection_metric']} {r['mean']:.4f} ± {r['sd']:.4f}"
         config = variant_configs()[letter].relative_to(paths.repo_root())
-        lines.append(_check(r is not None, text, f"python -m ecgaug.experiments.input_representation --config {config}"))
-    lines.append(_check(gate_report, "Gate 1 report written", "python -m ecgaug.workflow gate1"))
-    lines.append(_check(winner is not None, "Gate 1 approved, dataset frozen" + (f" (winner {winner})" if winner else ""),
-                        'ALLOW_TEST_BUILD=1 python -m ecgaug.workflow gate1 --approve "<names>"'))  # fmt: skip
+        lines.append(_check(r is not None, text, f"python -m ecgaug.experiments.phase1_input_representation --config {config}"))
+    lines.append(_check(gate_report, "phase 1 gate: report written", "python -m ecgaug.workflow phase1-gate"))
+    lines.append(_check(winner is not None, "phase 1 gate: approved, dataset frozen" + (f" (winner {winner})" if winner else ""),
+                        'ALLOW_TEST_BUILD=1 python -m ecgaug.workflow phase1-gate --approve "<names>"'))  # fmt: skip
 
-    lines += ["", "Phase 2  Baselines and quality metrics"]
-    folder = paths.results_dir() / "validation" / PRETRAIN_RESULTS
+    lines += ["", f"Phase 2  {PHASES[2]}"]
+    folder = paths.results_for(PRETRAIN_RESULTS)
     pretrain = {p.stem: json.loads(p.read_text()) for p in sorted(folder.glob("[A-Z].json"))} if folder.is_dir() else {}
     official = winner is not None and winner in pretrain and not pretrain[winner].get("provisional", True)
     previews = sorted(k for k, v in pretrain.items() if v.get("provisional", True))
-    text = "PTB-XL pretraining for the Gate 1 winner"
+    text = f"{PRETRAIN_RESULTS} for the phase 1 winner"
     if previews:
         text += f" (preview runs, not official: {', '.join(previews)})"
-    lines.append(_check(official, text, "python -m ecgaug.experiments.ptbxl_pretraining --config <winner's config>"))
-    lines.append(_check(False, "Module 3 baseline classifiers", "not built yet"))
-    lines.append(_check(False, "Module 4 synthetic-quality metrics", "not built yet"))
+    lines.append(_check(official, text, "python -m ecgaug.experiments.phase2_ptbxl_pretraining --config <winner's config>"))
+    lines.append(_check(False, "phase2_baseline_classifiers", "not built yet"))
+    lines.append(_check(False, "phase2_quality_metrics", "not built yet"))
     lines += ["", "Phases 3-6: not started."]
 
     if not data_ok:
@@ -258,24 +258,24 @@ def status(today: _dt.date | None = None) -> tuple[list[str], str]:
         nxt = "Approve a validation split (configs/validation_split/approved.yaml)"
     elif any(r is None for r in results.values()):
         todo = [letter for letter, r in results.items() if r is None]
-        nxt = f"Run Module 1 variants {', '.join(todo)} (kaggle/module1_input_representation.ipynb, VARIANTS = {todo})"
+        nxt = f"Run phase1_input_representation variants {', '.join(todo)} (kaggle/phase1_input_representation.ipynb, VARIANTS = {todo})"
     elif not gate_report:
-        nxt = "Write the Gate 1 report: python -m ecgaug.workflow gate1"
+        nxt = "Write the phase 1 gate report: python -m ecgaug.workflow phase1-gate"
     elif winner is None:
-        nxt = 'Team reads results/gates/gate1.md, then: ALLOW_TEST_BUILD=1 python -m ecgaug.workflow gate1 --approve "<names>"'
+        nxt = 'Team reads results/phase1_gate/report.md, then: ALLOW_TEST_BUILD=1 python -m ecgaug.workflow phase1-gate --approve "<names>"'
     elif not official:
-        nxt = f"Run the PTB-XL pretraining arm for the winner, variant {winner}; then build Module 3 (Phase 2)"
+        nxt = f"Run {PRETRAIN_RESULTS} for the phase 1 winner, variant {winner}; then build phase2_baseline_classifiers"
     else:
-        nxt = "Build Phase 2: Module 3 baselines and Module 4 quality metrics"
+        nxt = "Build phase 2: phase2_baseline_classifiers and phase2_quality_metrics"
     lines += ["", f"NEXT: {nxt}"]
     return lines, nxt
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Project workflow: status and Gate 1.")
+    parser = argparse.ArgumentParser(description="Project workflow: status and the phase 1 gate.")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("status", help="checklist of every step and the next action")
-    gate = sub.add_parser("gate1", help="compare Module 1 variants; with --approve, freeze the winner's dataset")
+    gate = sub.add_parser("phase1-gate", help="compare phase1_input_representation variants; with --approve, freeze the winner's dataset")
     gate.add_argument("--approve", nargs="+", metavar="NAME", help="approvers' names (needs ALLOW_TEST_BUILD=1)")
     args = parser.parse_args(argv)
 
@@ -285,16 +285,16 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     try:
         if args.approve:
-            entry = approve_gate1(args.approve)
-            print(f"Gate 1 approved by {', '.join(entry['approved_by'])}: variant {entry['winner']} ({entry['config']}).")
+            entry = approve_phase1_gate(args.approve)
+            print(f"Phase 1 gate approved by {', '.join(entry['approved_by'])}: variant {entry['winner']} ({entry['config']}).")
             print("Dataset frozen in data/processed/v1; hashes in results/manifest.json.")
             print("Commit results/ and docs/, then tag: git tag gate-1 && git push --tags")
         else:
-            gate = write_gate1_report()
-            print(gate1_markdown(gate))
-            print("Written to results/gates/gate1.md. Approve only after the team has read it.")
+            gate = write_phase1_gate_report()
+            print(phase1_gate_markdown(gate))
+            print("Written to results/phase1_gate/report.md. Approve only after the team has read it.")
     except GateError as err:
-        print(f"Gate 1: {err}")
+        print(f"Phase 1 gate: {err}")
         return 2
     return 0
 

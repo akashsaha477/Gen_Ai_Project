@@ -1,4 +1,4 @@
-"""Probe CNN: a small, fixed classifier used only to compare Module 1 input representations."""
+"""Probe CNN: a small, fixed classifier used only to compare phase1_input_representation input representations."""
 
 from __future__ import annotations
 
