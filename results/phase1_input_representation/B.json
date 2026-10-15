@@ -1,0 +1,303 @@
+{
+  "experiment": "phase1_input_representation",
+  "variant": "B",
+  "description": "Window -0.4 s to +0.6 s (360 samples); 0.5-40 Hz zero-phase Butterworth band-pass on the continuous record before segmentation; per-beat z-score.",
+  "representation": {
+    "name": "B_long_window_bandpass",
+    "window_pre_s": 0.4,
+    "window_post_s": 0.6,
+    "bandpass_hz": [
+      0.5,
+      40.0
+    ],
+    "bandpass_order": 4,
+    "target_fs": null,
+    "normalization": "per_beat_zscore",
+    "rr_features": false,
+    "effective_fs": 360,
+    "window_samples": [
+      144,
+      216
+    ],
+    "n_samples": 360
+  },
+  "complexity_inputs_per_beat": 360,
+  "n_parameters": 18628,
+  "split": {
+    "name": "V1",
+    "val": [
+      115,
+      118,
+      201,
+      205,
+      223
+    ]
+  },
+  "selection_metric": "s_f1",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "chosen_lr": 0.001,
+  "mean": 0.0011655011655011655,
+  "sd": 0.0020187072349287616,
+  "tie_break_mean": 0.4487469185601513,
+  "tie_break_sd": 0.2611055808705206,
+  "per_seed": [
+    {
+      "seed": 0,
+      "run_id": "phase1_input_representation-B.lr1e-03-s0-3c76528-202610152057",
+      "selection_value": 0.0034965034965034965,
+      "tie_break_value": 0.7318255250403877,
+      "rare_macro_f1": 0.0017482517482517483,
+      "f1": {
+        "N": 0.9585708855948308,
+        "S": 0.0034965034965034965,
+        "V": 0.7318255250403877,
+        "F": 0.0
+      },
+      "pr_auc": {
+        "N": 0.9736072033964506,
+        "S": 0.037572455095435234,
+        "V": 0.9437996381875408,
+        "F": 0.008013924679049347
+      },
+      "n_recall": 0.9737451737451738,
+      "best_epoch": 5,
+      "epochs_run": 10,
+      "wall_clock_s": 8.97235872300007
+    },
+    {
+      "seed": 1,
+      "run_id": "phase1_input_representation-B.lr1e-03-s1-3c76528-202610152057",
+      "selection_value": 0.0,
+      "tie_break_value": 0.21734104046242775,
+      "rare_macro_f1": 0.0,
+      "f1": {
+        "N": 0.9547423725689004,
+        "S": 0.0,
+        "V": 0.21734104046242775,
+        "F": 0.0
+      },
+      "pr_auc": {
+        "N": 0.9863910794291317,
+        "S": 0.051824333833948244,
+        "V": 0.8250373610139443,
+        "F": 0.007788245701121407
+      },
+      "n_recall": 0.9998069498069498,
+      "best_epoch": 1,
+      "epochs_run": 6,
+      "wall_clock_s": 5.056183617999977
+    },
+    {
+      "seed": 2,
+      "run_id": "phase1_input_representation-B.lr1e-03-s2-3c76528-202610152057",
+      "selection_value": 0.0,
+      "tie_break_value": 0.39707419017763845,
+      "rare_macro_f1": 0.0,
+      "f1": {
+        "N": 0.9589003054707026,
+        "S": 0.0,
+        "V": 0.39707419017763845,
+        "F": 0.0
+      },
+      "pr_auc": {
+        "N": 0.9857271621099333,
+        "S": 0.08418016257476674,
+        "V": 0.8669820141818987,
+        "F": 0.004112613648861275
+      },
+      "n_recall": 0.9999034749034749,
+      "best_epoch": 1,
+      "epochs_run": 6,
+      "wall_clock_s": 5.074285778000103
+    }
+  ],
+  "run_ids": [
+    "phase1_input_representation-B.lr1e-03-s0-3c76528-202610152057",
+    "phase1_input_representation-B.lr1e-03-s1-3c76528-202610152057",
+    "phase1_input_representation-B.lr1e-03-s2-3c76528-202610152057"
+  ],
+  "lr_grid": {
+    "lr1e-03": {
+      "lr": 0.001,
+      "per_seed": [
+        {
+          "seed": 0,
+          "run_id": "phase1_input_representation-B.lr1e-03-s0-3c76528-202610152057",
+          "selection_value": 0.0034965034965034965,
+          "tie_break_value": 0.7318255250403877,
+          "rare_macro_f1": 0.0017482517482517483,
+          "f1": {
+            "N": 0.9585708855948308,
+            "S": 0.0034965034965034965,
+            "V": 0.7318255250403877,
+            "F": 0.0
+          },
+          "pr_auc": {
+            "N": 0.9736072033964506,
+            "S": 0.037572455095435234,
+            "V": 0.9437996381875408,
+            "F": 0.008013924679049347
+          },
+          "n_recall": 0.9737451737451738,
+          "best_epoch": 5,
+          "epochs_run": 10,
+          "wall_clock_s": 8.97235872300007
+        },
+        {
+          "seed": 1,
+          "run_id": "phase1_input_representation-B.lr1e-03-s1-3c76528-202610152057",
+          "selection_value": 0.0,
+          "tie_break_value": 0.21734104046242775,
+          "rare_macro_f1": 0.0,
+          "f1": {
+            "N": 0.9547423725689004,
+            "S": 0.0,
+            "V": 0.21734104046242775,
+            "F": 0.0
+          },
+          "pr_auc": {
+            "N": 0.9863910794291317,
+            "S": 0.051824333833948244,
+            "V": 0.8250373610139443,
+            "F": 0.007788245701121407
+          },
+          "n_recall": 0.9998069498069498,
+          "best_epoch": 1,
+          "epochs_run": 6,
+          "wall_clock_s": 5.056183617999977
+        },
+        {
+          "seed": 2,
+          "run_id": "phase1_input_representation-B.lr1e-03-s2-3c76528-202610152057",
+          "selection_value": 0.0,
+          "tie_break_value": 0.39707419017763845,
+          "rare_macro_f1": 0.0,
+          "f1": {
+            "N": 0.9589003054707026,
+            "S": 0.0,
+            "V": 0.39707419017763845,
+            "F": 0.0
+          },
+          "pr_auc": {
+            "N": 0.9857271621099333,
+            "S": 0.08418016257476674,
+            "V": 0.8669820141818987,
+            "F": 0.004112613648861275
+          },
+          "n_recall": 0.9999034749034749,
+          "best_epoch": 1,
+          "epochs_run": 6,
+          "wall_clock_s": 5.074285778000103
+        }
+      ],
+      "mean": 0.0011655011655011655,
+      "sd": 0.0020187072349287616,
+      "tie_break_mean": 0.4487469185601513,
+      "tie_break_sd": 0.2611055808705206,
+      "wall_clock_s": 19.10282811900015
+    },
+    "lr3e-04": {
+      "lr": 0.0003,
+      "per_seed": [
+        {
+          "seed": 0,
+          "run_id": "phase1_input_representation-B.lr3e-04-s0-3c76528-202610152057",
+          "selection_value": 0.0,
+          "tie_break_value": 0.0,
+          "rare_macro_f1": 0.0,
+          "f1": {
+            "N": 0.9502407704654896,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 0.0
+          },
+          "pr_auc": {
+            "N": 0.9851160737378267,
+            "S": 0.08697900868325278,
+            "V": 0.7657298919886216,
+            "F": 0.004146931191443202
+          },
+          "n_recall": 1.0,
+          "best_epoch": 1,
+          "epochs_run": 6,
+          "wall_clock_s": 5.144500354000229
+        },
+        {
+          "seed": 1,
+          "run_id": "phase1_input_representation-B.lr3e-04-s1-3c76528-202610152057",
+          "selection_value": 0.0,
+          "tie_break_value": 0.0,
+          "rare_macro_f1": 0.0,
+          "f1": {
+            "N": 0.9502407704654896,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 0.0
+          },
+          "pr_auc": {
+            "N": 0.9861064924894803,
+            "S": 0.06289104572618186,
+            "V": 0.8232095677411172,
+            "F": 0.008734067220279982
+          },
+          "n_recall": 1.0,
+          "best_epoch": 1,
+          "epochs_run": 6,
+          "wall_clock_s": 5.098044410000057
+        },
+        {
+          "seed": 2,
+          "run_id": "phase1_input_representation-B.lr3e-04-s2-3c76528-202610152057",
+          "selection_value": 0.0,
+          "tie_break_value": 0.002631578947368421,
+          "rare_macro_f1": 0.0,
+          "f1": {
+            "N": 0.9502362060266936,
+            "S": 0.0,
+            "V": 0.002631578947368421,
+            "F": 0.0
+          },
+          "pr_auc": {
+            "N": 0.9882180871863288,
+            "S": 0.0450614659550428,
+            "V": 0.7933482198814233,
+            "F": 0.012430864887304717
+          },
+          "n_recall": 0.9999034749034749,
+          "best_epoch": 1,
+          "epochs_run": 6,
+          "wall_clock_s": 5.1090493070000775
+        }
+      ],
+      "mean": 0.0,
+      "sd": 0.0,
+      "tie_break_mean": 0.0008771929824561404,
+      "tie_break_sd": 0.0015193428136569098,
+      "wall_clock_s": 15.351594071000363
+    }
+  },
+  "wall_clock_s": 34.454422190000514,
+  "budget": {
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "lr_grid": [
+      0.001,
+      0.0003
+    ],
+    "max_epochs": 40,
+    "patience": 5,
+    "batch_size": 256,
+    "weight_decay": 0.01
+  },
+  "budget_deviations": [],
+  "device": "cuda",
+  "git_sha": "3c765289f1a17187b562cc0813c10a9850cda295",
+  "dataset_content_sha256": "dbebbaa70b798f73df678db1f42f363172ccd1855a0cd616f8ce17d6d41861ed"
+}
