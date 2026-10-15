@@ -164,6 +164,22 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
   SMOTE and random oversampling, and the quality screen of policy D.
 - **Before Phase 5 runs:** the low-confidence rule for notes and the explainability evaluation sets.
 
+Proposed values, as the code reads them now (2026-10-16, DECISIONS A14). Each becomes a rule only when the
+team commits it in the version named above:
+
+| item | proposed | read from |
+|---|---|---|
+| composite quality metric (v2) | the metric families that pass the sanity harness (`quality/sanity.py`) | `phase2-gate` result |
+| diversity floor (v2) | 0.7 x real, every generated class and pilot seed | `configs/phase3_*/generator_settings.yaml` |
+| memorization ceiling (v2) | 10%, threshold = 5th percentile of leave-one-out real distances | same |
+| class-weight exponents (v2) | gamma in {0.5, 0.75, 1} | `workflow.PROPOSED_V2`, written into the full grid |
+| seeds (v2) | 3; 5 if the measured run times fit the quota | phase 3 configs `final_seeds` |
+| strengths (v3) | B and D: {0.1, 0.25, 0.5} x N; C: {1, 2, 4} x real count; A: none | `configs/phase4_augmentation_policy/` |
+| SMOTE and random oversampling (v3) | same policy and strengths as the generators; no quality screen | `grid/runner.py` |
+| quality screen of D (v3) | of 2 x the needed bank beats, keep those closest to real beats by DTW | same |
+| low-confidence rule (phase 5) | top probability below 0.6 | `configs/phase5_clinical_notes/shared_settings.yaml` |
+| explainability evaluation set (phase 5) | 200 validation beats per class (all if fewer), seed 0 | `configs/phase5_explainability/shared_settings.yaml` |
+
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 
 ## 11. Deviations and amendments

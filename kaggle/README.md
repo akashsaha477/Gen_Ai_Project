@@ -4,13 +4,49 @@ There is one notebook per job. Each clones this repository at the branch or comm
 the environment, checks the raw data, runs the experiment, then commits the results and pushes them
 to GitHub, so you only `git pull`. No logic lives in the notebooks.
 
-| Notebook | What it runs | Data |
+| Notebook | What it runs | Inputs |
 |---|---|---|
-| `phase1_input_representation.ipynb` | phase1_input_representation: the probe model on one or more input variants (A–D) | MIT-BIH DS1 |
-| `phase2_ptbxl_pretraining.ipynb` | PTB-XL preprocessing, pretraining, MIT-BIH fine-tuning, and from scratch for comparison | PTB-XL, then MIT-BIH DS1 |
+| `phase1_input_representation.ipynb` | phase1_input_representation: the probe model on one or more input variants (A–D) | `mitdb-raw` |
+| `phase2_baseline_classifiers.ipynb` | the four baseline classifiers (A–D) | `mitdb-raw` |
+| `phase2_quality_metrics.ipynb` | the sanity harness of the four quality-metric families (A–D) | `mitdb-raw` |
+| `phase2_ptbxl_pretraining.ipynb` | PTB-XL preprocessing, pretraining, MIT-BIH fine-tuning, and from scratch for comparison | `mitdb-raw`, PTB-XL |
+| `phase3_cvae.ipynb`, `phase3_wgan_gp.ipynb` | generator pilots (`MODE = "pilot"`), or the chosen generator's full runs and banks (`MODE = "final"`) | `mitdb-raw` |
+| `phase4_augmentation_policy.ipynb` | the four augmentation policies with both frozen banks | `mitdb-raw`, banks |
+| `phase4_full_grid.ipynb` | the full grid; resumable across sessions | `mitdb-raw`, banks |
+| `phase5_explainability.ipynb`, `phase5_clinical_notes.ipynb` | saliency methods and note generators on the phase 4 models | `mitdb-raw`, artifacts (checkpoints) |
 
-Other files in this folder: `kaggle_run.py` (the script both notebooks call), `make_raw_dataset.py`
-(builds the MIT-BIH zip to upload once) and `ingest_runs.py` (the backup way to bring results back from the zip).
+Other files in this folder: `kaggle_run.py` (the script every notebook calls), `make_raw_dataset.py`
+(builds the MIT-BIH zip to upload once) and `ingest_runs.py` (the backup way to bring results back from
+the zip, and the way to bring back weights and banks).
+
+## Weights and banks: the artifacts dataset
+
+Results, logs and figures reach GitHub by themselves. Model weights (`checkpoints/best.pt`) and the
+synthetic banks (`data/synthetic/`, about 75 MB per seed) are too big for git: they are only in the zip
+in each notebook's Output.
+
+1. After each phase 3 final run and each full-grid session, download the zip and, in your clone,
+   `uv run python kaggle/ingest_runs.py <zip>` (brings the weights into `runs/` and the banks into
+   `data/synthetic/`; nothing is overwritten).
+2. For notebooks that need them (phase 4 and 5), upload the extracted zips once as a private Kaggle
+   dataset (e.g. `ecgaug-artifacts`), share it with the team, attach it with Add Input, and set
+   `BANKS_DATASET_DIR` (phase 4) or `ARTIFACTS_DIR` (phase 5) to its folder. The runs check every bank
+   and checkpoint against the SHA-256 recorded at the gates before using it.
+
+## New parameters
+
+| parameter | notebooks | meaning |
+|---|---|---|
+| `PREVIEW` | phase 2-4 | `True` runs before the gates the run needs; the result is provisional and no gate accepts it |
+| `REPRESENTATION` | phase 2-4 | preview only: which phase1_input_representation letter to use (`""` = the phase 1 gate report's winner) |
+| `MODE` | phase 3 | `"pilot"` (seeds 0 and 1, for the phase 3a gate) or `"final"` (the chosen variant, seeds 0-2, banks) |
+| `BANKS_DATASET_DIR` | phase 4 | the attached artifacts dataset holding the banks |
+| `PREVIEW_BANKS` | phase 4 policy | preview only: which banks to use, e.g. `{"cvae": "phase3_cvae-A", "wgan_gp": "phase3_wgan_gp-B"}` |
+| `ARTIFACTS_DIR` | phase 5 | the attached artifacts dataset holding the grid's weights |
+
+The note variants B-D call an LLM: add a Kaggle secret named `LLM_API_KEY` and tick it for the
+notes notebook (optional: set `ECGAUG_LLM_MODEL` in the cell). The key is passed to the run and never
+printed. Without it, B-D are recorded as not run.
 
 The four input variants, used by both notebooks:
 
@@ -133,8 +169,8 @@ Things to know:
 - One GPU quota per account, renewed weekly (your remaining hours are shown under Settings in the
   notebook). Turn the accelerator off when you do not need it, and ask the team before anything
   estimated above 2 GPU-hours.
-- Same seeds, same budget, same commit for every seed of a variant. Do not edit
-  `configs/phase1_input_representation/shared_budget.yaml`.
+- Same seeds, same budget, same commit for every seed of a variant. Do not edit the shared settings
+  files (`shared_budget.yaml`, `generator_settings.yaml`, ...) of an experiment.
 
 ## When something fails
 
@@ -150,7 +186,9 @@ Things to know:
 
 ## Later phases
 
-Each new experiment gets its own runner under `ecgaug.experiments` and its own notebook here.
+Each experiment has its own runner under `ecgaug.experiments` and its own notebook here; the full
+grid uses `ecgaug.grid.runner`. The phase 2-5 notebooks were built from the same template as the
+phase 1 one and their code is tested locally (smoke runs); they have not run on Kaggle yet.
 
 Status: the runner script was rehearsed in a fresh clone with the raw-data zip as input (locked
 environment, checksum check, smoke runs of both runners). The phase2_ptbxl_pretraining experiment was run end to end on
