@@ -1,0 +1,4 @@
+base: generator_settings.yaml
+variant: A
+description: Label embedding concatenated to the generator noise and, as a learned per-class channel, to the critic input.
+generator: {}

@@ -22,8 +22,9 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 # Kept in step with ecgaug.names (this script runs before the package is installed; a test checks it).
-EXPERIMENTS = ("phase1_input_representation", "phase2_ptbxl_pretraining")
+EXPERIMENTS = ("phase1_input_representation", "phase2_ptbxl_pretraining", "phase3_cvae", "phase3_wgan_gp")
 EXTRA_RESULT_FILES = ("results/phase2_ptbxl_data/ptbxl_preprocessing.json",)
+BANKS = "data/synthetic"  # synthetic banks of final generator runs: in the zip, never pushed (too big for git)
 
 
 def sh(cmd: list[str], check: bool = True) -> int:
@@ -79,7 +80,8 @@ def git_sha() -> str:
 
 
 def bundle(out_dir: Path, manifest: dict, repo: Path = REPO) -> Path | None:
-    """Zip runs/, each experiment's results/ folder, figures and the PTB-XL report; None if nothing ran."""
+    """Zip runs/, each experiment's results/ folder, figures, the PTB-XL report and any synthetic banks;
+    None if nothing ran."""
     staging = out_dir / "_bundle"
     shutil.rmtree(staging, ignore_errors=True)
     found = False
@@ -93,6 +95,8 @@ def bundle(out_dir: Path, manifest: dict, repo: Path = REPO) -> Path | None:
         if found and (repo / rel).is_file():
             (staging / rel).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(repo / rel, staging / rel)
+    if found and (repo / BANKS).is_dir():
+        shutil.copytree(repo / BANKS, staging / BANKS)
     if not found:
         return None
     (staging / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
