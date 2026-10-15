@@ -290,3 +290,18 @@ Done:
 Run IDs: the 15 preview runs renamed, contents unchanged.
 
 Next: run phase1_input_representation, variants A–D (`kaggle/phase1_input_representation.ipynb`).
+
+## 2026-10-15 (Day 9) — Kaggle notebooks push their own results
+
+Done:
+- `kaggle/kaggle_run.py --push-to <branch>`: after the runs, commits the run outputs (never weights) and
+  pushes them; a new branch is used if the target moved on; nothing is pushed for failed runs, smoke
+  tests or runs with test predictions. Both notebooks call it (`PUSH_RESULTS`, `GIT_NAME`, `GIT_EMAIL`).
+  The GitHub token secret now needs Contents: read and write. The zip and `ingest_runs.py` stay as backup.
+- Fix: figures drawn by one variant no longer make the next variant in the same session refuse to run
+  (`figures/` now counts as output, like `runs/` and `results/`).
+- Tests: 175 pass, including the push against a local Git remote.
+
+Run IDs: none.
+
+Next: run phase1_input_representation, variants A–D, with the updated notebook.
