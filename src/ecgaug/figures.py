@@ -704,6 +704,61 @@ def phase2_gate_figure(gate: dict) -> list[Path]:
                   "Small dots: seeds. Black: mean ± SD. The cnn is chosen from A and B, the rnn from C and D; ties go to fewer parameters.")]  # fmt: skip
 
 
+def final_eval_figures(stats: dict) -> list[Path]:
+    """Forest plot of the pre-registered differences, and per-record S and F recall on the test set."""
+    plt = _plt()
+    out, written = paths.figures_for("final_eval"), []
+    rows = [(family, name, r) for family, results in stats["families"].items() for name, r in results.items()]
+    fig, ax = plt.subplots(figsize=(8, 0.45 * len(rows) + 1.2))
+    for i, (family, name, r) in enumerate(reversed(rows)):
+        color = INK if family == "confirmatory" else INK_2
+        ax.errorbar(r["point"], i, xerr=[[r["point"] - r["ci_low"]], [r["ci_high"] - r["point"]]], fmt="o", color=color, capsize=3)
+        ax.annotate(f"Holm p {r['p_holm']:.3f}", (r["ci_high"], i), xytext=(6, 0), textcoords="offset points", va="center", fontsize=7, color=INK_2)
+    ax.axvline(0, color=GRID, linewidth=1.2)
+    ax.set_yticks(range(len(rows)), [f"{family[:4]}. {name}" for family, name, _ in reversed(rows)])
+    ax.set_xlabel("difference in test rare-class macro-F1 (95% record-level bootstrap CI)")
+    written.append(_save(fig, out / "forest.png", "Final evaluation: pre-registered comparisons on the test set",
+                         "Black: confirmatory family; grey: secondary. Intervals are unadjusted; p-values are Holm-adjusted within each family."))  # fmt: skip
+    keys = list(stats["per_record"])
+    fig, axes = plt.subplots(1, 2, figsize=(12, 3.6), sharey=True)
+    for ax, cls in zip(axes, ("S", "F")):
+        records = [r for r in stats["records"] if any(stats["per_record"][k][str(r)][cls]["support"] for k in keys)]
+        width = 0.8 / max(1, len(keys))
+        for j, key in enumerate(keys):
+            values = [stats["per_record"][key][str(r)][cls]["recall"] or 0.0 for r in records]
+            ax.bar(np.arange(len(records)) + j * width, values, width=width, label=key, color=BLUES[2 + j % 6], edgecolor=SURFACE)
+        ax.set_xticks(np.arange(len(records)) + 0.4 - width / 2, [str(r) for r in records], rotation=45)
+        ax.set_title(f"{cls} recall per test record", loc="left")
+    axes[0].set_ylabel("recall (seed mean)")
+    axes[1].legend(loc="upper right", fontsize=6)
+    written.append(_save(fig, out / "per_record_S_F.png", "Final evaluation: S and F recall per test record",
+                         "Only records holding S (left) or F (right) beats are shown; few records hold most of each class."))  # fmt: skip
+    return written
+
+
+def phase4_strength_figure(gate: dict) -> list[Path]:
+    """Validation selection metric against strength, per condition and architecture (the strength curves)."""
+    plt = _plt()
+    archs = list(gate["chosen"])
+    fig, axes = plt.subplots(1, len(archs), figsize=(6 * len(archs), 3.4), squeeze=False, sharey=True)
+    palette = {"random_oversampling": INK_2, "smote": "#7f63b8", "cvae": CLASS_COLORS["S"], "wgan_gp": CLASS_COLORS["V"]}
+    for ax, arch in zip(axes[0], archs):
+        for condition, c in gate["chosen"][arch].items():
+            if condition in ("none", "class_weighted"):
+                continue
+            pairs = sorted((float(s), v["mean"]) for s, v in c["all_strengths"].items() if s != "None")
+            if pairs:
+                ax.plot([p[0] for p in pairs], [p[1] for p in pairs], marker="o", color=palette.get(condition, INK), label=condition)
+        if "none" in gate["chosen"][arch]:
+            ax.axhline(gate["chosen"][arch]["none"]["mean"], color=INK, dashes=(4, 2), linewidth=1, label="none")
+        ax.set_title(arch, loc="left")
+        ax.set_xlabel("strength")
+        ax.legend(loc="best")
+    axes[0][0].set_ylabel("validation selection metric (seed mean)")
+    return [_save(fig, paths.figures_for("phase4_gate") / "strength_curves.png", "Phase 4 gate: validation score against augmentation strength",
+                  "Each point is the mean over seeds. Dashed: no augmentation. The final evaluation uses the best strength of each condition.")]  # fmt: skip
+
+
 def phase3a_gate_figure(gate: dict) -> list[Path]:
     """Both families' variants side by side: pilot score per seed, and whether the hard gates passed."""
     plt = _plt()

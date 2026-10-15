@@ -24,8 +24,9 @@ REPO = Path(__file__).resolve().parents[1]
 # Kept in step with ecgaug.names (this script runs before the package is installed; a test checks it).
 EXPERIMENTS = (
     "phase1_input_representation", "phase2_baseline_classifiers", "phase2_quality_metrics", "phase2_ptbxl_pretraining",
-    "phase3_cvae", "phase3_wgan_gp",
+    "phase3_cvae", "phase3_wgan_gp", "phase4_augmentation_policy",
 )  # fmt: skip
+RESULT_FOLDERS = (*EXPERIMENTS, "phase4_full_grid")  # every experiment's results, plus the full grid's ledger
 EXTRA_RESULT_FILES = ("results/phase2_ptbxl_data/ptbxl_preprocessing.json",)
 BANKS = "data/synthetic"  # synthetic banks of final generator runs: in the zip, never pushed (too big for git)
 
@@ -77,6 +78,20 @@ def setup_data(run: list[str], raw_dir: str | None) -> None:
         sh([*run, "ecgaug.data.raw"])
 
 
+def setup_artifacts(artifacts_dir: str, repo: Path = REPO) -> list[str]:
+    """Copy synthetic banks from an attached Kaggle dataset into ``data/synthetic/`` (each folder holding a
+    bank.json). The runs check every bank against its recorded SHA-256 before using it."""
+    copied = []
+    for meta in sorted(Path(artifacts_dir).rglob("bank.json")):
+        target = repo / BANKS / meta.parent.name
+        target.mkdir(parents=True, exist_ok=True)
+        for path in sorted(p for p in meta.parent.iterdir() if p.is_file()):
+            if not (target / path.name).exists():
+                shutil.copy2(path, target / path.name)
+                copied.append(f"{BANKS}/{meta.parent.name}/{path.name}")
+    return copied
+
+
 def git_sha() -> str:
     out = subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO, capture_output=True, text=True)
     return out.stdout.strip() or "0" * 40
@@ -88,7 +103,7 @@ def bundle(out_dir: Path, manifest: dict, repo: Path = REPO) -> Path | None:
     staging = out_dir / "_bundle"
     shutil.rmtree(staging, ignore_errors=True)
     found = False
-    for rel in ("runs", *(f"results/{name}" for name in EXPERIMENTS)):
+    for rel in ("runs", *(f"results/{name}" for name in RESULT_FOLDERS)):
         if (repo / rel).is_dir() and any((repo / rel).rglob("*")):
             shutil.copytree(repo / rel, staging / rel)
             found = True
@@ -123,7 +138,7 @@ def push_results(branch: str, message: str, name: str, email: str, repo: Path = 
     """
     if any((repo / "runs").rglob("preds_test*")):
         raise RuntimeError("A run carries test predictions; nothing is pushed. Stop and report this to the team.")
-    paths = [p for p in (*RESULT_PATHS, *(f"results/{e}" for e in EXPERIMENTS)) if (repo / p).exists()]
+    paths = [p for p in (*RESULT_PATHS, *(f"results/{e}" for e in RESULT_FOLDERS)) if (repo / p).exists()]
     subprocess.run(["git", "add", "--", *paths], cwd=repo, check=True)
     if subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=repo).returncode == 0:
         return None
@@ -142,6 +157,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cli", default="ecgaug.experiments.phase1_input_representation", help="package CLI that runs a config")
     parser.add_argument("--env", default="locked", choices=["locked", "kaggle", "none"])
     parser.add_argument("--raw-dir", default=None, help="folder with the raw MIT-BIH files (else download)")
+    parser.add_argument("--artifacts-dir", default=None, help="attached dataset holding synthetic banks (phase 4 runs need them)")
     parser.add_argument("--out", default="/kaggle/working", help="where the bundle zip is written")
     parser.add_argument("--push-to", default=None, metavar="BRANCH", help="commit the outputs and push them to this branch")
     parser.add_argument("--git-name", default="", help="author name for the results commit")
@@ -151,6 +167,9 @@ def main(argv: list[str] | None = None) -> int:
 
     run = setup_env(args.env)
     setup_data(run, args.raw_dir)
+    if args.artifacts_dir:
+        copied = setup_artifacts(args.artifacts_dir)
+        print(f"banks copied from {args.artifacts_dir}: {len(copied)} files", flush=True)
 
     results = {}
     for config in args.config:

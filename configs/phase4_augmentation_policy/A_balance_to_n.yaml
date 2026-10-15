@@ -1,0 +1,8 @@
+base: pilot_settings.yaml
+variant: A
+description: Balance each minority class up to the training N count.
+policy:
+  kind: balance_to_n
+pilot_strength: null
+grid_strengths: null
+complexity: 1

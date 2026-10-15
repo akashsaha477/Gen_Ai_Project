@@ -1,6 +1,5 @@
 """Phase 3: configs and equal budgets, preconditions, smoke runs, the phase 3a and 3 gates, the grid runner, bank ingest."""
 
-import csv
 import json
 import shutil
 
@@ -322,15 +321,18 @@ def test_grid_runs_every_cell_once_and_resumes(project, monkeypatch):
     assert len(grid_runner.cells(grid)) == 5
     plan = grid_runner.run_grid(grid, split, data, device=__import__("torch").device("cpu"), preview=True, dry_run=True)
     assert len(plan["planned"]) == 5 and not plan["ran"]
-    first = grid_runner.run_grid(grid, split, data, device=__import__("torch").device("cpu"), preview=True)
+    first = grid_runner.run_grid(grid, split, data, device=__import__("torch").device("cpu"), preview=True, provisional=["preview"])
     assert len(first["ran"]) == 5
     again = grid_runner.run_grid(grid, split, data, device=__import__("torch").device("cpu"), preview=True)
     assert not again["ran"] and len(again["done_before"]) == 5
-    with grid_runner.ledger_path(grid).open() as fh:
-        ledger = list(csv.DictReader(fh))
+    ledger = list(grid_runner.read_ledger(grid).values())
+    assert len(list(grid_runner.cells_dir(grid).glob("*.json"))) == 5
     assert {row["condition"] for row in ledger} == {"none", "class_weighted", "random_oversampling", "smote", "cvae"}
     by = {row["condition"]: row for row in ledger}
-    assert by["none"]["n_added"] == "0" and int(by["smote"]["n_added"]) > 0 and int(by["cvae"]["n_added"]) == int(by["smote"]["n_added"])
+    added = {name: sum(row["n_added"].values()) for name, row in by.items()}
+    assert added["none"] == 0 and added["smote"] > 0 and added["cvae"] == added["smote"] == added["random_oversampling"]
+    summary = grid_runner.summarize(grid)
+    assert summary[("smote", 0.3, "probe_cnn")]["seeds"] == [0] and summary[("none", None, "probe_cnn")]["provisional"]
     run_dir = runs.find_run_dir(by["class_weighted"]["run_id"])
     assert run_dir.parent.name == "probecnn" and yaml.safe_load((run_dir / "config.yaml").read_text())["class_weights"][0] == 1.0
     with pytest.raises(grid_runner.PreconditionError):

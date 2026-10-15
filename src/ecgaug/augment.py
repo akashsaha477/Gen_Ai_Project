@@ -32,6 +32,47 @@ def fraction_of_n_targets(counts: dict[str, int], fraction: float, classes: tupl
     return {c: max(0, goal - counts[c]) for c in classes}
 
 
+POLICIES = ("balance_to_n", "fraction_of_n", "multiple_of_real", "fraction_of_n_screened")
+
+
+def policy_targets(policy: str, strength: float | None, counts: dict[str, int], classes: tuple[str, ...] = GENERATED_CLASSES) -> dict[str, int]:
+    """Beats to add per minority class under an augmentation policy (PLAN Phase 4, phase4_augmentation_policy).
+
+    - ``balance_to_n``: each class up to the N count (no strength);
+    - ``fraction_of_n`` and ``fraction_of_n_screened``: each class up to ``strength`` x the N count;
+    - ``multiple_of_real``: ``strength`` x the class's real count added.
+    """
+    if policy == "balance_to_n":
+        return fraction_of_n_targets(counts, 1.0, classes)
+    if policy in ("fraction_of_n", "fraction_of_n_screened"):
+        return fraction_of_n_targets(counts, float(strength), classes)
+    if policy == "multiple_of_real":
+        return {c: int(round(float(strength) * counts[c])) for c in classes}
+    raise ValueError(f"Unknown policy {policy!r}; choose from {POLICIES}")
+
+
+def screened_from_bank(bank: dict[str, np.ndarray], extra: dict[str, int], train: dict[str, np.ndarray], pool_factor: float,
+                       settings: dict) -> dict[str, np.ndarray]:  # fmt: skip
+    """Policy D's quality screen: of the first ``pool_factor`` x ``extra[c]`` bank beats of each class,
+    keep the ``extra[c]`` closest to real training beats of the class (mean DTW distance to the nearest
+    real beats, ``ecgaug.quality.metrics``). If the bank holds fewer beats, the whole class is the pool."""
+    from ecgaug.quality.metrics import nearest_dtw_per_beat
+
+    parts = []
+    for cls, k in extra.items():
+        if k <= 0:
+            continue
+        idx = np.flatnonzero(np.asarray(bank["y"]) == CLASS_INDEX[cls])
+        if idx.size < k:
+            raise BankError(f"The bank holds {idx.size} {cls} beats; {k} are needed")
+        pool = idx[: max(k, min(idx.size, int(round(pool_factor * k))))]
+        real = np.asarray(train["X"], dtype=np.float64)[np.asarray(train["y"]) == CLASS_INDEX[cls]]
+        distance = nearest_dtw_per_beat(np.asarray(bank["X"], dtype=np.float64)[pool], real, settings)
+        keep = pool[np.sort(np.argsort(distance, kind="stable")[:k])]
+        parts.append({name: np.asarray(bank[name])[keep] for name in FIELDS})
+    return concat_parts(parts)
+
+
 def take_from_bank(bank: dict[str, np.ndarray], extra: dict[str, int]) -> dict[str, np.ndarray]:
     """The first ``extra[c]`` beats of each class in bank order (a bank is stored in random order)."""
     parts = []
