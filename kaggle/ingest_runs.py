@@ -3,8 +3,9 @@
 Usage:
     python kaggle/ingest_runs.py <bundle.zip | directory> [...]
 
-Runs go to runs/<run_id>/ and variant result files to results/<experiment>/. Existing runs and result
-files are never overwritten. The logic lives in ecgaug.runs.ingest.
+Runs go to runs/<experiment>/..., variant result files to results/<experiment>/ and synthetic banks
+(final generator runs) to data/synthetic/. Existing runs, result files and bank files are never
+overwritten. The logic lives in ecgaug.runs.ingest.
 """
 
 from __future__ import annotations
@@ -27,7 +28,7 @@ def main(argv: list[str] | None = None) -> int:
             "REFUSED: the runs above carry test predictions. Nothing was ingested for them. "
             "Stop and report this to the team (docs/RULES.md rule 2)."
         )
-    problems = report["refused"] or report["conflicts"] or report["incomplete"] or report["result_conflicts"]
+    problems = report["refused"] or report["conflicts"] or report["incomplete"] or report["result_conflicts"] or report["bank_conflicts"]
     return 1 if problems else 0
 
 

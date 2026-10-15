@@ -1,12 +1,15 @@
-"""The project's step-by-step workflow: where we are, what to run next, and the phase 1 gate.
+"""The project's step-by-step workflow: where we are, what to run next, and the gates.
 
     python -m ecgaug.workflow status                     # checklist of every step and the next action
-    python -m ecgaug.workflow phase1-gate                      # compare variants A-D and write the phase 1 gate report
+    python -m ecgaug.workflow phase1-gate                # compare variants A-D and write the phase 1 gate report
     ALLOW_TEST_BUILD=1 python -m ecgaug.workflow phase1-gate --approve "Name One" "Name Two"
+    python -m ecgaug.workflow phase3a-gate [--approve ...]   # choose one generator per family from the pilots
+    python -m ecgaug.workflow phase3-gate [--approve ...]    # check and freeze the synthetic banks
 
 Approving the phase 1 gate freezes the dataset of the winning variant (``data/processed/v1``, test part
 included; a logged construction access) and records it in ``results/manifest.json``. Later steps read
-the winner from there, so nobody has to remember which variant won.
+the winner from there, so nobody has to remember which variant won. The phase 3 gates work the same
+way: 3a records the chosen generator of each family, 3 records the SHA-256 of every bank.
 """
 
 from __future__ import annotations
@@ -23,12 +26,18 @@ from ecgaug.names import (
     PHASE1_DATA,
     PHASE1_GATE,
     PHASE1_INPUT_REPRESENTATION,
+    PHASE2_GATE,
     PHASE2_PTBXL_PRETRAINING,
+    PHASE3_CVAE,
+    PHASE3_GATE,
+    PHASE3_WGAN_GP,
+    PHASE3A_GATE,
     PHASES,
 )
-from ecgaug.eval.selection import Candidate, select_winner
+from ecgaug.eval.selection import Candidate, GeneratorCandidate, select_generator, select_winner
 
 PRETRAIN_RESULTS = PHASE2_PTBXL_PRETRAINING
+GENERATOR_EXPERIMENTS = (PHASE3_CVAE, PHASE3_WGAN_GP)
 DAY_ONE = _dt.date(2026, 10, 7)
 LAST_DAY = {1: 3, 2: 8, 3: 14, 4: 21, 5: 26, 6: 30}  # last planned day of each phase
 
@@ -207,6 +216,313 @@ def approve_phase1_gate(approvers: list[str]) -> dict:
     return entry
 
 
+# --------------------------------------------------------------------------------------------------
+# phase 3: the 3a gate (one generator per family) and the 3 gate (banks frozen)
+# --------------------------------------------------------------------------------------------------
+
+
+def experiment_configs(experiment: str) -> dict[str, Path]:
+    """Variant letter -> config file of any experiment."""
+    folder = paths.configs_dir() / experiment
+    return {p.name[0]: p for p in sorted(folder.glob("[A-Z]_*.yaml"))}
+
+
+def generator_results(experiment: str) -> dict[str, dict | None]:
+    """The pilot result file of each variant of a generator experiment, or None where it has not run."""
+    folder = paths.results_for(experiment)
+    out = {}
+    for letter in experiment_configs(experiment):
+        path = folder / f"{letter}.json"
+        out[letter] = json.loads(path.read_text()) if path.is_file() else None
+    return out
+
+
+def phase3a_choice(experiment: str) -> dict | None:
+    """The generator variant approved at the phase 3a gate for ``experiment``, or None."""
+    return (manifest().get(PHASE3A_GATE) or {}).get(experiment)
+
+
+def _same(results: dict[str, dict], get, label: str) -> dict:
+    values = {letter: json.dumps(get(r), sort_keys=True) for letter, r in results.items()}
+    ok = len(set(values.values())) == 1
+    return {"check": label, "passed": ok, "detail": "identical" if ok else values}
+
+
+def evaluate_phase3a_gate() -> dict:
+    """Check every generator pilot and apply the phase 3 selection rule per family. Raises GateError if not ready."""
+    from ecgaug.quality import composite_ranks
+
+    composite = (manifest().get(PHASE2_GATE) or {}).get("quality_composite") or []
+    families = {}
+    for experiment in GENERATOR_EXPERIMENTS:
+        results = generator_results(experiment)
+        missing = [letter for letter, r in results.items() if r is None]
+        if not results or missing:
+            raise GateError(f"{experiment} variants not piloted yet: {', '.join(missing) or 'all'}")
+        checks = [
+            _same(results, lambda r: r["split"], "same validation split for every variant"),
+            _same(results, lambda r: r["selection_metric"], "same selection metric"),
+            _same(results, lambda r: r["budget"], "same budget (steps, seeds, checkpoints, pilot policy)"),
+            _same(results, lambda r: r["pilot"]["classifier"], "same pilot classifier and settings"),
+            _same(results, lambda r: r["hard_gate_thresholds"], "same hard-gate thresholds"),
+            _same(results, lambda r: r["dataset"].get("content_sha256"), "same training data"),
+        ]
+        deviations = {letter: r["budget_deviations"] for letter, r in results.items() if r["budget_deviations"]}
+        checks.append({"check": "no budget deviations reported", "passed": not deviations, "detail": deviations or "none"})
+        failed = [c["check"] for c in checks if not c["passed"]]
+        if failed:
+            raise GateError(f"{experiment}: phase 3a gate checks failed: {'; '.join(failed)}. See the result files.")
+        ranks = composite_ranks({letter: r["quality_mean"] for letter, r in results.items()}, composite)
+        candidates = [
+            GeneratorCandidate(
+                name=letter, mean=r["mean"], sd=r["sd"], passed_hard_gates=r["hard_gates"]["passed"],
+                n_parameters=r["n_parameters"], wall_clock_s=r["wall_clock_s"], tie_mean=r.get("tie_break_mean"),
+                tie_sd=r.get("tie_break_sd"), quality_rank=ranks[letter] if ranks else None,
+            )  # fmt: skip
+            for letter, r in results.items()
+        ]
+        decision = select_generator(candidates)
+        families[experiment] = {
+            "results": results, "checks": checks, "decision": decision, "winner": decision["winner"],
+            "setting": results[decision["winner"]]["chosen_setting"] if decision["winner"] else None,
+            "provisional": sorted(letter for letter, r in results.items() if r.get("provisional")),
+            "quality_ranks": ranks,
+        }  # fmt: skip
+    return {"families": families}
+
+
+def _diagnostic_extremes(r: dict) -> tuple[float, float, float]:
+    per_seed = [s for s in r["per_seed"] if s.get("diagnostics")]
+    values = {name: [s["diagnostics"][c][name] for s in per_seed for c in s["diagnostics"]] for name in ("diversity_ratio", "memorization_fraction", "c2st_accuracy")}
+    lowest = min(values["diversity_ratio"]) if values["diversity_ratio"] else float("nan")
+    highest = max(values["memorization_fraction"]) if values["memorization_fraction"] else float("nan")
+    c2st = max(values["c2st_accuracy"]) if values["c2st_accuracy"] else float("nan")
+    return lowest, highest, c2st
+
+
+def phase3a_gate_markdown(gate: dict) -> str:
+    lines = [
+        "# Phase 3a gate: one generator per family",
+        "",
+        f"Generated by `python -m ecgaug.workflow phase3a-gate` on {_dt.date.today()}. Rule: PLAN Phase 3 selection and",
+        "PREREGISTRATION §9, applied by `ecgaug.eval.selection.select_generator`: hard gates (no divergence on",
+        "any pilot seed, diversity ratio at least the floor, memorization fraction at most the ceiling, for every",
+        "generated class and seed), then the pilot selection metric at the final checkpoint (mean over pilot",
+        "seeds), ties within max(0.02, pooled SD) broken by the composite quality rank, then fewer parameters.",
+        "",
+    ]
+    provisional = {e: f["provisional"] for e, f in gate["families"].items() if f["provisional"]}
+    if provisional:
+        reasons = sorted({reason for f in gate["families"].values() for r in f["results"].values() for reason in r.get("provisional_reasons", [])})
+        lines += ["**PREVIEW: these pilots are provisional, so this report cannot be approved.** Reasons:", "", *[f"- {r}" for r in reasons], ""]
+    for experiment, family in gate["families"].items():
+        decision = family["decision"]
+        lines += [f"## {experiment}", "", "### Checks", "", *[f"- {'PASS' if c['passed'] else 'FAIL'}: {c['check']}" for c in family["checks"]], ""]
+        lines += [
+            "### Results",
+            "",
+            "| variant | setting | pilot mean | SD | per seed | V F1 (tie-break) | diversity (lowest) | memorization (highest) | C2ST (highest) | hard gates | parameters | run time (s) |",
+            "|---|---|---|---|---|---|---|---|---|---|---|---|",
+        ]
+        for letter, r in family["results"].items():
+            seeds = ", ".join(f"{s['selection_value']:.4f}" for s in r["per_seed"])
+            tie = f"{r['tie_break_mean']:.4f}" if r.get("tie_break_mean") is not None else "-"
+            lowest, highest, c2st = _diagnostic_extremes(r)
+            gates = "pass" if r["hard_gates"]["passed"] else "fail: " + "; ".join(c["check"] for c in r["hard_gates"]["checks"] if not c["passed"])
+            lines.append(
+                f"| {letter} | {r['chosen_setting']} | {r['mean']:.4f} | {r['sd']:.4f} | {seeds} | {tie} | {lowest:.3f} | "
+                f"{highest:.3f} | {c2st:.3f} | {gates} | {r['n_parameters']:,} | {r['wall_clock_s']:.0f} |"
+            )
+        other = [(letter, name, s) for letter, r in family["results"].items() if len(r["settings"]) > 1 for name, s in r["settings"].items()]
+        if other:
+            lines += ["", "Every setting of a variant with several (both are reported; the variant uses its best passing one):", ""]
+            lines += [f"- {letter} {name}: {s['mean']:.4f} ± {s['sd']:.4f}, hard gates {'pass' if s['hard_gates']['passed'] else 'fail'}" for letter, name, s in other]
+        lines += ["", "### Decision", ""]
+        for step in decision["steps"]:
+            if "passed" in step:
+                lines.append(f"- {step['step']}: passed {', '.join(step['passed']) or 'none'}; failed {', '.join(step['failed']) or 'none'}")
+            elif "tied" in step:
+                lines.append(f"- {step['step']}: tied with the best: {', '.join(step['tied'])}")
+            else:
+                lines.append(f"- {step['step']}: **{step['winner']}**")
+        if family["winner"]:
+            config = experiment_configs(experiment)[family["winner"]].name
+            lines += ["", f"**Winner: variant {family['winner']}** (`{config}`, setting {family['setting']}).", ""]
+        else:
+            lines += ["", f"**No winner.** {decision['fallback']}", ""]
+    lines += [
+        "Status: PENDING APPROVAL. After the team agrees, approve with",
+        '`python -m ecgaug.workflow phase3a-gate --approve "Name" "Name"`; then run each winner with `--final`.',
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def write_phase3a_gate_report() -> dict:
+    """Evaluate the phase 3a gate and write ``results/phase3a_gate/report.md`` and ``report.json``."""
+    gate = evaluate_phase3a_gate()
+    out = paths.results_for(PHASE3A_GATE)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "report.md").write_text(phase3a_gate_markdown(gate))
+    summary = {
+        experiment: {k: f[k] for k in ("checks", "decision", "winner", "setting", "provisional")} | {"run_ids": {l: r["run_ids"] for l, r in f["results"].items()}}
+        for experiment, f in gate["families"].items()
+    }
+    (out / "report.json").write_text(json.dumps(summary, indent=2) + "\n")
+    from ecgaug import figures
+
+    figures.safe_call(figures.phase3a_gate_figure, gate)
+    return gate
+
+
+def approve_phase3a_gate(approvers: list[str]) -> dict:
+    """Record the chosen generator of each family in the manifest and in DECISIONS.md."""
+    if not approvers:
+        raise GateError("Name at least one approver")
+    if manifest().get(PHASE3A_GATE):
+        raise GateError("The phase 3a gate is already approved")
+    report = paths.results_for(PHASE3A_GATE) / "report.json"
+    if not report.is_file():
+        raise GateError("Write the phase 3a gate report first: python -m ecgaug.workflow phase3a-gate")
+    gate = evaluate_phase3a_gate()
+    written = json.loads(report.read_text())
+    for experiment, family in gate["families"].items():
+        if family["provisional"]:
+            raise GateError(f"{experiment}: pilots {', '.join(family['provisional'])} are previews; rerun them officially after the phase 1 and phase 2 gates")
+        if family["winner"] is None:
+            raise GateError(f"{experiment}: no variant passes the hard gates. Record the team's fallback (PLAN Phase 3) in DECISIONS.md first.")
+        if written[experiment]["winner"] != family["winner"]:
+            raise GateError("The results changed since the report was written; run `phase3a-gate` again and re-read it")
+    entry = {
+        experiment: {
+            "winner": f["winner"], "setting": f["setting"], "config": str(experiment_configs(experiment)[f["winner"]].relative_to(paths.repo_root())),
+            "generator_id": f"{experiment}-{f['winner']}" + ("" if f["setting"] == "default" else f".{f['setting']}"),
+        }
+        for experiment, f in gate["families"].items()
+    }  # fmt: skip
+    entry.update({"approved_by": list(approvers), "approved_on": str(_dt.date.today()), "git_sha": runs.git_sha()})
+    path = paths.results_dir() / "manifest.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({**manifest(), PHASE3A_GATE: entry}, indent=2) + "\n")
+    paths.docs_dir().mkdir(parents=True, exist_ok=True)
+    with (paths.docs_dir() / "DECISIONS.md").open("a") as fh:
+        fh.write(
+            f"\n## the phase 3a gate — {entry['approved_on']} — status: APPROVED by {', '.join(approvers)}\n"
+            + "".join(f"{e}: winner {entry[e]['winner']} (setting {entry[e]['setting']}) — " for e in GENERATOR_EXPERIMENTS)
+            + "evidence: results/phase3a_gate/report.md — rule: PLAN Phase 3 selection, PREREGISTRATION §9\n"
+        )
+    return entry
+
+
+def evaluate_phase3_gate() -> dict:
+    """Check the final runs and banks of both chosen generators. Raises GateError if not ready."""
+    from ecgaug.experiments.generator_runs import load_config
+    from ecgaug.generators.bank import BankError, bank_dir, load_bank
+
+    chosen = manifest().get(PHASE3A_GATE)
+    if not chosen:
+        raise GateError("Approve the phase 3a gate first: python -m ecgaug.workflow phase3a-gate")
+    families = {}
+    for experiment in GENERATOR_EXPERIMENTS:
+        choice = chosen[experiment]
+        path = paths.results_for(experiment) / f"{choice['winner']}_final.json"
+        if not path.is_file():
+            raise GateError(f"{experiment}: the final runs of variant {choice['winner']} have not been ingested ({path.name})")
+        final = json.loads(path.read_text())
+        seeds = load_config(paths.repo_root() / choice["config"])["final_seeds"]
+        checks = [
+            {"check": "official run (not a preview)", "passed": not final["provisional"]},
+            {"check": "the setting approved at the phase 3a gate", "passed": final["setting"] == choice["setting"]},
+            {"check": f"every grid seed {seeds}", "passed": sorted(final["seeds"]) == sorted(seeds)},
+            {"check": "no seed diverged", "passed": not final["diverged_seeds"]},
+        ]
+        banks = {}
+        for seed in seeds:
+            try:
+                arrays = load_bank(choice["generator_id"], seed)
+                meta = json.loads((bank_dir(choice["generator_id"]) / "bank.json").read_text())["seeds"][str(seed)]
+                ok = meta.get("train_only_check") == "passed" and bool(arrays["is_synthetic"].all())
+                banks[str(seed)] = {"file": f"data/synthetic/{choice['generator_id']}/seed{seed}.npz", "sha256": meta["sha256"],
+                                    "content_sha256": meta["content_sha256"], "counts": meta["counts"], "diagnostics": meta.get("diagnostics")}  # fmt: skip
+                checks.append({"check": f"bank seed {seed}: present, hash matches, train-only check passed", "passed": ok})
+            except (BankError, KeyError, FileNotFoundError) as err:
+                checks.append({"check": f"bank seed {seed}: {err}", "passed": False})
+        families[experiment] = {"choice": choice, "final": final, "checks": checks, "banks": banks}
+    return {"families": families, "passed": all(c["passed"] for f in families.values() for c in f["checks"])}
+
+
+def phase3_gate_markdown(gate: dict) -> str:
+    lines = ["# Phase 3 gate: synthetic banks", "", f"Generated by `python -m ecgaug.workflow phase3-gate` on {_dt.date.today()}.", ""]
+    for experiment, family in gate["families"].items():
+        lines += [f"## {experiment}: {family['choice']['generator_id']}", "", *[f"- {'PASS' if c['passed'] else 'FAIL'}: {c['check']}" for c in family["checks"]], ""]
+        if family["banks"]:
+            lines += ["| seed | beats S / V / F | diversity (lowest) | memorization (highest) | SHA-256 |", "|---|---|---|---|---|"]
+            for seed, bank in family["banks"].items():
+                diag = bank.get("diagnostics") or {}
+                lowest = min((d["diversity_ratio"] for d in diag.values()), default=float("nan"))
+                highest = max((d["memorization_fraction"] for d in diag.values()), default=float("nan"))
+                counts = " / ".join(f"{bank['counts'][c]:,}" for c in ("S", "V", "F"))
+                lines.append(f"| {seed} | {counts} | {lowest:.3f} | {highest:.3f} | `{bank['sha256'][:12]}...` |")
+            lines.append("")
+    lines += ["Status: " + ("ready; approve with `python -m ecgaug.workflow phase3-gate --approve \"Name\" \"Name\"`." if gate["passed"] else "NOT READY: fix the failed checks above."), ""]
+    return "\n".join(lines)
+
+
+def approve_phase3_gate(approvers: list[str]) -> dict:
+    """Freeze the banks: record their hashes in the manifest and the decision in DECISIONS.md."""
+    if not approvers:
+        raise GateError("Name at least one approver")
+    if manifest().get(PHASE3_GATE):
+        raise GateError("The phase 3 gate is already approved")
+    gate = evaluate_phase3_gate()
+    if not gate["passed"]:
+        raise GateError("Phase 3 gate checks failed; run `python -m ecgaug.workflow phase3-gate` and read the report")
+    entry = {e: {"generator_id": f["choice"]["generator_id"], "banks": f["banks"]} for e, f in gate["families"].items()}
+    entry.update({"approved_by": list(approvers), "approved_on": str(_dt.date.today()), "git_sha": runs.git_sha()})
+    path = paths.results_dir() / "manifest.json"
+    path.write_text(json.dumps({**manifest(), PHASE3_GATE: entry}, indent=2) + "\n")
+    paths.docs_dir().mkdir(parents=True, exist_ok=True)
+    with (paths.docs_dir() / "DECISIONS.md").open("a") as fh:
+        fh.write(
+            f"\n## the phase 3 gate — {entry['approved_on']} — status: APPROVED by {', '.join(approvers)}\n"
+            f"Frozen banks: {', '.join(entry[e]['generator_id'] for e in GENERATOR_EXPERIMENTS)} (hashes in results/manifest.json) — "
+            "evidence: results/phase3_gate/report.md\n"
+        )
+    return entry
+
+
+def _phase3_lines() -> tuple[list[str], str | None]:
+    """Checklist lines for phase 3 and its first unfinished item."""
+    lines, first = [], None
+
+    def item(done: bool, text: str, todo: str) -> None:
+        nonlocal first
+        lines.append(_check(done, text, todo))
+        if not done and first is None:
+            first = f"{text}: {todo}"
+
+    for experiment in GENERATOR_EXPERIMENTS:
+        configs = experiment_configs(experiment)
+        for letter, r in generator_results(experiment).items():
+            text = f"{experiment} variant {letter} ({configs[letter].stem}) pilot"
+            if r:
+                text += f": {r['selection_metric']} {r['mean']:.4f} ± {r['sd']:.4f}, hard gates {'pass' if r['hard_gates']['passed'] else 'fail'}"
+                text += " (preview, not official)" if r.get("provisional") else ""
+            item(bool(r) and not r.get("provisional"), text, f"kaggle/{experiment}.ipynb with VARIANTS = ['{letter}']")
+    report = (paths.results_for(PHASE3A_GATE) / "report.md").is_file()
+    chosen = manifest().get(PHASE3A_GATE)
+    item(report, "phase 3a gate: report written", "python -m ecgaug.workflow phase3a-gate")
+    item(bool(chosen), "phase 3a gate: approved, one generator per family", 'python -m ecgaug.workflow phase3a-gate --approve "<names>"')
+    for experiment in GENERATOR_EXPERIMENTS:
+        choice = (chosen or {}).get(experiment)
+        final = paths.results_for(experiment) / f"{choice['winner']}_final.json" if choice else None
+        done = bool(final and final.is_file() and not json.loads(final.read_text())["provisional"])
+        label = f"{experiment} final runs and banks" + (f" (variant {choice['winner']})" if choice else "")
+        item(done, label, f"kaggle/{experiment}.ipynb with MODE = 'final'")
+    item(bool(manifest().get(PHASE3_GATE)), "phase 3 gate: banks frozen", 'python -m ecgaug.workflow phase3-gate --approve "<names>"')
+    return lines, first
+
+
 def _check(done: bool, text: str, todo: str = "") -> str:
     return f"  [{'x' if done else ' '}] {text}" + (f"  ->  {todo}" if todo and not done else "")
 
@@ -249,7 +565,10 @@ def status(today: _dt.date | None = None) -> tuple[list[str], str]:
     lines.append(_check(official, text, "python -m ecgaug.experiments.phase2_ptbxl_pretraining --config <winner's config>"))
     lines.append(_check(False, "phase2_baseline_classifiers", "not built yet"))
     lines.append(_check(False, "phase2_quality_metrics", "not built yet"))
-    lines += ["", "Phases 3-6: not started."]
+    phase2_gate = bool(manifest().get(PHASE2_GATE))
+    lines.append(_check(phase2_gate, "phase 2 gate: cnn chosen, quality composite fixed", "not built yet"))
+    phase3, phase3_next = _phase3_lines()
+    lines += ["", f"Phase 3  {PHASES[3]}", *phase3, "", "Phases 4-6: not started."]
 
     if not data_ok:
         nxt = "Download and verify MIT-BIH: python -m ecgaug.data.raw"
@@ -264,24 +583,59 @@ def status(today: _dt.date | None = None) -> tuple[list[str], str]:
         nxt = 'Team reads results/phase1_gate/report.md, then: ALLOW_TEST_BUILD=1 python -m ecgaug.workflow phase1-gate --approve "<names>"'
     elif not official:
         nxt = f"Run {PRETRAIN_RESULTS} for the phase 1 winner, variant {winner}; then build phase2_baseline_classifiers"
+    elif not phase2_gate:
+        nxt = "Build phase 2: phase2_baseline_classifiers and phase2_quality_metrics, then the phase 2 gate"
     else:
-        nxt = "Build phase 2: phase2_baseline_classifiers and phase2_quality_metrics"
+        nxt = phase3_next or "Phase 3 is done: start phase 4 (phase4_augmentation_policy)"
     lines += ["", f"NEXT: {nxt}"]
     return lines, nxt
 
 
+def _phase3_command(command: str, approve: list[str] | None) -> int:
+    try:
+        if command == "phase3a-gate":
+            if approve:
+                entry = approve_phase3a_gate(approve)
+                print(f"Phase 3a gate approved by {', '.join(entry['approved_by'])}: "
+                      + "; ".join(f"{e} variant {entry[e]['winner']} ({entry[e]['setting']})" for e in GENERATOR_EXPERIMENTS))  # fmt: skip
+                print("Next: run each winner with --final (kaggle notebooks, MODE = 'final').")
+            else:
+                gate = write_phase3a_gate_report()
+                print(phase3a_gate_markdown(gate))
+                print("Written to results/phase3a_gate/report.md. Approve only after the team has read it.")
+        else:
+            if approve:
+                entry = approve_phase3_gate(approve)
+                print(f"Phase 3 gate approved by {', '.join(entry['approved_by'])}; bank hashes are in results/manifest.json.")
+            else:
+                gate = evaluate_phase3_gate()
+                out = paths.results_for(PHASE3_GATE)
+                out.mkdir(parents=True, exist_ok=True)
+                (out / "report.md").write_text(phase3_gate_markdown(gate))
+                print(phase3_gate_markdown(gate))
+    except GateError as err:
+        print(f"{command}: {err}")
+        return 2
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Project workflow: status and the phase 1 gate.")
+    parser = argparse.ArgumentParser(description="Project workflow: status and the gates.")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("status", help="checklist of every step and the next action")
     gate = sub.add_parser("phase1-gate", help="compare phase1_input_representation variants; with --approve, freeze the winner's dataset")
     gate.add_argument("--approve", nargs="+", metavar="NAME", help="approvers' names (needs ALLOW_TEST_BUILD=1)")
+    for name, text in (("phase3a-gate", "choose one generator per family from the pilots; with --approve, record it"),
+                       ("phase3-gate", "check the final banks; with --approve, freeze them")):  # fmt: skip
+        sub.add_parser(name, help=text).add_argument("--approve", nargs="+", metavar="NAME", help="approvers' names")
     args = parser.parse_args(argv)
 
     if args.command == "status":
         lines, _ = status()
         print("\n".join(lines))
         return 0
+    if args.command in ("phase3a-gate", "phase3-gate"):
+        return _phase3_command(args.command, args.approve)
     try:
         if args.approve:
             entry = approve_phase1_gate(args.approve)
