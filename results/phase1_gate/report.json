@@ -1,0 +1,69 @@
+{
+  "checks": [
+    {
+      "check": "same validation split for every variant",
+      "passed": true,
+      "detail": "identical"
+    },
+    {
+      "check": "same selection metric",
+      "passed": true,
+      "detail": "identical"
+    },
+    {
+      "check": "same budget (seeds, learning rates, epochs, patience)",
+      "passed": true,
+      "detail": "identical"
+    },
+    {
+      "check": "no budget deviations reported",
+      "passed": true,
+      "detail": "none"
+    }
+  ],
+  "decision": {
+    "winner": "C",
+    "best_by_mean": "C",
+    "margins": {
+      "A": 0.06115007991309714,
+      "B": 0.02696798461195816,
+      "C": 0.03808502604910847,
+      "D": 0.027327517864822733
+    },
+    "steps": [
+      {
+        "step": "selection metric",
+        "tied": [
+          "C"
+        ]
+      },
+      {
+        "step": "simplicity, then wall-clock",
+        "winner": "C"
+      }
+    ]
+  },
+  "winner": "C",
+  "run_ids": {
+    "A": [
+      "phase1_input_representation-A.lr1e-03-s0-b463e88-202610152111",
+      "phase1_input_representation-A.lr1e-03-s1-b463e88-202610152112",
+      "phase1_input_representation-A.lr1e-03-s2-b463e88-202610152112"
+    ],
+    "B": [
+      "phase1_input_representation-B.lr1e-03-s0-3c76528-202610152057",
+      "phase1_input_representation-B.lr1e-03-s1-3c76528-202610152057",
+      "phase1_input_representation-B.lr1e-03-s2-3c76528-202610152057"
+    ],
+    "C": [
+      "phase1_input_representation-C.lr1e-03-s0-b20a522-202610152033",
+      "phase1_input_representation-C.lr1e-03-s1-b20a522-202610152033",
+      "phase1_input_representation-C.lr1e-03-s2-b20a522-202610152034"
+    ],
+    "D": [
+      "phase1_input_representation-D.lr1e-03-s0-ab0b7c1-202610152053",
+      "phase1_input_representation-D.lr1e-03-s1-ab0b7c1-202610152053",
+      "phase1_input_representation-D.lr1e-03-s2-ab0b7c1-202610152053"
+    ]
+  }
+}

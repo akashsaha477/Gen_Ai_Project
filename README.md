@@ -31,9 +31,9 @@ the one before it; the code refuses to skip ahead and says what is missing.
 |---|---|---|---|
 | 1 data | download and verify MIT-BIH | `python -m ecgaug.data.raw` | done |
 | 1 data | approve the validation split | `configs/validation_split/approved.yaml` | done (V1) |
-| 1 data | run `phase1_input_representation`, variants A–D | Kaggle: `kaggle/phase1_input_representation.ipynb`, `VARIANTS = ["A", "B", "C", "D"]` | **next** |
-| 1 data | phase 1 gate: report | `python -m ecgaug.workflow phase1-gate` | |
-| 1 data | phase 1 gate: team approves, the winner's dataset is frozen | `ALLOW_TEST_BUILD=1 python -m ecgaug.workflow phase1-gate --approve "Name" "Name"` | |
+| 1 data | run `phase1_input_representation`, variants A–D | Kaggle: `kaggle/phase1_input_representation.ipynb`, `VARIANTS = ["A", "B", "C", "D"]` | done (2026-10-15) |
+| 1 data | phase 1 gate: report | `python -m ecgaug.workflow phase1-gate` | done: winner C, see [docs/PHASE1_REPORT.md](docs/PHASE1_REPORT.md) |
+| 1 data | phase 1 gate: team approves, the winner's dataset is frozen | `ALLOW_TEST_BUILD=1 python -m ecgaug.workflow phase1-gate --approve "Name" "Name"` | **next** (team) |
 | 2 baselines | run `phase2_ptbxl_pretraining` for the phase 1 winner | Kaggle: `kaggle/phase2_ptbxl_pretraining.ipynb` with the winner's letter | one preview (variant D) |
 | 2 baselines | `phase2_baseline_classifiers`, `phase2_quality_metrics` | not built yet | |
 
@@ -46,10 +46,12 @@ again. (If the push did not happen: download the zip from the notebook's Output 
 confusion matrices, before and after pretraining). They travel back from Kaggle in the zip.
 `python -m ecgaug.figures all` redraws everything; `figures/README.md` lists what each folder shows.
 
-**Current state (2026-10-15, Day 9):** phase 1 data is ready and the split is approved, but
-`phase1_input_representation` has not been run. One preview of `phase2_ptbxl_pretraining` exists
-(variant D): pretraining did not help, and without RR timing the model detects S beats at chance
-level. It is marked provisional because the phase 1 gate has not happened.
+**Current state (2026-10-16, Day 10):** all four `phase1_input_representation` variants have run.
+The phase 1 gate report picks **variant C** (short window + RR features), with validation S F1
+0.296 ± 0.038 against 0.164 for A, the next best. It is waiting for the team's approval. The full
+analysis is in [docs/PHASE1_REPORT.md](docs/PHASE1_REPORT.md). Read section 6 before phase 2: an
+early-stopping flaw cut 10 of the 24 runs short and should be fixed first. The earlier
+`phase2_ptbxl_pretraining` preview used variant D and must be re-run with C.
 
 **Previews:** the pretraining runner refuses to run before the phase 1 gate, or for a variant that the phase 1 gate did not
 pick, unless you add `--preview` (`PREVIEW = True` in the notebook). Preview results are marked

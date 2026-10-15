@@ -9,7 +9,7 @@ plotted; the test set (DS2) never is.
 |---|---|---|
 | `phase1_data/` | phase 1: MIT-BIH data before and after preprocessing | raw versus band-passed signal; the same N and S beat in variants A–D; beats per class in training and validation; median beat per class and variant |
 | `phase1_input_representation/<letter>/` | phase 1: each variant of phase1_input_representation | training loss and validation score per epoch; validation confusion matrix |
-| `phase1_gate/` | phase 1: the gate | the four variants side by side, seeds and mean ± SD |
+| `phase1_gate/` | phase 1: the gate | `variants.png`: the four variants side by side, seeds and mean ± SD; `per_class.png`: F1 and PR-AUC per class; `early_stopping.png`: epoch kept vs epochs run for every run |
 | `phase2_ptbxl_data/` | phase 2: PTB-XL data before and after preprocessing | raw 500 Hz versus resampled signal with detected beats; PTB-XL versus MIT-BIH beat shape; recordings kept and excluded; label shares per split |
 | `phase2_ptbxl_pretraining/<letter>/` | phase 2: each variant of phase2_ptbxl_pretraining | pretraining curves; from scratch versus fine-tuned curves; confusion matrices; F1 per class before and after pretraining |
 
