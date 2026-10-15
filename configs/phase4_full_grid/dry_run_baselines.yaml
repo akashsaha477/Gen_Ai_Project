@@ -1,0 +1,23 @@
+# Dry run of the grid runner on the baseline condition (PLAN Phase 3, shared infrastructure item 5).
+# The real grid file is written in phase 4, after PREREGISTRATION v3 fixes the policy and strengths.
+# A full grid lists more conditions, for example:
+#   class_weighted: {gammas: [0.5, 0.75, 1.0]}
+#   random_oversampling: {strengths: [0.1, 0.25, 0.5]}
+#   smote: {strengths: [0.1, 0.25, 0.5], k_neighbors: 5}
+#   cvae: {bank: phase3_cvae-A, strengths: [0.1, 0.25, 0.5]}
+#   wgan_gp: {bank: phase3_wgan_gp-B, strengths: [0.1, 0.25, 0.5]}
+# and the architectures chosen at the phase 2 gate:  architectures: {cnn: phase2_gate, rnn: phase2_gate}
+experiment: phase4_full_grid
+name: dry_run_baselines
+policy: fraction_of_n          # strength = target count of each minority class as a fraction of the training N count
+seeds: [0, 1, 2]
+architectures:
+  probe_cnn:                   # preview stand-in until the phase 2 gate chooses the cnn and the rnn
+    model: {name: probe_cnn, channels: [16, 32, 64], kernel: 7, side_hidden: 16}
+    lr: 1.0e-3
+    max_epochs: 40
+    patience: 5
+    batch_size: 256
+    weight_decay: 0.01
+conditions:
+  none: {}
