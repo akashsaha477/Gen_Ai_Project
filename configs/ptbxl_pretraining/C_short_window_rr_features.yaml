@@ -1,3 +1,0 @@
-base: pretraining_settings.yaml
-variant: C
-representation_from: ../m1_input_representation/C_short_window_rr_features.yaml

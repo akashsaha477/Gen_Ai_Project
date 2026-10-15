@@ -1,0 +1,3 @@
+base: pretraining_settings.yaml
+variant: D
+representation_from: ../phase1_input_representation/D_short_window_125hz.yaml

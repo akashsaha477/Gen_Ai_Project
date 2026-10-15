@@ -1,0 +1,57 @@
+experiment: phase2_ptbxl_pretraining
+seeds:
+- 0
+- 1
+- 2
+lr_grid:
+- 0.001
+- 0.0003
+max_epochs: 40
+patience: 5
+batch_size: 256
+weight_decay: 0.01
+device: cpu
+model:
+  name: probe_cnn
+  channels:
+  - 16
+  - 32
+  - 64
+  kernel: 7
+  side_hidden: 16
+variant: D
+description: Variant A resampled to 125 Hz (63 samples).
+representation:
+  name: m1-D
+  window_pre_s: 0.25
+  window_post_s: 0.25
+  bandpass_hz: null
+  target_fs: 125
+  normalization: per_beat_zscore
+  rr_features: false
+pretrain:
+  lr: 0.001
+  max_epochs: 30
+  patience: 5
+  batch_size: 256
+  weight_decay: 0.01
+representation_source: ../phase1_input_representation/D_short_window_125hz.yaml
+lr: 0.001
+seed: 1
+run_id: phase2_ptbxl_pretraining-finetuneD.lr1e-03-s1-32b9464-202610140206
+split:
+  name: V1
+  val:
+  - 115
+  - 118
+  - 201
+  - 205
+  - 223
+  selection_metric: s_f1
+dataset:
+  path: /kaggle/working/repo/data/processed/candidates/m1-D
+  content_sha256: fe75583d7324d8e8b464f06bddb32819e7850f4bde7fd8facd7ec2a08794a6e0
+init:
+  kind: ptbxl_pretrained
+  run_id: phase2_ptbxl_pretraining-pretrainD-s1-32b9464-202610140158
+  tensors_copied: 21

@@ -20,6 +20,7 @@ import numpy as np
 from scipy import signal as sps
 
 from ecgaug import paths
+from ecgaug.names import PHASE2_PTBXL_DATA
 from ecgaug.data.records import DS1, FS
 
 BAND_HZ = (5.0, 20.0)
@@ -155,7 +156,7 @@ def validate_on_ds1() -> dict:
 def main(argv: list[str] | None = None) -> int:
     argparse.ArgumentParser(description="Validate the R-peak detector on MIT-BIH DS1.").parse_args(argv)
     report = validate_on_ds1()
-    out = paths.results_dir() / "data" / "rpeak_validation_ds1.json"
+    out = paths.results_for(PHASE2_PTBXL_DATA) / "rpeak_validation_ds1.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2) + "\n")
     o = report["overall"]

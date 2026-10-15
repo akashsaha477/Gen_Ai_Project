@@ -21,6 +21,7 @@ import numpy as np
 import wfdb
 
 from ecgaug import paths
+from ecgaug.names import PHASE1_DATA
 from ecgaug.data.access import require_test_access
 from ecgaug.data.records import ALL_RECORDS, DS1, DS2, FS, LEAD, PACED
 
@@ -233,7 +234,7 @@ def main(argv: list[str] | None = None) -> int:
     if not args.skip_download:
         download()
     report = verify()
-    out = paths.results_dir() / "data" / "raw_checksums.json"
+    out = paths.results_for(PHASE1_DATA) / "raw_checksums.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
     ref = report["reference"]

@@ -1,4 +1,4 @@
-# PLAN — Phases, Modules, Variants, Gates
+# PLAN — Phases, Experiments, Variants, Gates
 
 Day 1 = 2026-10-07 · Day 30 = 2026-11-05 · Buffer days: 15, 29, 30.
 Amended 2026-10-08 after the kickoff review: see `docs/DECISIONS.md` (A1–A11).
@@ -14,8 +14,8 @@ Amended 2026-10-08 after the kickoff review: see `docs/DECISIONS.md` (A1–A11).
   with the highest validation selection metric, recorded in DECISIONS.md before `/final-eval`.
 - **Decision rule:** argmax of the class probabilities in every condition; no threshold is tuned.
 - **Equal budget per variant:** same epoch/step cap, early stopping (patience 5 on the primary
-  metric), and tuning grid (learning rate ∈ {1e-3, 3e-4}, nothing else) unless a module says otherwise.
-- **Result file per variant:** `results/validation/m<M>/<X>.json` with per-seed metrics, mean ± sd,
+  metric), and tuning grid (learning rate ∈ {1e-3, 3e-4}, nothing else) unless an experiment says otherwise.
+- **Result file per variant:** `results/<experiment>/<letter>.json` with per-seed metrics, mean ± sd,
   run IDs, wall-clock, budget deviations; plus `<X>_notes.md`.
 - **Losing variants are kept.** They form the variation-study tables in the paper appendix.
 
@@ -31,26 +31,26 @@ Amended 2026-10-08 after the kickoff review: see `docs/DECISIONS.md` (A1–A11).
 2. Download MIT-BIH via wfdb; verify all 48 records; record checksums.
 3. Beat extraction: reference R-peak annotations, MLII selected by name, AAMI mapping, paced records
    excluded, Q policy, `rr_prev` / `rr_next`.
-4. Per-record class counts → `results/data/record_counts.csv`; compare totals with docs/RULES.md sanity counts.
+4. Per-record class counts → `results/phase1_data/record_counts.csv`; compare totals with docs/RULES.md sanity counts.
    Counting DS2 labels is a logged construction access. The validation proposal uses DS1 counts only.
 5. **Validation proposal:** 2–3 options for which DS1 records form validation, each with class counts
    for train and val, and a per-record concentration table. Goal: S, V and (if at all possible) F
    represented in validation while training keeps enough of each. **STOP for a human decision.**
 6. Guarded test loader, `docs/TEST_ACCESS_LOG.md`, tests: zero record overlap; loader raises without
    `ALLOW_TEST=1`; contract hashes stable.
-7. **Module 2 — eval utilities (no variants):**
+7. **the evaluation code — eval utilities (no variants):**
    - `evaluate(probs, y, records) -> dict`: per-class precision / recall / F1, one-vs-rest PR-AUC,
      macro averages, AAMI-style Se and +P for S and V, confusion matrix.
    - `cluster_bootstrap(metric_fn, preds, records, n=10_000)`: resamples **records, not beats**;
      reports the fraction of replicates where a class is absent.
    - `paired_cluster_bootstrap_diff(a, b, ...)` for condition differences.
    - Unit tests against hand-computed cases.
-8. Probe CNN (small, fixed) used only to compare Module 1 variants. Supports an optional RR side input.
+8. Probe CNN (small, fixed) used only to compare phase1_input_representation variants. Supports an optional RR side input.
 9. Kaggle runner notebook template + `kaggle/ingest_runs.py`.
 10. `docs/PREREGISTRATION.md` v1 generated from `docs/PAPER_TRACK.md` (hypotheses, metrics,
-    comparisons, statistics, thresholds). **Committed before any Module 1 variant runs.**
+    comparisons, statistics, thresholds). **Committed before any phase1_input_representation variant runs.**
 
-### Module 1 — Data pipeline variants
+### phase1_input_representation — Data pipeline variants
 Only the input representation differs. Splits and labels are identical across variants.
 
 | Variant | Definition |
@@ -66,19 +66,19 @@ The winner defines contract v1.
 features. Default: sample RR features from the class-conditional empirical distribution of training
 beats; document this as a limitation (S beats are largely defined by prematurity, not morphology).
 
-### Gate 1 checklist
+### Phase 1 gate checklist
 - [ ] All 44 non-paced records processed; class totals within ±1% of sanity counts (deviations explained).
 - [ ] Zero record overlap across train/val/test (test passes).
 - [ ] Test loader raises without `ALLOW_TEST`; TEST_ACCESS_LOG holds construction entries only (zero
       evaluation accesses).
 - [ ] Validation split approved; record lists written to DECISIONS.md and contract.json.
 - [ ] Selection metric fixed by the minimum-support rule (primary or fallback) and recorded.
-- [ ] PREREGISTRATION.md v1 committed (SHA recorded), tagged `prereg-v1` and pushed before Module 1 runs.
-- [ ] Module 1 winner selected by rule; contract v1 frozen with hashes in `results/manifest.json`.
+- [ ] PREREGISTRATION.md v1 committed (SHA recorded), tagged `prereg-v1` and pushed before phase1_input_representation runs.
+- [ ] phase1_input_representation winner selected by rule; contract v1 frozen with hashes in `results/manifest.json`.
 - [ ] Eval utilities and bootstrap tested.
 
 **Paper artifacts:** dataset/protocol table (records and class counts per split), per-record counts
-(appendix), Module 1 variation table, protocol diagram source.
+(appendix), phase1_input_representation variation table, protocol diagram source.
 
 ---
 
@@ -102,39 +102,39 @@ beats; document this as a limitation (S beats are largely defined by prematurity
 5. Toy cVAE and toy WGAN-GP smoke tests on one minority class (plumbing only; not selected).
 6. Measure wall-clock per run to re-estimate Phases 3–4.
 
-### PTB-XL pretraining arm (A12 and A13, built 2026-10-13)
+### phase2_ptbxl_pretraining experiment (A12 and A13, built 2026-10-13)
 
 One extra condition for the baseline classifier: pretrain on PTB-XL, then fine-tune on MIT-BIH, compared
-with the same model trained from scratch. Runner: `python -m ecgaug.experiments.ptbxl_pretraining --config
-configs/ptbxl_pretraining/<variant>.yaml`; one command does preprocessing, pretraining and both fine-tuning arms.
+with the same model trained from scratch. Runner: `python -m ecgaug.experiments.phase2_ptbxl_pretraining --config
+configs/phase2_ptbxl_pretraining/<variant>.yaml`; one command does preprocessing, pretraining and both fine-tuning methods.
 
 1. **Data (`src/ecgaug/data/ptbxl.py`):** PTB-XL 500 Hz files, lead II by name (closest to MLII),
    resampled to 360 Hz. Recordings are dropped if they have no diagnostic superclass, a pacemaker,
    flagged electrode problems, a flat or implausible signal, an implausible number of peaks, or peaks
    that do not stand out of the noise. R peaks come from `src/ecgaug/data/rpeaks.py`, validated against
-   the MIT-BIH DS1 annotations (`results/data/rpeak_validation_ds1.json`). Beats need both RR intervals
+   the MIT-BIH DS1 annotations (`results/phase2_ptbxl_data/rpeak_validation_ds1.json`). Beats need both RR intervals
    inside 0.3–2.0 s and the same usable-beat rule as MIT-BIH. Files are compared with PhysioNet's
    checksums and the counts are reported.
 2. **Windows:** cut with the representation of the config's letter, through the same code as the
    MIT-BIH beats. Each 10-second recording is mirror-padded by 2 s before filtering; that padding was
-   the best of four treatments measured on DS1 (`results/data/ptbxl_method_checks_ds1.json`).
+   the best of four treatments measured on DS1 (`results/phase2_ptbxl_data/method_checks_ds1.json`).
 3. **Labels:** each beat gets its recording's diagnostic superclasses (NORM, MI, STTC, CD, HYP,
    multi-label). Noisy at beat level by construction.
 4. **Pretraining:** same architecture with a 5-output head, binary cross-entropy, AdamW, learning rate
    1e-3, at most 30 epochs, patience 5 on the macro AUROC of PTB-XL fold 9. Folds 1–8 train, 10 unused.
    One pretraining run per seed; fine-tuning seed s starts from pretraining seed s.
 5. **Fine-tuning:** the head is replaced by a new 4-class head and all layers are trained on the DS1
-   training records. Budget, seeds, learning-rate grid and early stopping are read from the Module 1
-   config, for both arms. The from-scratch arm is exactly a Module 1 run of that representation.
+   training records. Budget, seeds, learning-rate grid and early stopping are read from the phase1_input_representation
+   config, for both methods. The from-scratch runs is exactly a phase1_input_representation run of that representation.
 6. **Comparison:** the selection rule on the validation selection metric, with from scratch as the
    simpler option, so pretraining has to win by more than the tie margin. It joins the Phase 4 grid as
    a second starting point only if it wins; otherwise it is reported as a negative result.
-7. **Status of results:** provisional until Gate 1 freezes the representation. The architecture is the
-   probe CNN for now; the arm is rerun with the `cnn` selected in Module 3.
+7. **Status of results:** provisional until the phase 1 gate freezes the representation. The architecture is the
+   probe CNN for now; the experiment is rerun with the `cnn` selected in phase2_baseline_classifiers.
 8. **Checks:** PTB-XL code cannot read MIT-BIH records or the test file; no patient is in two PTB-XL
-   splits; the arm never asks for test access.
+   splits; the experiment never asks for test access.
 
-### Module 3 — Baseline classifier variants (real, imbalanced data, no reweighting)
+### phase2_baseline_classifiers — Baseline classifier variants (real, imbalanced data, no reweighting)
 
 | Variant | Definition |
 |---|---|
@@ -147,7 +147,7 @@ configs/ptbxl_pretraining/<variant>.yaml`; one command does preprocessing, pretr
 Best of {A, B} → `cnn`. Best of {C, D} → `rnn` (the grid's recurrent model).
 Frozen checkpoints for every seed become the "none" condition.
 
-### Module 4 — Quality metric variants (metric families)
+### phase2_quality_metrics — Quality metric variants (metric families)
 
 | Variant | Definition |
 |---|---|
@@ -160,18 +160,18 @@ Frozen checkpoints for every seed become the "none" condition.
 (1) ranks the real-held-out reference best and recovers the degradation ordering (Spearman ≥ 0.8 with
 severity), and (2) is stable across 3 resamples (coefficient of variation < 10%).
 Passing metrics form the **pre-registered composite**: equal-weight average of per-metric ranks across
-candidate generators. Fixed at Gate 2, before any generator is evaluated.
+candidate generators. Fixed at the phase 2 gate, before any generator is evaluated.
 Whether metrics predict downstream gains is a paper analysis (RQ3), not a selection rule.
 
-### Gate 2 checklist
-- [ ] Module 3 variants complete with equal budgets; `cnn` and `rnn` chosen by rule; checkpoints for
+### Phase 2 gate checklist
+- [ ] phase2_baseline_classifiers variants complete with equal budgets; `cnn` and `rnn` chosen by rule; checkpoints for
       all seeds frozen and hashed.
 - [ ] Metric sanity table; composite definition, diversity floor and memorization threshold committed
       to PREREGISTRATION.md v2 before Phase 3 runs.
 - [ ] Measured run times → compute estimate for Phases 3–4; seed count (3 or 5) proposed.
 - [ ] Toy generators run end to end.
 
-**Paper artifacts:** baseline validation table (test numbers only after final eval), Module 3
+**Paper artifacts:** baseline validation table (test numbers only after final eval), phase2_baseline_classifiers
 variation table, metric sanity figure (score vs degradation level).
 
 ---
@@ -197,7 +197,7 @@ records only, with quality reports.
    runs; updates `results/runs_index.csv`; dry-run on baselines.
 6. Assertion in every generator: fitted data contains only `split == 'train'` records.
 
-### Module 5 — Conditional VAE variants
+### phase3_cvae — Conditional VAE variants
 
 | Variant | Definition |
 |---|---|
@@ -206,7 +206,7 @@ records only, with quality reports.
 | C | As A plus a spectral reconstruction term (L1 on FFT magnitude) or soft-DTW. |
 | D | Residual encoder/decoder with FiLM class conditioning. |
 
-### Module 6 — Conditional WGAN-GP variants
+### phase3_wgan_gp — Conditional WGAN-GP variants
 Shared settings (Gulrajani et al., 2017): n_critic = 5, gradient-penalty weight 10, Adam lr 1e-4,
 β1 = 0, β2 = 0.9, no batch norm in the critic.
 
@@ -230,7 +230,7 @@ each family's winner at full budget with the grid seeds, export banks.
 **Fallback:** if no WGAN-GP variant passes the hard gates by Day 12, restrict to the 2–3 rarest classes
 or adopt variant D, and record the failure. It is a result, not a secret.
 
-### Gate 3 checklist (3a on Day 12 = selection; 3 on Day 14 = freeze)
+### Phase 3 gate checklist (3a on Day 12 = selection; 3 on Day 14 = freeze)
 - [ ] Banks exported per family × seed; hashes recorded; train-only assertion passed.
 - [ ] Quality + diagnostics table for all variants and for the final banks.
 - [ ] Checkpoint-level RQ3 data saved.
@@ -246,7 +246,7 @@ quality table, training curves, failure-mode figure.
 
 **Goal:** complete validation-level grid, then a single test evaluation with pre-registered statistics.
 
-### Module 7 — Augmentation policy variants (pilot Days 16–17: `cnn`, seed 0, both banks)
+### phase4_augmentation_policy — Augmentation policy variants (pilot Days 16–17: `cnn`, seed 0, both banks)
 
 | Variant | Definition |
 |---|---|
@@ -268,7 +268,7 @@ identically to SMOTE and to random oversampling.
 - Runs at 3 seeds: (1 + 5 × 3) × 2 × 3 = 96.
 - Synthetic beats are added to training records only. Validation and test are always 100% real.
 
-### Optional (if compute allows; otherwise post-deadline): leakage-audit arm
+### Optional (if compute allows; otherwise post-deadline): leakage-audit experiment
 The same pipeline under the common intra-patient protocol (random beat-level split pooling DS1 and DS2):
 {none, cVAE, WGAN-GP} at medium strength, `cnn`, 3 seeds. Never used for any decision.
 It trains and evaluates on DS2 beats, so it runs **only after `/final-eval` has completed**, in its own
@@ -279,7 +279,7 @@ namespace (`runs/audit/`, `data/synthetic/audit/`), with every run logged in TES
 `/gate 4` (validation summary) → human approval → `/final-eval` (the single test access) →
 pre-registered statistics, tables, figures.
 
-### Gate 4 checklist
+### Phase 4 gate checklist
 - [ ] All grid runs complete or failures documented; `runs_index.csv` consistent with `runs/`.
 - [ ] Validation summary table; strength selected per condition on validation.
 - [ ] Approval → `/final-eval` executed once; TEST_ACCESS_LOG entry.
@@ -297,7 +297,7 @@ pre-registered statistics, tables, figures.
 analysis. All method selection uses validation beats. Error analysis reuses saved test predictions
 (no new test access). The demo uses validation records.
 
-### Module 8 — Explainability variants
+### phase5_explainability — Explainability variants
 Run on the best checkpoint per architecture for: none, best cVAE, best WGAN-GP ("best" = highest
 validation selection metric, recorded before `/final-eval`).
 
@@ -319,7 +319,7 @@ validation selection metric, recorded before `/final-eval`).
 **RQ4 analysis:** baseline vs augmented models on faithfulness and alignment; whether augmented models'
 saliency differs on real vs synthetic beats (possible artifact reliance).
 
-### Module 9 — LLM note variants
+### phase5_clinical_notes — LLM note variants
 
 | Variant | Definition |
 |---|---|
@@ -340,7 +340,7 @@ for the API cell.
 Error analysis (confusion matrices per condition; per-record errors for S and F; N↔S confusions with RR
 context); ethics section; demo CLI: record + beat index → prediction, probabilities, saliency plot, note.
 
-### Gate 5 checklist
+### Phase 5 gate checklist
 - [ ] Explainability method per architecture chosen by rule; figures generated.
 - [ ] LLM variant chosen; zero unsupported claims verified; template fallback works offline.
 - [ ] Demo runs from a fresh clone + lockfile.
@@ -367,7 +367,7 @@ evaluation table, error-analysis figure.
 1. Seeds 5 → 3 (if 5 were planned).
 2. Strengths 3 → 2.
 3. `rnn` out of the grid (keep it in baselines).
-4. Leakage-audit arm → post-deadline.
+4. Leakage-audit experiment → post-deadline.
 
 **Never cut:** inter-patient splits, the test lock, the quality metrics, and the class-weighted, random
 oversampling and SMOTE comparisons (cutting strengths 3 → 2 applies to them like any other condition).
@@ -388,7 +388,7 @@ Next:
 `docs/DECISIONS.md` entry
 ```
 ## Gate N — YYYY-MM-DD — status: PENDING APPROVAL | APPROVED by <names>
-Module M: winner X — evidence: results/gates/gateN.md — rule: PREREGISTRATION §k
+Experiment <name>: winner X — evidence: results/phase<N>_gate/report.md — rule: PREREGISTRATION §k
 Deviations / exceptions:
 Frozen artifacts (hashes):
 ```
@@ -401,6 +401,6 @@ Frozen artifacts (hashes):
 
 `docs/ASSIGNMENTS.md`
 ```
-| phase | module | variant | member | drawn on |
+| phase | experiment | variant | member | drawn on |
 |---|---|---|---|---|
 ```

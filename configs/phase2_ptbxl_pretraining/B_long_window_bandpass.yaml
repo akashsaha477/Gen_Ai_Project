@@ -1,0 +1,3 @@
+base: pretraining_settings.yaml
+variant: B
+representation_from: ../phase1_input_representation/B_long_window_bandpass.yaml

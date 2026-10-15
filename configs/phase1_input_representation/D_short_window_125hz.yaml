@@ -1,0 +1,11 @@
+base: shared_budget.yaml
+variant: D
+description: Variant A resampled to 125 Hz (63 samples).
+representation:
+  name: D_short_window_125hz
+  window_pre_s: 0.25
+  window_post_s: 0.25
+  bandpass_hz: null
+  target_fs: 125
+  normalization: per_beat_zscore
+  rr_features: false
