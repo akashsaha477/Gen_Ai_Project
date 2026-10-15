@@ -60,6 +60,7 @@ The token is read from Kaggle Secrets, never printed and never put in a URL. Do 
    | `ENV_MODE` | `locked` (exact `uv.lock` versions) or `kaggle` (see below) |
    | `RAW_DATASET_DIR` | leave as `/kaggle/input`; `""` downloads MIT-BIH from PhysioNet instead |
    | `PTBXL_SOURCE` | pretraining notebook only: `"download"` or a folder holding a PTB-XL copy |
+   | `PREVIEW` | pretraining notebook only: `True` to run before Gate 1 or for another variant |
 
 3. Run All. For long runs use Save Version > Save & Run All (Commit): it keeps running with the
    browser closed.
@@ -84,6 +85,10 @@ validation split. A GPU is optional. Results: `results/validation/m1_input_repre
 One run does all of it for each letter in `VARIANTS`: PTB-XL preprocessing (once per session, reused
 for every letter), pretraining on PTB-XL beats, fine-tuning on MIT-BIH, and the same model trained
 from scratch for comparison. Turn the GPU on.
+
+Run it **after Gate 1**, with the letter Gate 1 chose (`python -m ecgaug.workflow status` shows it).
+Before that, or for another letter, the run is refused unless you set `PREVIEW = True`; preview
+results are marked provisional and do not count.
 
 PTB-XL comes from one of two places:
 
@@ -134,7 +139,7 @@ Things to know:
 |---|---|
 | `git clone` fails | the `GITHUB_TOKEN` secret is missing, not ticked for this notebook, expired, or you are not a collaborator |
 | `no MIT-BIH record files` or a checksum problem | the `mitdb-raw` dataset is not attached or is damaged; re-attach it, or set `RAW_DATASET_DIR = ""` |
-| exit code 2, "Refusing to run" | approved split missing, checkout differs from the commit, or PTB-XL not available (the message says which) |
+| exit code 2, "Refusing to run" | approved split missing, checkout differs from the commit, PTB-XL not available, or (pretraining) Gate 1 not approved or a different variant chosen; the message says which |
 | "The PTB-XL copy ... is incomplete" | the attached copy has no `records500/` folder; attach another or set `PTBXL_SOURCE = "download"` |
 | the PTB-XL download is very slow | attach a Kaggle copy and set `PTBXL_SOURCE = "/kaggle/input"` |
 | `uv sync` fails or is too slow | Internet is off, or try `ENV_MODE = "kaggle"` for debugging |

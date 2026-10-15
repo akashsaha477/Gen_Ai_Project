@@ -30,9 +30,9 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from ecgaug import paths, runs
+from ecgaug import paths, runs, workflow
 from ecgaug.data import ptbxl, raw
-from ecgaug.data.contract import CONTRACT_FILE, build_candidate, content_sha256
+from ecgaug.data.contract import build_candidate, content_sha256
 from ecgaug.data.counts import count_record
 from ecgaug.data.fake import write_fake_mitdb, write_fake_ptbxl
 from ecgaug.data.loaders import load_candidate
@@ -200,15 +200,19 @@ def run(cfg: dict, split: Split, ptbxl_arrays: dict, device_name: str | None = N
         ]
     )
     auroc_mean, auroc_sd = mean_sd([p["macro_auroc"] for p in pretrained.values()])
-    frozen = (paths.processed_dir() / "v1" / CONTRACT_FILE).is_file()
+    winner = workflow.gate1_winner()
+    official = winner == variant
     ptbxl_report = ptbxl.build_report() or {}
     result = {
         "experiment": "ptbxl_pretraining",
         "variant": variant,
         "description": cfg.get("description", ""),
         "representation": spec.to_dict(),
-        "provisional": not frozen,
-        "provisional_reason": None if frozen else "the input representation is a Module 1 candidate; Gate 1 has not frozen it",
+        "provisional": not official,
+        "provisional_reason": None if official else (
+            "preview: Gate 1 has not been approved yet" if winner is None
+            else f"preview: Gate 1 chose variant {winner}, not {variant}"
+        ),
         "split": {"name": split.name, "val": list(split.val)},
         "selection_metric": split.selection_metric,
         "seeds": list(cfg["seeds"]),
@@ -329,6 +333,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--skip-verify", action="store_true", help="do not compare PTB-XL files with PhysioNet checksums")
     parser.add_argument("--device", default=None, help="cpu, cuda, mps or auto (default: from the shared config)")
     parser.add_argument("--smoke", action="store_true", help="end-to-end run on fake data in a temp directory")
+    parser.add_argument(
+        "--preview", action="store_true",
+        help="run before Gate 1, or for a variant Gate 1 did not choose; the result is marked provisional",
+    )  # fmt: skip
     args = parser.parse_args(argv)
     cfg = load_config(Path(args.config))
 
@@ -336,6 +344,17 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(smoke(cfg), indent=2))
         return 0
     try:
+        winner = workflow.gate1_winner()
+        if not args.preview and winner is None:
+            raise PreconditionError(
+                "Phase 1 is not finished: Gate 1 has not chosen the input variant yet. Run the Module 1 "
+                "variants and Gate 1 first (python -m ecgaug.workflow status), or add --preview."
+            )
+        if not args.preview and winner != cfg["variant"]:
+            right = workflow.variant_configs()[winner].name
+            raise PreconditionError(
+                f"Gate 1 chose variant {winner}; run configs/ptbxl_pretraining/{right}, or add --preview."
+            )
         split = check_preconditions()
         ptbxl_arrays = ensure_ptbxl(args.ptbxl_root, args.workers, not args.skip_verify, download=args.ptbxl_download)
     except PreconditionError as err:
@@ -350,7 +369,7 @@ def main(argv: list[str] | None = None) -> int:
         f"pretraining AUROC on PTB-XL fold 9: {result['pretraining']['val_macro_auroc_mean']:.4f}; "
         f"difference pretrained - scratch: {result['difference_pretrained_minus_scratch']:+.4f}; "
         f"winner by the selection rule: {result['winner']}"
-        + (" (provisional: representation not frozen)" if result["provisional"] else "")
+        + (f" ({result['provisional_reason']})" if result["provisional"] else "")
     )
     return 0
 
