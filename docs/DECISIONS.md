@@ -115,3 +115,35 @@ the test. PTB-XL is added for one purpose: pretraining the classifier before fin
 - Each experiment's name is used for its config folder, runner, notebook, run folders, results and
   figures. Run IDs now start with the experiment name; the 15 runs of the variant D preview were renamed
   (for example `p2-m3-scratchD...` → `phase2_ptbxl_pretraining-scratchD...`), with no other change.
+
+## 2026-10-16 (Day 10) — A14: phases 2-6 built ahead of the gates — decided by Akash Saha, choices PENDING TEAM CONFIRMATION
+
+- At Akash's instruction ("do the phase 3 coding", then "finish the project") the code of every remaining
+  phase was built on the branch `finish-project` before the phase 1 gate is approved. Nothing official
+  has run: every runner refuses an official run until the gates it depends on are approved, and
+  `--preview` runs are marked provisional and cannot be approved at a gate. This keeps rule 9 for the
+  experiments; only the code is ahead of the plan.
+- Gate decisions stay with the team. New gate commands follow the phase 1 gate: `phase2-gate`, `phase3a-gate`
+  (generator selection, Day 12), `phase3-gate` (banks frozen), `phase4a-gate` (augmentation policy; its
+  approval writes `configs/phase4_full_grid/full_grid.yaml`), `phase4-gate` (strengths and checkpoints for
+  the final evaluation), `phase5-gate`. `/final-eval` is `python -m ecgaug.final_eval`.
+
+Choices made where the plan left the detail open (each one needs the team's agreement before official runs):
+
+| ID | Choice | Why | Where |
+|---|---|---|---|
+| A14.1 | Generators model the waveform only; the RR features of a synthetic beat are copied from a random real training beat of the same class (all three together). | PREREGISTRATION §5 fixed this for the case that C wins. | `generators/bank.py` |
+| A14.2 | cVAE B: its two KL weights share the pilot budget (half the steps each); both are reported, the better passing one represents B. WGAN-GP D: the three per-class GANs share the step budget (a third each). | "Both tried inside the pilot budget"; equal compute across variants (rule 7). | `generator_runs.py`, `wgan_gp.py` |
+| A14.3 | Memorization threshold: 5th percentile of leave-one-out nearest-neighbour distances among the class's training beats (instead of a 10% hold-out). | With a 10% hold-out the threshold rests on about 39 F beats and an honest generator could fail the 10% ceiling by chance (measured: 0.06-0.18 on same-distribution data); leave-one-out gives about 0.05 as intended. | `quality/diagnostics.py` |
+| A14.4 | Hard gates apply to every generated class (S, V, F) and every pilot seed; the phase 3 tie margin is the general one, max(0.02, pooled SD); ties go to the composite quality rank, or V F1 while no composite exists, then fewer parameters. | PLAN Phase 3 with PREREGISTRATION §4 and §9. | `eval/selection.py` |
+| A14.5 | DTW is computed with a numpy banded dynamic programme (window 10% of the beat), the 5 nearest by DTW searched among the 20 nearest by Euclidean distance; checked against dtaidistance in the tests. | The compiled dtaidistance library does not load on macOS here; the pure-Python one is far too slow. | `quality/metrics.py` |
+| A14.6 | FID-analog features come from a separate frozen network (the probe CNN on the waveform, fixed recipe, about 80 KB, committed with its hash), not from the chosen `cnn`. | Every machine must score with identical weights, and the feature extractor should not be one of the classifiers being compared. | `quality/feature_net.py` |
+| A14.7 | Sanity harness: beat-level halves of the training beats (F sits almost entirely in one record), degradations noise / label shuffle / time shift / smoothing at three severities, pass = real beats best + Spearman >= 0.8 per degradation + median CV < 10% over 3 resamples. | PLAN Phase 2 names the degradations but not their levels or how to combine them. | `quality/sanity.py` |
+| A14.8 | `min_epochs` training option (default 0 = the pre-registered rule). Setting it to 10 is the early-stopping fix proposed in docs/PHASE1_REPORT.md §6. | The fix needs the team's decision; the option makes it a one-line config change. | `train/loop.py`, phase 2 budget |
+| A14.9 | Synthetic banks hold, per class, the training N count minus the class's count (enough for any policy); a policy takes the first k beats in bank order. | One bank serves every strength and policy. | `generators/bank.py` |
+| A14.10 | The grid trains its own "none" cells instead of reusing the phase 2 checkpoints. | One code path for all conditions; the checkpoints the final evaluation uses are the grid's. | `grid/runner.py` |
+| A14.11 | Augmentation policy: the N-recall limit (0.01) applies to the mean over the two banks; complexity A 1, B 2, C 2, D 3; D's DTW screen (keep the closest half of twice as many bank beats) applies to generator banks only; strengths per policy B and D {0.1, 0.25, 0.5}, C {1, 2, 4}. | PREREGISTRATION v3 items. | `configs/phase4_augmentation_policy/` |
+| A14.12 | Phase 4 gate: per condition the strength with the best seed-mean validation metric (ties to the lower strength); best generative per architecture by the same rule. | PLAN Phase 4, A5. | `workflow.py` |
+| A14.13 | Explainability: selection on the mean faithfulness gain over the three models of an architecture (none, cVAE, WGAN-GP), ties by stability, then the cheaper method; integrated gradients averages the zero and per-beat-mean baselines; SmoothGrad (not gradient x input) for C; occlusion window 50 ms, stride 25 ms. | PLAN Phase 5 lists options without fixing them. | `explain/`, `configs/phase5_explainability/` |
+| A14.14 | Notes: low-confidence rule "top probability below 0.6" (proposed; to pre-register before phase 5 runs); LLM provider through the standard library, model from `ECGAUG_LLM_MODEL` (default `llm-model`), key from `LLM_API_KEY` only; note variant chosen by the hard gate, then coverage, ratings, latency, tokens. | PLAN Phase 5. | `report/notes.py` |
+| A14.15 | The paper's `refs.bib` stays empty until each entry is verified from its DOI or arXiv page. | No invented references (rule 5, /paper). | `paper/` |

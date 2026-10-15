@@ -2,7 +2,7 @@
 
 This is the long explanation of the project: what we are trying to find out, how the work is
 organised, what each part does, and what is finished. For commands only, see `README.md`. For the
-day-by-day log, see `docs/PROGRESS.md`. Last updated 2026-10-13 (Day 7 of 30).
+day-by-day log, see `docs/PROGRESS.md`. Last updated 2026-10-16 (Day 10 of 30).
 
 ## Contents
 
@@ -11,7 +11,7 @@ day-by-day log, see `docs/PROGRESS.md`. Last updated 2026-10-13 (Day 7 of 30).
 3. [The rules we work by](#3-the-rules-we-work-by)
 4. [The plan: six phases](#4-the-plan-six-phases)
 5. [What is built, part by part](#5-what-is-built-part-by-part)
-6. [What is not built yet](#6-what-is-not-built-yet)
+6. [Built but not run yet](#6-built-but-not-run-yet)
 7. [How to run things](#7-how-to-run-things)
 8. [Where everything lives](#8-where-everything-lives)
 9. [Decisions made so far](#9-decisions-made-so-far)
@@ -251,23 +251,79 @@ Asks: does pretraining on a large ECG dataset help rare-beat detection on MIT-BI
   Kaggle dataset, so sessions do not re-download from PhysioNet.
 - Each notebook commits its results and pushes them to GitHub when the run ends, so teammates only
   `git pull`. `ingest_runs.py` is the backup: it brings a downloaded result zip into your clone.
-- **State:** rehearsed on a laptop against a fresh clone. Not yet run on Kaggle itself.
+- **State:** rehearsed on a laptop against a fresh clone. The phase 1 notebook has run on Kaggle (all four
+  variants); the later notebooks are tested locally only.
+
+### 5.10 Phase 2: baseline classifiers and quality metrics (`models/baselines.py`, `quality/`)
+
+- Four classifiers (shallow CNN, 1D-ResNet, BiLSTM, CNN+BiLSTM), each with the RR side input, a
+  feature hook (`embed`) and, for the convolutional ones, `last_conv` for Grad-CAM. The runner trains
+  them like a phase1_input_representation variant; the phase 2 gate picks the `cnn` (A or B) and the
+  `rnn` (C or D).
+- Four quality-metric families: DTW to the nearest real beats, Welch spectra (Jensen-Shannon), a
+  Fréchet distance on a small frozen feature network, and train-on-synthetic-test-on-real. A sanity
+  harness degrades real beats (noise, label shuffle, time shift, smoothing; three severities each) and
+  keeps the families that rank real beats best, worsen with severity and are stable.
+- Diagnostics used by phase 3's hard gates: diversity ratio, memorization fraction (leave-one-out
+  threshold), and a classifier two-sample test (C2ST).
+
+### 5.11 Phase 3: generators and synthetic banks (`generators/`, `experiments/generator_runs.py`)
+
+- A conditional VAE (variants: plain, low KL weight, spectral loss, residual with FiLM) and a
+  conditional WGAN-GP (label embedding, projection critic, auxiliary classifier, one GAN per class),
+  behind one interface: `fit` on training beats only (asserted), `sample(class, n, seed)`.
+- The pilot harness scores each quarter of the step budget: diagnostics, quality metrics, and the
+  pilot classifier trained with synthetic S, V and F beats up to 50% of N. Every checkpoint is logged
+  (the RQ3 data); the final checkpoint counts. Synthetic beats get RR features copied from real beats.
+- The phase 3a gate applies the hard gates and the pilot score; the winners are retrained at the full
+  budget and export banks (`data/synthetic/`), which the phase 3 gate freezes by hash.
+
+### 5.12 Phase 4: policy, grid, final evaluation (`augment.py`, `grid/`, `final_eval.py`)
+
+- Augmentation conditions: generator banks, SMOTE, random oversampling, class-weighted loss; four
+  policies for how many beats to add (to N, to a fraction of N, a multiple of the real count, or a
+  DTW-screened fraction).
+- The grid runner trains every cell (condition x strength x architecture x seed), skips cells already
+  done, and keeps one small ledger file per cell, so sessions can share the work.
+- The final evaluation refuses unless the phase 4 gate is approved and no evaluation has happened;
+  it applies the pre-registered statistics (paired record-level bootstrap, Holm per family,
+  sensitivity without record 202 and leaving out each S/F record) and writes tables, a forest plot and
+  LaTeX macros.
+
+### 5.13 Phase 5: explanations, notes, demo (`explain/`, `report/`, `demo.py`)
+
+- Saliency: Grad-CAM, integrated gradients, SmoothGrad, occlusion; scored for faithfulness (deletion
+  against random order), stability across seeds and the share of saliency in P/QRS/ST/T windows.
+- Notes: a template and three LLM variants restate the model's output; a fact checker rejects any
+  number, class, segment or diagnosis not in the input, and requires the disclaimer and, for
+  low-confidence beats, "Clinician review is required."
+- Error analysis from saved predictions only; a demo for one validation beat.
+
+### 5.14 Phase 6: the paper (`paper.py`, `paper/`)
+
+- `python -m ecgaug.paper` writes every table and number of `paper/main.tex` from the result files;
+  missing results show as red placeholders, so the draft always compiles. `scripts/reproduce.sh` lists
+  the whole pipeline in order.
 
 ---
 
-## 6. What is not built yet
+## 6. Built but not run yet
 
-| Part | Phase | What it will be |
+Everything below exists as code, configs, Kaggle notebook, tests and a brief per variant
+(`docs/briefs/`). None of it has run officially: each runner waits for the gates before it.
+
+| Part | Phase | Waits for |
 |---|---|---|
-| phase1_input_representation results and the phase 1 gate | 1 | the four variant runs, then the choice of input representation and the frozen dataset |
-| phase2_baseline_classifiers: baseline classifiers | 2 | shallow CNN, 1D ResNet, BiLSTM, CNN+BiLSTM; pick one CNN and one recurrent model |
-| phase2_quality_metrics: synthetic-quality metrics | 2 | DTW, spectral distance, a Fréchet-style distance, train-on-synthetic test |
-| phase3_cvae and phase3_wgan_gp: generators | 3 | conditional VAE and conditional WGAN-GP, four variants each |
-| phase4_augmentation_policy: augmentation policy and the grid | 4 | how many synthetic beats to add; then 96 runs comparing all conditions |
-| Final test evaluation | 4 | the single DS2 evaluation with patient-level statistics |
-| phase5_explainability: explainability | 5 | Grad-CAM, integrated gradients and others, compared for faithfulness |
-| phase5_clinical_notes: clinical notes | 5 | template and LLM note generators with an automatic fact check |
-| Demo, report, paper | 5–6 | command-line demo, course report, paper draft |
+| phase 1 gate approval (frozen dataset) | 1 | the team (report: `results/phase1_gate/report.md`, analysis: `docs/PHASE1_REPORT.md`) |
+| phase2_baseline_classifiers, phase2_quality_metrics, phase2_ptbxl_pretraining (for C) | 2 | the phase 1 gate |
+| phase3_cvae, phase3_wgan_gp pilots, then final banks | 3 | the phase 2 gate (pilot classifier, quality composite), then the phase 3a gate |
+| phase4_augmentation_policy, the full grid | 4 | the phase 3 gate (frozen banks), then the phase 4a gate |
+| the final test evaluation | 4 | the phase 4 gate |
+| phase5_explainability, phase5_clinical_notes, demo | 5 | the phase 4 gate (models); an `LLM_API_KEY` for the LLM notes |
+| paper text, verified references, course report | 6 | results |
+
+Design choices the team should confirm before the official runs are listed in `docs/DECISIONS.md` A14;
+the values still to fix in the pre-registration are in `docs/PREREGISTRATION.md` §10.
 
 ---
 
@@ -295,6 +351,8 @@ Add `--smoke` for a one-minute check on fake data, or `--check` to build the inp
 uv run python -m ecgaug.experiments.phase2_ptbxl_pretraining --config configs/phase2_ptbxl_pretraining/A_short_window.yaml --ptbxl-download
 ```
 
+**Phases 2-6:** the commands are in `README.md` ("Phases 2-6") and in each variant's brief.
+
 **On Kaggle:** follow `kaggle/README.md`.
 
 A real run needs two things: the approved validation split (`configs/validation_split/approved.yaml`,
@@ -315,13 +373,17 @@ already in the repo) and no uncommitted code changes.
 | `docs/PROGRESS.md` | what was done each day |
 | `docs/DECISIONS.md` | every decision and plan change, with the reason |
 | `docs/PREREGISTRATION.md` | the selection and statistics rules written out |
-| `docs/briefs/` | one page per phase1_input_representation variant for the person running it |
+| `docs/briefs/` | one page per variant of every experiment, for the person running it |
+| `docs/PHASE1_REPORT.md` | the analysis of the phase 1 results |
 | `docs/TEST_ACCESS_LOG.md` | every access to the test set |
 | `configs/` | experiment settings |
 | `src/ecgaug/data/` | MIT-BIH pipeline, test lock, PTB-XL preprocessing |
 | `src/ecgaug/eval/` | metrics, bootstrap, selection rule |
-| `src/ecgaug/models/`, `train/` | the probe network and the training loop |
-| `src/ecgaug/experiments/` | the runners: `input_representation`, `phase2_ptbxl_pretraining` |
+| `src/ecgaug/models/`, `train/` | the probe, the four baseline classifiers and the training loop |
+| `src/ecgaug/generators/`, `quality/`, `augment.py`, `grid/` | generators and banks, quality metrics, augmentation conditions, the grid runner |
+| `src/ecgaug/explain/`, `report/`, `demo.py`, `final_eval.py`, `paper.py` | saliency, notes and error analysis, demo, final evaluation, paper tables |
+| `src/ecgaug/experiments/` | one runner per experiment |
+| `paper/` | the LaTeX draft and its generated tables and numbers |
 | `kaggle/` | notebooks, scripts and guide for Kaggle |
 | `results/phase1_data/` | counts, checks and validation reports produced by code |
 | `results/<experiment>/` | variant results (empty until variants are run) |
@@ -345,6 +407,8 @@ Full reasons are in `docs/DECISIONS.md`.
 | PTB-XL for supervised pretraining | Simple to do; each beat takes its recording's diagnosis. The labels are noisy at beat level, which is stated as a limitation. |
 | The pre-registration document is not enforced by code | The runner needs only the approved split. The document stays as a description of the rules; the paper cannot call it a time-stamped pre-registration. |
 | phase2_ptbxl_pretraining built before the phase 1 gate | To use Kaggle time now. Its results are provisional until the input representation is fixed. |
+| The phase 1 gate report picks variant C (pending approval) | Best S F1 by a clear margin; RR timing is what makes S beats detectable (docs/PHASE1_REPORT.md). |
+| Phases 2-6 built before their gates (A14) | At Akash's instruction; official runs still wait for every gate, and A14 lists the design choices to confirm. |
 
 ---
 
@@ -356,12 +420,16 @@ Full reasons are in `docs/DECISIONS.md`.
 - The four input variants build correctly on real DS1 data and produce the same 50,969 beats.
 - The R-peak detector and the padding choice were measured on DS1 (section 5.7).
 - Both runners work end to end on fake data, also through the Kaggle runner script in a fresh clone.
-- 162 tests pass, including tests that the test set cannot be read by accident.
+- 271 tests pass, including tests that the test set cannot be read by accident, and an end-to-end final
+  evaluation on fake data that runs once and refuses a second time.
+- Every phase 2-5 runner runs end to end on fake data; the phase 3 pilot and the DTW and spectral
+  quality metrics also ran on real DS1 beats (short CPU previews, numbers not used).
 - The phase2_ptbxl_pretraining experiment ran on Kaggle for variant D, including full PTB-XL preprocessing (20,918 recordings kept).
 
 **Not checked yet**
 
-- No phase1_input_representation variant has been run, so the phase 1 gate cannot happen yet.
+- The phase 2-5 notebooks have not run on Kaggle; run times of generators and the grid are not measured.
+- The LLM note variants have not been tried with a real API key.
 - Only one real experiment exists: the phase2_ptbxl_pretraining experiment for variant D (section 5.8).
 - PTB-XL file checksums were not compared on Kaggle (PhysioNet's list could not be fetched there).
 - One metric convention (AAMI positive predictivity for V) is implemented from memory of the original
