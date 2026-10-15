@@ -305,3 +305,37 @@ Done:
 Run IDs: none.
 
 Next: run phase1_input_representation, variants A–D, with the updated notebook.
+
+## 2026-10-16 (Day 10) — phase 1 results analysed, gate report written
+
+Done:
+- The four `phase1_input_representation` variants arrived through PRs #1 and #2 (A by
+  Manindrathatuthuri, B, C, D by kartheek2159, all on Kaggle T4).
+- `python -m ecgaug.workflow phase1-gate`: all checks pass; **winner C**, S F1 0.296 ± 0.038.
+  A is 0.164 ± 0.078, D 0.035 ± 0.007 and B 0.001 ± 0.002; the tie margin is 0.061. Pending team
+  approval.
+- Detailed analysis in `docs/PHASE1_REPORT.md`. Two new gate figures:
+  `figures/phase1_gate/per_class.png` and `figures/phase1_gate/early_stopping.png`.
+- Audit:
+  - code is identical across the four run commits;
+  - all 29 run configs match the committed configs;
+  - A, C and D datasets rebuild bit-for-bit on macOS, B does not (band-pass, likely platform floating
+    point, not confirmed);
+  - variant A's folder also holds an earlier, incomplete CPU attempt (5 runs), which is disclosed and
+    not used.
+- Small renames of leftover old names (`_m1_specs`, `M1_RESULTS`). Tests: 176 pass.
+
+Run IDs: listed in `docs/PHASE1_REPORT.md`, appendix.
+
+Open issues:
+- Early stopping: 10 of 24 runs kept epoch 1 because validation S F1 was 0 for the first epochs and
+  patience ran out at epoch 6. B's score is mostly this. Proposed fix (count patience only after the
+  metric is above 0, or a minimum number of epochs) needs a DECISIONS entry before phase 2 runs.
+- All 24 reported GPU runs are flagged `git_dirty`; the changed file is not recorded. Ask whoever ran
+  them.
+- The variant notes files are empty.
+
+Next:
+- The team approves the phase 1 gate.
+- Decide the early-stopping fix.
+- Re-run phase2_ptbxl_pretraining with C.

@@ -28,7 +28,6 @@ from ecgaug.names import (
 )
 from ecgaug.eval.selection import Candidate, select_winner
 
-M1_RESULTS = PHASE1_INPUT_REPRESENTATION
 PRETRAIN_RESULTS = PHASE2_PTBXL_PRETRAINING
 DAY_ONE = _dt.date(2026, 10, 7)
 LAST_DAY = {1: 3, 2: 8, 3: 14, 4: 21, 5: 26, 6: 30}  # last planned day of each phase
@@ -40,13 +39,13 @@ class GateError(RuntimeError):
 
 def variant_configs() -> dict[str, Path]:
     """phase1_input_representation variant letter -> config file, e.g. {"A": .../A_short_window.yaml}."""
-    folder = paths.configs_dir() / M1_RESULTS
+    folder = paths.configs_dir() / PHASE1_INPUT_REPRESENTATION
     return {p.name[0]: p for p in sorted(folder.glob("[A-Z]_*.yaml"))}
 
 
 def phase1_results() -> dict[str, dict | None]:
     """The phase1_input_representation result file of each variant, or None where the variant has not been run."""
-    folder = paths.results_for(M1_RESULTS)
+    folder = paths.results_for(PHASE1_INPUT_REPRESENTATION)
     out = {}
     for letter in variant_configs():
         path = folder / f"{letter}.json"
@@ -230,7 +229,7 @@ def status(today: _dt.date | None = None) -> tuple[list[str], str]:
     lines.append(_check(data_ok, "MIT-BIH downloaded and verified", "python -m ecgaug.data.raw"))
     lines.append(_check(split_ok, "validation split approved", "write configs/validation_split/approved.yaml"))
     for letter, r in results.items():
-        text = f"{M1_RESULTS} variant {letter} ({variant_configs()[letter].stem})"
+        text = f"{PHASE1_INPUT_REPRESENTATION} variant {letter} ({variant_configs()[letter].stem})"
         if r:
             text += f": {r['selection_metric']} {r['mean']:.4f} ± {r['sd']:.4f}"
         config = variant_configs()[letter].relative_to(paths.repo_root())

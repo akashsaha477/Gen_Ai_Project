@@ -47,6 +47,14 @@ def test_ptbxl_figures_from_raw_files_and_the_report(fake_root, monkeypatch):
     assert all(_png_ok(p) for p in written)
 
 
+def test_phase1_gate_figures_from_the_committed_results(tmp_root):
+    shutil.copytree(REPO / "configs", paths.configs_dir())
+    shutil.copytree(REPO / "results" / "phase1_input_representation", paths.results_for("phase1_input_representation"))
+    written = figures.phase1_gate_figure()
+    assert [p.name for p in written] == ["variants.png", "per_class.png", "early_stopping.png"]
+    assert all(_png_ok(p) for p in written)
+
+
 def test_a_plotting_error_never_fails_a_run(tmp_root, capsys):
     bad = tmp_root / "results" / "validation" / "phase2_ptbxl_pretraining" / "Z.json"
     bad.parent.mkdir(parents=True)
