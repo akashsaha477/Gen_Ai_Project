@@ -301,6 +301,17 @@ def ingest(sources: list[Path]) -> dict:
                     dst.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(src, dst)
                     report["result_files"].append(str(relative))
+            # Figures made at the end of each run.
+            figures_dir = root / "figures"
+            if figures_dir.is_dir():
+                for src in sorted(p for p in figures_dir.rglob("*") if p.is_file()):
+                    relative = src.relative_to(figures_dir)
+                    dst = paths.repo_root() / "figures" / relative
+                    if dst.exists() and dst.read_bytes() == src.read_bytes():
+                        continue
+                    dst.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(src, dst)  # figures are regenerated output, so a newer one replaces an older one
+                    report["result_files"].append(f"figures/{relative}")
             # Reports that only exist where the full data was processed (PTB-XL on Kaggle).
             for name in INGESTED_DATA_REPORTS:
                 for src in root.rglob(name):
