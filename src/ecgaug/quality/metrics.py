@@ -62,17 +62,29 @@ def dtw_pairs(a: np.ndarray, b: np.ndarray, window: int) -> np.ndarray:
     return np.sqrt(previous[:, length])
 
 
-def mean_nearest_dtw(query: np.ndarray, pool: np.ndarray, settings: dict, exclude_self: bool = False) -> float:
-    """Mean over query beats of the mean DTW distance to their ``neighbours`` nearest pool beats."""
+def nearest_dtw_per_beat(query: np.ndarray, pool: np.ndarray, settings: dict, exclude_self: bool = False) -> np.ndarray:
+    """For each query beat, the mean DTW distance to its ``dtw_neighbours`` nearest pool beats.
+
+    The nearest by DTW are searched among the ``dtw_candidates`` nearest by Euclidean distance.
+    """
     k_euclid, k_dtw = int(settings["dtw_candidates"]), int(settings["dtw_neighbours"])
     window = max(1, int(round(settings["dtw_window_fraction"] * query.shape[1])))
     extra = 1 if exclude_self else 0
     index = NearestNeighbors(n_neighbors=min(len(pool), k_euclid + extra)).fit(pool).kneighbors(query)[1]
     if exclude_self:
         index = index[:, 1:]  # each query beat is in the pool; drop it (its own nearest neighbour)
-    rows = np.repeat(np.arange(len(query)), index.shape[1])
-    distances = dtw_pairs(query[rows], pool[index.ravel()], window).reshape(index.shape)
-    return float(np.sort(distances, axis=1)[:, :k_dtw].mean())
+    out = np.empty(len(query))
+    for start in range(0, len(query), 500):  # bounded memory: 500 query beats at a time
+        block = index[start : start + 500]
+        rows = np.repeat(np.arange(start, start + len(block)), block.shape[1])
+        distances = dtw_pairs(query[rows], pool[block.ravel()], window).reshape(block.shape)
+        out[start : start + len(block)] = np.sort(distances, axis=1)[:, :k_dtw].mean(axis=1)
+    return out
+
+
+def mean_nearest_dtw(query: np.ndarray, pool: np.ndarray, settings: dict, exclude_self: bool = False) -> float:
+    """Mean over query beats of the mean DTW distance to their nearest pool beats."""
+    return float(nearest_dtw_per_beat(query, pool, settings, exclude_self).mean())
 
 
 def dtw_score(context: QualityContext, synthetic: dict) -> float:

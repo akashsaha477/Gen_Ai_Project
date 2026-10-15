@@ -28,9 +28,10 @@ PHASE2_QUALITY_METRICS = "phase2_quality_metrics"
 PHASE2_PTBXL_PRETRAINING = "phase2_ptbxl_pretraining"
 PHASE3_CVAE = "phase3_cvae"
 PHASE3_WGAN_GP = "phase3_wgan_gp"
+PHASE4_AUGMENTATION_POLICY = "phase4_augmentation_policy"
 EXPERIMENTS: tuple[str, ...] = (
     PHASE1_INPUT_REPRESENTATION, PHASE2_BASELINE_CLASSIFIERS, PHASE2_QUALITY_METRICS, PHASE2_PTBXL_PRETRAINING,
-    PHASE3_CVAE, PHASE3_WGAN_GP,
+    PHASE3_CVAE, PHASE3_WGAN_GP, PHASE4_AUGMENTATION_POLICY,
 )  # fmt: skip
 
 # Folders for data reports and gate decisions, named the same way.
@@ -40,7 +41,13 @@ PHASE2_PTBXL_DATA = "phase2_ptbxl_data"
 PHASE2_GATE = "phase2_gate"
 PHASE3A_GATE = "phase3a_gate"  # phase 3 has two gates: 3a chooses one generator per family (Day 12) ...
 PHASE3_GATE = "phase3_gate"  # ... and 3 freezes the synthetic banks of the chosen generators (Day 14)
+PHASE4A_GATE = "phase4a_gate"  # phase 4 has two gates too: 4a chooses the augmentation policy (Day 17) ...
 PHASE4_FULL_GRID = "phase4_full_grid"  # the grid of conditions x strengths x architectures x seeds
+PHASE4_GATE = "phase4_gate"  # ... and 4 fixes the strengths and the checkpoints the final evaluation tests
+FINAL_EVAL = "final_eval"  # the single test-set evaluation, after the phase 4 gate
+
+# Result folders that travel back from Kaggle: every experiment's, plus the full grid's ledger.
+RESULT_FOLDERS: tuple[str, ...] = (*EXPERIMENTS, PHASE4_FULL_GRID)
 
 
 def phase_of(name: str) -> int:

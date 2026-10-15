@@ -1,0 +1,13 @@
+base: pilot_settings.yaml
+variant: D
+description: 'As B, but quality-screened: from twice as many bank beats keep those
+  closest to real training beats by DTW.'
+policy:
+  kind: fraction_of_n_screened
+  pool_factor: 2.0
+pilot_strength: 0.5
+grid_strengths:
+- 0.1
+- 0.25
+- 0.5
+complexity: 3

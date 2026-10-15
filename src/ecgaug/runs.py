@@ -23,7 +23,7 @@ import numpy as np
 import yaml
 
 from ecgaug import paths
-from ecgaug.names import EXPERIMENTS as EXPERIMENT_RESULTS
+from ecgaug.names import RESULT_FOLDERS as EXPERIMENT_RESULTS
 from ecgaug.names import PHASE3_CVAE, PHASE3_WGAN_GP
 
 RUN_ID_RE = re.compile(
