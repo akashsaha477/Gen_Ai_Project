@@ -212,3 +212,36 @@ Open issues / risks: the notebooks have still not been run on Kaggle itself.
 
 - 2026-10-13: added `PROJECT_GUIDE.md`, a full explanation of the project and of every part built so far, linked from the README.
 - 2026-10-13: added `CODE_GUIDE.md`, a file-by-file explanation of the code.
+
+## 2026-10-14 (Day 8) — first real run: pretraining arm, variant D
+
+Done (run by kartheek2159 on Kaggle, CPU, commit 32b9464; reviewed here):
+- Full PTB-XL preprocessing: 21,837 recordings in the metadata (so the attached copy is version
+  1.0.1, not 1.0.3), 20,918 kept, 213,133 beats. Excluded: {'no_diagnostic_superclass': 407, 'electrodes_problems': 28, 'pacemaker': 15}
+  and {'low_qrs_contrast': 447, 'no_usable_beat': 16, 'implausible_peak_count': 4, 'implausible_amplitude': 2}. The QRS-contrast check removed 447 recordings (2%).
+  The checksum list could not be fetched on Kaggle, so files were not compared.
+- Pretraining: macro AUROC 0.830 ± 0.0004 on PTB-XL fold 9 (170,083 training beats).
+- MIT-BIH validation, S F1 (selection metric): from scratch 0.0335 ± 0.0013, pretrained 0.0295 ± 0.0116;
+  V F1: 0.335 vs 0.261. Tied on S F1, so V F1 decided: winner `scratch`. Provisional.
+- Alignment of PTB-XL normal beats with MIT-BIH training N beats: mean-beat correlation
+  0.945.
+- Runs are now saved in folders by experiment, variant and kind of run
+  (`runs/ptbxl_pretraining/D_short_window_125hz/{pretrain,scratch,finetune}/`); the 15 runs were moved
+  there and `results/runs_index.csv` has a `folder` column. Tests: 162 pass.
+
+Run IDs: the 15 runs listed in `results/runs_index.csv` (pretrainD, scratchD, finetuneD; commit 32b9464).
+
+What the run shows:
+- S detection is at chance level in both arms: S PR-AUC 0.02-0.03, about the share of S beats in
+  validation. With input D (morphology only, no RR timing) the model cannot recognise premature beats,
+  which matches the literature. Many validation N beats are called S (2,600 of 10,360 in one
+  from-scratch run), and N recall is only 0.62-0.86.
+- Because S F1 is near zero and noisy, early stopping on it picks epochs almost at random (best epochs
+  5-11). This is the risk noted at kickoff; it will be smaller for variant C, which has RR features.
+- Pretraining did not transfer to S or V detection with this input and this small network.
+
+Open issues / risks:
+- Run the Module 1 variants, C in particular, before drawing conclusions about the selection metric.
+- Re-fetching PhysioNet's checksum list failed on Kaggle; investigate or accept unverified PTB-XL files.
+
+Next: Module 1 variants A–D and Gate 1.

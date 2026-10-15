@@ -59,6 +59,7 @@ VARIANT_KEYS = {"base", "variant", "description", "representation_from"}
 SHARED_KEYS = {"phase", "module", "pretrain"}
 PRETRAIN_KEYS = {"lr", "max_epochs", "patience", "batch_size", "weight_decay"}
 ARMS = ("scratch", "pretrained")
+RESULTS_DIR = "ptbxl_pretraining"
 
 
 def load_config(path: Path) -> dict:
@@ -88,6 +89,7 @@ def load_config(path: Path) -> dict:
         "variant": str(variant["variant"]),
         "description": variant.get("description", base.get("description", "")),
         "representation_source": str(variant["representation_from"]),
+        "config_name": path.stem,
     }
 
 
@@ -128,8 +130,9 @@ def pretrain(cfg: dict, spec: RepresentationSpec, train: dict, val: dict, device
         env = {**runs.capture_env(str(device)), "wall_clock_s": fit.wall_clock_s}
         run_config = {**cfg, "seed": seed, "run_id": run_id, "stage": "pretrain", "labels": list(ptbxl.SUPERCLASSES)}
         preds = {"probs": fit.val_probs, "y": val["y"], "ecg_id": val["ecg_id"]}
-        runs.write_run(run_id, run_config, env, fit.history, metrics, preds, fit.state_dict)
-        runs.upsert_runs_index(runs.index_row(run_id, metrics, fit.wall_clock_s))
+        group = (RESULTS_DIR, cfg.get("config_name", cfg["variant"]), "pretrain")
+        runs.write_run(run_id, run_config, env, fit.history, metrics, preds, fit.state_dict, group=group)
+        runs.upsert_runs_index(runs.index_row(run_id, metrics, fit.wall_clock_s, group=group))
         out[seed] = {
             "run_id": run_id,
             "state_dict": fit.state_dict,
@@ -164,10 +167,10 @@ def run(cfg: dict, split: Split, ptbxl_arrays: dict, device_name: str | None = N
         return {"kind": "ptbxl_pretrained", "run_id": pretrained[seed]["run_id"], "tensors_copied": len(copied)}
 
     arms = {}
-    for arm, label, init in (("scratch", f"scratch{variant}", None), ("pretrained", f"finetune{variant}", from_pretrained)):
+    for arm, kind, init in (("scratch", "scratch", None), ("pretrained", "finetune", from_pretrained)):
         grid, n_params = train_grid(
-            cfg, split, spec, train, val, phase=cfg["phase"], module=cfg["module"], label=label,
-            device=device, dataset=dataset, init=init,
+            cfg, split, spec, train, val, phase=cfg["phase"], module=cfg["module"], label=f"{kind}{variant}",
+            device=device, dataset=dataset, init=init, group=(RESULTS_DIR, cfg.get("config_name", variant), kind),
         )  # fmt: skip
         chosen = best_grid_point(grid)
         arms[arm] = {
@@ -236,7 +239,7 @@ def run(cfg: dict, split: Split, ptbxl_arrays: dict, device_name: str | None = N
         "git_sha": runs.git_sha(),
         "dataset_content_sha256": dataset["content_sha256"],
     }
-    out_dir = paths.results_dir() / "validation" / "ptbxl_pretraining"
+    out_dir = paths.results_dir() / "validation" / RESULTS_DIR
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / f"{variant}.json").write_text(json.dumps(result, indent=2) + "\n")
     notes = out_dir / f"{variant}_notes.md"
@@ -302,7 +305,7 @@ def smoke(cfg: dict) -> dict:
         smoke_cfg["pretrain"] = {**cfg["pretrain"], "max_epochs": 2}
         result = run(smoke_cfg, split, ptbxl.load(), device_name="cpu", require_all_ds1=False)
         run_ids = [result["pretraining"]["per_seed"][0]["run_id"], *(result["arms"][a]["run_ids"][0] for a in ARMS)]
-        missing = [r for r in run_ids if not (root / "runs" / r / "checkpoints" / "best.pt").is_file()]
+        missing = [r for r in run_ids if not (runs.find_run_dir(r) / "checkpoints" / "best.pt").is_file()]
         if missing or not (root / "results" / "validation" / "ptbxl_pretraining" / f"{result['variant']}.json").is_file():
             raise RuntimeError(f"Smoke run is incomplete (missing runs: {missing})")
         return {
@@ -310,7 +313,8 @@ def smoke(cfg: dict) -> dict:
             "runs": run_ids,
             "selection_metric": result["selection_metric"],
             "winner_field_present": result["winner"] in ARMS,
-            "pretrained_init": yaml.safe_load((root / "runs" / run_ids[2] / "config.yaml").read_text())["init"],
+            "pretrained_init": yaml.safe_load((runs.find_run_dir(run_ids[2]) / "config.yaml").read_text())["init"],
+            "run_folders": sorted({str(runs.find_run_dir(r).parent.relative_to(paths.runs_dir())) for r in run_ids}),
             "result_file": f"results/validation/ptbxl_pretraining/{result['variant']}.json",
             "note": "fake data; the numbers of a smoke run mean nothing and are discarded",
         }

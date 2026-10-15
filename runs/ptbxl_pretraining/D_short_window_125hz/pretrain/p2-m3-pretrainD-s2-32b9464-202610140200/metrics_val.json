@@ -1,0 +1,19 @@
+{
+  "per_label": {
+    "NORM": 0.8870158798840379,
+    "MI": 0.8203783517257216,
+    "STTC": 0.830847928077624,
+    "CD": 0.8775840715096093,
+    "HYP": 0.7340588149572977
+  },
+  "macro": 0.829977009230858,
+  "n_defined": 5,
+  "val_loss": 0.4097261130809784,
+  "selection_metric": "ptbxl_val_macro_auroc",
+  "selection_value": 0.829977009230858,
+  "best_epoch": 7,
+  "epochs_run": 12,
+  "stopped_early": true,
+  "n_train_beats": 170083,
+  "n_val_beats": 21490
+}

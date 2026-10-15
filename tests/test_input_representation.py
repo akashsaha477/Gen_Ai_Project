@@ -30,7 +30,7 @@ def _output_files():
 def test_four_variants_share_one_budget():
     configs = {letter: m1.load_config(_config(letter)) for letter in "ABCD"}
     assert variant_letters(CONFIG_DIR) == list("ABCD")
-    varying = {"variant", "description", "representation"}
+    varying = {"variant", "description", "representation", "config_name"}
     reference = {k: v for k, v in configs["A"].items() if k not in varying}
     assert reference["seeds"] == [0, 1, 2] and reference["lr_grid"] == [1e-3, 3e-4] and reference["patience"] == 5
     for letter, cfg in configs.items():
