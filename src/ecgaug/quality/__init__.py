@@ -1,30 +1,53 @@
-"""Quality of synthetic beats: the always-on diagnostics and the slot for the metric families.
+"""Quality of synthetic beats: the always-on diagnostics and the four metric families.
 
-The diagnostics (``diagnostics.py``: diversity, memorization, C2ST) are always computed. The metric
-families (DTW, spectral, FID-analog, TSTR) belong to phase2_quality_metrics, which is not built yet;
-the phase 2 gate fixes which of them form the composite quality rank. Until then ``METRIC_FAMILIES``
-is empty, the composite is not available, and phase 3 ties fall back to the next tie-break.
+- ``diagnostics.py``: diversity, memorization and C2ST (always computed; the phase 3 hard gates).
+- ``metrics.py``: the metric families of phase2_quality_metrics, DTW, spectral, FID-analog and TSTR,
+  registered in ``METRIC_FAMILIES``.
+- ``sanity.py``: the sanity harness that decides which families pass (PLAN Phase 2).
+
+A family scores a whole set of synthetic beats (contract format, classes S, V and F) against the real
+training beats in a :class:`QualityContext`. The phase 2 gate fixes which families form the composite
+quality rank used to break ties at the phase 3a gate.
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
 
+@dataclass
+class QualityContext:
+    """Everything a metric family needs besides the synthetic beats."""
+
+    train: dict[str, np.ndarray]  # real training beats, contract format: the reference
+    settings: dict  # the ``metrics`` block of configs/phase2_quality_metrics/metric_settings.yaml
+    val: dict[str, np.ndarray] | None = None  # validation part (X, y, side, record, r_idx); TSTR only
+    spec: object | None = None  # RepresentationSpec of the beats
+    selection: str | None = None  # validation selection metric; TSTR only
+    feature_net: object | None = None  # frozen feature network; FID-analog only
+    device: str = "cpu"
+    seed: int = 0
+    cache: dict = field(default_factory=dict)  # per-context values that do not depend on the synthetic beats
+
+
 @dataclass(frozen=True)
 class MetricFamily:
-    """A quality metric: ``score(real, synthetic) -> float`` for the beats of one class."""
+    """A quality metric over a set of synthetic beats."""
 
     name: str
-    score: Callable[[np.ndarray, np.ndarray], float]
+    evaluate: Callable[[QualityContext, dict], float]
     higher_is_better: bool
 
 
-# Filled by phase2_quality_metrics; the phase 2 gate names the families that form the composite.
 METRIC_FAMILIES: dict[str, MetricFamily] = {}
+
+
+def register(family: MetricFamily) -> MetricFamily:
+    METRIC_FAMILIES[family.name] = family
+    return family
 
 
 def composite_ranks(values: dict[str, dict[str, float]], families: list[str]) -> dict[str, float] | None:
@@ -45,3 +68,6 @@ def composite_ranks(values: dict[str, dict[str, float]], families: list[str]) ->
         for position, name in enumerate(ordered, start=1):
             ranks[name].append(position)
     return {n: float(np.mean(r)) for n, r in ranks.items()}
+
+
+from ecgaug.quality import metrics as _metrics  # noqa: E402,F401  (registers the four families)

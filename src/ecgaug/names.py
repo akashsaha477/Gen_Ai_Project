@@ -23,10 +23,15 @@ PHASES: dict[int, str] = {
 
 # Experiments that exist (later phases add theirs here).
 PHASE1_INPUT_REPRESENTATION = "phase1_input_representation"
+PHASE2_BASELINE_CLASSIFIERS = "phase2_baseline_classifiers"
+PHASE2_QUALITY_METRICS = "phase2_quality_metrics"
 PHASE2_PTBXL_PRETRAINING = "phase2_ptbxl_pretraining"
 PHASE3_CVAE = "phase3_cvae"
 PHASE3_WGAN_GP = "phase3_wgan_gp"
-EXPERIMENTS: tuple[str, ...] = (PHASE1_INPUT_REPRESENTATION, PHASE2_PTBXL_PRETRAINING, PHASE3_CVAE, PHASE3_WGAN_GP)
+EXPERIMENTS: tuple[str, ...] = (
+    PHASE1_INPUT_REPRESENTATION, PHASE2_BASELINE_CLASSIFIERS, PHASE2_QUALITY_METRICS, PHASE2_PTBXL_PRETRAINING,
+    PHASE3_CVAE, PHASE3_WGAN_GP,
+)  # fmt: skip
 
 # Folders for data reports and gate decisions, named the same way.
 PHASE1_DATA = "phase1_data"

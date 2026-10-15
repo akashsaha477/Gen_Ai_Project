@@ -1,0 +1,5 @@
+base: shared_budget.yaml
+variant: C
+role: rnn
+description: Two-layer BiLSTM (hidden 64); last states and mean-pooled outputs concatenated; linear head.
+model: {name: bilstm, hidden: 64, layers: 2, side_hidden: 16}

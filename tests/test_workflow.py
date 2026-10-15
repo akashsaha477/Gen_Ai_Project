@@ -124,7 +124,7 @@ def test_status_names_the_next_step_in_order(project):
     assert "--approve" in workflow.status(day9)[1]
     (paths.results_dir() / "manifest.json").write_text(json.dumps({"phase1_gate": {"winner": "C"}}))
     lines, nxt = workflow.status(day9)
-    assert "Run phase2_ptbxl_pretraining for the phase 1 winner, variant C" in nxt
+    assert "Run phase2_baseline_classifiers variant A" in nxt and "phase2_ptbxl_pretraining for the phase 1 winner, variant C" in nxt
     assert any("[x] phase 1 gate: approved" in line and "winner C" in line for line in lines)
 
 

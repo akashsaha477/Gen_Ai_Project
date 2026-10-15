@@ -1,0 +1,4 @@
+base: metric_settings.yaml
+variant: C
+family: fid_analog
+description: "FID-analog: Frechet distance between Gaussians fitted to frozen feature-network features, relative to real-vs-real."
