@@ -159,3 +159,7 @@ Choices made where the plan left the detail open (each one needs the team's agre
 - **A15.2 Kaggle notebooks no longer push by default** (`PUSH_RESULTS = False`). Results come back as the
   output zip, are brought in with `kaggle/ingest_runs.py` and committed by the member under their own
   name. `True` still works.
+
+## the phase 1 gate — 2026-10-26 — status: APPROVED by Akash Saha
+phase1_input_representation: winner C (C_short_window_rr_features) — evidence: results/phase1_gate/report.md — rule: PREREGISTRATION §4–5
+Frozen artifacts (hashes): data/processed/v1, see results/manifest.json
