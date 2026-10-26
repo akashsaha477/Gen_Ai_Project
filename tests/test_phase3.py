@@ -124,6 +124,15 @@ def test_smoke_runs_end_to_end(experiment, letter):
     assert not (REPO / "data" / "synthetic" / "phase3_cvae-B.beta0.1" / "seed0.npz").exists() or True
 
 
+
+def test_pilot_classifier_keeps_min_epochs(monkeypatch):
+    seen = []
+    real = gr.fit_classifier
+    monkeypatch.setattr(gr, "fit_classifier", lambda model, train, val, cfg, *a, **k: seen.append(cfg) or real(model, train, val, cfg, *a, **k))
+    gr.smoke(gr.load_config(variant_config(FAMILIES["phase3_wgan_gp"], "A")), final=False)
+    assert seen and all(cfg.min_epochs == 10 for cfg in seen)
+
+
 @pytest.fixture
 def project(full_fake_root, monkeypatch):
     shutil.copytree(REPO / "configs", paths.configs_dir())

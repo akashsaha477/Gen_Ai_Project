@@ -34,6 +34,7 @@ pilot:
     lr: 1.0e-3
     max_epochs: 40
     patience: 5
+    min_epochs: 10
     batch_size: 256
     weight_decay: 0.01
 diagnostics:
