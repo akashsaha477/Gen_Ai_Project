@@ -249,8 +249,8 @@ Asks: does pretraining on a large ECG dataset help rare-beat detection on MIT-BI
   variant letters and run all cells.
 - `make_raw_dataset.py`: packs the verified MIT-BIH files into a 66 MB zip to upload once as a private
   Kaggle dataset, so sessions do not re-download from PhysioNet.
-- Each notebook commits its results and pushes them to GitHub when the run ends, so teammates only
-  `git pull`. `ingest_runs.py` is the backup: it brings a downloaded result zip into your clone.
+- Nothing is pushed from Kaggle by default (`PUSH_RESULTS = False`): download the result zip, bring it
+  into your clone with `ingest_runs.py`, and commit it under your own name.
 - **State:** rehearsed on a laptop against a fresh clone. The phase 1 notebook has run on Kaggle (all four
   variants); the later notebooks are tested locally only.
 
