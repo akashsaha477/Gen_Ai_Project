@@ -224,7 +224,7 @@ class PilotHarness:
         model = build_model(c["model"], len(CLASSES), len(SIDE_FIELDS) if self.spec.rr_features else 0)
         train_cfg = TrainConfig(
             lr=float(c["lr"]), max_epochs=int(c["max_epochs"]), patience=int(c["patience"]),
-            batch_size=int(c["batch_size"]), weight_decay=float(c["weight_decay"]),
+            batch_size=int(c["batch_size"]), weight_decay=float(c["weight_decay"]), min_epochs=int(c.get("min_epochs", 0)),
         )  # fmt: skip
         fit = fit_classifier(model, train, self.val, train_cfg, self.split.selection_metric, seed=classifier_seed, device=self.device)
         return diagnostics, self.quality_values(bank), fit, bank

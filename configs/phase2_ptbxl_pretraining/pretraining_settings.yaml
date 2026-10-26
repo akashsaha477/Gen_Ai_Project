@@ -1,8 +1,10 @@
 # phase2_ptbxl_pretraining experiment (docs/DECISIONS.md A12).
 # Only the pretraining part is configured here. The representation, the model and the fine-tuning
 # budget (seeds, learning-rate grid, epochs, patience) come from the phase1_input_representation config each variant
-# points to, so both methods are trained exactly like a phase1_input_representation variant.
+# points to, so both methods are trained exactly like a phase1_input_representation variant, except that
+# fine-tuning does not stop early before epoch 10 (DECISIONS A15).
 experiment: phase2_ptbxl_pretraining
+min_epochs: 10
 pretrain:
   lr: 1.0e-3
   max_epochs: 30
