@@ -1,0 +1,4 @@
+base: metric_settings.yaml
+variant: B
+family: spectral
+description: "Spectral: Jensen-Shannon distance between class-mean normalised Welch spectra of real and synthetic beats."

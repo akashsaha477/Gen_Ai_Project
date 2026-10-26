@@ -1,0 +1,4 @@
+base: metric_settings.yaml
+variant: D
+family: tstr
+description: "TSTR: validation selection metric with the real minority training beats replaced by synthetic ones, relative to train-on-real."

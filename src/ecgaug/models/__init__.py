@@ -4,9 +4,19 @@ from __future__ import annotations
 
 from torch import nn
 
+from ecgaug.models.baselines import BiLSTMClassifier, CNNBiLSTM, ResNet1D, ShallowCNN
 from ecgaug.models.probe import ProbeCNN, count_parameters
 
-__all__ = ["ProbeCNN", "build_model", "count_parameters", "load_encoder"]
+__all__ = ["BiLSTMClassifier", "CNNBiLSTM", "ProbeCNN", "ResNet1D", "ShallowCNN", "build_model", "count_parameters", "load_encoder"]
+
+# name in a config's model block -> (class, keys the block may set besides "name")
+ARCHITECTURES = {
+    "probe_cnn": (ProbeCNN, ("channels", "kernel", "side_hidden")),
+    "shallow_cnn": (ShallowCNN, ("channels", "kernel", "side_hidden")),
+    "resnet1d": (ResNet1D, ("channels", "kernel", "side_hidden")),
+    "bilstm": (BiLSTMClassifier, ("hidden", "layers", "side_hidden")),
+    "cnn_bilstm": (CNNBiLSTM, ("channels", "kernel", "hidden", "side_hidden")),
+}
 
 HEAD_PREFIX = "head."
 
@@ -18,15 +28,14 @@ def build_model(model_cfg: dict, n_classes: int, n_side: int = 0) -> nn.Module:
     what :func:`load_encoder` leaves out when weights are transferred.
     """
     name = model_cfg.get("name", "probe_cnn")
-    if name == "probe_cnn":
-        return ProbeCNN(
-            n_classes=n_classes,
-            n_side=n_side,
-            channels=tuple(model_cfg["channels"]),
-            kernel=model_cfg["kernel"],
-            side_hidden=model_cfg["side_hidden"],
-        )
-    raise ValueError(f"Unknown model {name!r}")
+    if name not in ARCHITECTURES:
+        raise ValueError(f"Unknown model {name!r}; choose from {sorted(ARCHITECTURES)}")
+    cls, allowed = ARCHITECTURES[name]
+    extra = set(model_cfg) - set(allowed) - {"name"}
+    if extra:
+        raise ValueError(f"Model {name!r} does not take {sorted(extra)}")
+    kwargs = {k: tuple(v) if isinstance(v, list) else v for k, v in model_cfg.items() if k != "name"}
+    return cls(n_classes=n_classes, n_side=n_side, **kwargs)
 
 
 def load_encoder(model: nn.Module, state_dict: dict) -> list[str]:

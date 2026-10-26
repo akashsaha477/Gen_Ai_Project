@@ -1,0 +1,11 @@
+# Shared by every phase5_clinical_notes variant (PLAN Phase 5). A variant sets only its letter,
+# description and generator (A-D). Every variant writes notes for the same 50 cases.
+experiment: phase5_clinical_notes
+n_cases: 50                              # validation beats, stratified by true class
+min_low_confidence: 10                   # at least this many low-confidence cases
+low_confidence_threshold: 0.6            # proposed rule (pre-registered before phase 5 runs): top probability below this
+case_seed: 0
+model: {architecture: cnn, condition: best_generative}   # whose outputs the notes describe (phase 4 gate)
+saliency_method: integrated_gradients    # the phase 5 gate's method for the architecture replaces this once chosen
+method_settings: {ig_steps: 50, smoothgrad_samples: 25, smoothgrad_sd: 0.1, occlusion_window_ms: 50, occlusion_stride_ms: 25, batch_size: 64}
+max_retries: 2                           # variant D: fact-check and regenerate at most this often, then the template

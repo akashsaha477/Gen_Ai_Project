@@ -25,8 +25,14 @@ from ecgaug.names import (
     PHASE1_DATA,
     PHASE1_GATE,
     PHASE1_INPUT_REPRESENTATION,
+    PHASE2_BASELINE_CLASSIFIERS,
+    PHASE2_GATE,
     PHASE2_PTBXL_DATA,
     PHASE2_PTBXL_PRETRAINING,
+    PHASE2_QUALITY_METRICS,
+    PHASE3_CVAE,
+    PHASE3_WGAN_GP,
+    PHASE3A_GATE,
 )
 
 # Light reference palette (validated: adjacent CVD ΔE >= 9.1; aqua and yellow need direct labels).
@@ -411,16 +417,19 @@ def phase2_pretraining_figures(result_path: Path) -> list[Path]:
 
 
 def phase1_variant_figures(result_path: Path) -> list[Path]:
-    """Figures for one phase1_input_representation variant: training curves and the confusion matrix."""
+    """Figures for one classifier variant (phase1_input_representation, phase2_baseline_classifiers):
+    training curves and the validation confusion matrix."""
     plt = _plt()
     result = json.loads(Path(result_path).read_text())
     letter = result["variant"]
-    out, written = paths.figures_for(PHASE1_INPUT_REPRESENTATION) / letter, []
+    experiment = result.get("experiment", PHASE1_INPUT_REPRESENTATION)
+    out, written = paths.figures_for(experiment) / letter, []
     metric = "S F1" if result["selection_metric"] == "s_f1" else result["selection_metric"]
+    tag = " (provisional preview)" if result.get("provisional") else ""
     fig, axes = plt.subplots(1, 3, figsize=(14, 3.6), gridspec_kw={"width_ratios": [1, 1, 0.8]})
     _curves(axes[0], axes[1], f"variant {letter}", result["run_ids"], CLASS_COLORS["N"], metric)
     _confusion_panel(axes[2], _confusion(result["run_ids"]), "validation confusion (mean over seeds)")
-    written.append(_save(fig, out / "training_and_confusion.png", f"phase1_input_representation, variant {letter}: {metric} {result['mean']:.3f} ± {result['sd']:.3f}",
+    written.append(_save(fig, out / "training_and_confusion.png", f"{experiment}, variant {letter}: {metric} {result['mean']:.3f} ± {result['sd']:.3f}{tag}",
                          f"One line per seed at the chosen learning rate ({result['chosen_lr']:g})."))  # fmt: skip
     return written
 
@@ -505,6 +514,333 @@ def _phase1_early_stopping_figure(results: dict, out: Path) -> list[Path]:
                   "validation S F1 stays at 0 for its first epochs keeps epoch 1 and stops at epoch 6.")]  # fmt: skip
 
 
+# --------------------------------------------------------------------------------------------------
+# phase 3: generators
+# --------------------------------------------------------------------------------------------------
+
+GENERATED = ("S", "V", "F")
+
+
+def safe_call(fn, *args, **kwargs) -> list[Path]:
+    """Run a figure function; a plotting error is reported and never stops a run."""
+    try:
+        return fn(*args, **kwargs)
+    except Exception as err:  # noqa: BLE001 (figures are a by-product; the run's results are already saved)
+        print(f"WARNING: figure {fn.__name__} was not made: {err}")
+        return []
+
+
+def _csv(run_id: str, name: str) -> list[dict]:
+    with (runs.find_run_dir(run_id) / name).open() as fh:
+        return list(csv.DictReader(fh))
+
+
+def _number(value) -> float:
+    return float(value) if value not in (None, "") else float("nan")
+
+
+def phase3_sample_figures(out: Path, title: str, train: dict, synthetic: dict, spec) -> list[Path]:
+    """Before and after adding synthetic beats: real versus synthetic beats per class, class counts,
+    and synthetic beats next to their nearest real training beat (the memorization check, by eye)."""
+    from ecgaug.data.records import CLASS_INDEX, CLASSES
+    from ecgaug.quality.diagnostics import nearest_distances
+
+    plt = _plt()
+    written = []
+    pre, _ = spec.window_samples
+    ms = (np.arange(spec.n_samples) - pre) / spec.effective_fs * 1000
+    classes = [c for c in GENERATED if (np.asarray(synthetic["y"]) == CLASS_INDEX[c]).any()]
+
+    fig, axes = plt.subplots(1, len(classes), figsize=(4 * len(classes), 3.3), sharey=True, squeeze=False)
+    for ax, cls in zip(axes[0], classes):
+        for label, arrays, color, dashes in (("real", train, CLASS_COLORS[cls], ()), ("synthetic", synthetic, INK, (4, 2))):
+            x = np.asarray(arrays["X"])[np.asarray(arrays["y"]) == CLASS_INDEX[cls]]
+            q1, med, q3 = np.percentile(x, [25, 50, 75], axis=0)
+            ax.fill_between(ms, q1, q3, color=color, alpha=0.18, linewidth=0)
+            ax.plot(ms, med, color=color, dashes=dashes, label=f"{label} (n={len(x):,})")
+        ax.axvline(0, color=GRID, linewidth=1)
+        ax.set_title(cls, loc="left")
+        ax.set_xlabel("ms from R peak")
+        ax.legend(loc="upper right")
+    axes[0][0].set_ylabel("z-scored amplitude")
+    written.append(_save(fig, out / "03_real_vs_synthetic.png", f"{title}: real versus synthetic beats",
+                         "Median with the middle 50% shaded, aligned on the R peak. Real: training beats of the class. "
+                         "Synthetic: generator output after per-beat z-scoring."))  # fmt: skip
+
+    before = [int((np.asarray(train["y"]) == i).sum()) for i in range(len(CLASSES))]
+    added = [int((np.asarray(synthetic["y"]) == i).sum()) for i in range(len(CLASSES))]
+    fig, ax = plt.subplots(figsize=(7, 3.6))
+    x = np.arange(len(CLASSES))
+    for offset, values, alpha, label in ((-0.19, before, 0.45, "before: real training beats"), (0.19, [b + a for b, a in zip(before, added)], 1.0, "after: real + synthetic")):
+        bars = ax.bar(x + offset, values, width=0.36, color=[CLASS_COLORS[c] for c in CLASSES], alpha=alpha, edgecolor=SURFACE, linewidth=2, label=label)
+        for bar, v in zip(bars, values):
+            ax.annotate(f"{v:,}", (bar.get_x() + bar.get_width() / 2, v), xytext=(0, 2), textcoords="offset points", ha="center", fontsize=8, color=INK)
+    ax.set_yscale("log")
+    ax.set_xticks(x, CLASSES)
+    ax.set_ylabel("training beats (log scale)")
+    ax.legend(loc="upper right")
+    written.append(_save(fig, out / "04_class_counts_before_after.png", f"{title}: training beats per class before and after",
+                         "Pale bars: real training beats. Solid bars: after adding the synthetic beats. Validation and test stay 100% real."))  # fmt: skip
+
+    fig, axes = plt.subplots(len(classes), 3, figsize=(10, 2.2 * len(classes)), sharex=True, squeeze=False)
+    for row, cls in enumerate(classes):
+        real = np.asarray(train["X"])[np.asarray(train["y"]) == CLASS_INDEX[cls]]
+        synth = np.asarray(synthetic["X"])[np.asarray(synthetic["y"]) == CLASS_INDEX[cls]][:3]
+        from sklearn.neighbors import NearestNeighbors
+
+        index = NearestNeighbors(n_neighbors=1).fit(real).kneighbors(synth)[1][:, 0]
+        distances = nearest_distances(synth, real)
+        for col in range(3):
+            ax = axes[row][col]
+            if col >= len(synth):
+                ax.axis("off")
+                continue
+            ax.plot(ms, real[index[col]], color=CLASS_COLORS[cls], label="nearest real")
+            ax.plot(ms, synth[col], color=INK, dashes=(4, 2), label="synthetic")
+            ax.set_title(f"{cls} · distance {distances[col]:.1f}", loc="left", fontsize=9)
+            if row == len(classes) - 1:
+                ax.set_xlabel("ms from R peak")
+        axes[row][0].legend(loc="upper right")
+    written.append(_save(fig, out / "05_synthetic_and_nearest_real.png", f"{title}: synthetic beats and their nearest real beat",
+                         "A synthetic beat drawn on top of a training beat would be a copy; the memorization fraction counts how often that happens."))  # fmt: skip
+    return written
+
+
+def phase3_variant_figures(result_path: Path) -> list[Path]:
+    """Figures for one generator pilot result: generator training curves and every checkpoint's scores."""
+    plt = _plt()
+    result = json.loads(Path(result_path).read_text())
+    letter, experiment = result["variant"], result["experiment"]
+    out, written = paths.figures_for(experiment) / letter, []
+    tag = " (provisional preview)" if result.get("provisional") else ""
+    keys = ("reconstruction", "kl") if result["family"] == "cvae" else ("wasserstein", "gradient_penalty")
+
+    fig, axes = plt.subplots(1, 2, figsize=(11, 3.4))
+    for i, run_id in enumerate(result["run_ids"]):
+        log = _csv(run_id, "train_log.csv")
+        if not log:
+            continue
+        steps = [int(r["step"]) for r in log]
+        for ax, key in zip(axes, keys):
+            columns = [k for k in log[0] if k == key or k.startswith(f"{key}_")]
+            for column in columns:
+                cls = column.rsplit("_", 1)[-1] if column != key else None
+                ax.plot(steps, [_number(r.get(column)) for r in log], color=CLASS_COLORS.get(cls, INK_2),
+                        dashes=() if i == 0 else (4, 2), label=f"seed {i}" + (f" {cls}" if cls else ""))  # fmt: skip
+            ax.set_title(key.replace("_", " "), loc="left")
+            ax.set_xlabel("generator step")
+    axes[1].legend(loc="upper right")
+    written.append(_save(fig, out / "01_generator_training.png", f"{experiment}, variant {letter}: generator training{tag}",
+                         f"Setting {result['chosen_setting']}. Solid: seed {result['per_seed'][0]['seed']}; dashed: the next seed."))  # fmt: skip
+
+    panels = [("pilot_selection_value", "pilot S F1 on validation" if result["selection_metric"] == "s_f1" else "pilot selection metric", None),
+              ("diversity_ratio", "diversity ratio (floor dashed)", result["hard_gate_thresholds"]["diversity_min_ratio"]),
+              ("memorization_fraction", "memorization fraction (ceiling dashed)", result["hard_gate_thresholds"]["memorization_max_fraction"]),
+              ("c2st_accuracy", "C2ST accuracy (0.5 = indistinguishable)", 0.5)]  # fmt: skip
+    fig, axes = plt.subplots(1, 4, figsize=(14, 3.3))
+    for i, run_id in enumerate(result["run_ids"]):
+        rows = _csv(run_id, "checkpoints.csv")
+        if not rows:
+            continue
+        fraction = [float(r["fraction"]) for r in rows]
+        for ax, (key, title, line) in zip(axes, panels):
+            if key == "pilot_selection_value":
+                ax.plot(fraction, [_number(r[key]) for r in rows], color=INK, marker="o", dashes=() if i == 0 else (4, 2), label=f"seed {i}")
+            else:
+                for cls in GENERATED:
+                    ax.plot(fraction, [_number(r[f"{key}_{cls}"]) for r in rows], color=CLASS_COLORS[cls], marker="o",
+                            dashes=() if i == 0 else (4, 2), label=cls if i == 0 else None)  # fmt: skip
+            if line is not None and i == 0:
+                ax.axhline(line, color=INK_2, linewidth=1, dashes=(2, 2))
+            ax.set_title(title, loc="left")
+            ax.set_xlabel("fraction of the step budget")
+    axes[0].legend(loc="best")
+    axes[1].legend(loc="best")
+    written.append(_save(fig, out / "02_checkpoints.png", f"{experiment}, variant {letter}: every checkpoint, scored{tag}",
+                         "Solid: first seed, dashed: second. Only the last checkpoint counts for selection; the others are the RQ3 data."))  # fmt: skip
+    return written
+
+
+def phase2_quality_figures(result_path: Path) -> list[Path]:
+    """One metric family's sanity test: score against severity for every degradation."""
+    plt = _plt()
+    result = json.loads(Path(result_path).read_text())
+    letter, family = result["variant"], result["family"]
+    scores = result["scores"]
+    reference = scores["reference:0"]
+    kinds = sorted({v["kind"] for v in scores.values() if v["kind"] != "reference"})
+    fig, axes = plt.subplots(1, len(kinds), figsize=(3.4 * len(kinds), 3.2), sharey=True, squeeze=False)
+    for ax, kind in zip(axes[0], kinds):
+        rows = sorted((v for v in scores.values() if v["kind"] == kind), key=lambda v: v["severity"])
+        x = [0] + [v["severity"] for v in rows]
+        y = [reference["mean"]] + [v["mean"] for v in rows]
+        err = [reference["sd"]] + [v["sd"] for v in rows]
+        ax.errorbar(x, y, yerr=err, color=INK, marker="o", capsize=3)
+        ax.set_xticks(x, ["real"] + [f"{v['level']:g}" for v in rows])
+        ax.set_title(f"{kind.replace('_', ' ')} (rho {result['spearman'][kind]:.2f})", loc="left")
+        ax.set_xlabel("severity")
+    axes[0][0].set_ylabel(f"{family} ({'higher' if result['higher_is_better'] else 'lower'} is better)")
+    verdict = "passes" if result["passed"] else "fails"
+    tag = " (provisional preview)" if result.get("provisional") else ""
+    return [_save(fig, paths.figures_for(PHASE2_QUALITY_METRICS) / letter / "sanity.png",
+                  f"phase2_quality_metrics, variant {letter} ({family}): {verdict} the sanity harness{tag}",
+                  "Mean ± SD over resamples. 'real' is the unchanged held-out beats; the score should get worse to the right.")]  # fmt: skip
+
+
+def phase2_gate_figure(gate: dict) -> list[Path]:
+    """The baseline classifiers side by side, grouped by role (cnn: A, B; rnn: C, D)."""
+    plt = _plt()
+    results = gate["baselines"]["results"]
+    fig, ax = plt.subplots(figsize=(7, 3.4))
+    for i, (letter, r) in enumerate(results.items()):
+        seeds = [s["selection_value"] for s in r["per_seed"]]
+        ax.scatter([i] * len(seeds), seeds, s=22, color=CLASS_COLORS["N"], alpha=0.6, zorder=3)
+        ax.errorbar(i, r["mean"], yerr=r["sd"], fmt="o", color=INK, markersize=6, capsize=3, zorder=4)
+        ax.annotate(f"{r['mean']:.3f}", (i, r["mean"]), xytext=(8, 0), textcoords="offset points", va="center", fontsize=8)
+    ax.set_xticks(range(len(results)), [f"{k} ({v['role']})\n{v['n_parameters']:,} params" for k, v in results.items()])
+    ax.set_ylabel("S F1 on validation")
+    picks = ", ".join(f"{role}: {gate['baselines'][role]['winner']}" for role in ("cnn", "rnn"))
+    return [_save(fig, paths.figures_for(PHASE2_GATE) / "baselines.png", f"Phase 2 gate: baseline classifiers ({picks})",
+                  "Small dots: seeds. Black: mean ± SD. The cnn is chosen from A and B, the rnn from C and D; ties go to fewer parameters.")]  # fmt: skip
+
+
+def phase5_saliency_figure(result_path: Path) -> list[Path]:
+    """Class-average absolute saliency aligned on R: none versus augmented models, per architecture (paper figure)."""
+    plt = _plt()
+    result = json.loads(Path(result_path).read_text())
+    letter = result["variant"]
+    averages = json.loads((Path(result_path).parent / f"{letter}_class_average_saliency.json").read_text())
+    archs = [a for a in averages["maps"] if averages["maps"][a]]
+    if not archs:
+        return []
+    fig, axes = plt.subplots(len(archs), 4, figsize=(13, 2.6 * len(archs)), squeeze=False, sharex=True)
+    colors = {"none": INK, "cvae": CLASS_COLORS["S"], "wgan_gp": CLASS_COLORS["V"]}
+    for row, arch in enumerate(archs):
+        for col, cls in enumerate(("N", "S", "V", "F")):
+            ax = axes[row][col]
+            for condition, maps in averages["maps"][arch].items():
+                if cls in maps:
+                    values = np.asarray(maps[cls])
+                    ms = (np.arange(len(values)) - averages["pre_samples"]) / averages["fs"] * 1000
+                    ax.plot(ms, values / max(values.max(), 1e-12), color=colors.get(condition, INK_2), label=condition)
+            ax.axvline(0, color=GRID, linewidth=1)
+            ax.set_title(f"{arch} · {cls}", loc="left")
+            if row == len(archs) - 1:
+                ax.set_xlabel("ms from R peak")
+        axes[row][0].legend(loc="upper left", fontsize=7)
+    tag = " (provisional preview)" if result.get("provisional") else ""
+    return [_save(fig, paths.figures_for("phase5_explainability") / letter / "class_average_saliency.png",
+                  f"phase5_explainability, variant {letter} ({result['method']}): where the models look{tag}",
+                  "Mean absolute saliency over validation beats of each class, scaled to a peak of 1; aligned on the R peak.")]  # fmt: skip
+
+
+def error_analysis_figures(result: dict, split: str) -> list[Path]:
+    """Confusion matrices per architecture and condition, and the RR context of N/S confusions."""
+    plt = _plt()
+    out, written = paths.figures_for("error_analysis"), []
+    keys = list(result)
+    cols = min(3, len(keys))
+    rows = int(np.ceil(len(keys) / cols))
+    fig, axes = plt.subplots(rows, cols, figsize=(4.3 * cols, 3.9 * rows), squeeze=False)
+    for ax, key in zip(axes.ravel(), keys):
+        _confusion_panel(ax, np.asarray(result[key]["confusion_matrix"]), key)
+    for ax in axes.ravel()[len(keys):]:
+        ax.axis("off")
+    written.append(_save(fig, out / f"confusion_{split}.png", f"Error analysis ({split}): confusion matrices, mean over seeds",
+                         "Each row shows where the beats of one true class went; the diagonal is correct."))  # fmt: skip
+    fig, axes = plt.subplots(1, len(keys), figsize=(4.3 * len(keys), 3.3), squeeze=False, sharey=True)
+    for ax, key in zip(axes[0], keys):
+        groups = [(name, g["rr_ratio_values"]) for name, g in result[key]["rr_context"].items() if g["rr_ratio_values"]]
+        if groups:
+            ax.boxplot([g[1] for g in groups], showfliers=False)
+            ax.set_xticks(range(1, len(groups) + 1), [g[0] for g in groups], rotation=35, ha="right")
+        ax.axhline(1.0, color=GRID, linewidth=1)
+        ax.set_title(key, loc="left")
+    axes[0][0].set_ylabel("rr_ratio (below 1 = premature)")
+    written.append(_save(fig, out / f"rr_context_{split}.png", f"Error analysis ({split}): how premature the confused beats were",
+                         "rr_ratio is the preceding RR interval over the mean of the 10 before it; S beats are early (below 1)."))  # fmt: skip
+    return written
+
+
+def final_eval_figures(stats: dict) -> list[Path]:
+    """Forest plot of the pre-registered differences, and per-record S and F recall on the test set."""
+    plt = _plt()
+    out, written = paths.figures_for("final_eval"), []
+    rows = [(family, name, r) for family, results in stats["families"].items() for name, r in results.items()]
+    fig, ax = plt.subplots(figsize=(8, 0.45 * len(rows) + 1.2))
+    for i, (family, name, r) in enumerate(reversed(rows)):
+        color = INK if family == "confirmatory" else INK_2
+        ax.errorbar(r["point"], i, xerr=[[r["point"] - r["ci_low"]], [r["ci_high"] - r["point"]]], fmt="o", color=color, capsize=3)
+        ax.annotate(f"Holm p {r['p_holm']:.3f}", (r["ci_high"], i), xytext=(6, 0), textcoords="offset points", va="center", fontsize=7, color=INK_2)
+    ax.axvline(0, color=GRID, linewidth=1.2)
+    ax.set_yticks(range(len(rows)), [f"{family[:4]}. {name}" for family, name, _ in reversed(rows)])
+    ax.set_xlabel("difference in test rare-class macro-F1 (95% record-level bootstrap CI)")
+    written.append(_save(fig, out / "forest.png", "Final evaluation: pre-registered comparisons on the test set",
+                         "Black: confirmatory family; grey: secondary. Intervals are unadjusted; p-values are Holm-adjusted within each family."))  # fmt: skip
+    keys = list(stats["per_record"])
+    fig, axes = plt.subplots(1, 2, figsize=(12, 3.6), sharey=True)
+    for ax, cls in zip(axes, ("S", "F")):
+        records = [r for r in stats["records"] if any(stats["per_record"][k][str(r)][cls]["support"] for k in keys)]
+        width = 0.8 / max(1, len(keys))
+        for j, key in enumerate(keys):
+            values = [stats["per_record"][key][str(r)][cls]["recall"] or 0.0 for r in records]
+            ax.bar(np.arange(len(records)) + j * width, values, width=width, label=key, color=BLUES[2 + j % 6], edgecolor=SURFACE)
+        ax.set_xticks(np.arange(len(records)) + 0.4 - width / 2, [str(r) for r in records], rotation=45)
+        ax.set_title(f"{cls} recall per test record", loc="left")
+    axes[0].set_ylabel("recall (seed mean)")
+    axes[1].legend(loc="upper right", fontsize=6)
+    written.append(_save(fig, out / "per_record_S_F.png", "Final evaluation: S and F recall per test record",
+                         "Only records holding S (left) or F (right) beats are shown; few records hold most of each class."))  # fmt: skip
+    return written
+
+
+def phase4_strength_figure(gate: dict) -> list[Path]:
+    """Validation selection metric against strength, per condition and architecture (the strength curves)."""
+    plt = _plt()
+    archs = list(gate["chosen"])
+    fig, axes = plt.subplots(1, len(archs), figsize=(6 * len(archs), 3.4), squeeze=False, sharey=True)
+    palette = {"random_oversampling": INK_2, "smote": "#7f63b8", "cvae": CLASS_COLORS["S"], "wgan_gp": CLASS_COLORS["V"]}
+    for ax, arch in zip(axes[0], archs):
+        for condition, c in gate["chosen"][arch].items():
+            if condition in ("none", "class_weighted"):
+                continue
+            pairs = sorted((float(s), v["mean"]) for s, v in c["all_strengths"].items() if s != "None")
+            if pairs:
+                ax.plot([p[0] for p in pairs], [p[1] for p in pairs], marker="o", color=palette.get(condition, INK), label=condition)
+        if "none" in gate["chosen"][arch]:
+            ax.axhline(gate["chosen"][arch]["none"]["mean"], color=INK, dashes=(4, 2), linewidth=1, label="none")
+        ax.set_title(arch, loc="left")
+        ax.set_xlabel("strength")
+        ax.legend(loc="best")
+    axes[0][0].set_ylabel("validation selection metric (seed mean)")
+    return [_save(fig, paths.figures_for("phase4_gate") / "strength_curves.png", "Phase 4 gate: validation score against augmentation strength",
+                  "Each point is the mean over seeds. Dashed: no augmentation. The final evaluation uses the best strength of each condition.")]  # fmt: skip
+
+
+def phase3a_gate_figure(gate: dict) -> list[Path]:
+    """Both families' variants side by side: pilot score per seed, and whether the hard gates passed."""
+    plt = _plt()
+    families = [f for f in (PHASE3_CVAE, PHASE3_WGAN_GP) if f in gate["families"]]
+    fig, axes = plt.subplots(1, len(families), figsize=(6 * len(families), 3.4), squeeze=False, sharey=True)
+    for ax, family in zip(axes[0], families):
+        results = gate["families"][family]["results"]
+        for i, (letter, r) in enumerate(results.items()):
+            passed = r["hard_gates"]["passed"]
+            seeds = [s["selection_value"] for s in r["per_seed"]]
+            ax.scatter([i] * len(seeds), seeds, s=22, color=CLASS_COLORS["N"], alpha=0.6, zorder=3)
+            ax.errorbar(i, r["mean"], yerr=r["sd"], fmt="o", color=INK, markersize=6, capsize=3, zorder=4,
+                        markerfacecolor=INK if passed else SURFACE)  # fmt: skip
+            ax.annotate(f"{r['mean']:.3f}" + ("" if passed else "\nfails hard gates"), (i, r["mean"]), xytext=(8, 0),
+                        textcoords="offset points", va="center", fontsize=8)  # fmt: skip
+        ax.set_xticks(range(len(results)), list(results))
+        ax.set_xlim(-0.5, len(results) - 0.3)
+        winner = gate["families"][family]["decision"]["winner"]
+        ax.set_title(f"{family}: winner {winner or 'none'}", loc="left")
+    axes[0][0].set_ylabel("pilot S F1 on validation")
+    return [_save(fig, paths.figures_for(PHASE3A_GATE) / "variants.png", "Phase 3a gate: generator variants on the pilot",
+                  "Small dots: pilot seeds. Black: mean ± SD; hollow = fails a hard gate (divergence, diversity or memorization).")]  # fmt: skip
+
+
 def for_result(result_path: Path) -> list[Path]:
     """The figures for a result file, chosen by the experiment it belongs to."""
     path = Path(result_path)
@@ -512,6 +848,14 @@ def for_result(result_path: Path) -> list[Path]:
         return phase2_pretraining_figures(path)
     if path.parent.name == PHASE1_INPUT_REPRESENTATION:
         return phase1_variant_figures(path) + phase1_gate_figure()
+    if path.parent.name in (PHASE3_CVAE, PHASE3_WGAN_GP):
+        return phase3_variant_figures(path)
+    if path.parent.name == PHASE2_BASELINE_CLASSIFIERS:
+        return phase1_variant_figures(path)
+    if path.parent.name == PHASE2_QUALITY_METRICS:
+        return phase2_quality_figures(path)
+    if path.parent.name == "phase5_explainability":
+        return phase5_saliency_figure(path)
     return []
 
 
