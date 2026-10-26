@@ -412,3 +412,26 @@ Open issues:
   are on `akashsaha477/Gen_Ai_Project`, branch `finish-project`.
 
 Next: approve the phase 1 gate (team), push the manifest, and run phase2_ptbxl_pretraining with C.
+
+## 2026-10-26 (Day 20): the `git_dirty` puzzle solved; what blocks the rest
+
+Done:
+- Cause of `git_dirty = true` on the phase 1 runs (docs/PHASE1_REPORT.md §7): a logging bug. In every
+  session the first run logged `false` and every later run `true` (GPU: 4 sessions of 1 + 5; CPU: 1 + 4).
+  `runs._git` stripped the `git status --porcelain` output, removing the leading space of
+  ` M results/runs_index.csv`, which was then read as `esults/runs_index.csv`, a non-output path. Fixed
+  (`rstrip("\n")`) with a test that fails on the old code. Logged flags are not rewritten.
+- Branches checked: only `main` and `finish-project` exist on `akashsaha477/Gen_Ai_Project`; `main` has
+  nothing that `finish-project` lacks. The forks (`Manindrathatuthuri`, `kartheek2159`) are not reachable
+  from this session, so any Kaggle results pushed there are not here.
+- Tests: 273 pass (locked environment, CPU).
+
+Not possible from this session: PhysioNet is blocked by the network policy (no real-data preview), there
+is no GPU, and every official run waits for the phase 1 gate approval by named team members.
+
+Open issues:
+- All ten notebooks default to `GIT_REF = "main"`, but phases 2-6 exist only on `finish-project`:
+  merge it into `main` (or set `GIT_REF`) before the Kaggle runs.
+- Phase 1 gate approval and the `min_epochs` decision (PHASE1_REPORT §6) are with the team.
+
+Next: team approves the phase 1 gate; merge `finish-project` into `main`; phase 2 on Kaggle.

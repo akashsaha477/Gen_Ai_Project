@@ -48,7 +48,7 @@ def _git(*args: str) -> str | None:
         )
     except (OSError, subprocess.CalledProcessError):
         return None
-    return out.stdout.strip()
+    return out.stdout.rstrip("\n")  # not strip(): porcelain lines start with a meaningful space (" M path")
 
 
 def git_sha(short: bool = False) -> str:
