@@ -128,7 +128,7 @@ def test_only_the_raw_module_reads_wfdb_files():
 
 def test_only_contract_and_loaders_touch_the_test_file():
     for path in _sources():
-        text = path.read_text()
+        text = path.read_text().replace("preds_test.npz", "")  # the final evaluation's prediction files, not DS2's arrays
         if "test.npz" in text or "TEST_FILE" in text:
             assert path.name in ("contract.py", "loaders.py"), f"{path} refers to the test file"
 

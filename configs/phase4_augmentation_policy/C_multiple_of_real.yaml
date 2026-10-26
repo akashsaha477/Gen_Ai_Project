@@ -1,0 +1,11 @@
+base: pilot_settings.yaml
+variant: C
+description: Add a fixed multiple of each minority class's real training count.
+policy:
+  kind: multiple_of_real
+pilot_strength: 2.0
+grid_strengths:
+- 1.0
+- 2.0
+- 4.0
+complexity: 2

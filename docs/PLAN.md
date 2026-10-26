@@ -84,6 +84,9 @@ beats; document this as a limitation (S beats are largely defined by prematurity
 
 ## Phase 2 — Baselines and shared quality metrics (Days 4–8, Oct 10–14)
 
+> Built 2026-10-16 (branch `finish-project`): runners `phase2_baseline_classifiers`, `phase2_quality_metrics`, the
+> sanity harness and `python -m ecgaug.workflow phase2-gate`. Choices the plan left open: DECISIONS A14.
+
 **Goal:** frozen reference classifiers and a frozen, sanity-tested synthetic-quality metric suite.
 
 ### Shared infrastructure (`/phase 2`)
@@ -178,6 +181,9 @@ variation table, metric sanity figure (score vs degradation level).
 
 ## Phase 3 — Generators (Days 9–14, Oct 15–20; Day 15 buffer)
 
+> Built 2026-10-16: `phase3_cvae`, `phase3_wgan_gp` (pilot and `--final`), banks, the grid runner, `phase3a-gate`
+> and `phase3-gate`. Choices the plan left open: DECISIONS A14.
+
 **Goal:** one frozen synthetic bank per generator family (cVAE, WGAN-GP) per seed, trained on training
 records only, with quality reports.
 
@@ -244,6 +250,9 @@ quality table, training curves, failure-mode figure.
 
 ## Phase 4 — Integration and ablation (Days 16–21, Oct 22–27)
 
+> Built 2026-10-16: `phase4_augmentation_policy`, `phase4a-gate` (writes the full grid), the full grid,
+> `phase4-gate`, and `/final-eval` as `python -m ecgaug.final_eval`. Choices: DECISIONS A14.
+
 **Goal:** complete validation-level grid, then a single test evaluation with pre-registered statistics.
 
 ### phase4_augmentation_policy — Augmentation policy variants (pilot Days 16–17: `cnn`, seed 0, both banks)
@@ -292,6 +301,9 @@ pre-registered statistics, tables, figures.
 ---
 
 ## Phase 5 — Explainability, LLM layer, demo (Days 22–26, Oct 28–Nov 1)
+
+> Built 2026-10-16: `phase5_explainability`, `phase5_clinical_notes` (fact checker, template fallback),
+> error analysis, `python -m ecgaug.demo`, `phase5-gate`. Choices: DECISIONS A14.
 
 **Goal:** one explanation method per architecture, a grounded note generator, a working demo, and error
 analysis. All method selection uses validation beats. Error analysis reuses saved test predictions
@@ -352,6 +364,8 @@ evaluation table, error-analysis figure.
 ---
 
 ## Phase 6 — Report, paper draft, buffer (Days 27–30, Nov 2–5)
+
+> Built 2026-10-16: `python -m ecgaug.paper` (generated tables and numbers), `paper/main.tex`, `scripts/reproduce.sh`.
 
 1. `paper/` LaTeX draft: abstract, introduction (contributions), related work, data and protocol,
    methods, results (RQ1–RQ4), grounded reporting, limitations and ethics, reproducibility statement.

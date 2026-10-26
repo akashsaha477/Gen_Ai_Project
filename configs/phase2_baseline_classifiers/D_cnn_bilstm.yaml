@@ -1,0 +1,5 @@
+base: shared_budget.yaml
+variant: D
+role: rnn
+description: CNN + BiLSTM hybrid, two conv blocks then one BiLSTM layer (hidden 64); last and mean-pooled states; linear head.
+model: {name: cnn_bilstm, channels: [32, 64], kernel: 7, hidden: 64, side_hidden: 16}

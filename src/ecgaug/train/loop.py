@@ -44,6 +44,7 @@ class TrainConfig:
     patience: int = 5
     batch_size: int = 256
     weight_decay: float = 0.01
+    min_epochs: int = 0  # no early stop before this epoch; 0 keeps the pre-registered rule (PHASE1_REPORT.md §6)
 
 
 @dataclass
@@ -144,7 +145,7 @@ def _fit(
             best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
         else:
             stale += 1
-            if stale >= cfg.patience:
+            if stale >= cfg.patience and epoch >= cfg.min_epochs:
                 break
 
     return FitResult(
@@ -168,12 +169,14 @@ def fit_classifier(
     selection: str,
     seed: int,
     device: torch.device | None = None,
+    class_weights: np.ndarray | None = None,
 ) -> FitResult:
-    """Train with unweighted cross-entropy and AdamW; stop when the validation metric stalls.
+    """Train with cross-entropy and AdamW; stop when the validation metric stalls.
 
     ``train`` and ``val`` hold ``X`` ``[n, L]``, ``y`` and optionally ``side`` ``[n, k]``. After every
     epoch the model is evaluated on validation; the checkpoint with the highest selection value is
-    kept, and training stops after ``cfg.patience`` epochs without improvement.
+    kept, and training stops after ``cfg.patience`` epochs without improvement. The loss is unweighted
+    unless ``class_weights`` (one weight per class, the class-weighted condition) is given.
     """
     device = device or torch.device("cpu")
     x_va = torch.from_numpy(val["X"])
@@ -196,7 +199,8 @@ def fit_classifier(
         return value, metrics, probs, fields
 
     y_tr = torch.from_numpy(train["y"].astype(np.int64))
-    return _fit(model, train, y_tr, nn.CrossEntropyLoss(), validate, cfg, seed, device)
+    weight = None if class_weights is None else torch.as_tensor(np.asarray(class_weights), dtype=torch.float32, device=device)
+    return _fit(model, train, y_tr, nn.CrossEntropyLoss(weight=weight), validate, cfg, seed, device)
 
 
 def fit_multilabel(

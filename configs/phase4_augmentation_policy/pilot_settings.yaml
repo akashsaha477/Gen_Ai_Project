@@ -1,0 +1,17 @@
+# Shared by every phase4_augmentation_policy variant (PLAN Phase 4: pilot with the cnn, seed 0, both banks).
+# A variant sets only its letter, description, policy, pilot strength, grid strengths and complexity.
+# The strengths of every policy are pre-registered here (PREREGISTRATION v3) before the pilot runs.
+experiment: phase4_augmentation_policy
+classifier: cnn                       # official runs: the cnn chosen at the phase 2 gate, with its settings
+seed: 0
+banks:                                # the two generators frozen at the phase 3 gate
+  cvae: phase3_gate/phase3_cvae
+  wgan_gp: phase3_gate/phase3_wgan_gp
+max_n_recall_drop: 0.01               # a policy may lower validation N recall by at most this much versus no augmentation
+preview_classifier:                   # --preview only, until the phase 2 gate exists
+  model: {name: probe_cnn, channels: [16, 32, 64], kernel: 7, side_hidden: 16}
+  lr: 1.0e-3
+  max_epochs: 40
+  patience: 5
+  batch_size: 256
+  weight_decay: 0.01

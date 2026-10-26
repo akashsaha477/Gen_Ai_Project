@@ -90,3 +90,65 @@ def select_winner(candidates: list[Candidate]) -> dict:
         "margins": {c.name: tie_margin(best.sd, c.sd) for c in candidates},
         "steps": steps,
     }
+
+
+GENERATOR_FALLBACK = (
+    "No variant passes the hard gates. PLAN Phase 3 fallback: the team restricts generation to the 2-3 "
+    "rarest classes or adopts variant D, and records the failure as a result."
+)
+
+
+@dataclass(frozen=True)
+class GeneratorCandidate:
+    """A generator variant's pilot summary (PLAN Phase 3 selection)."""
+
+    name: str
+    mean: float  # seed-mean pilot validation selection metric at the final checkpoint
+    sd: float
+    passed_hard_gates: bool
+    n_parameters: int
+    wall_clock_s: float = 0.0
+    tie_mean: float | None = None  # V F1 under the fallback metric
+    tie_sd: float | None = None
+    quality_rank: float | None = None  # composite quality rank, lower is better; None until it is defined
+
+
+def select_generator(candidates: list[GeneratorCandidate]) -> dict:
+    """Apply the phase 3 selection rule literally (PLAN Phase 3, PREREGISTRATION §9).
+
+    1. Hard gates: variants that fail them are out.
+    2. The passing variant with the highest seed-mean pilot selection metric; every passing variant
+       within the tie margin (§4) of it is tied with it.
+    3. Ties are broken by the composite quality rank. Until the phase 2 gate defines the composite,
+       the general tie-break of §4 is used instead (V F1 under the fallback metric), and the report
+       says so.
+    4. Then fewer parameters, then lower wall-clock, then the name.
+    """
+    if not candidates:
+        raise ValueError("No candidates")
+    passing = [c for c in candidates if c.passed_hard_gates]
+    steps: list[dict] = [{"step": "hard gates", "passed": [c.name for c in passing], "failed": [c.name for c in candidates if not c.passed_hard_gates]}]
+    if not passing:
+        return {"winner": None, "best_by_mean": None, "margins": {}, "steps": steps, "fallback": GENERATOR_FALLBACK}
+    if any(math.isnan(c.mean) for c in passing):
+        raise ValueError("A passing candidate has an undefined pilot selection metric; the rule cannot be applied")
+    tied = _tied_with_best(passing, lambda c: c.mean, lambda c: c.sd)
+    steps.append({"step": "pilot selection metric", "tied": [c.name for c in tied]})
+    if len(tied) > 1:
+        if all(c.quality_rank is not None for c in tied):
+            best_rank = min(c.quality_rank for c in tied)
+            tied = [c for c in tied if c.quality_rank == best_rank]
+            steps.append({"step": "composite quality rank", "tied": [c.name for c in tied]})
+        elif all(c.tie_mean is not None for c in tied):
+            tied = _tied_with_best(tied, lambda c: c.tie_mean, lambda c: c.tie_sd or 0.0)
+            steps.append({"step": "tie-break metric (the composite quality rank is not defined yet)", "tied": [c.name for c in tied]})
+    winner = min(tied, key=lambda c: (c.n_parameters, c.wall_clock_s, c.name))
+    steps.append({"step": "fewer parameters, then wall-clock", "winner": winner.name})
+    best = max(passing, key=lambda c: c.mean)
+    return {
+        "winner": winner.name,
+        "best_by_mean": best.name,
+        "margins": {c.name: tie_margin(best.sd, c.sd) for c in passing},
+        "steps": steps,
+        "fallback": None,
+    }

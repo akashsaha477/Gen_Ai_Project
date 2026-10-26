@@ -4,10 +4,11 @@ Called by the notebooks in this folder after they have cloned the repository. Us
 standard library, so it runs with the system Python before the project environment exists.
 
     python kaggle/kaggle_run.py --config configs/phase1_input_representation/A_short_window.yaml -- --device cuda
-    python kaggle/kaggle_run.py --config configs/phase1_input_representation/A_short_window.yaml configs/phase1_input_representation/B_long_window_bandpass.yaml --raw-dir /kaggle/input/mitdb-raw
+    python kaggle/kaggle_run.py --config configs/phase1_input_representation/A_short_window.yaml configs/phase1_input_representation/B_long_window_bandpass.yaml --raw-dir /kaggle/input
 
-Steps: install the environment, get and verify the raw data, run each config through its package
-CLI, and zip runs/ plus the variant result files for kaggle/ingest_runs.py.
+Steps: install the environment, copy the raw MIT-BIH files from the attached Kaggle dataset and check
+them against the committed checksums (nothing is downloaded), run each config through its package CLI,
+and zip runs/ plus the variant result files for kaggle/ingest_runs.py.
 """
 
 from __future__ import annotations
@@ -22,8 +23,13 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 # Kept in step with ecgaug.names (this script runs before the package is installed; a test checks it).
-EXPERIMENTS = ("phase1_input_representation", "phase2_ptbxl_pretraining")
+EXPERIMENTS = (
+    "phase1_input_representation", "phase2_baseline_classifiers", "phase2_quality_metrics", "phase2_ptbxl_pretraining",
+    "phase3_cvae", "phase3_wgan_gp", "phase4_augmentation_policy", "phase5_explainability", "phase5_clinical_notes",
+)  # fmt: skip
+RESULT_FOLDERS = (*EXPERIMENTS, "phase4_full_grid")  # every experiment's results, plus the full grid's ledger
 EXTRA_RESULT_FILES = ("results/phase2_ptbxl_data/ptbxl_preprocessing.json",)
+BANKS = "data/synthetic"  # synthetic banks of final generator runs: in the zip, never pushed (too big for git)
 
 
 def sh(cmd: list[str], check: bool = True) -> int:
@@ -51,26 +57,71 @@ def setup_env(mode: str) -> list[str]:
     raise ValueError(f"unknown env mode {mode!r}")
 
 
+RAW_CHECKSUMS = "results/phase1_data/raw_checksums.json"  # SHA-256 of all 144 files, matched against PhysioNet in phase 1
+RAW_EXTENSIONS = (".hea", ".dat", ".atr")
+
+
 def find_raw(raw_dir: Path) -> Path:
-    """The folder under ``raw_dir`` that holds the record files (Kaggle datasets may nest them)."""
-    hits = sorted(raw_dir.rglob("100.dat"))
+    """The folder under ``raw_dir`` that holds the MIT-BIH record files (Kaggle datasets may nest them)."""
+    hits = sorted(p.parent for p in Path(raw_dir).rglob("100.dat") if (p.parent / "100.hea").is_file() and (p.parent / "100.atr").is_file())
     if not hits:
-        raise FileNotFoundError(f"no MIT-BIH record files (100.dat) under {raw_dir}")
-    return hits[0].parent
+        raise FileNotFoundError(
+            f"no MIT-BIH record files (100.dat, 100.hea, 100.atr) under {raw_dir}. "
+            "Add Input: the team's mitdb-raw dataset (made with kaggle/make_raw_dataset.py). Nothing is downloaded."
+        )
+    return hits[0]
 
 
-def setup_data(run: list[str], raw_dir: str | None) -> None:
-    """Copy attached raw files or download them, then verify every file against PhysioNet."""
-    target = REPO / "data" / "raw" / "mitdb"
-    if raw_dir:
-        source = find_raw(Path(raw_dir))
+def setup_data(raw_dir: str, repo: Path = REPO) -> int:
+    """Copy the attached raw files into ``data/raw/mitdb`` and check each against the committed checksums.
+
+    No download and no network: the reference is ``results/phase1_data/raw_checksums.json``, whose hashes
+    matched PhysioNet's published list in phase 1. Returns the number of files copied.
+    """
+    import hashlib
+
+    expected = json.loads((repo / RAW_CHECKSUMS).read_text())["files"]
+    source = find_raw(Path(raw_dir))
+    target = repo / "data" / "raw" / "mitdb"
+    target.mkdir(parents=True, exist_ok=True)
+    problems = []
+    for name, digest in sorted(expected.items()):
+        path = source / name
+        if not path.is_file():
+            problems.append(f"missing {name}")
+            continue
+        if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+            problems.append(f"checksum mismatch for {name}")
+            continue
+        shutil.copy2(path, target / name)
+    if problems:
+        raise RuntimeError(f"The MIT-BIH files in {source} are not the verified ones: {'; '.join(problems[:10])}"
+                           + (f" (and {len(problems) - 10} more)" if len(problems) > 10 else ""))  # fmt: skip
+    print(f"MIT-BIH: {len(expected)} files from {source} copied and matched against {RAW_CHECKSUMS}", flush=True)
+    return len(expected)
+
+
+def setup_artifacts(artifacts_dir: str, repo: Path = REPO) -> list[str]:
+    """Copy artifacts from an attached Kaggle dataset (an extracted Kaggle zip, or several):
+    synthetic banks (folders holding a bank.json) into ``data/synthetic/``, and files of run folders
+    (checkpoints, predictions) into ``runs/`` where they are missing. Nothing is overwritten; every run
+    checks banks and checkpoints against their recorded SHA-256 before using them."""
+    copied = []
+    for meta in sorted(Path(artifacts_dir).rglob("bank.json")):
+        target = repo / BANKS / meta.parent.name
         target.mkdir(parents=True, exist_ok=True)
-        for path in source.iterdir():
-            if path.suffix in (".hea", ".dat", ".atr"):
+        for path in sorted(p for p in meta.parent.iterdir() if p.is_file()):
+            if not (target / path.name).exists():
                 shutil.copy2(path, target / path.name)
-        sh([*run, "ecgaug.data.raw", "--skip-download"])
-    else:
-        sh([*run, "ecgaug.data.raw"])
+                copied.append(f"{BANKS}/{meta.parent.name}/{path.name}")
+    for runs_root in sorted(p for p in Path(artifacts_dir).rglob("runs") if p.is_dir()):
+        for path in sorted(p for p in runs_root.rglob("*") if p.is_file()):
+            target = repo / "runs" / path.relative_to(runs_root)
+            if not target.exists():
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(path, target)
+                copied.append(str(target.relative_to(repo)))
+    return copied
 
 
 def git_sha() -> str:
@@ -79,11 +130,12 @@ def git_sha() -> str:
 
 
 def bundle(out_dir: Path, manifest: dict, repo: Path = REPO) -> Path | None:
-    """Zip runs/, each experiment's results/ folder, figures and the PTB-XL report; None if nothing ran."""
+    """Zip runs/, each experiment's results/ folder, figures, the PTB-XL report and any synthetic banks;
+    None if nothing ran."""
     staging = out_dir / "_bundle"
     shutil.rmtree(staging, ignore_errors=True)
     found = False
-    for rel in ("runs", *(f"results/{name}" for name in EXPERIMENTS)):
+    for rel in ("runs", *(f"results/{name}" for name in RESULT_FOLDERS)):
         if (repo / rel).is_dir() and any((repo / rel).rglob("*")):
             shutil.copytree(repo / rel, staging / rel)
             found = True
@@ -93,6 +145,8 @@ def bundle(out_dir: Path, manifest: dict, repo: Path = REPO) -> Path | None:
         if found and (repo / rel).is_file():
             (staging / rel).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(repo / rel, staging / rel)
+    if found and (repo / BANKS).is_dir():
+        shutil.copytree(repo / BANKS, staging / BANKS)
     if not found:
         return None
     (staging / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
@@ -116,7 +170,7 @@ def push_results(branch: str, message: str, name: str, email: str, repo: Path = 
     """
     if any((repo / "runs").rglob("preds_test*")):
         raise RuntimeError("A run carries test predictions; nothing is pushed. Stop and report this to the team.")
-    paths = [p for p in (*RESULT_PATHS, *(f"results/{e}" for e in EXPERIMENTS)) if (repo / p).exists()]
+    paths = [p for p in (*RESULT_PATHS, *(f"results/{e}" for e in RESULT_FOLDERS)) if (repo / p).exists()]
     subprocess.run(["git", "add", "--", *paths], cwd=repo, check=True)
     if subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=repo).returncode == 0:
         return None
@@ -134,7 +188,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--config", nargs="+", required=True, help="one or more config files, run in order")
     parser.add_argument("--cli", default="ecgaug.experiments.phase1_input_representation", help="package CLI that runs a config")
     parser.add_argument("--env", default="locked", choices=["locked", "kaggle", "none"])
-    parser.add_argument("--raw-dir", default=None, help="folder with the raw MIT-BIH files (else download)")
+    parser.add_argument("--raw-dir", default="/kaggle/input", help="folder searched for the raw MIT-BIH files (the attached mitdb-raw dataset)")
+    parser.add_argument("--artifacts-dir", default=None, help="attached dataset holding banks and run checkpoints (phase 4 and 5 runs need them)")
     parser.add_argument("--out", default="/kaggle/working", help="where the bundle zip is written")
     parser.add_argument("--push-to", default=None, metavar="BRANCH", help="commit the outputs and push them to this branch")
     parser.add_argument("--git-name", default="", help="author name for the results commit")
@@ -143,7 +198,15 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     run = setup_env(args.env)
-    setup_data(run, args.raw_dir)
+    if "--smoke" not in args.extra:  # smoke runs make their own fake records
+        try:
+            setup_data(args.raw_dir)
+        except (FileNotFoundError, RuntimeError) as err:
+            print(f"!! {err}", flush=True)
+            return 2
+    if args.artifacts_dir:
+        copied = setup_artifacts(args.artifacts_dir)
+        print(f"artifacts copied from {args.artifacts_dir}: {len(copied)} files", flush=True)
 
     results = {}
     for config in args.config:

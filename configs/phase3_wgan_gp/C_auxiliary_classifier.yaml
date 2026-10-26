@@ -1,0 +1,5 @@
+base: generator_settings.yaml
+variant: C
+description: AC-WGAN-GP, an auxiliary class head on the critic trained on real beats; the generator is also rewarded for beats classified as the intended class.
+generator:
+  conditioning: auxiliary

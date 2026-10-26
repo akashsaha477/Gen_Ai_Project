@@ -23,7 +23,8 @@ import numpy as np
 import yaml
 
 from ecgaug import paths
-from ecgaug.names import EXPERIMENTS as EXPERIMENT_RESULTS
+from ecgaug.names import RESULT_FOLDERS as EXPERIMENT_RESULTS
+from ecgaug.names import PHASE3_CVAE, PHASE3_WGAN_GP
 
 RUN_ID_RE = re.compile(
     r"^(?P<experiment>phase(?P<phase>\d)_[a-z0-9_]+)-(?P<variant>[A-Za-z0-9]+?)(?:\.(?P<tag>.+?))?"
@@ -47,7 +48,7 @@ def _git(*args: str) -> str | None:
         )
     except (OSError, subprocess.CalledProcessError):
         return None
-    return out.stdout.strip()
+    return out.stdout.rstrip("\n")  # not strip(): porcelain lines start with a meaningful space (" M path")
 
 
 def git_sha(short: bool = False) -> str:
@@ -119,26 +120,31 @@ def capture_env(device: str) -> dict:
     }
 
 
-def _variant_folder(letter: str) -> str:
+def _variant_folder(experiment: str, letter: str) -> str:
     """The config name of a variant letter, e.g. A -> A_short_window (the letter if no config is found)."""
-    hits = sorted((paths.configs_dir() / "phase1_input_representation").glob(f"{letter}_*.yaml"))
-    return hits[0].stem if hits else letter
+    for folder in (experiment, "phase1_input_representation"):
+        hits = sorted((paths.configs_dir() / folder).glob(f"{letter}_*.yaml"))
+        if hits:
+            return hits[0].stem
+    return letter
 
 
 def default_group(run_id: str) -> tuple[str, ...]:
     """The folder a run belongs in, worked out from its ID: ``<experiment>/<variant>[/<kind>]``.
 
-    Used for runs that arrive without a folder. Phase 2 PTB-XL runs also get their kind:
-    ``pretrain``, ``scratch`` or ``finetune``.
+    Used for runs that arrive without a folder. Phase 2 PTB-XL runs also get their kind
+    (``pretrain``, ``scratch`` or ``finetune``), phase 3 generator runs theirs (``pilot`` or ``final``).
     """
     parts = parse_run_id(run_id)
-    label = parts["variant"]
+    experiment, label = parts["experiment"], parts["variant"]
     kind = re.fullmatch(rf"({'|'.join(ARM_KINDS)})([A-Z])", label)
     if kind:
-        return (parts["experiment"], _variant_folder(kind.group(2)), kind.group(1))
+        return (experiment, _variant_folder(experiment, kind.group(2)), kind.group(1))
     if re.fullmatch(r"[A-Z]", label):
-        return (parts["experiment"], _variant_folder(label))
-    return (parts["experiment"], label)
+        if experiment in (PHASE3_CVAE, PHASE3_WGAN_GP):
+            return (experiment, _variant_folder(experiment, label), "final" if (parts["tag"] or "").startswith("final") else "pilot")
+        return (experiment, _variant_folder(experiment, label))
+    return (experiment, label)
 
 
 def find_run_dir(run_id: str) -> Path | None:
@@ -250,7 +256,7 @@ def ingest(sources: list[Path]) -> dict:
     """
     report: dict = {
         "ingested": [], "skipped_identical": [], "conflicts": [], "refused": [], "incomplete": [],
-        "result_files": [], "result_conflicts": [],
+        "result_files": [], "result_conflicts": [], "bank_files": [], "bank_conflicts": [],
     }  # fmt: skip
     with tempfile.TemporaryDirectory() as tmp:
         candidates: list[Path] = []
@@ -316,6 +322,8 @@ def ingest(sources: list[Path]) -> dict:
                     dst.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(src, dst)  # figures are regenerated output, so a newer one replaces an older one
                     report["result_files"].append(f"figures/{relative}")
+            # Synthetic banks made by final generator runs (data/synthetic/<generator>/), too big for git.
+            _ingest_banks(root / "data" / "synthetic", report)
             # Reports that only exist where the full data was processed (PTB-XL on Kaggle).
             for folder, files in INGESTED_DATA_REPORTS.items():
                 for name in files:
@@ -331,3 +339,31 @@ def ingest(sources: list[Path]) -> dict:
                         shutil.copy2(src, dst)
                         report["result_files"].append(f"{folder}/{name}")
     return report
+
+
+def _ingest_banks(source: Path, report: dict) -> None:
+    """Copy bank files into ``data/synthetic/``; never overwrite one, and merge ``bank.json`` by seed."""
+    if not source.is_dir():
+        return
+    target = paths.repo_root() / "data" / "synthetic"
+    for src in sorted(p for p in source.rglob("*") if p.is_file()):
+        relative = src.relative_to(source)
+        dst = target / relative
+        if src.name == "bank.json":
+            incoming = json.loads(src.read_text())
+            merged = json.loads(dst.read_text()) if dst.is_file() else {**incoming, "seeds": {}}
+            for seed, entry in incoming["seeds"].items():
+                if seed in merged["seeds"] and merged["seeds"][seed] != entry:
+                    report["bank_conflicts"].append(f"{relative} seed {seed}")
+                    continue
+                merged["seeds"][seed] = entry
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            dst.write_text(json.dumps(merged, indent=2) + "\n")
+            continue
+        if dst.exists():
+            if dst.read_bytes() != src.read_bytes():
+                report["bank_conflicts"].append(str(relative))
+            continue
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
+        report["bank_files"].append(f"data/synthetic/{relative}")
