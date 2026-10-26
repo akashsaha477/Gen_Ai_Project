@@ -147,3 +147,15 @@ Choices made where the plan left the detail open (each one needs the team's agre
 | A14.13 | Explainability: selection on the mean faithfulness gain over the three models of an architecture (none, cVAE, WGAN-GP), ties by stability, then the cheaper method; integrated gradients averages the zero and per-beat-mean baselines; SmoothGrad (not gradient x input) for C; occlusion window 50 ms, stride 25 ms. | PLAN Phase 5 lists options without fixing them. | `explain/`, `configs/phase5_explainability/` |
 | A14.14 | Notes: low-confidence rule "top probability below 0.6" (proposed; to pre-register before phase 5 runs); LLM provider through the standard library, model from `ECGAUG_LLM_MODEL` (default `llm-model`), key from `LLM_API_KEY` only; note variant chosen by the hard gate, then coverage, ratings, latency, tokens. | PLAN Phase 5. | `report/notes.py` |
 | A14.15 | The paper's `refs.bib` stays empty until each entry is verified from its DOI or arXiv page. | No invented references (rule 5, /paper). | `paper/` |
+
+## 2026-10-26 (Day 20) — A15: early-stopping fix and Kaggle pushes — decided by Akash Saha, PENDING TEAM CONFIRMATION
+
+- **A15.1 `min_epochs: 10`** from phase 2 on (option 1 of docs/PHASE1_REPORT.md §6): patience is not
+  allowed to stop a run before epoch 10. Applies to the phase 2 baselines (and through the phase 2 gate
+  to phases 3–4), the PTB-XL fine-tuning arms and every preview stand-in classifier. Not applied to
+  phase 1 (its decision stands) or to the fixed TSTR and feature-net recipes. Fixed before any official
+  phase 2 run; PREREGISTRATION §4 and §11 updated. The phase 3 pilot classifier had dropped
+  `min_epochs`; fixed with a test.
+- **A15.2 Kaggle notebooks no longer push by default** (`PUSH_RESULTS = False`). Results come back as the
+  output zip, are brought in with `kaggle/ingest_runs.py` and committed by the member under their own
+  name. `True` still works.

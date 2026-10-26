@@ -5,7 +5,7 @@ seeds: [0, 1, 2]
 lr_grid: [1.0e-3, 3.0e-4]
 max_epochs: 40
 patience: 5
-min_epochs: 0                  # 0 = the pre-registered rule; 10 is the fix proposed in docs/PHASE1_REPORT.md §6 (team decision)
+min_epochs: 10                 # no early stop before epoch 10 (DECISIONS A15, PHASE1_REPORT.md §6)
 batch_size: 256
 weight_decay: 0.01
 device: auto

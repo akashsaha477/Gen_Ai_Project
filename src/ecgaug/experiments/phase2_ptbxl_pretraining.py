@@ -57,7 +57,7 @@ from ecgaug.models import build_model, load_encoder
 from ecgaug.train.loop import TrainConfig, fit_multilabel, resolve_device, set_seed
 
 VARIANT_KEYS = {"base", "variant", "description", "representation_from"}
-SHARED_KEYS = {"experiment", "pretrain"}
+SHARED_KEYS = {"experiment", "pretrain", "min_epochs"}  # min_epochs: fine-tuning only (DECISIONS A15)
 PRETRAIN_KEYS = {"lr", "max_epochs", "patience", "batch_size", "weight_decay"}
 ARMS = ("scratch", "pretrained")
 EXPERIMENT = PHASE2_PTBXL_PRETRAINING
@@ -238,7 +238,7 @@ def run(cfg: dict, split: Split, ptbxl_arrays: dict, device_name: str | None = N
             "partial_run": ptbxl_report.get("partial_run"),
         },
         "alignment_with_mitbih_train": alignment,
-        "budget": {k: cfg[k] for k in BUDGET_KEYS},
+        "budget": {**{k: cfg[k] for k in BUDGET_KEYS}, "min_epochs": int(cfg.get("min_epochs", 0))},
         "budget_deviations": [],
         "device": str(device),
         "git_sha": runs.git_sha(),

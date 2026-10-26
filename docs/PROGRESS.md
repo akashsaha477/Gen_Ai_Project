@@ -435,3 +435,16 @@ Open issues:
 - Phase 1 gate approval and the `min_epochs` decision (PHASE1_REPORT §6) are with the team.
 
 Next: team approves the phase 1 gate; merge `finish-project` into `main`; phase 2 on Kaggle.
+
+## 2026-10-26 (Day 20): finish-project merged; early-stopping fix; no Kaggle pushes
+
+Done:
+- `finish-project` merged into `main` (PR #3), so the notebooks' default `GIT_REF = "main"` has phases 2-6.
+- DECISIONS A15.1: `min_epochs: 10` from phase 2 on (PREREGISTRATION §4, §11). The phase 3 pilot
+  classifier dropped `min_epochs`; fixed with a test.
+- DECISIONS A15.2: notebooks default to `PUSH_RESULTS = False`; results come back via `ingest_runs.py`.
+- Tests: 274 pass.
+
+Open issues: the phase 1 gate approval (needs the exact reply `approve gate 1` and a machine with MIT-BIH).
+
+Next: approve the phase 1 gate; phase 2 on Kaggle.
