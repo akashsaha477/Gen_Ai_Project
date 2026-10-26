@@ -1,0 +1,44 @@
+{
+  "phase1_gate": {
+    "winner": "C",
+    "config": "configs/phase1_input_representation/C_short_window_rr_features.yaml",
+    "approved_by": [
+      "Akash Saha"
+    ],
+    "approved_on": "2026-10-26",
+    "git_sha": "db9de5d362879d5ddd989b4efe54068159123112",
+    "dataset": "data/processed/v1",
+    "files": {
+      "trainval.npz": {
+        "sha256": "2ef913503c8689f9ed5ed1e457ed457c3cfefd553073983262838fff4ef9d52c",
+        "content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896",
+        "n_beats": 50969
+      },
+      "test.npz": {
+        "sha256": "a983fe321551d56cdfae0f7100c6d0c3c4637bcf1e012c6b33fe370a8e806823",
+        "content_sha256": "cc8eb8969dc1ceacf97221c3ba6b8e2f400744da1e02a5c0d476e407fd68b692",
+        "n_beats": 49660
+      }
+    },
+    "counts": {
+      "train": {
+        "N": 35464,
+        "S": 643,
+        "V": 3030,
+        "F": 387
+      },
+      "val": {
+        "N": 10360,
+        "S": 300,
+        "V": 758,
+        "F": 27
+      },
+      "test": {
+        "N": 44217,
+        "S": 1836,
+        "V": 3219,
+        "F": 388
+      }
+    }
+  }
+}
