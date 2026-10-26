@@ -6,9 +6,9 @@ standard library, so it runs with the system Python before the project environme
     python kaggle/kaggle_run.py --config configs/phase1_input_representation/A_short_window.yaml -- --device cuda
     python kaggle/kaggle_run.py --config configs/phase1_input_representation/A_short_window.yaml configs/phase1_input_representation/B_long_window_bandpass.yaml --raw-dir /kaggle/input
 
-Steps: install the environment, copy the raw MIT-BIH files from the attached Kaggle dataset and check
-them against the committed checksums (nothing is downloaded), run each config through its package CLI,
-and zip runs/ plus the variant result files for kaggle/ingest_runs.py.
+Steps: install the environment, copy the raw MIT-BIH files from the attached Kaggle dataset (or, if none
+is attached, download them from PhysioNet's AWS mirror) and check them against the committed checksums,
+run each config through its package CLI, and zip runs/ plus the variant result files for kaggle/ingest_runs.py.
 """
 
 from __future__ import annotations
@@ -59,6 +59,7 @@ def setup_env(mode: str) -> list[str]:
 
 RAW_CHECKSUMS = "results/phase1_data/raw_checksums.json"  # SHA-256 of all 144 files, matched against PhysioNet in phase 1
 RAW_EXTENSIONS = (".hea", ".dat", ".atr")
+RAW_MIRROR = "https://physionet-open.s3.amazonaws.com/mitdb/1.0.0"  # PhysioNet's open-data mirror on AWS
 
 
 def find_raw(raw_dir: Path) -> Path:
@@ -67,21 +68,47 @@ def find_raw(raw_dir: Path) -> Path:
     if not hits:
         raise FileNotFoundError(
             f"no MIT-BIH record files (100.dat, 100.hea, 100.atr) under {raw_dir}. "
-            "Add Input: the team's mitdb-raw dataset (made with kaggle/make_raw_dataset.py). Nothing is downloaded."
+            "Attach the team's mitdb-raw dataset (kaggle/make_raw_dataset.py); CSV conversions do not count."
         )
     return hits[0]
 
 
-def setup_data(raw_dir: str, repo: Path = REPO) -> int:
-    """Copy the attached raw files into ``data/raw/mitdb`` and check each against the committed checksums.
+def download_raw(names: list[str], dest: Path, mirror: str = RAW_MIRROR, tries: int = 3) -> Path:
+    """Download the record files from PhysioNet's AWS mirror into ``dest`` (checked by the caller)."""
+    import time
+    import urllib.request
 
-    No download and no network: the reference is ``results/phase1_data/raw_checksums.json``, whose hashes
-    matched PhysioNet's published list in phase 1. Returns the number of files copied.
+    dest.mkdir(parents=True, exist_ok=True)
+    for name in names:
+        for attempt in range(tries):
+            try:
+                with urllib.request.urlopen(f"{mirror}/{name}", timeout=60) as response:  # noqa: S310 (fixed https URL)
+                    (dest / name).write_bytes(response.read())
+                break
+            except OSError as err:
+                if attempt == tries - 1:
+                    raise FileNotFoundError(f"could not download {name} from {mirror}: {err}") from err
+                time.sleep(2 ** attempt)
+    return dest
+
+
+def setup_data(raw_dir: str, repo: Path = REPO, mirror: str | None = RAW_MIRROR) -> int:
+    """Copy the raw files into ``data/raw/mitdb`` and check each against the committed checksums.
+
+    The files come from the attached dataset under ``raw_dir``; if none is attached, from ``mirror``
+    (None: never download). Either way every file must match ``results/phase1_data/raw_checksums.json``,
+    whose hashes matched PhysioNet's published list in phase 1. Returns the number of files copied.
     """
     import hashlib
 
     expected = json.loads((repo / RAW_CHECKSUMS).read_text())["files"]
-    source = find_raw(Path(raw_dir))
+    try:
+        source = find_raw(Path(raw_dir))
+    except FileNotFoundError as err:
+        if mirror is None:
+            raise
+        print(f"{err}\nDownloading the original files from {mirror} instead.", flush=True)
+        source = download_raw(sorted(expected), repo / "data" / "raw" / "_download", mirror)
     target = repo / "data" / "raw" / "mitdb"
     target.mkdir(parents=True, exist_ok=True)
     problems = []
@@ -97,6 +124,8 @@ def setup_data(raw_dir: str, repo: Path = REPO) -> int:
     if problems:
         raise RuntimeError(f"The MIT-BIH files in {source} are not the verified ones: {'; '.join(problems[:10])}"
                            + (f" (and {len(problems) - 10} more)" if len(problems) > 10 else ""))  # fmt: skip
+    if source.name == "_download":
+        shutil.rmtree(source)
     print(f"MIT-BIH: {len(expected)} files from {source} copied and matched against {RAW_CHECKSUMS}", flush=True)
     return len(expected)
 
@@ -189,6 +218,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cli", default="ecgaug.experiments.phase1_input_representation", help="package CLI that runs a config")
     parser.add_argument("--env", default="locked", choices=["locked", "kaggle", "none"])
     parser.add_argument("--raw-dir", default="/kaggle/input", help="folder searched for the raw MIT-BIH files (the attached mitdb-raw dataset)")
+    parser.add_argument("--no-download", action="store_true", help="refuse instead of downloading when no raw files are attached")
     parser.add_argument("--artifacts-dir", default=None, help="attached dataset holding banks and run checkpoints (phase 4 and 5 runs need them)")
     parser.add_argument("--out", default="/kaggle/working", help="where the bundle zip is written")
     parser.add_argument("--push-to", default=None, metavar="BRANCH", help="commit the outputs and push them to this branch")
@@ -200,7 +230,7 @@ def main(argv: list[str] | None = None) -> int:
     run = setup_env(args.env)
     if "--smoke" not in args.extra:  # smoke runs make their own fake records
         try:
-            setup_data(args.raw_dir)
+            setup_data(args.raw_dir, mirror=None if args.no_download else RAW_MIRROR)
         except (FileNotFoundError, RuntimeError) as err:
             print(f"!! {err}", flush=True)
             return 2
