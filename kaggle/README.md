@@ -60,7 +60,7 @@ The four input variants, used by both notebooks:
 ## One-time setup by the repo owner
 
 1. Add the other three members as collaborators on GitHub (the repo is private).
-2. Build the raw-data zip on a machine that has the verified download:
+2. Optional (notebooks download from PhysioNet's AWS mirror when nothing is attached). Build the raw-data zip on a machine that has the verified download:
    ```
    uv run python -m ecgaug.data.raw           # only if data/raw/mitdb is not there yet
    uv run python kaggle/make_raw_dataset.py   # writes data/kaggle/mitdb-raw.zip (66 MB)
@@ -94,7 +94,7 @@ The token is read from Kaggle Secrets, never printed and never put in a URL. Do 
    | `GIT_REF` | your branch (`variant/phase1_input_representation_A`) or a full commit SHA |
    | `DEVICE` | `"auto"` uses the GPU when the session has one |
    | `ENV_MODE` | `locked` (exact `uv.lock` versions) or `kaggle` (see below) |
-   | `RAW_DATASET_DIR` | leave as `/kaggle/input`: the attached `mitdb-raw` files are found there, checked against `results/phase1_data/raw_checksums.json` and copied. MIT-BIH is never downloaded on Kaggle |
+   | `RAW_DATASET_DIR` | leave as `/kaggle/input`: the attached `mitdb-raw` files are found there; if none are attached (a CSV conversion does not count), the original files are downloaded from PhysioNet's AWS mirror (about 30 s). Either way every file is checked against `results/phase1_data/raw_checksums.json` |
    | `PTBXL_SOURCE` | pretraining notebook only: `/kaggle/input` (an attached PTB-XL copy, found automatically) or `"download"` |
    | `PREVIEW` | pretraining notebook only: `True` to run before the phase 1 gate or for another variant |
    | `PUSH_RESULTS` | `False` (default): nothing is pushed from Kaggle. `True` commits the results and pushes them to `GIT_REF` |
@@ -176,7 +176,8 @@ Things to know:
 | symptom | cause and fix |
 |---|---|
 | `git clone` fails | the `GITHUB_TOKEN` secret is missing, not ticked for this notebook, expired, or you are not a collaborator |
-| `no MIT-BIH record files` or a checksum problem | the `mitdb-raw` dataset is not attached or is damaged; attach it (Add Input) and run again |
+| `could not download ... from https://physionet-open...` | Internet is off in the notebook, or the mirror is unreachable; turn Internet on, or attach `mitdb-raw` |
+| a checksum problem | the attached files are not the original PhysioNet ones (or are damaged); detach that dataset so the mirror is used, or attach `mitdb-raw` |
 | exit code 2, "Phase 1 is not finished" | the phase 1 gate is not approved yet (`results/manifest.json` is missing on the branch you run): approve it on a laptop and push, or set `PREVIEW = True` for a provisional run |
 | exit code 2, "Refusing to run" | approved split missing, checkout differs from the commit, PTB-XL not available, or (pretraining) phase 1 gate not approved or a different variant chosen; the message says which |
 | "The PTB-XL copy ... is incomplete" | the attached copy has no `records500/` folder; attach another or set `PTBXL_SOURCE = "download"` |
