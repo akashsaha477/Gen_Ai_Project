@@ -4,10 +4,11 @@ Called by the notebooks in this folder after they have cloned the repository. Us
 standard library, so it runs with the system Python before the project environment exists.
 
     python kaggle/kaggle_run.py --config configs/phase1_input_representation/A_short_window.yaml -- --device cuda
-    python kaggle/kaggle_run.py --config configs/phase1_input_representation/A_short_window.yaml configs/phase1_input_representation/B_long_window_bandpass.yaml --raw-dir /kaggle/input/mitdb-raw
+    python kaggle/kaggle_run.py --config configs/phase1_input_representation/A_short_window.yaml configs/phase1_input_representation/B_long_window_bandpass.yaml --raw-dir /kaggle/input
 
-Steps: install the environment, get and verify the raw data, run each config through its package
-CLI, and zip runs/ plus the variant result files for kaggle/ingest_runs.py.
+Steps: install the environment, copy the raw MIT-BIH files from the attached Kaggle dataset and check
+them against the committed checksums (nothing is downloaded), run each config through its package CLI,
+and zip runs/ plus the variant result files for kaggle/ingest_runs.py.
 """
 
 from __future__ import annotations
@@ -56,26 +57,48 @@ def setup_env(mode: str) -> list[str]:
     raise ValueError(f"unknown env mode {mode!r}")
 
 
+RAW_CHECKSUMS = "results/phase1_data/raw_checksums.json"  # SHA-256 of all 144 files, matched against PhysioNet in phase 1
+RAW_EXTENSIONS = (".hea", ".dat", ".atr")
+
+
 def find_raw(raw_dir: Path) -> Path:
-    """The folder under ``raw_dir`` that holds the record files (Kaggle datasets may nest them)."""
-    hits = sorted(raw_dir.rglob("100.dat"))
+    """The folder under ``raw_dir`` that holds the MIT-BIH record files (Kaggle datasets may nest them)."""
+    hits = sorted(p.parent for p in Path(raw_dir).rglob("100.dat") if (p.parent / "100.hea").is_file() and (p.parent / "100.atr").is_file())
     if not hits:
-        raise FileNotFoundError(f"no MIT-BIH record files (100.dat) under {raw_dir}")
-    return hits[0].parent
+        raise FileNotFoundError(
+            f"no MIT-BIH record files (100.dat, 100.hea, 100.atr) under {raw_dir}. "
+            "Add Input: the team's mitdb-raw dataset (made with kaggle/make_raw_dataset.py). Nothing is downloaded."
+        )
+    return hits[0]
 
 
-def setup_data(run: list[str], raw_dir: str | None) -> None:
-    """Copy attached raw files or download them, then verify every file against PhysioNet."""
-    target = REPO / "data" / "raw" / "mitdb"
-    if raw_dir:
-        source = find_raw(Path(raw_dir))
-        target.mkdir(parents=True, exist_ok=True)
-        for path in source.iterdir():
-            if path.suffix in (".hea", ".dat", ".atr"):
-                shutil.copy2(path, target / path.name)
-        sh([*run, "ecgaug.data.raw", "--skip-download"])
-    else:
-        sh([*run, "ecgaug.data.raw"])
+def setup_data(raw_dir: str, repo: Path = REPO) -> int:
+    """Copy the attached raw files into ``data/raw/mitdb`` and check each against the committed checksums.
+
+    No download and no network: the reference is ``results/phase1_data/raw_checksums.json``, whose hashes
+    matched PhysioNet's published list in phase 1. Returns the number of files copied.
+    """
+    import hashlib
+
+    expected = json.loads((repo / RAW_CHECKSUMS).read_text())["files"]
+    source = find_raw(Path(raw_dir))
+    target = repo / "data" / "raw" / "mitdb"
+    target.mkdir(parents=True, exist_ok=True)
+    problems = []
+    for name, digest in sorted(expected.items()):
+        path = source / name
+        if not path.is_file():
+            problems.append(f"missing {name}")
+            continue
+        if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+            problems.append(f"checksum mismatch for {name}")
+            continue
+        shutil.copy2(path, target / name)
+    if problems:
+        raise RuntimeError(f"The MIT-BIH files in {source} are not the verified ones: {'; '.join(problems[:10])}"
+                           + (f" (and {len(problems) - 10} more)" if len(problems) > 10 else ""))  # fmt: skip
+    print(f"MIT-BIH: {len(expected)} files from {source} copied and matched against {RAW_CHECKSUMS}", flush=True)
+    return len(expected)
 
 
 def setup_artifacts(artifacts_dir: str, repo: Path = REPO) -> list[str]:
@@ -165,7 +188,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--config", nargs="+", required=True, help="one or more config files, run in order")
     parser.add_argument("--cli", default="ecgaug.experiments.phase1_input_representation", help="package CLI that runs a config")
     parser.add_argument("--env", default="locked", choices=["locked", "kaggle", "none"])
-    parser.add_argument("--raw-dir", default=None, help="folder with the raw MIT-BIH files (else download)")
+    parser.add_argument("--raw-dir", default="/kaggle/input", help="folder searched for the raw MIT-BIH files (the attached mitdb-raw dataset)")
     parser.add_argument("--artifacts-dir", default=None, help="attached dataset holding banks and run checkpoints (phase 4 and 5 runs need them)")
     parser.add_argument("--out", default="/kaggle/working", help="where the bundle zip is written")
     parser.add_argument("--push-to", default=None, metavar="BRANCH", help="commit the outputs and push them to this branch")
@@ -175,7 +198,12 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     run = setup_env(args.env)
-    setup_data(run, args.raw_dir)
+    if "--smoke" not in args.extra:  # smoke runs make their own fake records
+        try:
+            setup_data(args.raw_dir)
+        except (FileNotFoundError, RuntimeError) as err:
+            print(f"!! {err}", flush=True)
+            return 2
     if args.artifacts_dir:
         copied = setup_artifacts(args.artifacts_dir)
         print(f"artifacts copied from {args.artifacts_dir}: {len(copied)} files", flush=True)
