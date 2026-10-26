@@ -458,3 +458,13 @@ Next: approve the phase 1 gate; phase 2 on Kaggle.
 - Test file built under `ALLOW_TEST_BUILD=1` (construction access, logged).
 
 Next: phase 2 on Kaggle (baselines, quality metrics, PTB-XL with C).
+
+## 2026-10-26 (Day 20): Kaggle gets MIT-BIH from PhysioNet's AWS mirror
+
+- Kaggle run refused: the attached `kartheekdasari/mitbh-ecg` is a CSV/TXT conversion, not the record files.
+- `kaggle_run.py`: with no attached record files, the 144 originals are downloaded from
+  `physionet-open.s3.amazonaws.com/mitdb/1.0.0` and checked against the committed checksums (attached
+  files that do not match are still refused; `--no-download` restores the old behaviour). Tested with a
+  local mirror, and once against the real mirror (144 files, 33 s, all match). Tests: 275 pass.
+
+Next: rerun the phase 2 notebooks with `GIT_REF = "main"` and Internet on.
