@@ -160,10 +160,42 @@ def test_kaggle_bundle_round_trips_through_ingest(tmp_path):
     report = runs.ingest([archive])
     assert report["ingested"] == [run_id] and report["result_files"] == ["phase1_input_representation/A.json"]
 
-    nested = tmp_path / "input" / "mitdb-raw" / "files"
+    nested = tmp_path / "input" / "datasets" / "team" / "mitdb-raw" / "files"
     nested.mkdir(parents=True)
-    (nested / "100.dat").write_bytes(b"x")
+    for ext in ("dat", "hea", "atr"):
+        (nested / f"100.{ext}").write_bytes(b"x")
+    stray = tmp_path / "input" / "datasets" / "other" / "ptb-xl"
+    stray.mkdir(parents=True)
+    (stray / "100.dat").write_bytes(b"x")  # a lone 100.dat (no header, no annotations) is not a record folder
     assert kaggle_run.find_raw(tmp_path / "input") == nested
+    with pytest.raises(FileNotFoundError, match="mitdb-raw"):
+        kaggle_run.find_raw(stray)
+
+
+def test_raw_files_are_copied_only_if_they_match_the_committed_checksums(tmp_path):
+    import hashlib
+    import importlib.util
+
+    from conftest import REPO
+
+    spec = importlib.util.spec_from_file_location("kaggle_run", REPO / "kaggle" / "kaggle_run.py")
+    kaggle_run = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(kaggle_run)
+    source = tmp_path / "input" / "mitdb-raw"
+    source.mkdir(parents=True)
+    files = {f"100.{ext}": f"content {ext}".encode() for ext in ("dat", "hea", "atr")}
+    for name, data in files.items():
+        (source / name).write_bytes(data)
+    repo = tmp_path / "repo"
+    (repo / "results" / "phase1_data").mkdir(parents=True)
+    checksums = {name: hashlib.sha256(data).hexdigest() for name, data in files.items()}
+    (repo / kaggle_run.RAW_CHECKSUMS).write_text(json.dumps({"files": checksums}))
+    assert kaggle_run.setup_data(str(tmp_path / "input"), repo=repo) == 3
+    assert (repo / "data" / "raw" / "mitdb" / "100.atr").read_bytes() == files["100.atr"]
+
+    (source / "100.atr").write_bytes(b"changed")
+    with pytest.raises(RuntimeError, match="checksum mismatch for 100.atr"):
+        kaggle_run.setup_data(str(tmp_path / "input"), repo=repo)
 
 
 def test_ptbxl_report_travels_in_the_bundle_and_is_ingested(tmp_path):

@@ -378,3 +378,37 @@ Open issues:
 - Kaggle run times of phases 2-5 are not measured; the LLM notes are untried with a real key.
 
 Next: the team approves the phase 1 gate (and decides `min_epochs`); then phase 2 on Kaggle.
+
+## 2026-10-26 (Day 20): Kaggle uses the attached datasets only
+
+A phase2_ptbxl_pretraining session on Kaggle (commit 1c0b3b9) downloaded MIT-BIH from PhysioNet and then
+refused to run: "the phase 1 gate has not chosen the input variant yet".
+
+Causes:
+- The download happened because `RAW_DATASET_DIR` pointed at the PTB-XL dataset, which has no MIT-BIH
+  files, and the notebooks fell back to `python -m ecgaug.data.raw` (download plus verification).
+- The refusal is correct: the phase 1 gate report exists (`results/phase1_gate/report.md`, winner C),
+  but the gate was never approved, so there is no `results/manifest.json`. No data is missing. Every
+  non-preview run after phase 1 needs that manifest on the branch the notebook checks out.
+
+Done:
+- `kaggle/kaggle_run.py` no longer downloads MIT-BIH and no longer calls `ecgaug.data.raw`. It looks
+  for the record files under `--raw-dir` (default `/kaggle/input`, including the new
+  `/kaggle/input/datasets/<owner>/<name>` layout). It checks each of the 144 files against the
+  committed `results/phase1_data/raw_checksums.json`, which matched PhysioNet in phase 1, and then
+  copies them. No network is used. A missing or changed file stops the run with exit code 2 and a
+  message to attach `mitdb-raw`. Smoke runs skip this step.
+- All ten notebooks: the raw-data fallback is removed. The PTB-XL notebook finds an attached PTB-XL copy
+  under `/kaggle/input` by default (`"download"` is still an option) and defaults to variant C.
+- `ecgaug.data.raw` stays as a module: it is the only reader of raw files (test lock, DS2 guard). It
+  is just no longer run in Kaggle sessions.
+- Tests: the stricter file search, and the checksum copy (a match is copied; a changed file is refused).
+- kaggle/README.md: parameters and troubleshooting updated.
+
+Open issues:
+- Phase 2 cannot run without `PREVIEW = True` until the team approves the phase 1 gate and the resulting
+  `results/manifest.json` is pushed to the branch the notebooks run (`GIT_REF`).
+- The notebook that was run uses the fork `Manindrathatuthuri/Gen_Ai_Project` at `main`. These fixes
+  are on `akashsaha477/Gen_Ai_Project`, branch `finish-project`.
+
+Next: approve the phase 1 gate (team), push the manifest, and run phase2_ptbxl_pretraining with C.
