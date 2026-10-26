@@ -107,6 +107,7 @@ def test_config_takes_representation_and_budget_from_module_1():
         assert cfg["model"] == base["model"]
         assert cfg["experiment"] == "phase2_ptbxl_pretraining"
         assert set(cfg["pretrain"]) == pretrain.PRETRAIN_KEYS
+        assert cfg["min_epochs"] == 10  # fine-tuning only (DECISIONS A15)
 
 
 def test_config_cannot_change_the_fine_tuning_budget_or_point_at_another_variant(tmp_path):
@@ -172,7 +173,7 @@ def test_arm_end_to_end_on_fake_data(tmp_root):
     )
     assert result["decision"]["steps"][-1]["winner"] == result["winner"]
     assert result["alignment_with_mitbih_train"]["n_ptbxl_beats"] > 0
-    assert result["budget"] == {k: cfg[k] for k in BUDGET_KEYS} and result["budget_deviations"] == []
+    assert result["budget"] == {**{k: cfg[k] for k in BUDGET_KEYS}, "min_epochs": 10} and result["budget_deviations"] == []
 
     figure_dir = paths.repo_root() / "figures" / "phase2_ptbxl_pretraining" / "C"
     assert sorted(f.name for f in figure_dir.glob("*.png")) == [
