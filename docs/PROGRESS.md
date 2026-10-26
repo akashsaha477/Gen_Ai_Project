@@ -448,3 +448,13 @@ Done:
 Open issues: the phase 1 gate approval (needs the exact reply `approve gate 1` and a machine with MIT-BIH).
 
 Next: approve the phase 1 gate; phase 2 on Kaggle.
+
+## 2026-10-26 (Day 20): phase 1 gate approved
+
+- Approved by Akash Saha: winner C. `data/processed/v1` frozen, hashes in `results/manifest.json`.
+- Raw files from PhysioNet's AWS mirror (`physionet-open/mitdb/1.0.0`); all 144 match the committed
+  checksums and the mirror's SHA256SUMS. Train/val content hash equals the one the Kaggle C runs used.
+- Counts: train N 35,464 / S 643 / V 3,030 / F 387; val 10,360 / 300 / 758 / 27; test 44,217 / 1,836 / 3,219 / 388.
+- Test file built under `ALLOW_TEST_BUILD=1` (construction access, logged).
+
+Next: phase 2 on Kaggle (baselines, quality metrics, PTB-XL with C).
