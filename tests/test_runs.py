@@ -208,6 +208,38 @@ def test_raw_files_are_copied_only_if_they_match_the_committed_checksums(tmp_pat
         kaggle_run.setup_data(str(tmp_path / "input"), repo=repo)
 
 
+
+def test_raw_files_are_downloaded_from_the_mirror_only_when_none_are_attached(tmp_path):
+    import hashlib
+    import importlib.util
+
+    from conftest import REPO
+
+    spec = importlib.util.spec_from_file_location("kaggle_run", REPO / "kaggle" / "kaggle_run.py")
+    kaggle_run = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(kaggle_run)
+    mirror = tmp_path / "mirror"
+    mirror.mkdir()
+    files = {f"100.{ext}": f"content {ext}".encode() for ext in ("dat", "hea", "atr")}
+    for name, data in files.items():
+        (mirror / name).write_bytes(data)
+    (tmp_path / "input" / "mitbih-csv").mkdir(parents=True)
+    (tmp_path / "input" / "mitbih-csv" / "100.csv").write_text("a CSV conversion is not the record files")
+    repo = tmp_path / "repo"
+    (repo / "results" / "phase1_data").mkdir(parents=True)
+    checksums = {name: hashlib.sha256(data).hexdigest() for name, data in files.items()}
+    (repo / kaggle_run.RAW_CHECKSUMS).write_text(json.dumps({"files": checksums}))
+
+    assert kaggle_run.setup_data(str(tmp_path / "input"), repo=repo, mirror=mirror.as_uri()) == 3
+    assert (repo / "data" / "raw" / "mitdb" / "100.dat").read_bytes() == files["100.dat"]
+    assert not (repo / "data" / "raw" / "_download").exists()
+
+    with pytest.raises(FileNotFoundError, match="mitdb-raw"):
+        kaggle_run.setup_data(str(tmp_path / "input"), repo=repo, mirror=None)
+    (mirror / "100.hea").write_bytes(b"changed on the mirror")
+    with pytest.raises(RuntimeError, match="checksum mismatch for 100.hea"):
+        kaggle_run.setup_data(str(tmp_path / "input"), repo=repo, mirror=mirror.as_uri())
+
 def test_ptbxl_report_travels_in_the_bundle_and_is_ingested(tmp_path):
     import importlib.util
 
