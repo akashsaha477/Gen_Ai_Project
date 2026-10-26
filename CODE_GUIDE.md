@@ -495,10 +495,10 @@ precondition before the first test byte, predicts the test set with every frozen
   verifies it; then it runs each config through its runner; `bundle` zips `runs/` and the result
   files.
 - `make_raw_dataset.py`: zips the verified MIT-BIH files for upload as a Kaggle dataset.
-- `push_results(branch, message, name, email)` in `kaggle_run.py`: after the runs, commits only run
+- `push_results(branch, message, name, email)` in `kaggle_run.py` (only with `PUSH_RESULTS = True`, off by default): after the runs, commits only run
   outputs (run folders without weights, results, figures, runs index) and pushes them to the branch, or
   to a new `<branch>-kaggle-<time>` branch if the branch moved on. Refuses if a run carries test predictions.
-- `ingest_runs.py`: the backup path; calls `runs.ingest` on a downloaded zip (runs, result files,
+- `ingest_runs.py`: the default path; calls `runs.ingest` on a downloaded zip (runs, result files,
   figures, and synthetic banks, whose `bank.json` entries are merged by seed).
 - `setup_artifacts(dir)` in `kaggle_run.py`: copies banks and run checkpoints from an attached Kaggle
   dataset (`--artifacts-dir`), for the phase 4 and 5 notebooks.

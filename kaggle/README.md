@@ -21,7 +21,7 @@ the zip, and the way to bring back weights and banks).
 
 ## Weights and banks: the artifacts dataset
 
-Results, logs and figures reach GitHub by themselves. Model weights (`checkpoints/best.pt`) and the
+Nothing is pushed from Kaggle by default: results come back in the zip and you commit them yourself. Model weights (`checkpoints/best.pt`) and the
 synthetic banks (`data/synthetic/`, about 75 MB per seed) are too big for git: they are only in the zip
 in each notebook's Output.
 
@@ -97,19 +97,18 @@ The token is read from Kaggle Secrets, never printed and never put in a URL. Do 
    | `RAW_DATASET_DIR` | leave as `/kaggle/input`: the attached `mitdb-raw` files are found there, checked against `results/phase1_data/raw_checksums.json` and copied. MIT-BIH is never downloaded on Kaggle |
    | `PTBXL_SOURCE` | pretraining notebook only: `/kaggle/input` (an attached PTB-XL copy, found automatically) or `"download"` |
    | `PREVIEW` | pretraining notebook only: `True` to run before the phase 1 gate or for another variant |
-   | `PUSH_RESULTS` | `True` (default) commits the results and pushes them to `GIT_REF` |
-   | `GIT_NAME`, `GIT_EMAIL` | your name and GitHub email for that commit (required for the push) |
+   | `PUSH_RESULTS` | `False` (default): nothing is pushed from Kaggle. `True` commits the results and pushes them to `GIT_REF` |
+   | `GIT_NAME`, `GIT_EMAIL` | only with `PUSH_RESULTS = True`: your name and GitHub email for that commit |
 
 3. Run All. For long runs use Save Version > Save & Run All (Commit): it keeps running with the
    browser closed.
-4. When the run ends, the notebook commits the run folders, result files, figures and runs index
+4. With `PUSH_RESULTS = True` only: when the run ends, the notebook commits the run folders, result files, figures and runs index
    (never model weights) and pushes them to `GIT_REF`. The last lines of the output say where. In your
    clone: `git pull`.
    - If someone pushed to that branch while you were running, the results go to a new branch
      `<GIT_REF>-kaggle-<time>` instead, and you merge it with a pull request. Nothing is overwritten.
    - Nothing is pushed if a run failed, if a run carries test predictions, or for a smoke test.
-5. Backup: the same outputs are in `ecgaug_<sha>_<time>.zip` in the notebook's Output. If the push did not
-   happen, download it and run `uv run python kaggle/ingest_runs.py <zip>` in your clone, then commit
+5. Default: the outputs are in `ecgaug_<sha>_<time>.zip` in the notebook's Output. Download it and run `uv run python kaggle/ingest_runs.py <zip>` in your clone, then commit
    and push. Ingest never overwrites an existing run or result file and refuses test predictions.
 
 First time: set `SMOKE_TEST = True` and run once. If it prints no error, your setup works.
