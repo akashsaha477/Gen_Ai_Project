@@ -138,6 +138,16 @@ def test_git_dirty_ignores_run_outputs_but_not_code(monkeypatch):
     assert runs.git_dirty() is True  # no git: cannot vouch for the tree
 
 
+def test_git_dirty_keeps_the_leading_space_of_the_first_status_line(monkeypatch):
+    # The second run of a session sees the index the first run updated; a stripped first line
+    # (" M results/..." -> "M results/...") was misread as "esults/..." and flagged every later run dirty.
+    import subprocess
+
+    stdout = " M results/runs_index.csv\n?? runs/x/config.yaml\n"
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: subprocess.CompletedProcess(a, 0, stdout=stdout))
+    assert runs.git_dirty() is False
+
+
 def test_kaggle_bundle_round_trips_through_ingest(tmp_path):
     import importlib.util
 
