@@ -55,7 +55,7 @@ def test_baseline_variants_share_one_budget_and_have_roles():
     reference = {k: v for k, v in configs["A"].items() if k not in own}
     assert all({k: v for k, v in c.items() if k not in own} == reference for c in configs.values())
     assert [configs[letter]["role"] for letter in "ABCD"] == ["cnn", "cnn", "rnn", "rnn"]
-    assert reference["seeds"] == [0, 1, 2] and reference["lr_grid"] == [1e-3, 3e-4] and reference["min_epochs"] == 0
+    assert reference["seeds"] == [0, 1, 2] and reference["lr_grid"] == [1e-3, 3e-4] and reference["min_epochs"] == 10
     sizes = [count_parameters(build_model(configs[letter]["model"], 4, 3)) for letter in "ABCD"]
     assert sizes[0] < sizes[1]  # the plain CNN is the simpler of the two cnn candidates
 

@@ -66,7 +66,8 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
   is trained at both rates, the rate with the higher seed-mean selection metric is used, and both are
   reported.
 - **Early stopping:** patience 5 on the selection metric, evaluated on validation after every epoch.
-  The best epoch's checkpoint is kept.
+  The best epoch's checkpoint is kept. From phase 2 on, no early stop before epoch 10 (`min_epochs: 10`,
+  amendment of 2026-10-26, §11); phase 1 keeps the original rule.
 - **Tie margin (new):** two variants are tied if their seed-mean selection metrics differ by at most
   max(0.02, pooled SD), where pooled SD = sqrt((s_a² + s_b²) / 2) and s is the sample SD over seeds.
 - **Tie-break order (new):**
@@ -186,3 +187,4 @@ Each version is committed before the experiments it governs, tagged `prereg-vK` 
 
 | date | section | change | reason | approved by |
 |---|---|---|---|---|
+| 2026-10-26 | §4 early stopping | `min_epochs: 10` for every MIT-BIH classifier from phase 2 on | 10 of 24 phase 1 runs stopped at epoch 6 on an all-N model (PHASE1_REPORT §6); fixed before any phase 2 run | Akash Saha (DECISIONS A15), pending team confirmation |
