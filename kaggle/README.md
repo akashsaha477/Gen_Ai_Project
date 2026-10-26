@@ -94,8 +94,8 @@ The token is read from Kaggle Secrets, never printed and never put in a URL. Do 
    | `GIT_REF` | your branch (`variant/phase1_input_representation_A`) or a full commit SHA |
    | `DEVICE` | `"auto"` uses the GPU when the session has one |
    | `ENV_MODE` | `locked` (exact `uv.lock` versions) or `kaggle` (see below) |
-   | `RAW_DATASET_DIR` | leave as `/kaggle/input`; `""` downloads MIT-BIH from PhysioNet instead |
-   | `PTBXL_SOURCE` | pretraining notebook only: `"download"` or a folder holding a PTB-XL copy |
+   | `RAW_DATASET_DIR` | leave as `/kaggle/input`: the attached `mitdb-raw` files are found there, checked against `results/phase1_data/raw_checksums.json` and copied. MIT-BIH is never downloaded on Kaggle |
+   | `PTBXL_SOURCE` | pretraining notebook only: `/kaggle/input` (an attached PTB-XL copy, found automatically) or `"download"` |
    | `PREVIEW` | pretraining notebook only: `True` to run before the phase 1 gate or for another variant |
    | `PUSH_RESULTS` | `True` (default) commits the results and pushes them to `GIT_REF` |
    | `GIT_NAME`, `GIT_EMAIL` | your name and GitHub email for that commit (required for the push) |
@@ -131,11 +131,11 @@ results are marked provisional and do not count.
 
 PTB-XL comes from one of two places:
 
-- `PTBXL_SOURCE = "download"` (default): the session fetches PTB-XL 1.0.3 from PhysioNet (1.8 GB) and
-  unpacks only what is needed.
-- `PTBXL_SOURCE = "/kaggle/input"`: use a copy you attached with Add Input. Search Kaggle Datasets for
-  "PTB-XL" and pick one whose files include `ptbxl_database.csv`, `scp_statements.csv` and a
-  `records500/` folder. The folder is found automatically.
+- `PTBXL_SOURCE = "/kaggle/input"` (default): use a copy you attached with Add Input. Search Kaggle
+  Datasets for "PTB-XL" and pick one whose files include `ptbxl_database.csv`, `scp_statements.csv` and a
+  `records500/` folder. The folder is found automatically, even next to `mitdb-raw`.
+- `PTBXL_SOURCE = "download"`: the session fetches PTB-XL 1.0.3 from PhysioNet (1.8 GB) and unpacks only
+  what is needed.
 
 What comes back in the zip:
 
@@ -177,10 +177,11 @@ Things to know:
 | symptom | cause and fix |
 |---|---|
 | `git clone` fails | the `GITHUB_TOKEN` secret is missing, not ticked for this notebook, expired, or you are not a collaborator |
-| `no MIT-BIH record files` or a checksum problem | the `mitdb-raw` dataset is not attached or is damaged; re-attach it, or set `RAW_DATASET_DIR = ""` |
+| `no MIT-BIH record files` or a checksum problem | the `mitdb-raw` dataset is not attached or is damaged; attach it (Add Input) and run again |
+| exit code 2, "Phase 1 is not finished" | the phase 1 gate is not approved yet (`results/manifest.json` is missing on the branch you run): approve it on a laptop and push, or set `PREVIEW = True` for a provisional run |
 | exit code 2, "Refusing to run" | approved split missing, checkout differs from the commit, PTB-XL not available, or (pretraining) phase 1 gate not approved or a different variant chosen; the message says which |
 | "The PTB-XL copy ... is incomplete" | the attached copy has no `records500/` folder; attach another or set `PTBXL_SOURCE = "download"` |
-| the PTB-XL download is very slow | attach a Kaggle copy and set `PTBXL_SOURCE = "/kaggle/input"` |
+| `no ptbxl_database.csv` | no PTB-XL copy is attached; attach one or set `PTBXL_SOURCE = "download"` |
 | `uv sync` fails or is too slow | Internet is off, or try `ENV_MODE = "kaggle"` for debugging |
 | no bundle produced | nothing ran to completion, or it was a smoke test |
 
