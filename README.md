@@ -31,11 +31,29 @@ the one before it; the code refuses to skip ahead and says what is missing.
 |---|---|---|---|
 | 1 data | download and verify MIT-BIH | `python -m ecgaug.data.raw` | done |
 | 1 data | approve the validation split | `configs/validation_split/approved.yaml` | done (V1) |
-| 1 data | run `phase1_input_representation`, variants A–D | Kaggle: `kaggle/phase1_input_representation.ipynb`, `VARIANTS = ["A", "B", "C", "D"]` | done (2026-10-15) |
+| 1 data | run `phase1_input_representation`, variants A–D | `kaggle/phase1_input_representation.ipynb` | done (2026-10-15) |
 | 1 data | phase 1 gate: report | `python -m ecgaug.workflow phase1-gate` | done: winner C, see [docs/PHASE1_REPORT.md](docs/PHASE1_REPORT.md) |
 | 1 data | phase 1 gate: team approves, the winner's dataset is frozen | `ALLOW_TEST_BUILD=1 python -m ecgaug.workflow phase1-gate --approve "Name" "Name"` | **next** (team) |
-| 2 baselines | run `phase2_ptbxl_pretraining` for the phase 1 winner | Kaggle: `kaggle/phase2_ptbxl_pretraining.ipynb` with the winner's letter | one preview (variant D) |
-| 2 baselines | `phase2_baseline_classifiers`, `phase2_quality_metrics` | not built yet | |
+| 2 baselines | `phase2_baseline_classifiers` A–D (shallow CNN, ResNet1D, BiLSTM, CNN+BiLSTM) | `kaggle/phase2_baseline_classifiers.ipynb` | built |
+| 2 baselines | `phase2_quality_metrics` A–D (DTW, spectral, FID-analog, TSTR) | `kaggle/phase2_quality_metrics.ipynb` | built |
+| 2 baselines | `phase2_ptbxl_pretraining` for the phase 1 winner | `kaggle/phase2_ptbxl_pretraining.ipynb` | built; one preview (variant D) |
+| 2 baselines | phase 2 gate: the `cnn`, the `rnn`, the quality composite | `python -m ecgaug.workflow phase2-gate [--approve ...]` | built |
+| 3 generators | `phase3_cvae` A–D and `phase3_wgan_gp` A–D, pilots | `kaggle/phase3_cvae.ipynb`, `kaggle/phase3_wgan_gp.ipynb` (`MODE = "pilot"`) | built |
+| 3 generators | phase 3a gate: one generator per family | `python -m ecgaug.workflow phase3a-gate [--approve ...]` | built |
+| 3 generators | final runs of the two winners, synthetic banks | the same notebooks with `MODE = "final"` | built |
+| 3 generators | phase 3 gate: banks frozen | `python -m ecgaug.workflow phase3-gate [--approve ...]` | built |
+| 4 comparison | `phase4_augmentation_policy` A–D | `kaggle/phase4_augmentation_policy.ipynb` | built |
+| 4 comparison | phase 4a gate: the policy; writes the full grid | `python -m ecgaug.workflow phase4a-gate [--approve ...]` | built |
+| 4 comparison | the full grid (96 runs at 3 seeds, resumable) | `kaggle/phase4_full_grid.ipynb` | built |
+| 4 comparison | phase 4 gate: strengths and checkpoints, on validation | `python -m ecgaug.workflow phase4-gate [--approve ...]` | built |
+| 4 comparison | the single final evaluation on the test set | `ALLOW_TEST=1 python -m ecgaug.final_eval --confirm "run final eval"` | built |
+| 5 explanations | `phase5_explainability` A–D, `phase5_clinical_notes` A–D, error analysis, demo | `python -m ecgaug.experiments.phase5_*`, `python -m ecgaug.demo` | built |
+| 5 explanations | phase 5 gate, then `git tag v1.0` | `python -m ecgaug.workflow phase5-gate [--approve ...]` | built |
+| 6 paper | tables and numbers for `paper/main.tex` | `python -m ecgaug.paper` | built |
+
+"Built" means the code, configs, notebook, tests and brief exist; nothing has run officially yet. Every
+runner refuses an official run until the gates before it are approved, and says which. `--preview`
+runs earlier with stand-ins and marks the result provisional; a gate never approves a preview.
 
 After each Kaggle run the notebook pushes the results to GitHub itself: `git pull`, then run `status`
 again. (If the push did not happen: download the zip from the notebook's Output and run
@@ -50,12 +68,18 @@ confusion matrices, before and after pretraining). They travel back from Kaggle 
 The phase 1 gate report picks **variant C** (short window + RR features), with validation S F1
 0.296 ± 0.038 against 0.164 for A, the next best. It is waiting for the team's approval. The full
 analysis is in [docs/PHASE1_REPORT.md](docs/PHASE1_REPORT.md). Read section 6 before phase 2: an
-early-stopping flaw cut 10 of the 24 runs short and should be fixed first. The earlier
-`phase2_ptbxl_pretraining` preview used variant D and must be re-run with C.
+early-stopping flaw cut 10 of the 24 runs short; the fix is the `min_epochs` setting (team decision).
+The code of phases 2-6 is built on the branch `finish-project` (docs/DECISIONS.md A14 lists the
+design choices the team should confirm). The earlier `phase2_ptbxl_pretraining` preview used variant D
+and must be re-run with C.
 
-**Previews:** the pretraining runner refuses to run before the phase 1 gate, or for a variant that the phase 1 gate did not
-pick, unless you add `--preview` (`PREVIEW = True` in the notebook). Preview results are marked
-provisional and do not count.
+**Previews:** every runner after phase 1 refuses to run before the gates it needs unless you add
+`--preview` (`PREVIEW = True` in the notebooks). Preview results are marked provisional and do not count.
+
+**Artifacts that are not in git:** model weights and synthetic banks are too big for GitHub. They
+travel in each Kaggle run's zip (`python kaggle/ingest_runs.py <zip>` brings them into `runs/` and
+`data/synthetic/`). Phase 4 and 5 notebooks take them from an attached Kaggle dataset
+(`BANKS_DATASET_DIR`, `ARTIFACTS_DIR`); see `kaggle/README.md`.
 
 **Datasets:** MIT-BIH (inter-patient DS1/DS2 split) for training, validation and test. PTB-XL only
 for pretraining.
@@ -64,8 +88,10 @@ for pretraining.
 
 | Path | Contents |
 |---|---|
-| `src/ecgaug/` | the package: `data` (MIT-BIH pipeline, PTB-XL preprocessing, R-peak detector), `eval`, `models`, `train`, `experiments` (`phase1_input_representation`, `phase2_ptbxl_pretraining`), `workflow` (status and gates) |
-| `configs/` | experiment configs (`validation_split/`, `phase1_input_representation/`, `phase2_ptbxl_pretraining/`) |
+| `src/ecgaug/` | the package: `data` (MIT-BIH pipeline, PTB-XL preprocessing, R-peak detector), `eval` (metrics, bootstrap, selection rules), `models` (probe and the four baselines), `train`, `generators` (cVAE, WGAN-GP, banks), `quality` (diagnostics, metric families, sanity harness), `augment` (policies, SMOTE, oversampling, class weights), `grid` (the grid runner), `experiments` (one runner per experiment), `explain` (saliency and its scores), `report` (notes and fact checker, error analysis), `final_eval`, `demo`, `paper`, `workflow` (status and gates) |
+| `configs/` | one folder per experiment (`<experiment>/<letter>_<name>.yaml` plus a shared settings file), `validation_split/`, `phase4_full_grid/` |
+| `paper/` | the LaTeX draft (`main.tex`), `generated/` tables and numbers, `claims_vs_evidence.md` |
+| `scripts/reproduce.sh` | the whole pipeline in order |
 | `kaggle/` | everything for running on Kaggle; start with `kaggle/README.md` |
 | `runs/` | one folder per training run, grouped by experiment, variant and kind of run |
 | `figures/` | before-and-after figures for each phase, made by code |
@@ -88,7 +114,11 @@ for pretraining.
 | `configs/phase2_ptbxl_pretraining/` | the same four inputs, with PTB-XL pretraining before MIT-BIH |
 | `ecgaug.experiments.phase1_input_representation` | runs a phase1_input_representation config |
 | `ecgaug.experiments.phase2_ptbxl_pretraining` | runs a pretraining config |
-| `ecgaug.workflow` | `status` (where we are) and `gate1` (pick and freeze the winning input) |
+| `ecgaug.workflow` | `status` (where we are) and the gates: `phase1-gate`, `phase2-gate`, `phase3a-gate`, `phase3-gate`, `phase4a-gate`, `phase4-gate`, `phase5-gate` |
+| `ecgaug.final_eval` | the single test evaluation (`--plan` reads no test data) |
+| `ecgaug.grid.runner` | the full grid (`--dry-run` lists the cells and which are done) |
+| `ecgaug.demo` | one validation beat: prediction, saliency plot, fact-checked note |
+| `ecgaug.paper` | the paper's tables and numbers from the result files |
 
 Runs are saved in folders by experiment, variant and kind of run:
 
@@ -150,6 +180,28 @@ classifier on the recordings' diagnostic superclasses, fine-tunes it on MIT-BIH,
 model from scratch for comparison. `DIR` is a PTB-XL copy; `--ptbxl-download` fetches it from PhysioNet
 instead. Results go to `results/phase2_ptbxl_pretraining/`. Design: `docs/PLAN.md`, Phase 2.
 It runs only for the variant the phase 1 gate chose; add `--preview` to run it earlier or for another variant.
+
+## Phases 2-6
+
+Each experiment's runner has the same flags: `--config` (a variant file), `--smoke` (fake data, end to
+end, writes nothing to the repository) and `--preview` (before the gates it needs; provisional):
+
+```
+uv run python -m ecgaug.experiments.phase2_baseline_classifiers --config configs/phase2_baseline_classifiers/A_shallow_cnn.yaml --smoke
+uv run python -m ecgaug.experiments.phase2_quality_metrics --config configs/phase2_quality_metrics/A_dtw.yaml --smoke
+uv run python -m ecgaug.experiments.phase3_cvae --config configs/phase3_cvae/A_conv_concat.yaml --smoke            # add --final for the full budget and banks
+uv run python -m ecgaug.experiments.phase3_wgan_gp --config configs/phase3_wgan_gp/A_concat_embedding.yaml --smoke
+uv run python -m ecgaug.experiments.phase4_augmentation_policy --config configs/phase4_augmentation_policy/B_fraction_of_n.yaml --smoke
+uv run python -m ecgaug.grid.runner --config configs/phase4_full_grid/dry_run_baselines.yaml --smoke
+uv run python -m ecgaug.experiments.phase5_explainability --config configs/phase5_explainability/B_integrated_gradients.yaml --smoke
+uv run python -m ecgaug.experiments.phase5_clinical_notes --config configs/phase5_clinical_notes/A_template.yaml --smoke
+uv run python -m ecgaug.demo --smoke
+uv run python -m ecgaug.paper
+```
+
+What each variant is, how to run it and what to check: `docs/briefs/<experiment>_<variant>.md`.
+`scripts/reproduce.sh` lists the whole order. The LLM note variants need `ANTHROPIC_API_KEY` (and
+optionally `ECGAUG_LLM_MODEL`) in the environment; without it the template note is used.
 
 ## Troubleshooting
 

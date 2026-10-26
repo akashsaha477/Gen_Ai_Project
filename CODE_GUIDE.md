@@ -12,7 +12,7 @@ This walks through the code file by file. For what the project is and what is fi
 5. [`src/ecgaug/models/` and `train/`: the network and the training loop](#5-srcecgaugmodels-and-train-the-network-and-the-training-loop)
 6. [`src/ecgaug/runs.py`: logging every run](#6-srcecgaugrunspy-logging-every-run)
 7. [`src/ecgaug/experiments/`: the runners](#7-srcecgaugexperiments-the-runners)
-8. [`configs/`: the settings files](#8-configs-the-settings-files)
+8. [`configs/`: the settings files](#8-configs-the-settings-files) (7b-7d: workflow, figures, phases 2-6)
 9. [`kaggle/`: running on Kaggle](#9-kaggle-running-on-kaggle)
 10. [`tests/`: what is tested](#10-tests-what-is-tested)
 11. [Two walkthroughs: what happens when you run a command](#11-two-walkthroughs-what-happens-when-you-run-a-command)
@@ -320,7 +320,7 @@ scored in one call.
 
 ## 7. `src/ecgaug/experiments/`: the runners
 
-### `common.py` — shared by both runners
+### `common.py` — shared by every runner
 
 - `check_preconditions()`: loads the approved split and checks the tree is committed; raises
   `PreconditionError` with the reason otherwise.
@@ -331,7 +331,7 @@ scored in one call.
 - `best_grid_point(grid)`: the learning rate with the better seed-mean score.
 - `temporary_root()`: redirects all folders to a temporary directory for smoke runs.
 
-### `input_representation.py` — phase1_input_representation
+### `phase1_input_representation.py` — phase1_input_representation
 
 - `load_config(path)`: merges a variant file with `shared_budget.yaml`, and rejects a variant file
   that tries to change the budget.
@@ -357,33 +357,115 @@ scored in one call.
 
 ---
 
-## 7b. `src/ecgaug/workflow.py`: status and the phase 1 gate
+## 7b. `src/ecgaug/workflow.py`: status and the gates
 
 - `status()`: builds the checklist from what exists on disk (verified data, approved split, the four
   phase1_input_representation result files, the phase 1 gate report, `results/manifest.json`, pretraining results) and returns
   the single next action. `python -m ecgaug.workflow status` prints it.
-- `evaluate_gate1()`: refuses unless all four phase1_input_representation variants have results; checks they used the same
+- `evaluate_phase1_gate()`: refuses unless all four phase1_input_representation variants have results; checks they used the same
   split, selection metric and budget with no reported deviations; then calls `select_winner`.
-- `write_gate1_report()`: writes `results/phase1_gate/report.md` (table per variant, each step of the rule,
-  the winner) and `gate1.json`.
-- `approve_gate1(approvers)`: re-checks that the results have not changed since the report, builds the
+- `write_phase1_gate_report()`: writes `results/phase1_gate/report.md` (table per variant, each step of the rule,
+  the winner) and `report.json`.
+- `approve_phase1_gate(approvers)`: re-checks that the results have not changed since the report, builds the
   frozen dataset of the winner (`data/processed/v1`, needs `ALLOW_TEST_BUILD=1` and is logged), writes
   the winner and the file hashes to `results/manifest.json`, and appends the approval to
   `docs/DECISIONS.md`.
-- `gate1_winner()`: the approved winner, read from the manifest. The pretraining runner uses it to
+- `phase1_winner()`: the approved winner, read from the manifest. The pretraining runner uses it to
   refuse running before the phase 1 gate or for another variant (unless `--preview`).
+
+- The later gates follow the same pattern (evaluate, write the report, approve into the manifest and
+  `docs/DECISIONS.md`): `evaluate_phase2_gate` (the `cnn` and `rnn` by `select_winner`, the quality
+  composite), `evaluate_phase3a_gate` (`select_generator` per family), `evaluate_phase3_gate` (every
+  bank present and matching its hash), `evaluate_phase4a_gate` (the policy under the N-recall limit;
+  approval writes the full grid file with `full_grid_yaml`), `evaluate_phase4_gate` (strength per
+  condition and best generative per architecture), `evaluate_phase5_gate` (saliency method per
+  architecture, note variant, demo smoke). `experiment_results(name)` reads any experiment's result files.
 
 ## 7c. `src/ecgaug/figures.py`: before-and-after figures
 
-- `phase1_figures()`: raw versus band-passed signal of the training record with the most S beats; the
+- `phase1_data_figures()`: raw versus band-passed signal of the training record with the most S beats; the
   same N and S beat as variants A–D present them; beats per class in training and validation; the
   median beat per class and variant (training records only).
-- `ptbxl_figures(root)`: one recording before and after resampling, with kept and dropped beats;
+- `phase2_ptbxl_data_figures(root)`: one recording before and after resampling, with kept and dropped beats;
   PTB-XL versus MIT-BIH beat shape; recordings kept and excluded; label shares per split.
-- `pretraining_figures(result)`, `module1_figures(result)`, `gate1_figure()`: training curves,
+- `phase2_pretraining_figures(result)`, `phase1_variant_figures(result)`, `phase1_gate_figure()`: training curves,
   confusion matrices, per-class F1 before and after pretraining, and the phase 1 gate comparison.
 - `safe_for_result(result)`: called by both runners at the end of every experiment; a plotting error is
   reported but never fails a run.
+
+- Phases 2-6: `phase2_quality_figures`, `phase2_gate_figure`, `phase3_variant_figures` (losses, every
+  checkpoint scored), `phase3_sample_figures` (real versus synthetic, class counts before and after,
+  nearest real beats), `phase3a_gate_figure`, `phase4_strength_figure`, `final_eval_figures` (forest
+  plot, per-record S and F), `phase5_saliency_figure`, `error_analysis_figures`. `safe_call(fn, ...)`
+  runs any of them without ever failing a run.
+
+## 7d. Phases 2-6: the packages behind the later experiments
+
+### `experiments/data_source.py` — where a run's beats come from
+
+- `load_data(split, preview, representation)`: after the phase 1 gate, the frozen dataset
+  (`data/processed/v1`, or rebuilt from the raw records and checked against the frozen hash); before
+  it, only in a preview, the candidate dataset of a representation. Returns a `DataSource` (arrays,
+  representation, provenance, and why it is provisional).
+- `smoke_data()`: fake records, a split and their dataset in a temporary root; every smoke run uses it.
+
+### `models/baselines.py` — the phase 2 classifiers
+
+`ShallowCNN`, `ResNet1D`, `BiLSTMClassifier`, `CNNBiLSTM`: every one takes the beat and optionally the
+RR side features, keeps its last layer in `head`, exposes `embed()` (penultimate features) and, if
+convolutional, `last_conv` (for Grad-CAM). `build_model` builds any of them from a config block.
+
+### `quality/` — how good synthetic beats are
+
+- `diagnostics.py`: `prepare_references` (per class: the real beats and the leave-one-out memorization
+  threshold), `score_beats` (diversity ratio, memorization fraction, C2ST accuracy per class).
+- `metrics.py`: the four metric families registered in `METRIC_FAMILIES` (`dtw`, `spectral`,
+  `fid_analog`, `tstr`); `dtw_pairs` is the vectorised banded DTW; each family's `evaluate(context, beats)`
+  scores a whole set of synthetic beats against the real training beats in a `QualityContext`.
+- `sanity.py`: `score_family` scores a family on real held-out beats and on degraded copies and
+  applies the pass rule. `feature_net.py`: the frozen network of the FID-analog metric.
+- `composite_ranks` (in `__init__.py`): the equal-weight rank average used to break phase 3 ties.
+
+### `generators/` — the cVAE and the WGAN-GP
+
+- `base.py`: `BeatGenerator` (the interface: `fit` on training beats only, `sample(cls, n, seed)`),
+  `assert_train_only`, `ClassBatches` (class-balanced batches) and the step loop with a checkpoint at
+  each quarter of the budget and divergence checks.
+- `cvae.py` (`CVAE`, conv or residual-FiLM encoder and decoder) and `wgan_gp.py` (`WGANGP`, four kinds of
+  conditioning, gradient penalty). `build_generator(family, settings, n_samples, seed)` picks one.
+- `bank.py`: `sample_bank` (synthetic beats in the data-contract format, RR features copied from real
+  beats), `export_bank` / `load_bank` (never overwritten; hash-checked; audit banks refused).
+
+### `experiments/generator_runs.py` — the runner of both phase 3 experiments
+
+`PilotHarness` scores a generator at a checkpoint (diagnostics, quality metrics, pilot classifier);
+`train_one` trains one generator, logs its run (losses, `checkpoints.csv`, pilot classifier logs) and,
+in a final run, exports the bank; `run_pilot` and `run_final` write the result files; `hard_gates`
+applies the phase 3 hard gates. `phase3_cvae.py` and `phase3_wgan_gp.py` only call it.
+
+### `augment.py` and `grid/runner.py` — the conditions and the grid
+
+- `augment.py`: `policy_targets` (how many beats per class), `take_from_bank`, `screened_from_bank`
+  (policy D), `smote_beats`, `random_oversample`, `class_weights`, `with_added` (always training beats).
+- `grid/runner.py`: `cells(grid)` lists the cells; `run_grid` runs those not done (or only lists them);
+  each cell's ledger file is written as soon as it finishes; `summarize` gives the seed means the phase
+  4 gate reads.
+
+### `final_eval.py` — the single test evaluation
+
+`plan()` lists checkpoints and comparisons without reading test data; `run(confirm)` checks every
+precondition before the first test byte, predicts the test set with every frozen checkpoint, and calls
+`statistics()` (per-condition intervals, the two Holm families, the sensitivity analyses);
+`write_outputs()` writes the CSV and LaTeX tables, figures and `numbers_final_eval.tex`.
+
+### `explain/`, `report/`, `demo.py`, `paper.py` — phases 5 and 6
+
+- `explain/methods.py`: `saliency(method, model, x, side, settings)` for Grad-CAM, integrated
+  gradients, SmoothGrad and occlusion; `explain/evaluate.py`: `faithfulness`, `stability`, `segment_masses`.
+- `report/notes.py`: `note_input` (the note's input JSON), `template_note`, `generate` (variants A-D),
+  `check_note` (the fact checker), `LLMClient` / `client_from_env`; `report/error_analysis.py`: `analyse`.
+- `demo.py`: `explain_beat` classifies, explains and describes one beat and saves the figure.
+- `paper.py`: `build()` writes the paper's tables and numbers from the result files.
 
 ## 8. `configs/`: the settings files
 
@@ -395,6 +477,12 @@ scored in one call.
 | `phase1_input_representation/<letter>_<name>.yaml` | one variant's window, filter, sampling rate, RR features |
 | `phase2_ptbxl_pretraining/pretraining_settings.yaml` | learning rate, epochs and patience for the PTB-XL pretraining part |
 | `phase2_ptbxl_pretraining/<letter>_<name>.yaml` | which phase1_input_representation variant this pretraining run uses |
+| `phase2_baseline_classifiers/` | `shared_budget.yaml` (seeds, learning rates, epochs, `min_epochs`) and one model per variant |
+| `phase2_quality_metrics/` | `metric_settings.yaml` (degradations, pass rule, metric settings, feature network) and one family per variant |
+| `phase3_cvae/`, `phase3_wgan_gp/` | `generator_settings.yaml` (training, pilot, diagnostics, hard gates, bank size, generator defaults) and each variant's generator settings |
+| `phase4_augmentation_policy/` | `pilot_settings.yaml` (classifier, seed, banks, N-recall limit) and each variant's policy and strengths |
+| `phase4_full_grid/` | grid files: conditions, strengths, architectures, seeds (`full_grid.yaml` is written by the phase 4a gate) |
+| `phase5_explainability/`, `phase5_clinical_notes/` | shared evaluation settings and each variant's method or note generator |
 
 ---
 
@@ -410,7 +498,11 @@ scored in one call.
 - `push_results(branch, message, name, email)` in `kaggle_run.py`: after the runs, commits only run
   outputs (run folders without weights, results, figures, runs index) and pushes them to the branch, or
   to a new `<branch>-kaggle-<time>` branch if the branch moved on. Refuses if a run carries test predictions.
-- `ingest_runs.py`: the backup path; calls `runs.ingest` on a downloaded zip.
+- `ingest_runs.py`: the backup path; calls `runs.ingest` on a downloaded zip (runs, result files,
+  figures, and synthetic banks, whose `bank.json` entries are merged by seed).
+- `setup_artifacts(dir)` in `kaggle_run.py`: copies banks and run checkpoints from an attached Kaggle
+  dataset (`--artifacts-dir`), for the phase 4 and 5 notebooks.
+- One notebook per experiment, plus `phase4_full_grid.ipynb` for the grid runner.
 
 ---
 
@@ -429,9 +521,18 @@ scored in one call.
 | `test_selection.py` | the tie margin and tie-breaks |
 | `test_probe_training.py` | network shapes; training is deterministic; early stopping |
 | `test_runs.py` | run IDs, run folders, the index, ingest, the Kaggle bundle |
-| `test_input_representation.py` | equal budgets; refusals; smoke runs of A–D |
+| `test_phase1_input_representation.py` | equal budgets; refusals; smoke runs of A–D |
 | `test_ptbxl.py` | the detector; every PTB-XL check; patient-wise folds; padding; checksums |
-| `test_ptbxl_pretraining.py` | weight transfer; config; the experiment end to end on fake data |
+| `test_phase2_ptbxl_pretraining.py` | weight transfer; config; the experiment end to end on fake data |
+| `test_workflow.py` | the status checklist and the phase 1 gate |
+| `test_figures.py` | the figures are drawn from data and results, never from test data |
+| `test_phase2.py` | the four baselines; `min_epochs`; DTW against dtaidistance; every metric family; the sanity harness; the phase 2 gate |
+| `test_generators.py` | every generator variant trains, checkpoints and samples deterministically; train-only rule; divergence; banks |
+| `test_quality_and_augment.py` | diagnostics (collapse, copies, calibration); composite rank; SMOTE, oversampling, class weights |
+| `test_phase3.py` | equal budgets; refusals before the gates; smoke runs; the phase 3a and 3 gates; the grid resumes; banks travel back from Kaggle |
+| `test_phase4.py` | policies and the DTW screen; the phase 4a and 4 gates; the statistics; the final evaluation on fake data runs once |
+| `test_phase5.py` | saliency finds what a model uses; faithfulness; the fact checker; LLM variants with a fake client; demo; error analysis; the phase 5 gate |
+| `test_paper.py` | tables and numbers come from result files; missing results are marked |
 
 `conftest.py` makes every test run in a temporary folder with the test lock closed.
 

@@ -1,0 +1,5 @@
+base: generator_settings.yaml
+variant: B
+description: As A with a smaller KL weight; beta 0.1 and 0.25 are both tried, sharing the pilot budget, and both are reported.
+generator:
+  beta: [0.1, 0.25]

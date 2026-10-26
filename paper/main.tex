@@ -1,0 +1,81 @@
+% Draft of the paper (PLAN Phase 6). Every number comes from generated/ (python -m ecgaug.paper and the
+% final evaluation); never type a number by hand. \todo and \missing mark what is still missing. Citations: only
+% entries verified from their DOI or arXiv page go into refs.bib (docs/PAPER_TRACK.md, related-work anchors).
+\documentclass[11pt]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{adjustbox}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+\newcommand{\missing}[1]{\textcolor{red}{[#1]}}  % a result that does not exist yet (written by python -m ecgaug.paper)
+\input{generated/numbers.tex}
+
+\title{Does Generative Augmentation Help Rare-Arrhythmia Detection Under Inter-Patient Evaluation?\\
+A Controlled Comparison of Conditional VAEs and WGAN-GP}
+\author{\missing{authors}}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\todo[inline]{Write last, from the results. State the question, the inter-patient protocol, the six conditions, the
+pre-registered confirmatory comparisons and their outcome with intervals, including negative results.}
+\end{abstract}
+
+\section{Introduction}
+\todo[inline]{Motivation; why intra-patient evaluation inflates results; contributions C1--C5 (docs/PAPER\_TRACK.md).}
+
+\section{Related work}
+\todo[inline]{Inter-patient protocol (de Chazal et al.), GAN and VAE augmentation for ECG, SMOTE, synthetic-quality
+metrics, saliency evaluation, LLM reports. Cite only verified entries.}
+
+\section{Data and protocol}
+MIT-BIH Arrhythmia Database, lead MLII, AAMI classes N, S, V and F; paced records excluded; DS1 for training
+and validation, DS2 locked until the single final evaluation. Table~\ref{tab:data} gives the counts.
+\begin{table}[htbp]\centering\small\input{generated/table_dataset.tex}\caption{Records and beats per split.}\label{tab:data}\end{table}
+
+\subsection{Input representation}
+The representation was chosen on validation (variant \PhaseOneWinner; Table~\ref{tab:repr}).
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_input_representation.tex}}\caption{Input representations (validation).}\label{tab:repr}\end{table}
+
+\section{Methods}
+\subsection{Baseline classifiers}
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_baselines.tex}}\caption{Baseline classifiers (validation).}\label{tab:baselines}\end{table}
+\subsection{Synthetic-quality metrics}
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_quality_metrics.tex}}\caption{Sanity tests of the quality metrics.}\label{tab:quality}\end{table}
+\subsection{Generators}
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_generators.tex}}\caption{Generator pilots: pilot score, diagnostics and hard gates.}\label{tab:generators}\end{table}
+\subsection{Augmentation policy and comparison grid}
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_policy.tex}}\caption{Augmentation policies (pilot, validation).}\label{tab:policy}\end{table}
+\subsection{Statistics}
+Record-level cluster bootstrap over the 22 test records (10{,}000 replicates), Holm correction within the
+confirmatory family (4 tests) and the secondary family (8 tests); sensitivity without record 202.
+
+\section{Results}
+\subsection{RQ1: does generative augmentation help?}
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/final_eval_conditions.tex}}\caption{Test results per condition (95\% record-level CI).}\label{tab:test}\end{table}
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/final_eval_comparisons.tex}}\caption{Pre-registered comparisons.}\label{tab:comparisons}\end{table}
+\subsection{RQ3: do quality metrics predict the benefit?}
+\todo[inline]{Checkpoint-level analysis from the runs' checkpoints.csv (Spearman with bootstrap over generator runs).}
+\subsection{RQ4: explanations}
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_explainability.tex}}\caption{Saliency methods: faithfulness and stability.}\label{tab:explain}\end{table}
+
+\section{Grounded clinical notes}
+\begin{table}[htbp]\centering\small\input{generated/table_notes.tex}\caption{Note generators: unsupported claims and coverage.}\label{tab:notes}\end{table}
+
+\section{Limitations and ethics}
+\todo[inline]{Specific limitations (docs/PAPER\_TRACK.md, threats to validity): 22 test records, rare classes in few
+records, one database and lead, reference R peaks, RR features of synthetic beats copied from real beats,
+notes rated by team members, not clinicians.}
+
+\section{Reproducibility}
+Code, configs, seeds, lockfile and \texttt{results/runs\_index.csv}; \texttt{scripts/reproduce.sh} runs the
+pipeline in order. \todo[inline]{Release statement.}
+
+\listoftodos
+\end{document}

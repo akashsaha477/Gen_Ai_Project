@@ -1,0 +1,5 @@
+base: shared_settings.yaml
+variant: A
+description: Grad-CAM 1D on the last convolution layer (convolutional models only).
+method: gradcam
+cost: 1

@@ -1,0 +1,44 @@
+# Shared by every phase3_cvae variant (CLAUDE.md rule 7). A variant file sets only its letter, its
+# description and the generator settings that define it; everything else comes from here, and the
+# runner rejects a variant that tries to change it. Values marked "proposed" are fixed in
+# PREREGISTRATION v2 at the phase 2 gate, before any official phase 3 run.
+experiment: phase3_cvae
+family: cvae
+classes: [N, S, V, F]                          # learned with class-balanced batches; banks hold S, V and F only
+training:
+  batch_size: 128                              # 32 beats of each class per batch
+  lr: 1.0e-3                                   # Adam
+  pilot_steps: 5000                            # proposed; a variant with two settings (B) gives each half
+  final_steps: 20000                           # proposed: the full budget, 4 x the pilot
+  log_every: 50
+generator_defaults:                            # variant A; the other variants change only what defines them
+  architecture: conv
+  channels: [32, 64, 128]
+  kernel: 7
+  latent_dim: 16
+  beta: 1.0
+  kl_anneal_fraction: 0.3
+  spectral_weight: 0.0
+pilot_seeds: [0, 1]
+final_seeds: [0, 1, 2]
+checkpoint_fractions: [0.25, 0.5, 0.75, 1.0]   # the bank comes from the last; earlier ones are scored for RQ3 only
+pilot:
+  policy_fraction_of_n: 0.5                    # pilot policy: S, V and F each up to 50% of the training N count
+  classifier: cnn                              # official runs: the cnn chosen at the phase 2 gate, with its settings
+  classifier_seed: 0
+  preview_classifier:                          # --preview only, until the phase 2 gate exists: the phase1_input_representation probe
+    model: {name: probe_cnn, channels: [16, 32, 64], kernel: 7, side_hidden: 16}
+    lr: 1.0e-3
+    max_epochs: 40
+    patience: 5
+    batch_size: 256
+    weight_decay: 0.01
+diagnostics:
+  max_beats: 1000                              # synthetic and real beats per class scored at each checkpoint
+  memorization_percentile: 5                   # threshold: this percentile of leave-one-out distances among real training beats
+  c2st_folds: 5
+hard_gates:                                    # proposed; fixed in PREREGISTRATION v2 at the phase 2 gate
+  diversity_min_ratio: 0.7
+  memorization_max_fraction: 0.10
+bank:
+  size: balance_to_n                           # per class: training N count minus the class's count

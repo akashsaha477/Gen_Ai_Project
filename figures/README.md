@@ -16,3 +16,14 @@ plotted; the test set (DS2) never is.
 Every figure has a title and a one-line caption saying what to read from it.
 
 Folder names match `results/` and follow `docs/NAMING.md`.
+| `phase2_baseline_classifiers/<letter>/` | phase 2: baseline classifiers | training curves and validation confusion matrix per variant |
+| `phase2_quality_metrics/<letter>/` | phase 2: quality metrics | `sanity.png`: score against the severity of each degradation |
+| `phase2_gate/` | phase 2: the gate | `baselines.png`: the four classifiers by role |
+| `phase3_cvae/<letter>/`, `phase3_wgan_gp/<letter>/` | phase 3: generator pilots | `01_generator_training.png` (losses), `02_checkpoints.png` (every checkpoint scored), and for the first seed `03_real_vs_synthetic.png`, `04_class_counts_before_after.png`, `05_synthetic_and_nearest_real.png` |
+| `phase3_cvae/final/<bank>/seed<s>/` | phase 3: final banks | the same before-and-after figures for each exported bank |
+| `phase3a_gate/` | phase 3a gate | `variants.png`: pilot score per variant, hollow if a hard gate fails |
+| `phase4_gate/` | phase 4 gate | `strength_curves.png`: validation score against augmentation strength |
+| `final_eval/` | the final evaluation | `forest.png` (pre-registered differences with CIs), `per_record_S_F.png` |
+| `phase5_explainability/<letter>/` | phase 5: saliency | `class_average_saliency.png`: where the models look, none versus augmented |
+| `error_analysis/` | phase 5: errors | confusion matrices and the RR context of N/S confusions |
+| `demo/` | the demo | one beat with its saliency and probabilities |

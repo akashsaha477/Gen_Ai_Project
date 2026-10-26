@@ -1,0 +1,4 @@
+base: shared_settings.yaml
+variant: A
+description: 'Deterministic template, no LLM: the permanent fallback.'
+generator: A

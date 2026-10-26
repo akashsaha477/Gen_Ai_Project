@@ -20,6 +20,14 @@ def repo_root() -> Path:
     raise RuntimeError("Cannot locate the repository root; set ECGAUG_ROOT.")
 
 
+def source_root() -> Path:
+    """The checkout holding this package's source (ignores ``ECGAUG_ROOT``): where the committed configs live."""
+    for parent in Path(__file__).resolve().parents:
+        if (parent / "pyproject.toml").is_file():
+            return parent
+    raise RuntimeError("Cannot locate the source checkout")
+
+
 def raw_dir() -> Path:
     return repo_root() / "data" / "raw" / "mitdb"
 

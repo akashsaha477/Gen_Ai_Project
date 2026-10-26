@@ -339,3 +339,99 @@ Next:
 - The team approves the phase 1 gate.
 - Decide the early-stopping fix.
 - Re-run phase2_ptbxl_pretraining with C.
+
+## 2026-10-16 (Day 10) — phases 2-6 built (branch `finish-project`)
+
+Done (at Akash's instruction: "do the phase 3 coding ... push to a different branch", then "finish the project"):
+- Phase 2: four baseline classifiers (`models/baselines.py`) and their runner; four quality-metric
+  families (DTW, spectral, FID-analog with a frozen feature network, TSTR), the sanity harness and its
+  runner; `phase2-gate`; `min_epochs` option for the early-stopping fix (off by default).
+- Phase 3: cVAE and WGAN-GP with four variants each, the pilot harness (diagnostics, quality metrics,
+  pilot classifier at every quarter checkpoint), final runs and synthetic banks, `phase3a-gate`,
+  `phase3-gate`; the grid runner (resumable, one ledger file per cell).
+- Phase 4: augmentation policies and the DTW quality screen, `phase4_augmentation_policy`, `phase4a-gate`
+  (writes the full grid), `phase4-gate`, the final evaluation (`python -m ecgaug.final_eval`) with the
+  pre-registered statistics.
+- Phase 5: saliency methods and their scores, `phase5_explainability`; notes with the fact checker and
+  an LLM client from the environment, `phase5_clinical_notes`; error analysis from saved predictions;
+  the demo; `phase5-gate`.
+- Phase 6: `python -m ecgaug.paper` (tables and numbers from results), `paper/main.tex` (compiles; red
+  placeholders where results are missing), `scripts/reproduce.sh`.
+- Kaggle: a notebook per new experiment plus the full grid; banks and checkpoints travel in the zips
+  and come back with `ingest_runs.py` or an attached artifacts dataset.
+- Docs: a brief per variant (32 in all), DECISIONS A14 (the design choices to confirm), the proposed
+  v2/v3/phase 5 values in PREREGISTRATION §10, README, guides, NAMING, Kaggle guide.
+- Tests: 271 pass (95 new), including an end-to-end final evaluation on fake data that runs once and
+  refuses a second time. Real-data checks: a short CPU preview of a cVAE pilot, and the DTW and
+  spectral metrics on real DS1 beats (DTW passes the sanity harness; spectral passes with one swap).
+
+Fixed on the way: the memorization threshold now uses leave-one-out distances (a 10% hold-out was too
+noisy for F); a rounding bug made Spearman 0.8 fail the >= 0.8 rule; generator weights were not seeded
+before construction.
+
+Run IDs: none official (smoke and scratch previews only, outside the repository).
+
+Open issues:
+- Every run waits for the phase 1 gate approval. The team should confirm DECISIONS A14 and fix the
+  PREREGISTRATION v2 values at the phase 2 gate.
+- `git_dirty` on the phase 1 Kaggle runs is still unexplained (docs/PHASE1_REPORT.md §7).
+- Kaggle run times of phases 2-5 are not measured; the LLM notes are untried with a real key.
+
+Next: the team approves the phase 1 gate (and decides `min_epochs`); then phase 2 on Kaggle.
+
+## 2026-10-26 (Day 20): Kaggle uses the attached datasets only
+
+A phase2_ptbxl_pretraining session on Kaggle (commit 1c0b3b9) downloaded MIT-BIH from PhysioNet and then
+refused to run: "the phase 1 gate has not chosen the input variant yet".
+
+Causes:
+- The download happened because `RAW_DATASET_DIR` pointed at the PTB-XL dataset, which has no MIT-BIH
+  files, and the notebooks fell back to `python -m ecgaug.data.raw` (download plus verification).
+- The refusal is correct: the phase 1 gate report exists (`results/phase1_gate/report.md`, winner C),
+  but the gate was never approved, so there is no `results/manifest.json`. No data is missing. Every
+  non-preview run after phase 1 needs that manifest on the branch the notebook checks out.
+
+Done:
+- `kaggle/kaggle_run.py` no longer downloads MIT-BIH and no longer calls `ecgaug.data.raw`. It looks
+  for the record files under `--raw-dir` (default `/kaggle/input`, including the new
+  `/kaggle/input/datasets/<owner>/<name>` layout). It checks each of the 144 files against the
+  committed `results/phase1_data/raw_checksums.json`, which matched PhysioNet in phase 1, and then
+  copies them. No network is used. A missing or changed file stops the run with exit code 2 and a
+  message to attach `mitdb-raw`. Smoke runs skip this step.
+- All ten notebooks: the raw-data fallback is removed. The PTB-XL notebook finds an attached PTB-XL copy
+  under `/kaggle/input` by default (`"download"` is still an option) and defaults to variant C.
+- `ecgaug.data.raw` stays as a module: it is the only reader of raw files (test lock, DS2 guard). It
+  is just no longer run in Kaggle sessions.
+- Tests: the stricter file search, and the checksum copy (a match is copied; a changed file is refused).
+- kaggle/README.md: parameters and troubleshooting updated.
+
+Open issues:
+- Phase 2 cannot run without `PREVIEW = True` until the team approves the phase 1 gate and the resulting
+  `results/manifest.json` is pushed to the branch the notebooks run (`GIT_REF`).
+- The notebook that was run uses the fork `Manindrathatuthuri/Gen_Ai_Project` at `main`. These fixes
+  are on `akashsaha477/Gen_Ai_Project`, branch `finish-project`.
+
+Next: approve the phase 1 gate (team), push the manifest, and run phase2_ptbxl_pretraining with C.
+
+## 2026-10-26 (Day 20): the `git_dirty` puzzle solved; what blocks the rest
+
+Done:
+- Cause of `git_dirty = true` on the phase 1 runs (docs/PHASE1_REPORT.md §7): a logging bug. In every
+  session the first run logged `false` and every later run `true` (GPU: 4 sessions of 1 + 5; CPU: 1 + 4).
+  `runs._git` stripped the `git status --porcelain` output, removing the leading space of
+  ` M results/runs_index.csv`, which was then read as `esults/runs_index.csv`, a non-output path. Fixed
+  (`rstrip("\n")`) with a test that fails on the old code. Logged flags are not rewritten.
+- Branches checked: only `main` and `finish-project` exist on `akashsaha477/Gen_Ai_Project`; `main` has
+  nothing that `finish-project` lacks. The forks (`Manindrathatuthuri`, `kartheek2159`) are not reachable
+  from this session, so any Kaggle results pushed there are not here.
+- Tests: 273 pass (locked environment, CPU).
+
+Not possible from this session: PhysioNet is blocked by the network policy (no real-data preview), there
+is no GPU, and every official run waits for the phase 1 gate approval by named team members.
+
+Open issues:
+- All ten notebooks default to `GIT_REF = "main"`, but phases 2-6 exist only on `finish-project`:
+  merge it into `main` (or set `GIT_REF`) before the Kaggle runs.
+- Phase 1 gate approval and the `min_epochs` decision (PHASE1_REPORT §6) are with the team.
+
+Next: team approves the phase 1 gate; merge `finish-project` into `main`; phase 2 on Kaggle.

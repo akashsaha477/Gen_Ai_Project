@@ -41,6 +41,12 @@ class ProbeCNN(nn.Module):
             self.side = None
             self.head = nn.Linear(in_channels, n_classes)
 
+    def embed_waveform(self, x: torch.Tensor) -> torch.Tensor:
+        """Pooled convolutional features of the waveform alone (the FID-analog feature hook)."""
+        if x.dim() == 2:
+            x = x.unsqueeze(1)
+        return self.features(x).mean(dim=-1)
+
     def forward(self, x: torch.Tensor, side: torch.Tensor | None = None) -> torch.Tensor:
         """``x`` is ``[batch, length]`` or ``[batch, 1, length]``; ``side`` is ``[batch, n_side]``."""
         if x.dim() == 2:
