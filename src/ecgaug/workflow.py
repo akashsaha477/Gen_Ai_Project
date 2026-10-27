@@ -122,6 +122,17 @@ def evaluate_phase1_gate() -> dict:
     return {"results": results, "checks": checks, "decision": decision, "winner": decision["winner"]}
 
 
+def _step_text(step: dict) -> str:
+    """One step of a selection decision, as the gate reports print it."""
+    if "passed" in step:
+        return f"{step['step']}: passed {', '.join(step['passed']) or 'none'}; failed {', '.join(step['failed']) or 'none'}"
+    if "skipped" in step:
+        return f"{step['step']}: skipped ({step['skipped']})"
+    if "tied" in step:
+        return f"{step['step']}: tied with the best: {', '.join(step['tied'])}"
+    return f"{step['step']}: **{step['winner']}**"
+
+
 def phase1_gate_markdown(gate: dict) -> str:
     results, decision = gate["results"], gate["decision"]
     metric = next(iter(results.values()))["selection_metric"]
@@ -149,11 +160,7 @@ def phase1_gate_markdown(gate: dict) -> str:
             f"{decision['margins'][letter]:.4f} | {r['wall_clock_s']:.0f} |"
         )
     lines += ["", "## Decision", ""]
-    for step in decision["steps"]:
-        if "tied" in step:
-            lines.append(f"- {step['step']}: tied with the best: {', '.join(step['tied'])}")
-        else:
-            lines.append(f"- {step['step']}: **{step['winner']}**")
+    lines += [f"- {_step_text(step)}" for step in decision["steps"]]
     lines += [
         "",
         f"**Winner: variant {gate['winner']}** (`{variant_configs()[gate['winner']].name}`).",
@@ -311,7 +318,7 @@ def phase2_gate_markdown(gate: dict) -> str:
         lines.append(f"| {letter} | {r['role']} | {r['n_parameters']:,} | {r['mean']:.4f} | {r['sd']:.4f} | {seeds} | {tie} | {r['chosen_lr']:g} | {r['wall_clock_s']:.0f} |")
     for role in ("cnn", "rnn"):
         decision = gate["baselines"][role]
-        steps = "; ".join(f"{s['step']}: " + (", ".join(s["tied"]) if "tied" in s else s["winner"]) for s in decision["steps"])
+        steps = "; ".join(_step_text(s).replace("**", "") for s in decision["steps"])
         lines += ["", f"**{role}: variant {decision['winner']}** ({steps})"]
     lines += ["", "## Quality metrics", "", "| variant | family | passes | reference best | Spearman per degradation | median CV |", "|---|---|---|---|---|---|"]
     for letter, r in gate["quality"]["results"].items():
@@ -518,13 +525,7 @@ def phase3a_gate_markdown(gate: dict) -> str:
             lines += ["", "Every setting of a variant with several (both are reported; the variant uses its best passing one):", ""]
             lines += [f"- {letter} {name}: {s['mean']:.4f} ± {s['sd']:.4f}, hard gates {'pass' if s['hard_gates']['passed'] else 'fail'}" for letter, name, s in other]
         lines += ["", "### Decision", ""]
-        for step in decision["steps"]:
-            if "passed" in step:
-                lines.append(f"- {step['step']}: passed {', '.join(step['passed']) or 'none'}; failed {', '.join(step['failed']) or 'none'}")
-            elif "tied" in step:
-                lines.append(f"- {step['step']}: tied with the best: {', '.join(step['tied'])}")
-            else:
-                lines.append(f"- {step['step']}: **{step['winner']}**")
+        lines += [f"- {_step_text(step)}" for step in decision["steps"]]
         if family["winner"]:
             config = experiment_configs(experiment)[family["winner"]].name
             lines += ["", f"**Winner: variant {family['winner']}** (`{config}`, setting {family['setting']}).", ""]
@@ -980,9 +981,11 @@ def phase5_gate_markdown(gate: dict) -> str:
         cells = []
         for arch in gate["methods"]:
             e = r["per_architecture"].get(arch, {})
-            cells += [f"{e['mean_gain']:+.4f}", f"{e['mean_stability']:.3f}"] if e.get("applicable") else ["n/a", "n/a"]
+            cells += [f"{e['mean_gain']:+.4f}", f"{e['mean_stability']:.3f}".replace("nan", "undefined")] if e.get("applicable") else ["n/a", "n/a"]
         lines.append(f"| {letter} | {r['method']} | " + " | ".join(cells) + " |")
-    lines += ["", *[f"**{arch}: variant {m['variant']} ({m['method']})**" for arch, m in gate["methods"].items()], "", "## Notes", "",
+    for arch, m in gate["methods"].items():
+        lines += ["", *[f"- {arch}, {_step_text(step)}" for step in m["decision"]["steps"]], f"**{arch}: variant {m['variant']} ({m['method']})**"]
+    lines += ["", "## Notes", "",
               "| variant | ran | unsupported claims | coverage | fell back | mean latency (s) | output tokens | rating |", "|---|---|---|---|---|---|---|---|"]  # fmt: skip
     for letter, r in gate["notes"].items():
         if r.get("not_run"):

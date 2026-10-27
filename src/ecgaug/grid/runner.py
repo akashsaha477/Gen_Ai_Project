@@ -214,7 +214,8 @@ def run_cell(cell: Cell, grid: dict, split, data: DataSource, classifier: dict, 
                             batch_size=int(classifier["batch_size"]), weight_decay=float(classifier["weight_decay"]),
                             min_epochs=int(classifier.get("min_epochs", 0)))  # fmt: skip
     fit = fit_classifier(model, part, val, train_cfg, split.selection_metric, seed=cell.seed, device=device, class_weights=weights)
-    run_id = runs.make_run_id(grid["experiment"], cell.label, cell.seed, tag=cell.tag)
+    variant = grid.get("variant")  # an experiment's variant letter; the full grid has none and names runs by architecture
+    run_id = runs.make_run_id(grid["experiment"], variant or cell.label, cell.seed, tag=cell.tag if variant is None else f"{cell.label}.{cell.tag}")
     group = (*run_root, grid["experiment"], grid["name"], cell.label)
     metrics = {**fit.best_metrics, "selection_metric": split.selection_metric, "selection_value": fit.best_value,
                "best_epoch": fit.best_epoch, "epochs_run": fit.epochs_run, "stopped_early": fit.stopped_early}  # fmt: skip

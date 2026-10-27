@@ -57,6 +57,7 @@ def test_policy_variants_are_the_ones_in_the_plan():
 def test_policy_smoke_run():
     out = policy.smoke(policy.load_config(variant_config(POLICIES, "C")))
     assert out["banks"] == ["cvae", "wgan_gp"] and out["constraint_evaluated"]
+    assert all(r.startswith("phase4_augmentation_policy-C.cnn.") for r in out["run_ids"])  # the variant letter keeps B and D runs apart
 
 
 @pytest.fixture
