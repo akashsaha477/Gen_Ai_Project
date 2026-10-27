@@ -176,3 +176,11 @@ Choices where PLAN Phase 4 and PAPER_TRACK RQ3 leave the detail open:
 | A16.4 | Report: intra-patient test rare-class macro-F1 (mean and SD over seeds) beside the final evaluation's result for the same condition (at the strength the phase 4 gate chose); gain over none on each side; inflation = intra minus inter for none. | The final evaluation is not repeated; strengths are shown on both sides. |
 | A16.5 | DS2 for the audit is read with `ALLOW_TEST_AUDIT=1`, only after the final evaluation, from `data/processed/v1` or rebuilt from the raw records and checked against the frozen hash; every read is logged as `audit`. Audit runs and banks are refused by the final evaluation, the grid and the ingest before the final evaluation. | DECISIONS A4, A6. |
 | A16.6 | RQ3: Spearman's rho between each metric (the composite's families; diversity, memorization and C2ST averaged over S, V, F) and the pilot score across all checkpoints of the official pilot and final generator runs; 95% percentile interval from 2,000 resamples of runs; TSTR apart. The gain's zero is the phase 2 gate cnn's seed-0 run without synthetic beats (a constant shift, so rho is unchanged). | PREREGISTRATION §9, PAPER_TRACK RQ3. |
+
+## 2026-10-27 (Day 21) — A17: two fixes found by the dress rehearsal — decided by Akash Saha, PENDING TEAM CONFIRMATION
+
+- **A17.1** Selection rule: an undefined (NaN) tie-break value counts as "not given", like a missing one,
+  so the tie-break step is skipped and simplicity decides; the gate report prints the skipped step.
+  Before, the rule crashed. Seen with Grad-CAM, whose maps can be constant (stability undefined).
+- **A17.2** phase4_augmentation_policy run IDs carry the variant letter (`phase4_augmentation_policy-B.cnn.cvae_0.25-s0-...`);
+  before, variants B and D produced the same run ID for the same strength and seed.
