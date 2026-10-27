@@ -184,3 +184,17 @@ Choices where PLAN Phase 4 and PAPER_TRACK RQ3 leave the detail open:
   Before, the rule crashed. Seen with Grad-CAM, whose maps can be constant (stability undefined).
 - **A17.2** phase4_augmentation_policy run IDs carry the variant letter (`phase4_augmentation_policy-B.cnn.cvae_0.25-s0-...`);
   before, variants B and D produced the same run ID for the same strength and seed.
+
+## 2026-10-27 (Day 21) — A18: the paper's text and references — decided by Akash Saha, PENDING TEAM CONFIRMATION
+
+- **A18.1** Results sentences, the abstract's results sentence and the hypothesis verdicts are generated
+  from the result files (`src/ecgaug/paper_text.py`). A difference is called an improvement only when its
+  Holm-adjusted p is below 0.05; otherwise "did not detectably change", with the interval. Verdicts:
+  H1 supported if any confirmatory comparison is a significant gain; H1c supported if, for one
+  architecture, the best generative condition significantly beats all three baselines (partly if some);
+  H1b, H2, H3 and H4 are exploratory and described as consistent, mixed or not consistent. No number or
+  outcome is written before the result exists.
+- **A18.2** `paper/refs.bib`: 29 entries verified on 2026-10-27 by web search of each entry's arXiv page,
+  DOI or publisher page, or an institutional repository record (named above each entry), because the
+  container cannot reach doi.org or arxiv.org directly (this deviates from A14.15's "from its DOI or
+  arXiv page" for 9 entries). Fields no page confirmed (some DOIs, issue and article numbers) are left out.

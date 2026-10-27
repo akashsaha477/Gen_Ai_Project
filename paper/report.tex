@@ -1,0 +1,79 @@
+% Course report (PLAN Phase 6, item 2), derived from the paper: the same generated tables, numbers and
+% results sentences (python -m ecgaug.paper), plus the end-to-end system the course asks for. Never type a
+% number by hand; a red [bracket] is a result that does not exist yet.
+\documentclass[11pt]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{adjustbox}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+\newcommand{\missing}[1]{\textcolor{red}{[#1]}}
+\input{generated/numbers.tex}
+
+\title{Rare-Arrhythmia Detection with Generative ECG Augmentation\\\large Course project report}
+\author{\missing{team members}}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Goal}
+The system takes one ECG beat and returns a predicted arrhythmia class, a saliency map showing which parts of the
+beat drove the prediction, and a short clinician-readable note grounded in the model output. Behind it is a research
+question: under a strict inter-patient evaluation, does class-conditional generative augmentation (a conditional VAE
+or a WGAN-GP) improve detection of the rare classes S and F compared with no augmentation, class-weighted loss,
+random oversampling and SMOTE~\cite{dechazal2004,chawla2002smote,gulrajani2017wgangp,sohn2015cvae}?
+
+\section{Data and protocol}
+MIT-BIH Arrhythmia Database~\cite{moody2001,goldberger2000}, lead MLII, AAMI classes N, S, V and F, paced records
+excluded. Training and validation come from the DS1 records and testing from the DS2 records~\cite{dechazal2004}, so no
+patient is in two splits. The test set was read once, after every choice had been fixed on validation by rules written
+down in advance.
+\begin{table}[htbp]\centering\small\input{generated/table_dataset.tex}\caption{Records and beats per split.}\end{table}
+
+\section{System}
+\begin{enumerate}
+\item \textbf{Beat extraction}: a window around the reference R peak (representation \PhaseOneWinner, chosen on
+validation), z-scored per beat, with RR features where the representation uses them.
+\item \textbf{Classifier}: the cnn chosen at the phase 2 gate, trained with the augmentation condition chosen on
+validation (\texttt{--condition best\_generative} by default).
+\item \textbf{Saliency}: the method chosen per architecture at the phase 5 gate, summarised as the share of saliency in
+the P, QRS, ST and T windows around the R peak.
+\item \textbf{Note}: a template (or an LLM when configured) writes a note from a JSON object holding only the prediction,
+the probabilities, a low-confidence flag and the top saliency segments; a fact checker rejects any claim not in that
+object, and a template note is used whenever the check fails.
+\end{enumerate}
+Run it with \texttt{python -m ecgaug.demo --record <validation record> --beat <index>}; it prints the prediction,
+the probabilities and the note, and saves a figure of the beat with its saliency.
+
+\section{Methods in brief}
+Four representations, four baseline classifiers, four quality-metric families, four cVAE and four WGAN-GP variants,
+four augmentation policies, four saliency methods and four note generators were compared, each on validation and each
+chosen by a rule fixed before the comparison. The final grid trains six conditions at three strengths for two
+architectures and three seeds. Uncertainty on the test set comes from resampling the 22 test patients, with Holm
+correction for the pre-registered comparisons~\cite{holm1979}. The paper (\texttt{paper/main.tex}) describes each
+step in full.
+
+\section{Results}
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_hypotheses.tex}}\caption{Pre-registered hypotheses and their verdicts.}\end{table}
+\input{generated/results_rq1.tex}
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/final_eval_conditions.tex}}\caption{Test results per condition (95\% record-level CI).}\end{table}
+\paragraph{Leakage.} \input{generated/results_rq2.tex}
+\paragraph{Quality metrics.} \input{generated/results_rq3.tex}
+\paragraph{Explanations.} \input{generated/results_rq4.tex}
+\paragraph{Notes.} \input{generated/results_notes.tex}
+
+\section{Limitations}
+Twenty-two test patients, with the rare classes in few of them, give wide intervals; one database and one lead;
+reference R peaks; synthetic beats get RR features copied from real beats; notes were rated by the team, not by
+clinicians. The system is a course project and not a medical device.
+
+\section{Team contributions}
+\missing{who did what: from docs/ASSIGNMENTS.md once the draws are recorded}
+
+\bibliographystyle{plain}
+\bibliography{refs}
+\end{document}

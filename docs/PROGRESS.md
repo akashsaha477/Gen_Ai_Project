@@ -490,3 +490,17 @@ Not runnable yet: both need phase 3 (RQ3) or the final evaluation (audit) result
   build has no table left waiting. The numbers mean nothing.
 - It found two bugs, fixed (DECISIONS A17): colliding policy run IDs, and the selection rule crashing on
   an undefined tie-break value. Tests: 291 pass (+1 skipped: the rehearsal).
+
+## 2026-10-27 (Day 21): the paper and the course report, written to fill themselves in
+
+- `paper/main.tex`: every section written (abstract, introduction, related work, data, methods,
+  statistics, results, notes, limitations and ethics, reproducibility). Results sentences, the abstract's
+  results sentence and a hypothesis-verdict table are generated from the result files by
+  `src/ecgaug/paper_text.py` with the pre-registered criteria (DECISIONS A18.1); until a result exists the
+  draft shows a red placeholder. No number or outcome was assumed.
+- `paper/refs.bib`: 29 verified references (A18.2). `paper/report.tex`: the course report from the same
+  generated files. Team contributions stay a placeholder until `docs/ASSIGNMENTS.md` is filled.
+- Not done here: compiling LaTeX (no TeX in this container); run pdflatex + bibtex on main.tex and report.tex.
+- Tests: 297 pass; the dress rehearsal fills every results sentence from its (fake) results.
+
+Next: real runs (phase 2 onward on Kaggle); after each gate, `python -m ecgaug.paper` updates the draft.

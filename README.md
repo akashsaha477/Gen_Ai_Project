@@ -49,9 +49,11 @@ the one before it; the code refuses to skip ahead and says what is missing.
 | 4 comparison | the single final evaluation on the test set | `ALLOW_TEST=1 python -m ecgaug.final_eval --confirm "run final eval"` | built |
 | 5 explanations | `phase5_explainability` A–D, `phase5_clinical_notes` A–D, error analysis, demo | `python -m ecgaug.experiments.phase5_*`, `python -m ecgaug.demo` | built |
 | 5 explanations | phase 5 gate, then `git tag v1.0` | `python -m ecgaug.workflow phase5-gate [--approve ...]` | built |
-| 6 paper | tables and numbers for `paper/main.tex` | `python -m ecgaug.paper` | built |
+| 4 comparison | RQ3 analysis; leakage audit (optional, after the final evaluation) | `python -m ecgaug.eval.rq3`; `kaggle/phase4_leakage_audit.ipynb` | built |
+| 6 paper | `paper/main.tex` and the course report `paper/report.tex`: tables, numbers and results sentences | `python -m ecgaug.paper` | built |
 
-"Built" means the code, configs, notebook, tests and brief exist; nothing has run officially yet. Every
+"Built" means the code, configs, notebook, tests and brief exist. A dress rehearsal runs every stage in
+order on fake records (`ECGAUG_REHEARSAL=1 uv run pytest tests/test_rehearsal.py`, about 8 minutes). Every
 runner refuses an official run until the gates before it are approved, and says which. `--preview`
 runs earlier with stand-ins and marks the result provisional; a gate never approves a preview.
 
@@ -200,7 +202,9 @@ uv run python -m ecgaug.paper
 ```
 
 What each variant is, how to run it and what to check: `docs/briefs/<experiment>_<variant>.md`.
-`scripts/reproduce.sh` lists the whole order. The LLM note variants need `ANTHROPIC_API_KEY` (and
+`scripts/reproduce.sh` lists the whole order. The paper's results sentences and hypothesis verdicts are
+written by `python -m ecgaug.paper` from the result files (`src/ecgaug/paper_text.py`); compile
+`paper/main.tex` and `paper/report.tex` with pdflatex and bibtex. The LLM note variants need `ANTHROPIC_API_KEY` (and
 optionally `ECGAUG_LLM_MODEL`) in the environment; without it the template note is used.
 
 ## Troubleshooting
