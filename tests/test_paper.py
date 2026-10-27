@@ -26,3 +26,23 @@ def test_paper_tables_come_from_results_and_mark_what_is_missing(tmp_root):
 def test_macro_names_are_letters_only():
     assert paper._macro("count training S") == "CountTrainingS"
     assert paper._macro("phase1_input_representation C mean") == "PhaseOneInputRepresentationCMean"
+
+
+def test_the_draft_cites_only_verified_entries_and_inputs_only_generated_files():
+    import re
+
+    from conftest import REPO
+
+    from ecgaug import paper
+
+    tex = (REPO / "paper" / "main.tex").read_text() + (REPO / "paper" / "report.tex").read_text()
+    keys = set(re.findall(r"@\w+\{([^,]+),", (REPO / "paper" / "refs.bib").read_text()))
+    cited = {k.strip() for group in re.findall(r"\\cite\{([^}]*)\}", tex) for k in group.split(",")}
+    assert cited and cited <= keys, f"cited but not in refs.bib: {cited - keys}"
+    report = paper.build()
+    inputs = set(re.findall(r"\\input\{generated/([^}]*)\}", tex))
+    generated = paths.repo_root() / "paper" / "generated"
+    assert all((generated / (i if i.endswith(".tex") else f"{i}.tex")).is_file() for i in inputs)
+    for name in report["written"]:
+        text = (paths.repo_root() / name).read_text()
+        assert text.count("{") == text.count("}"), f"unbalanced braces in {name}"

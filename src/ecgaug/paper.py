@@ -242,6 +242,13 @@ def build() -> dict:
         else:
             (out / tex).write_text(_todo("test results: written by /final-eval") + "\n")
             missing.append(tex)
+    from ecgaug import paper_text
+
+    for name, tex in paper_text.build().items():  # results sentences and hypothesis verdicts, from the same files
+        (out / f"{name}.tex").write_text(tex)
+        written.append(f"paper/generated/{name}.tex")
+        if "\\missing" in tex:
+            missing.append(name)
     final_numbers = out / "numbers_final_eval.tex"
     if final_numbers.is_file():
         lines.append("\\input{generated/numbers_final_eval.tex}")
