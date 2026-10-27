@@ -21,7 +21,7 @@ A **gate** is the decision at the end of a phase: "the phase 1 gate". It is appr
 | 1 | data | data pipeline, evaluation code, `phase1_input_representation` |
 | 2 | baselines | `phase2_baseline_classifiers`, `phase2_quality_metrics`, `phase2_ptbxl_pretraining` |
 | 3 | generators | `phase3_cvae`, `phase3_wgan_gp` |
-| 4 | comparison | `phase4_augmentation_policy`, the full grid (`phase4_full_grid`), the final test evaluation |
+| 4 | comparison | `phase4_augmentation_policy`, the full grid (`phase4_full_grid`), the final test evaluation, `phase4_leakage_audit` (optional, after it) |
 | 5 | explanations | `phase5_explainability`, `phase5_clinical_notes`, the demo |
 | 6 | paper | report, paper draft |
 
@@ -79,6 +79,8 @@ A bank is named after its variant: `data/synthetic/phase3_cvae-A/` (with the set
 | `phase4_full_grid` | the grid of conditions x strengths x architectures x seeds: configs, runs (`runs/phase4_full_grid/<grid>/<architecture>/`), one ledger file per cell |
 | `phase4_gate` | strengths and checkpoints for the final evaluation |
 | `final_eval` | the single test evaluation (`results/final_eval/`, `figures/final_eval/`) |
+| `phase4_quality_vs_gain` | RQ3: quality metrics against the downstream gain, from the phase 3 checkpoints (`results/`, `figures/`) |
+| `phase4_leakage_audit` | the leakage audit; its runs in `runs/audit/phase4_leakage_audit/`, its banks in `data/synthetic/audit/` |
 | `phase5_gate` | saliency method per architecture, note variant, demo |
 | `error_analysis` | confusions, per-record errors and RR context, from saved predictions |
 

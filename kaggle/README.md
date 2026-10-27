@@ -13,6 +13,7 @@ to GitHub, so you only `git pull`. No logic lives in the notebooks.
 | `phase3_cvae.ipynb`, `phase3_wgan_gp.ipynb` | generator pilots (`MODE = "pilot"`), or the chosen generator's full runs and banks (`MODE = "final"`) | `mitdb-raw` |
 | `phase4_augmentation_policy.ipynb` | the four augmentation policies with both frozen banks | `mitdb-raw`, banks |
 | `phase4_full_grid.ipynb` | the full grid; resumable across sessions | `mitdb-raw`, banks |
+| `phase4_leakage_audit.ipynb` | the leakage audit, only after the final evaluation (`CONFIRM_AUDIT = True`) | `mitdb-raw`, audit banks for `PART = "classifiers"` |
 | `phase5_explainability.ipynb`, `phase5_clinical_notes.ipynb` | saliency methods and note generators on the phase 4 models | `mitdb-raw`, artifacts (checkpoints) |
 
 Other files in this folder: `kaggle_run.py` (the script every notebook calls), `make_raw_dataset.py`

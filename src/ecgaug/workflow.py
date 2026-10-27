@@ -40,6 +40,8 @@ from ecgaug.names import (
     PHASE3A_GATE,
     PHASE4_AUGMENTATION_POLICY,
     PHASE4_FULL_GRID,
+    PHASE4_LEAKAGE_AUDIT,
+    PHASE4_QUALITY_VS_GAIN,
     PHASE4_GATE,
     PHASE4A_GATE,
     PHASE5_CLINICAL_NOTES,
@@ -897,6 +899,11 @@ def _phase4_lines() -> tuple[list[str], str | None]:
     item((paths.results_for(PHASE4_GATE) / "report.md").is_file(), "phase 4 gate: validation summary written", "python -m ecgaug.workflow phase4-gate")
     item(bool(manifest().get(PHASE4_GATE)), "phase 4 gate: approved, checkpoints fixed", 'python -m ecgaug.workflow phase4-gate --approve "<names>"')
     item((paths.results_for(FINAL_EVAL) / "summary.json").is_file(), "final evaluation on the test set (once)", "/final-eval (python -m ecgaug.final_eval)")
+    rq3 = paths.results_for(PHASE4_QUALITY_VS_GAIN) / "summary.json"  # analyses: listed, never the next action
+    rq3_done = rq3.is_file() and not json.loads(rq3.read_text())["provisional"]
+    lines.append(_check(rq3_done, "RQ3: quality metrics against the downstream gain", "python -m ecgaug.eval.rq3 (after the phase 3 runs)"))
+    lines.append(_check((paths.results_for(PHASE4_LEAKAGE_AUDIT) / "summary.json").is_file(), "leakage audit (optional, after the final evaluation)",
+                        f"kaggle/{PHASE4_LEAKAGE_AUDIT}.ipynb, then python -m ecgaug.experiments.{PHASE4_LEAKAGE_AUDIT} --config configs/{PHASE4_LEAKAGE_AUDIT}/audit.yaml --part report"))  # fmt: skip
     return lines, first
 
 

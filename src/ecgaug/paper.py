@@ -28,6 +28,8 @@ from ecgaug.names import (
     PHASE3_CVAE,
     PHASE3_WGAN_GP,
     PHASE4_AUGMENTATION_POLICY,
+    PHASE4_LEAKAGE_AUDIT,
+    PHASE4_QUALITY_VS_GAIN,
     PHASE5_CLINICAL_NOTES,
     PHASE5_EXPLAINABILITY,
 )
@@ -134,6 +136,40 @@ def policy_table() -> tuple[str, dict]:
                   [f"results/{PHASE4_AUGMENTATION_POLICY}/{l}.json" for l in results]), {}  # fmt: skip
 
 
+def quality_vs_gain_table() -> tuple[str, dict]:
+    path = paths.results_for(PHASE4_QUALITY_VS_GAIN) / "summary.json"
+    if not path.is_file():
+        return _table("l", ["Metric"], [[_todo("RQ3: python -m ecgaug.eval.rq3")]], []), {}
+    s = json.loads(path.read_text())
+    rows = []
+    for name, m in s["metrics"].items():
+        ci = f"[{_f(m['ci_low'], 2)}, {_f(m['ci_high'], 2)}]" if m["ci_low"] is not None else "--"
+        label = name.removeprefix("quality_").removesuffix("_mean")
+        rows.append([_esc(label), _esc(m["group"]), _f(m["rho"], 2), ci, str(m["n_points"]), str(m["n_runs"])])
+    note = " (provisional)" if s["provisional"] else ""
+    return _table("llrrrr", ["Metric", "Group", "Spearman $\\rho$", "95\\% CI (runs resampled)", "Checkpoints", "Runs" + note], rows,
+                  [f"results/{PHASE4_QUALITY_VS_GAIN}/summary.json"]), {}  # fmt: skip
+
+
+def leakage_audit_table() -> tuple[str, dict]:
+    path = paths.results_for(PHASE4_LEAKAGE_AUDIT) / "summary.json"
+    if not path.is_file():
+        return _table("l", ["Condition"], [[_todo("leakage audit (optional, after the final evaluation)")]], []), {}
+    s = json.loads(path.read_text())
+
+    def ci(e: dict | None) -> str:
+        return f"{_f(e['point'])} [{_f(e['ci_low'])}, {_f(e['ci_high'])}]" if e else "--"
+
+    rows = []
+    for condition, c in s["conditions"].items():
+        intra = f"{_f(c['intra']['mean'])} $\\pm$ {_f(c['intra']['sd'])}" if c["intra"] else "--"
+        gain = s["gains"].get(condition)
+        gain_intra = f"{float(gain['intra']['mean']):+.3f}" if gain and gain["intra"] else "--"
+        rows.append([_esc(condition), intra, ci(c["inter"]), gain_intra, ci(gain["inter"]) if gain else "--"])
+    header = ["Condition", "Intra-patient (mean $\\pm$ SD)", "Inter-patient [95\\% CI]", "Gain, intra", "Gain, inter [95\\% CI]"]
+    return _table("lrrrr", header, rows, [f"results/{PHASE4_LEAKAGE_AUDIT}/summary.json", f"results/{FINAL_EVAL}/summary.json"]), {}
+
+
 def explainability_table() -> tuple[str, dict]:
     results = _results(PHASE5_EXPLAINABILITY)
     if not results:
@@ -183,6 +219,8 @@ def build() -> dict:
         "table_quality_metrics": quality_table(),
         "table_generators": generator_table(),
         "table_policy": policy_table(),
+        "table_quality_vs_gain": quality_vs_gain_table(),
+        "table_leakage_audit": leakage_audit_table(),
         "table_explainability": explainability_table(),
         "table_notes": notes_table(),
     }.items():  # fmt: skip

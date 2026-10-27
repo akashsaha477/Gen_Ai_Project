@@ -163,3 +163,16 @@ Choices made where the plan left the detail open (each one needs the team's agre
 ## the phase 1 gate — 2026-10-26 — status: APPROVED by Akash Saha
 phase1_input_representation: winner C (C_short_window_rr_features) — evidence: results/phase1_gate/report.md — rule: PREREGISTRATION §4–5
 Frozen artifacts (hashes): data/processed/v1, see results/manifest.json
+
+## 2026-10-27 (Day 21) — A16: the leakage audit and the RQ3 analysis built — decided by Akash Saha, PENDING TEAM CONFIRMATION
+
+Choices where PLAN Phase 4 and PAPER_TRACK RQ3 leave the detail open:
+
+| ID | Choice | Why |
+|---|---|---|
+| A16.1 | Intra-patient split: DS1 and DS2 beats pooled; each class's beats assigned at random (seed 0) to train, validation and test with the inter-patient counts of each part. | Only the patient separation changes; data amount and class balance stay equal. |
+| A16.2 | The generator variants frozen at the phase 3 gate are retrained at their full budget on the intra-patient training beats, on the grid seeds (banks in `data/synthetic/audit/`). | "The same pipeline": a generator must not have seen the intra-patient test beats. |
+| A16.3 | Medium strength = the middle of the full grid's strengths for each generative condition (the upper of two); the phase 4a gate's policy; the cnn of the phase 2 gate; validation selection as in the approved split. | PLAN: "{none, cVAE, WGAN-GP} at medium strength, `cnn`, 3 seeds". |
+| A16.4 | Report: intra-patient test rare-class macro-F1 (mean and SD over seeds) beside the final evaluation's result for the same condition (at the strength the phase 4 gate chose); gain over none on each side; inflation = intra minus inter for none. | The final evaluation is not repeated; strengths are shown on both sides. |
+| A16.5 | DS2 for the audit is read with `ALLOW_TEST_AUDIT=1`, only after the final evaluation, from `data/processed/v1` or rebuilt from the raw records and checked against the frozen hash; every read is logged as `audit`. Audit runs and banks are refused by the final evaluation, the grid and the ingest before the final evaluation. | DECISIONS A4, A6. |
+| A16.6 | RQ3: Spearman's rho between each metric (the composite's families; diversity, memorization and C2ST averaged over S, V, F) and the pilot score across all checkpoints of the official pilot and final generator runs; 95% percentile interval from 2,000 resamples of runs; TSTR apart. The gain's zero is the phase 2 gate cnn's seed-0 run without synthetic beats (a constant shift, so rho is unchanged). | PREREGISTRATION §9, PAPER_TRACK RQ3. |

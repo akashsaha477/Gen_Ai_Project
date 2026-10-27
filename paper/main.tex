@@ -60,8 +60,10 @@ confirmatory family (4 tests) and the secondary family (8 tests); sensitivity wi
 \subsection{RQ1: does generative augmentation help?}
 \begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/final_eval_conditions.tex}}\caption{Test results per condition (95\% record-level CI).}\label{tab:test}\end{table}
 \begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/final_eval_comparisons.tex}}\caption{Pre-registered comparisons.}\label{tab:comparisons}\end{table}
+\subsection{Leakage audit: intra- against inter-patient evaluation}
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_leakage_audit.tex}}\caption{Rare-class macro-F1 of the cnn when the same pipeline is evaluated on a random beat-level split of DS1 and DS2 (intra-patient) and on DS2 (inter-patient). Run after the final evaluation; never used for any decision.}\label{tab:audit}\end{table}
 \subsection{RQ3: do quality metrics predict the benefit?}
-\todo[inline]{Checkpoint-level analysis from the runs' checkpoints.csv (Spearman with bootstrap over generator runs).}
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_quality_vs_gain.tex}}\caption{Quality metrics against the downstream gain across generator checkpoints (exploratory; TSTR analysed apart).}\label{tab:rq3}\end{table}
 \subsection{RQ4: explanations}
 \begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_explainability.tex}}\caption{Saliency methods: faithfulness and stability.}\label{tab:explain}\end{table}
 

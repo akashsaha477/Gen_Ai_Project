@@ -35,7 +35,7 @@ import os
 import numpy as np
 import torch
 from ecgaug import paths, runs, workflow
-from ecgaug.data.access import LockedTestDataError
+from ecgaug.data.access import LockedTestDataError, logged_accesses
 from ecgaug.data.loaders import load_test
 from ecgaug.data.records import CLASS_INDEX, CLASSES
 from ecgaug.eval import metrics as M
@@ -72,10 +72,7 @@ class FinalEvalError(RuntimeError):
 
 def prior_evaluations() -> list[str]:
     """Rows of ``docs/TEST_ACCESS_LOG.md`` whose kind is ``evaluation``."""
-    log = paths.docs_dir() / "TEST_ACCESS_LOG.md"
-    if not log.is_file():
-        return []
-    return [line for line in log.read_text().splitlines() if line.startswith("|") and line.split("|")[2].strip() == "evaluation"]
+    return logged_accesses("evaluation")
 
 
 def comparisons(gate: dict) -> dict[str, list[tuple[str, str, str]]]:
@@ -106,6 +103,8 @@ def plan() -> dict:
                 run_dir = runs.find_run_dir(run_id)
                 path = run_dir / "checkpoints" / "best.pt" if run_dir else None
                 expected = c["checkpoints"].get(run_id)
+                if path is not None and "audit" in path.relative_to(paths.runs_dir()).parts:
+                    path = None  # a leakage-audit run never stands in for a grid checkpoint (DECISIONS A4)
                 actual = runs._sha256(path) if path and path.is_file() else None
                 checkpoints.append({"architecture": arch, "condition": condition, "strength": c["strength"], "run_id": run_id,
                                     "path": str(path) if path else None, "sha256": expected, "present": actual is not None,
