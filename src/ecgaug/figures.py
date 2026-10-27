@@ -38,6 +38,7 @@ from ecgaug.names import (
 # Light reference palette (validated: adjacent CVD ΔE >= 9.1; aqua and yellow need direct labels).
 CLASS_COLORS = {"N": "#2a78d6", "S": "#eb6834", "V": "#1baf7a", "F": "#eda100"}
 ARM_COLORS = {"scratch": "#2a78d6", "finetune": "#eb6834", "pretrain": "#1baf7a"}
+FAMILY_COLORS = {"cvae": "#2a78d6", "wgan_gp": "#eb6834"}  # first two hues, fixed order
 INK, INK_2, GRID, SURFACE = "#0b0b0b", "#52514e", "#e4e3df", "#fcfcfb"
 BLUES = ["#fcfcfb", "#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"]
 SEGMENT_SECONDS = 8.0
@@ -792,6 +793,36 @@ def final_eval_figures(stats: dict) -> list[Path]:
     written.append(_save(fig, out / "per_record_S_F.png", "Final evaluation: S and F recall per test record",
                          "Only records holding S (left) or F (right) beats are shown; few records hold most of each class."))  # fmt: skip
     return written
+
+
+def quality_vs_gain_figure(summary: dict, rows: list[dict]) -> list[Path]:
+    """RQ3 (Fig 5): each quality metric against the downstream gain, one point per generator checkpoint."""
+    plt = _plt()
+    metrics = list(summary["metrics"])
+    y_key = "gain" if summary.get("reference") else "pilot_selection_value"
+    columns = min(4, len(metrics))
+    fig, axes = plt.subplots(-(-len(metrics) // columns), columns, figsize=(3.2 * columns, 2.9 * -(-len(metrics) // columns)), squeeze=False)
+    for ax, metric in zip(axes.flat, metrics):
+        for family, color in FAMILY_COLORS.items():
+            points = [(r[metric], r[y_key]) for r in rows if r["family"] == family and np.isfinite(r.get(metric, np.nan)) and np.isfinite(r[y_key])]
+            if points:
+                x, y = zip(*points)
+                ax.scatter(x, y, s=28, color=color, edgecolor=SURFACE, linewidth=0.8, label={"cvae": "cVAE", "wgan_gp": "WGAN-GP"}[family])
+        m = summary["metrics"][metric]
+        ci = f" [{m['ci_low']:+.2f}, {m['ci_high']:+.2f}]" if m["ci_low"] is not None else ""
+        ax.set_title(metric.removeprefix("quality_").removesuffix("_mean").replace("_", " "), loc="left")
+        ax.set_title(f"rho {m['rho']:+.2f}{ci}", loc="right", fontsize=7, fontweight="normal", color=INK_2)
+        if y_key == "gain":
+            ax.axhline(0, color=GRID, linewidth=1.2)
+    for ax in list(axes.flat)[len(metrics):]:
+        ax.set_visible(False)
+    for row in axes:
+        row[0].set_ylabel("downstream gain" if y_key == "gain" else "pilot score")
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper right", ncol=2, bbox_to_anchor=(0.995, 1.0))
+    caption = (f"{summary['n_checkpoints']} checkpoints from {summary['n_runs']} generator runs. Spearman rho with a 95% interval from "
+               "resampling runs. TSTR is analysed apart. Exploratory (H3)." + (" Provisional." if summary["provisional"] else ""))  # fmt: skip
+    return [_save(fig, paths.figures_for("phase4_quality_vs_gain") / "quality_vs_gain.png", "RQ3: quality metrics against the downstream gain", caption)]
 
 
 def phase4_strength_figure(gate: dict) -> list[Path]:

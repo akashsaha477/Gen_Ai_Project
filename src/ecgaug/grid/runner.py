@@ -202,8 +202,8 @@ def added_beats(cell: Cell, grid: dict, train: dict, bank: dict | None) -> tuple
 
 
 def run_cell(cell: Cell, grid: dict, split, data: DataSource, classifier: dict, device: torch.device, sha: str,
-             bank: dict | None, bank_id: str | None, provisional: list[str]) -> dict:  # fmt: skip
-    """Train and log one cell; return its ledger row."""
+             bank: dict | None, bank_id: str | None, provisional: list[str], run_root: tuple[str, ...] = ()) -> dict:  # fmt: skip
+    """Train and log one cell under ``runs/<run_root...>/``; return its ledger row."""
     train = training_beats(data.arrays)
     val = split_part(data.arrays, "val", data.spec.rr_features)
     added, weights = added_beats(cell, grid, train, bank)
@@ -215,7 +215,7 @@ def run_cell(cell: Cell, grid: dict, split, data: DataSource, classifier: dict, 
                             min_epochs=int(classifier.get("min_epochs", 0)))  # fmt: skip
     fit = fit_classifier(model, part, val, train_cfg, split.selection_metric, seed=cell.seed, device=device, class_weights=weights)
     run_id = runs.make_run_id(grid["experiment"], cell.label, cell.seed, tag=cell.tag)
-    group = (grid["experiment"], grid["name"], cell.label)
+    group = (*run_root, grid["experiment"], grid["name"], cell.label)
     metrics = {**fit.best_metrics, "selection_metric": split.selection_metric, "selection_value": fit.best_value,
                "best_epoch": fit.best_epoch, "epochs_run": fit.epochs_run, "stopped_early": fit.stopped_early}  # fmt: skip
     n_added = {c: int((np.asarray(added["y"]) == i).sum()) for i, c in enumerate(CLASSES)}
