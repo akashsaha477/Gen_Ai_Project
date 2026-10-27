@@ -481,3 +481,12 @@ Done (branch `finish-project`; results will be added as they come):
 - DECISIONS A16 (choices pending team confirmation). Tests: 290 pass.
 
 Not runnable yet: both need phase 3 (RQ3) or the final evaluation (audit) results.
+
+## 2026-10-27 (Day 21): dress rehearsal of the whole project
+
+- `tests/test_rehearsal.py` (run with `ECGAUG_REHEARSAL=1`, about 8 min on CPU): on fake records with
+  shrunk budgets, every runner, gate (approved as "Rehearsal") and the final evaluation in order, then
+  RQ3, the leakage audit, phase 5, error analysis, the demo and the paper build. It passes; the paper
+  build has no table left waiting. The numbers mean nothing.
+- It found two bugs, fixed (DECISIONS A17): colliding policy run IDs, and the selection rule crashing on
+  an undefined tie-break value. Tests: 291 pass (+1 skipped: the rehearsal).

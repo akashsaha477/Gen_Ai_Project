@@ -74,3 +74,13 @@ def test_undefined_metric_stops_the_rule():
         select_winner([Candidate("A", float("nan"), 0.0, 1)])
     with pytest.raises(ValueError):
         select_winner([])
+
+
+def test_an_undefined_tie_break_value_skips_the_tie_break_step():
+    from ecgaug.eval.selection import Candidate, select_winner
+
+    a = Candidate("A", mean=0.50, sd=0.0, complexity=3, tie_mean=float("nan"), tie_sd=0.0)
+    b = Candidate("B", mean=0.49, sd=0.0, complexity=1, tie_mean=0.9, tie_sd=0.0)
+    decision = select_winner([a, b])
+    assert decision["steps"][1] == {"step": "tie-break metric", "skipped": "undefined for A"}
+    assert decision["winner"] == "B"  # simplicity decides
