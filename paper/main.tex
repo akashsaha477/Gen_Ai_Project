@@ -1,6 +1,6 @@
-% Draft of the paper (PLAN Phase 6). Every number comes from generated/ (python -m ecgaug.paper and the
-% final evaluation); never type a number by hand. \todo and \missing mark what is still missing. Citations: only
-% entries verified from their DOI or arXiv page go into refs.bib (docs/PAPER_TRACK.md, related-work anchors).
+% The paper (PLAN Phase 6). Every number and every results sentence comes from generated/, written by
+% python -m ecgaug.paper (and the final evaluation) from logged runs; never type a number by hand. A red
+% [bracket] is a result that does not exist yet. Citations: refs.bib holds only verified entries.
 \documentclass[11pt]{article}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{booktabs}
@@ -23,59 +23,226 @@ A Controlled Comparison of Conditional VAEs and WGAN-GP}
 \maketitle
 
 \begin{abstract}
-\todo[inline]{Write last, from the results. State the question, the inter-patient protocol, the six conditions, the
-pre-registered confirmatory comparisons and their outcome with intervals, including negative results.}
+Class-conditional generative models are often proposed to rebalance electrocardiogram (ECG) beat classifiers
+toward rare arrhythmias, but many reported gains come from evaluations in which beats of the same patient
+appear in training and test. We ask whether generative augmentation helps when that leak is closed. On the
+MIT-BIH Arrhythmia Database with the inter-patient DS1/DS2 protocol, we compare a conditional variational
+autoencoder (cVAE) and a Wasserstein GAN with gradient penalty (WGAN-GP) against no augmentation,
+class-weighted loss, random oversampling and SMOTE, with two classifier architectures and three seeds. Every
+model, strength and checkpoint is chosen on validation by rules fixed before the experiments, the test set is
+read once, and uncertainty is estimated by resampling test patients. \input{generated/abstract_results.tex}
+We also measure how much intra-patient evaluation inflates results, test whether synthetic-quality metrics
+predict the downstream benefit, examine whether augmentation changes what the classifiers rely on, and
+generate grounded clinician-readable notes whose every claim is checked against the model output.
 \end{abstract}
 
 \section{Introduction}
-\todo[inline]{Motivation; why intra-patient evaluation inflates results; contributions C1--C5 (docs/PAPER\_TRACK.md).}
+Automatic beat classification on the MIT-BIH Arrhythmia Database~\cite{moody2001,goldberger2000} is one of the
+oldest benchmarks in biomedical signal processing. The clinically important classes are rare:
+supraventricular ectopic beats (S) and fusion beats (F) together make up a few percent of the beats, and
+they are concentrated in a handful of patients. Classifiers trained on the imbalanced data favour normal
+beats, and a large literature proposes to rebalance them with synthetic beats from generative adversarial
+networks or variational autoencoders~\cite{delaney2019ecggan,shaker2020gan,adib2022cgan}.
+
+Two problems make these results hard to read. First, many studies split beats at random, so beats of the
+same patient appear in training and test; a classifier can then recognise the patient rather than the
+arrhythmia. The inter-patient protocol of de Chazal et al.~\cite{dechazal2004}, which trains on one set of
+records (DS1) and tests on another (DS2), removes this leak, and results under it are much lower; a recent
+systematic review finds that only a minority of studies follow it~\cite{silva2025review}. Second, the
+choices that decide the outcome (architecture, augmentation strength, training epoch, the generator
+checkpoint) are rarely fixed before the test set is consulted.
+
+This paper answers a narrow question carefully: under a strict inter-patient protocol, does
+class-conditional generative augmentation improve detection of rare arrhythmias compared with simple
+rebalancing, and what explains when it helps? Our contributions are:
+\begin{itemize}
+\item \textbf{A controlled, leakage-free comparison} of cVAE and WGAN-GP augmentation against no augmentation,
+class-weighted loss, random oversampling and SMOTE, with two architectures, several seeds, record-level
+uncertainty and selection rules registered before the experiments they govern.
+\item \textbf{A leakage audit}: the same pipeline under a random beat-level split, to measure how much
+intra-patient evaluation inflates the baseline and the apparent benefit of augmentation.
+\item \textbf{A test of synthetic-quality metrics}: whether DTW, spectral, FID-analog, TSTR, diversity and
+two-sample-test metrics predict the downstream gain of a generator checkpoint.
+\item \textbf{An explainability lens}: whether augmentation changes the faithfulness and physiological alignment
+of saliency maps, including reliance on artifacts of synthetic beats.
+\item \textbf{A grounded reporting layer}: clinician-readable notes generated from the model output, with a fact
+checker that rejects any unsupported claim.
+\end{itemize}
+Negative results are part of the design: every pre-registered comparison is reported, whatever its outcome.
 
 \section{Related work}
-\todo[inline]{Inter-patient protocol (de Chazal et al.), GAN and VAE augmentation for ECG, SMOTE, synthetic-quality
-metrics, saliency evaluation, LLM reports. Cite only verified entries.}
+\paragraph{Evaluation protocols.} The AAMI EC57 standard~\cite{aami2012ec57} groups MIT-BIH beat labels into
+the classes N, S, V, F and Q and asks for record-by-record reporting. De Chazal et al.~\cite{dechazal2004}
+introduced the DS1/DS2 inter-patient split used here; Llamedo and Mart\'inez~\cite{llamedo2011} selected
+features by how well they generalise across databases. Silva et
+al.~\cite{silva2025review} review recent work against these standards.
+
+\paragraph{Generative augmentation of ECG.} Recurrent conditional GANs were proposed for medical time
+series and evaluated by training on synthetic and testing on real data~\cite{esteban2017rcgan}. GANs have
+been used to synthesise realistic ECG~\cite{delaney2019ecggan} and to augment MIT-BIH classifiers, where they were
+compared with other augmentation techniques~\cite{shaker2020gan}; an auxiliary-classifier WGAN-GP with DTW-based screening is
+closest to our WGAN-GP variants~\cite{adib2022cgan}. Diffusion models with structured state-space backbones
+now generate conditional 12-lead ECG~\cite{alcaraz2023sssd}; we leave this family to future work. Our
+generators build on the VAE~\cite{kingma2013vae}, its conditional form~\cite{sohn2015cvae}, the Wasserstein
+GAN~\cite{arjovsky2017wgan} with gradient penalty~\cite{gulrajani2017wgangp}, and the conditioning schemes of
+auxiliary classifiers~\cite{odena2016acgan}, projection critics~\cite{miyato2018projection} and
+FiLM~\cite{perez2018film}. Oversampling baselines are random oversampling and SMOTE~\cite{chawla2002smote}.
+
+\paragraph{Synthetic-quality metrics.} We score synthetic beats with dynamic time warping~\cite{sakoe1978dtw},
+spectral distances, a Fr\'echet distance in the feature space of a fixed network after
+FID~\cite{heusel2017fid}, train-on-synthetic-test-on-real~\cite{esteban2017rcgan} and classifier two-sample
+tests~\cite{lopezpaz2017c2st}.
+
+\paragraph{Explanations and reports.} We compare Grad-CAM~\cite{selvaraju2016gradcam}, integrated
+gradients~\cite{sundararajan2017ig}, SmoothGrad~\cite{smilkov2017smoothgrad} and occlusion. Large ECG-language
+models can write diagnostic reports~\cite{zhao2024ecgchat}; our note generator instead restates the classifier
+output and is checked claim by claim.
 
 \section{Data and protocol}
-MIT-BIH Arrhythmia Database, lead MLII, AAMI classes N, S, V and F; paced records excluded; DS1 for training
-and validation, DS2 locked until the single final evaluation. Table~\ref{tab:data} gives the counts.
+We use the MIT-BIH Arrhythmia Database~\cite{moody2001} from PhysioNet~\cite{goldberger2000}: 48 half-hour
+two-lead recordings at 360\,Hz. Lead MLII is selected by name. The four paced records are excluded. Reference
+beat annotations are mapped to the AAMI classes N, S, V and F; the few Q beats are excluded from training and
+metrics, and RR intervals are measured between consecutive QRS annotations before any class is dropped. A beat
+is usable when its window fits in the record and both neighbouring RR intervals exist; the same rule holds for
+every representation.
+
+DS1 (22 records) provides training and validation; DS2 (22 records) is the test set. The validation set is a
+patient-wise subset of DS1 (records 115, 118, 201, 205 and 223), chosen from DS1 counts only. Because it holds
+fewer F beats than the pre-registered minimum support, selection uses S F1 with V F1 as tie-break; the test
+metric is unchanged. DS1 record 201 and DS2 record 202 come from the same subject; we keep the standard split
+for comparability and repeat every test analysis without record 202. The test arrays are readable only by the
+final evaluation, and every access to DS2 is logged. Table~\ref{tab:data} gives the counts.
 \begin{table}[htbp]\centering\small\input{generated/table_dataset.tex}\caption{Records and beats per split.}\label{tab:data}\end{table}
 
 \subsection{Input representation}
-The representation was chosen on validation (variant \PhaseOneWinner; Table~\ref{tab:repr}).
-\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_input_representation.tex}}\caption{Input representations (validation).}\label{tab:repr}\end{table}
+Four representations were compared with a small probe CNN on validation (Table~\ref{tab:repr}): a 0.5\,s window
+centred on the R peak (180 samples), a 1\,s band-passed window, the 0.5\,s window plus three RR features
+(previous and next RR interval, and the previous RR over the mean of the ten before), and the 0.5\,s window
+resampled to 125\,Hz. Beats are z-scored one by one. The rule chose variant \PhaseOneWinner, and the dataset was
+frozen with SHA-256 hashes before any later experiment.
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_input_representation.tex}}\caption{Input representations (validation, probe CNN).}\label{tab:repr}\end{table}
 
 \section{Methods}
-\subsection{Baseline classifiers}
+\subsection{Classifiers}
+Four baselines were trained (Table~\ref{tab:baselines}): a shallow CNN (three convolution blocks, global average
+pooling), a 1D ResNet, a two-layer BiLSTM and a CNN--BiLSTM hybrid; RR features enter through a small side
+branch. The rule chose one convolutional (\emph{cnn}) and one recurrent (\emph{rnn}) architecture. All
+classifiers use unweighted cross-entropy (except the class-weighted condition), AdamW with weight decay 0.01,
+batches of 256, learning rate $10^{-3}$ or $3\cdot10^{-4}$ (the better on validation), at most 40 epochs, and
+early stopping with patience 5 on the validation selection metric, never before epoch 10. Decisions are argmax;
+no threshold is tuned.
 \begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_baselines.tex}}\caption{Baseline classifiers (validation).}\label{tab:baselines}\end{table}
+
 \subsection{Synthetic-quality metrics}
+Four metric families score a set of synthetic beats against real training beats: DTW distance to the five
+nearest real beats (Sakoe--Chiba band of 10\%), the distance between Welch spectra, a Fr\'echet distance between
+features of a fixed probe network, and TSTR (the validation score of a probe CNN trained on synthetic beats).
+Before use, each family had to pass a sanity harness: on halves of the real training beats, its score had to
+worsen monotonically under four degradations (noise, label shuffling, time shift, smoothing) at three
+severities (Spearman $\rho \ge 0.8$) and vary little across resamples (median CV below 10\%)
+(Table~\ref{tab:quality}). Three diagnostics guard against degenerate generators: the diversity ratio (spread of
+synthetic beats relative to real ones), the memorization fraction (synthetic beats closer to a training beat
+than the 5th percentile of leave-one-out distances among real beats) and the accuracy of a classifier two-sample
+test~\cite{lopezpaz2017c2st}.
 \begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_quality_metrics.tex}}\caption{Sanity tests of the quality metrics.}\label{tab:quality}\end{table}
+
 \subsection{Generators}
+Both families learn beats of all four classes with class-balanced batches and generate S, V and F beats; the RR
+features of a synthetic beat are copied from a random real training beat of the same class. Four cVAE variants
+(convolutional with concatenated class input; the same with a smaller KL weight; with an added spectral loss;
+a residual network with FiLM conditioning~\cite{perez2018film}) and four WGAN-GP variants (concatenated class
+embedding; projection critic~\cite{miyato2018projection}; auxiliary classifier~\cite{odena2016acgan}; one
+unconditional GAN per class) were piloted with equal step budgets on two seeds. At each quarter of the budget a
+pilot classifier (the chosen cnn) was trained on real plus synthetic beats; hard gates (diversity ratio at least
+0.7, memorization fraction at most 10\%) were applied to every class and seed, and the variant with the best
+validation score at the final checkpoint was chosen per family (Table~\ref{tab:generators}). The chosen variants
+were trained at the full budget on every grid seed, and a synthetic bank was exported from the final checkpoint
+and frozen with its hash. Generators see training records only.
 \begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_generators.tex}}\caption{Generator pilots: pilot score, diagnostics and hard gates.}\label{tab:generators}\end{table}
+
 \subsection{Augmentation policy and comparison grid}
+Four policies decide how many synthetic beats each minority class receives: balancing to the training N count,
+a fraction of the N count, a multiple of the class's real count, and a fraction of the N count drawn from a
+DTW-screened pool. The policy was chosen on validation with both banks, subject to a limit of 0.01 on the loss of
+N recall (Table~\ref{tab:policy}). The full grid then trains six conditions (none, class-weighted loss with
+weights $(n_{\max}/n_c)^{\gamma}$, random oversampling, SMOTE, cVAE, WGAN-GP) at three strengths each (one for
+none), for both architectures and three seeds; classifier seed $s$ uses bank seed $s$, and validation and test
+stay entirely real. The strength of each condition and the best generative condition per architecture were
+fixed on validation before the test set was read.
 \begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_policy.tex}}\caption{Augmentation policies (pilot, validation).}\label{tab:policy}\end{table}
+
 \subsection{Statistics}
-Record-level cluster bootstrap over the 22 test records (10{,}000 replicates), Holm correction within the
-confirmatory family (4 tests) and the secondary family (8 tests); sensitivity without record 202.
+The primary metric is the rare-class macro-F1, the mean of the S and F F1 scores. Uncertainty comes from a
+cluster bootstrap over the 22 test records (10{,}000 replicates; seeds averaged within each replicate), because
+beats of one patient are correlated. Paired differences resample the same records for both conditions;
+two-sided percentile-bootstrap $p$-values are adjusted with the Holm procedure~\cite{holm1979} within the
+confirmatory family (cVAE and WGAN-GP against none, for both architectures: 4 tests) and within the secondary
+family (cVAE against WGAN-GP and the best generative condition against SMOTE, class-weighted loss and random
+oversampling: 8 tests). Replicates in which S or F has no true beats are excluded and counted. We also report
+per-class F1, one-vs-rest PR-AUC, AAMI sensitivity and positive predictivity for S and V, leave-one-record-out
+estimates and results without record 202.
 
 \section{Results}
+Table~\ref{tab:hypotheses} summarises the verdict on each pre-registered hypothesis; the sections below give the
+evidence.
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_hypotheses.tex}}\caption{Pre-registered hypotheses and their verdicts, computed from the result files by the registered criteria.}\label{tab:hypotheses}\end{table}
+
 \subsection{RQ1: does generative augmentation help?}
+\input{generated/results_rq1.tex}
 \begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/final_eval_conditions.tex}}\caption{Test results per condition (95\% record-level CI).}\label{tab:test}\end{table}
-\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/final_eval_comparisons.tex}}\caption{Pre-registered comparisons.}\label{tab:comparisons}\end{table}
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/final_eval_comparisons.tex}}\caption{Pre-registered comparisons (unadjusted 95\% CI, Holm-adjusted $p$).}\label{tab:comparisons}\end{table}
+
+\subsection{RQ2: how much does intra-patient evaluation inflate results?}
+\input{generated/results_rq2.tex}
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_leakage_audit.tex}}\caption{Rare-class macro-F1 of the cnn when the same pipeline is evaluated on a random beat-level split of DS1 and DS2 (intra-patient) and on DS2 (inter-patient). Run after the final evaluation; never used for any decision.}\label{tab:audit}\end{table}
+
 \subsection{RQ3: do quality metrics predict the benefit?}
-\todo[inline]{Checkpoint-level analysis from the runs' checkpoints.csv (Spearman with bootstrap over generator runs).}
-\subsection{RQ4: explanations}
-\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_explainability.tex}}\caption{Saliency methods: faithfulness and stability.}\label{tab:explain}\end{table}
+\input{generated/results_rq3.tex}
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_quality_vs_gain.tex}}\caption{Quality metrics against the downstream gain across generator checkpoints (exploratory; TSTR analysed apart).}\label{tab:rq3}\end{table}
+
+\subsection{RQ4: does augmentation change what the classifier relies on?}
+\input{generated/results_rq4.tex}
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_explainability.tex}}\caption{Saliency methods: faithfulness gain over random deletion and stability across seeds.}\label{tab:explain}\end{table}
 
 \section{Grounded clinical notes}
+For a classified beat, the note generator receives only a JSON object: an anonymous record identifier, the
+predicted class, the four class probabilities, a low-confidence flag (top probability below 0.6) and the two
+segments (P, QRS, ST, T) with the most saliency mass. Four generators were compared: a deterministic template,
+and three LLM variants (a constrained prompt, few-shot examples with a fixed output schema, and a fact-check and
+regenerate loop that falls back to the template). The fact checker verifies that every class name, number and
+segment in a note appears in the input, that the disclaimer is present, and that low-confidence notes ask for
+clinician review; the hard gate is zero unsupported claims over 50 validation cases.
+\input{generated/results_notes.tex}
 \begin{table}[htbp]\centering\small\input{generated/table_notes.tex}\caption{Note generators: unsupported claims and coverage.}\label{tab:notes}\end{table}
 
 \section{Limitations and ethics}
-\todo[inline]{Specific limitations (docs/PAPER\_TRACK.md, threats to validity): 22 test records, rare classes in few
-records, one database and lead, reference R peaks, RR features of synthetic beats copied from real beats,
-notes rated by team members, not clinicians.}
+\paragraph{Small test population.} DS2 holds 22 records, 21 from patients not seen in training and one (202) from
+the subject of DS1 record 201; S and F beats come from few of them, so intervals are wide and results may reflect
+individual patients. We resample records rather than beats for this reason and report per-record and
+leave-one-record-out results.
+\paragraph{One database, one lead.} MIT-BIH was recorded decades ago at one hospital with narrow demographics; we
+use one lead and reference R-peak positions, so detector errors are not modelled, and we did not validate on an
+external database.
+\paragraph{Generators.} The generators learn minority classes from very few patients, so synthetic diversity is
+bounded by them; RR features of synthetic beats are copied from real beats, so generative augmentation can only
+add morphology, which matters most for classes defined by timing such as S.
+\paragraph{Selection.} Selection relies on a small validation set of DS1 patients, with few F beats.
+\paragraph{Explanations.} Saliency methods are approximate, and the segment windows are fixed R-relative
+approximations of P, QRS, ST and T.
+\paragraph{Notes and clinical use.} Notes were rated by team members, not clinicians, and restate a model that is
+not a medical device; every note carries a disclaimer and is not intended for clinical decisions. The data are
+public and de-identified; synthetic banks derived from them are released only if the PhysioNet licence allows it.
 
 \section{Reproducibility}
-Code, configs, seeds, lockfile and \texttt{results/runs\_index.csv}; \texttt{scripts/reproduce.sh} runs the
-pipeline in order. \todo[inline]{Release statement.}
+Every run is defined by its configuration file, seed and git commit, and is logged with its environment,
+training curve, validation predictions and checkpoint hash; \texttt{results/runs\_index.csv} maps every table cell
+to run identifiers. The selection rules were committed before the experiments they govern
+(\texttt{docs/PREREGISTRATION.md}), every gate decision is recorded with its evidence
+(\texttt{docs/DECISIONS.md}), frozen artifacts carry SHA-256 hashes (\texttt{results/manifest.json}), and
+\texttt{docs/TEST\_ACCESS\_LOG.md} shows the single evaluation on the test set. \texttt{scripts/reproduce.sh} runs the
+pipeline in order, and a dress rehearsal on synthetic records exercises every stage. Code, configurations and the
+lockfile are released with the paper.
 
-\listoftodos
+\bibliographystyle{plain}
+\bibliography{refs}
 \end{document}

@@ -281,6 +281,9 @@ def ingest(sources: list[Path]) -> dict:
             if any(run_dir.rglob("preds_test*")) or any(run_dir.rglob("metrics_test*")):
                 report["refused"].append(run_id)
                 continue
+            if group[:1] == ("audit",) and not _final_eval_done():
+                report["refused"].append(run_id)  # leakage-audit runs exist only after the final evaluation
+                continue
             if any(not (run_dir / name).is_file() for name in REQUIRED_RUN_FILES):
                 report["incomplete"].append(run_id)
                 continue
@@ -341,6 +344,12 @@ def ingest(sources: list[Path]) -> dict:
     return report
 
 
+def _final_eval_done() -> bool:
+    from ecgaug.data.access import logged_accesses
+
+    return bool(logged_accesses("evaluation"))
+
+
 def _ingest_banks(source: Path, report: dict) -> None:
     """Copy bank files into ``data/synthetic/``; never overwrite one, and merge ``bank.json`` by seed."""
     if not source.is_dir():
@@ -349,6 +358,9 @@ def _ingest_banks(source: Path, report: dict) -> None:
     for src in sorted(p for p in source.rglob("*") if p.is_file()):
         relative = src.relative_to(source)
         dst = target / relative
+        if relative.parts[0] == "audit" and not _final_eval_done():
+            report["bank_conflicts"].append(f"{relative} (a leakage-audit bank before the final evaluation)")
+            continue
         if src.name == "bank.json":
             incoming = json.loads(src.read_text())
             merged = json.loads(dst.read_text()) if dst.is_file() else {**incoming, "seeds": {}}

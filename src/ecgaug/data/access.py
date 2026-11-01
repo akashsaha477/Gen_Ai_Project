@@ -5,6 +5,7 @@ flag, and every use is appended to ``docs/TEST_ACCESS_LOG.md``:
 
 - ``construction``: counting labels and building arrays; no model sees the data (``ALLOW_TEST_BUILD=1``).
 - ``evaluation``: the single final evaluation, set only by ``/final-eval`` (``ALLOW_TEST=1``).
+- ``audit``: the leakage-audit experiment, only after the final evaluation (``ALLOW_TEST_AUDIT=1``).
 """
 
 from __future__ import annotations
@@ -16,7 +17,7 @@ import sys
 
 from ecgaug import paths
 
-ACCESS_ENV: dict[str, str] = {"construction": "ALLOW_TEST_BUILD", "evaluation": "ALLOW_TEST"}
+ACCESS_ENV: dict[str, str] = {"construction": "ALLOW_TEST_BUILD", "evaluation": "ALLOW_TEST", "audit": "ALLOW_TEST_AUDIT"}
 
 _LOG_HEADER = (
     "# TEST ACCESS LOG\n\n"
@@ -37,14 +38,23 @@ def require_test_access(kind: str | None) -> None:
     if kind not in ACCESS_ENV:
         raise LockedTestDataError(
             "DS2 is the locked test set. Reading it needs access='construction' (labels and array "
-            "building, with ALLOW_TEST_BUILD=1) or access='evaluation' (only /final-eval, with "
-            f"ALLOW_TEST=1). Got access={kind!r}."
+            "building, with ALLOW_TEST_BUILD=1), access='evaluation' (only /final-eval, with "
+            "ALLOW_TEST=1) or access='audit' (the leakage audit after /final-eval, with "
+            f"ALLOW_TEST_AUDIT=1). Got access={kind!r}."
         )
     flag = ACCESS_ENV[kind]
     if os.environ.get(flag) != "1":
         raise LockedTestDataError(
             f"DS2 access of kind '{kind}' requires the environment variable {flag}=1, which is not set."
         )
+
+
+def logged_accesses(kind: str) -> list[str]:
+    """Rows of ``docs/TEST_ACCESS_LOG.md`` of one access kind."""
+    log = paths.docs_dir() / "TEST_ACCESS_LOG.md"
+    if not log.is_file():
+        return []
+    return [line for line in log.read_text().splitlines() if line.startswith("|") and line.count("|") > 3 and line.split("|")[2].strip() == kind]
 
 
 def log_test_access(kind: str, purpose: str, run_ids: str = "", approved_by: str = "") -> None:

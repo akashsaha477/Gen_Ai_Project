@@ -29,11 +29,12 @@ PHASE2_PTBXL_PRETRAINING = "phase2_ptbxl_pretraining"
 PHASE3_CVAE = "phase3_cvae"
 PHASE3_WGAN_GP = "phase3_wgan_gp"
 PHASE4_AUGMENTATION_POLICY = "phase4_augmentation_policy"
+PHASE4_LEAKAGE_AUDIT = "phase4_leakage_audit"  # optional, after the final evaluation (PLAN Phase 4, DECISIONS A4)
 PHASE5_EXPLAINABILITY = "phase5_explainability"
 PHASE5_CLINICAL_NOTES = "phase5_clinical_notes"
 EXPERIMENTS: tuple[str, ...] = (
     PHASE1_INPUT_REPRESENTATION, PHASE2_BASELINE_CLASSIFIERS, PHASE2_QUALITY_METRICS, PHASE2_PTBXL_PRETRAINING,
-    PHASE3_CVAE, PHASE3_WGAN_GP, PHASE4_AUGMENTATION_POLICY, PHASE5_EXPLAINABILITY, PHASE5_CLINICAL_NOTES,
+    PHASE3_CVAE, PHASE3_WGAN_GP, PHASE4_AUGMENTATION_POLICY, PHASE4_LEAKAGE_AUDIT, PHASE5_EXPLAINABILITY, PHASE5_CLINICAL_NOTES,
 )  # fmt: skip
 
 # Folders for data reports and gate decisions, named the same way.
@@ -47,6 +48,7 @@ PHASE4A_GATE = "phase4a_gate"  # phase 4 has two gates too: 4a chooses the augme
 PHASE4_FULL_GRID = "phase4_full_grid"  # the grid of conditions x strengths x architectures x seeds
 PHASE4_GATE = "phase4_gate"  # ... and 4 fixes the strengths and the checkpoints the final evaluation tests
 FINAL_EVAL = "final_eval"  # the single test-set evaluation, after the phase 4 gate
+PHASE4_QUALITY_VS_GAIN = "phase4_quality_vs_gain"  # RQ3: quality metrics against the downstream gain, from the phase 3 checkpoints
 PHASE5_GATE = "phase5_gate"  # explanation method per architecture, note variant, demo: then the code freeze
 
 # Result folders that travel back from Kaggle: every experiment's, plus the full grid's ledger.
