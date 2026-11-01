@@ -34,10 +34,10 @@ the one before it; the code refuses to skip ahead and says what is missing.
 | 1 data | run `phase1_input_representation`, variants A–D | `kaggle/phase1_input_representation.ipynb` | done (2026-10-15) |
 | 1 data | phase 1 gate: report | `python -m ecgaug.workflow phase1-gate` | done: winner C, see [docs/PHASE1_REPORT.md](docs/PHASE1_REPORT.md) |
 | 1 data | phase 1 gate: team approves, the winner's dataset is frozen | `ALLOW_TEST_BUILD=1 python -m ecgaug.workflow phase1-gate --approve "Name" "Name"` | **next** (team) |
-| 2 baselines | `phase2_baseline_classifiers` A–D (shallow CNN, ResNet1D, BiLSTM, CNN+BiLSTM) | `kaggle/phase2_baseline_classifiers.ipynb` | built |
-| 2 baselines | `phase2_quality_metrics` A–D (DTW, spectral, FID-analog, TSTR) | `kaggle/phase2_quality_metrics.ipynb` | built |
-| 2 baselines | `phase2_ptbxl_pretraining` for the phase 1 winner | `kaggle/phase2_ptbxl_pretraining.ipynb` | built; one preview (variant D) |
-| 2 baselines | phase 2 gate: the `cnn`, the `rnn`, the quality composite | `python -m ecgaug.workflow phase2-gate [--approve ...]` | built |
+| 2 baselines | `phase2_baseline_classifiers` A–D (shallow CNN, ResNet1D, BiLSTM, CNN+BiLSTM) | `kaggle/phase2_baseline_classifiers.ipynb` | done: A 0.349, B 0.231, C 0.315, D 0.252 (S F1) |
+| 2 baselines | `phase2_quality_metrics` A–D (DTW, spectral, FID-analog, TSTR) | `kaggle/phase2_quality_metrics.ipynb` | done: DTW and spectral pass; FID-analog fails; TSTR could not be scored |
+| 2 baselines | `phase2_ptbxl_pretraining` for the phase 1 winner | `kaggle/phase2_ptbxl_pretraining.ipynb` | done for C: tied, scratch wins by the rule |
+| 2 baselines | phase 2 gate: the `cnn`, the `rnn`, the quality composite | `python -m ecgaug.workflow phase2-gate [--approve ...]` | report written; waiting for team approval |
 | 3 generators | `phase3_cvae` A–D and `phase3_wgan_gp` A–D, pilots | `kaggle/phase3_cvae.ipynb`, `kaggle/phase3_wgan_gp.ipynb` (`MODE = "pilot"`) | built |
 | 3 generators | phase 3a gate: one generator per family | `python -m ecgaug.workflow phase3a-gate [--approve ...]` | built |
 | 3 generators | final runs of the two winners, synthetic banks | the same notebooks with `MODE = "final"` | built |
