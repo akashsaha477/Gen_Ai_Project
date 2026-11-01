@@ -458,6 +458,18 @@ precondition before the first test byte, predicts the test set with every frozen
 `statistics()` (per-condition intervals, the two Holm families, the sensitivity analyses);
 `write_outputs()` writes the CSV and LaTeX tables, figures and `numbers_final_eval.tex`.
 
+### `eval/rq3.py` and `experiments/phase4_leakage_audit.py` — the two analyses after the grid
+
+- `eval/rq3.py` (RQ3, exploratory): reads every official generator run's `checkpoints.csv`, gives
+  Spearman's rho of each quality metric with the pilot score (equal to rho with the gain), with a
+  95% interval from resampling generator runs; TSTR apart. `results/phase4_quality_vs_gain/`.
+- `experiments/phase4_leakage_audit.py` (optional, after `/final-eval`): `intra_patient_split` pools DS1
+  and DS2 and splits each class at random with the inter-patient counts; `train_generator` retrains the
+  frozen generator variants on that training part (banks in `data/synthetic/audit/`); `run_classifiers`
+  reuses the grid's `run_cell` (runs in `runs/audit/`) and tests each run on the intra-patient test
+  part; `report` sets the result beside the final evaluation. DS2 is read only through
+  `loaders.load_test_for_audit` or the raw records, with `ALLOW_TEST_AUDIT=1`, and logged.
+
 ### `explain/`, `report/`, `demo.py`, `paper.py` — phases 5 and 6
 
 - `explain/methods.py`: `saliency(method, model, x, side, settings)` for Grad-CAM, integrated

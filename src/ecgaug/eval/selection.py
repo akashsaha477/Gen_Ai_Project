@@ -69,7 +69,8 @@ def select_winner(candidates: list[Candidate]) -> dict:
     1. Take the candidate with the highest seed-mean selection metric.
     2. Every candidate within the tie margin of it is tied with it.
     3. If tie-break values are given (fallback metric), keep the tied candidates that are within the
-       tie margin of the best tie-break value among them.
+       tie margin of the best tie-break value among them. An undefined (NaN) tie-break value counts as
+       not given: the step is skipped and the report says so (DECISIONS A17).
     4. Among those, the lowest complexity wins, then the lowest wall-clock, then the name.
     """
     if not candidates:
@@ -78,7 +79,10 @@ def select_winner(candidates: list[Candidate]) -> dict:
         raise ValueError("A candidate has an undefined selection metric; the rule cannot be applied")
     tied = _tied_with_best(candidates, lambda c: c.mean, lambda c: c.sd)
     steps = [{"step": "selection metric", "tied": [c.name for c in tied]}]
-    if len(tied) > 1 and all(c.tie_mean is not None for c in tied):
+    undefined = [c.name for c in tied if c.tie_mean is not None and math.isnan(c.tie_mean)]
+    if len(tied) > 1 and undefined:
+        steps.append({"step": "tie-break metric", "skipped": f"undefined for {', '.join(undefined)}"})
+    elif len(tied) > 1 and all(c.tie_mean is not None for c in tied):
         tied = _tied_with_best(tied, lambda c: c.tie_mean, lambda c: c.tie_sd or 0.0)
         steps.append({"step": "tie-break metric", "tied": [c.name for c in tied]})
     winner = min(tied, key=lambda c: (c.complexity, c.wall_clock_s, c.name))

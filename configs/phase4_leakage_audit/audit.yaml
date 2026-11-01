@@ -1,0 +1,9 @@
+# phase4_leakage_audit (PLAN Phase 4, optional; DECISIONS A4, A16). Runs only after the final evaluation.
+# The representation, the cnn, the generator variants and the policy come from the approved gates; only the
+# split changes (DS1 and DS2 beats pooled, assigned at random per class with the inter-patient counts).
+experiment: phase4_leakage_audit
+split_seed: 0
+seeds: [0, 1, 2]                 # the grid seeds; classifier seed s uses bank seed s
+architecture: cnn
+conditions: [none, cvae, wgan_gp]
+strength: medium                 # the middle of the full grid's strengths for each generative condition

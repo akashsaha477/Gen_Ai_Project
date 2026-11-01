@@ -278,6 +278,8 @@ identically to SMOTE and to random oversampling.
 - Synthetic beats are added to training records only. Validation and test are always 100% real.
 
 ### Optional (if compute allows; otherwise post-deadline): leakage-audit experiment
+> Built 2026-10-27: `phase4_leakage_audit` (choices in DECISIONS A16). RQ3: `python -m ecgaug.eval.rq3`.
+
 The same pipeline under the common intra-patient protocol (random beat-level split pooling DS1 and DS2):
 {none, cVAE, WGAN-GP} at medium strength, `cnn`, 3 seeds. Never used for any decision.
 It trains and evaluates on DS2 beats, so it runs **only after `/final-eval` has completed**, in its own
