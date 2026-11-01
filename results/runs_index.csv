@@ -77,3 +77,15 @@ phase2_ptbxl_pretraining-scratchD.lr1e-03-s2-32b9464-202610140203,2,phase2_ptbxl
 phase2_ptbxl_pretraining-scratchD.lr3e-04-s0-32b9464-202610140204,2,phase2_ptbxl_pretraining,scratchD,lr3e-04,0,done,s_f1,0.025252525252525252,0.012626262626262626,56.7,32b9464,phase2_ptbxl_pretraining/D_short_window_125hz/scratch
 phase2_ptbxl_pretraining-scratchD.lr3e-04-s1-32b9464-202610140205,2,phase2_ptbxl_pretraining,scratchD,lr3e-04,1,done,s_f1,0.02188782489740082,0.01094391244870041,35.7,32b9464,phase2_ptbxl_pretraining/D_short_window_125hz/scratch
 phase2_ptbxl_pretraining-scratchD.lr3e-04-s2-32b9464-202610140205,2,phase2_ptbxl_pretraining,scratchD,lr3e-04,2,done,s_f1,0.017094017094017096,0.008547008547008548,42.5,32b9464,phase2_ptbxl_pretraining/D_short_window_125hz/scratch
+phase3_cvae-A-s0-8b001be-202611011036,3,phase3_cvae,A,,0,done,s_f1,0.3247422680412371,0.19362113402061856,182.3,8b001be,phase3_cvae/A_conv_concat/pilot
+phase3_cvae-A-s1-8b001be-202611011039,3,phase3_cvae,A,,1,done,s_f1,0.4675324675324675,0.23376623376623376,154.4,8b001be,phase3_cvae/A_conv_concat/pilot
+phase3_cvae-B.beta0.1-s0-81ad720-202611011047,3,phase3_cvae,B,beta0.1,0,done,s_f1,0.3182481751824818,0.1591240875912409,157.3,81ad720,phase3_cvae/B_conv_low_beta/pilot
+phase3_cvae-B.beta0.1-s1-81ad720-202611011050,3,phase3_cvae,B,beta0.1,1,done,s_f1,0.4188235294117647,0.2708152734778122,157.9,81ad720,phase3_cvae/B_conv_low_beta/pilot
+phase3_cvae-B.beta0.25-s0-81ad720-202611011052,3,phase3_cvae,B,beta0.25,0,done,s_f1,0.36962750716332377,0.18481375358166188,171.4,81ad720,phase3_cvae/B_conv_low_beta/pilot
+phase3_cvae-B.beta0.25-s1-81ad720-202611011055,3,phase3_cvae,B,beta0.25,1,done,s_f1,0.34430379746835443,0.20663465735486686,142.1,81ad720,phase3_cvae/B_conv_low_beta/pilot
+phase3_cvae-C-s0-9beed2a-202611011100,3,phase3_cvae,C,,0,done,s_f1,0.4307692307692308,0.27990074441687346,166.3,9beed2a,phase3_cvae/C_conv_spectral_loss/pilot
+phase3_cvae-C-s1-9beed2a-202611011103,3,phase3_cvae,C,,1,done,s_f1,0.34275618374558303,0.17137809187279152,168.5,9beed2a,phase3_cvae/C_conv_spectral_loss/pilot
+phase3_cvae-D-s0-2b0adc2-202611011109,3,phase3_cvae,D,,0,done,s_f1,0.4576659038901602,0.2288329519450801,350.6,2b0adc2,phase3_cvae/D_residual_film/pilot
+phase3_cvae-D-s1-2b0adc2-202611011114,3,phase3_cvae,D,,1,done,s_f1,0.5130434782608696,0.32035152636447733,358.0,2b0adc2,phase3_cvae/D_residual_film/pilot
+phase3_wgan_gp-A-s0-24d512a-202611011502,3,phase3_wgan_gp,A,,0,done,s_f1,0.5080545229244114,0.2956939281288724,462.1,24d512a,phase3_wgan_gp/A_concat_embedding/pilot
+phase3_wgan_gp-A-s1-24d512a-202611011510,3,phase3_wgan_gp,A,,1,done,s_f1,0.35384615384615387,0.20496046010064703,444.4,24d512a,phase3_wgan_gp/A_concat_embedding/pilot
