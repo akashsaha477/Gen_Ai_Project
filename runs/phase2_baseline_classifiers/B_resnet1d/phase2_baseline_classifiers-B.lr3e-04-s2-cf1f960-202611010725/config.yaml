@@ -1,0 +1,46 @@
+experiment: phase2_baseline_classifiers
+seeds:
+- 0
+- 1
+- 2
+lr_grid:
+- 0.001
+- 0.0003
+max_epochs: 40
+patience: 5
+min_epochs: 10
+batch_size: 256
+weight_decay: 0.01
+device: auto
+variant: B
+description: 1D-ResNet, stem convolution and four residual stages, global average
+  pooling, linear head.
+role: cnn
+model:
+  name: resnet1d
+  channels:
+  - 32
+  - 64
+  - 128
+  - 128
+  kernel: 7
+  side_hidden: 16
+config_name: B_resnet1d
+lr: 0.0003
+seed: 2
+run_id: phase2_baseline_classifiers-B.lr3e-04-s2-cf1f960-202611010725
+split:
+  name: V1
+  val:
+  - 115
+  - 118
+  - 201
+  - 205
+  - 223
+  selection_metric: s_f1
+dataset:
+  source: rebuilt from the raw records (C_short_window_rr_features) and checked against
+    the frozen hash
+  representation: C_short_window_rr_features
+  content_sha256: 2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896
+  frozen: true

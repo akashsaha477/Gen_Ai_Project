@@ -1,0 +1,60 @@
+experiment: phase2_ptbxl_pretraining
+seeds:
+- 0
+- 1
+- 2
+lr_grid:
+- 0.001
+- 0.0003
+max_epochs: 40
+patience: 5
+batch_size: 256
+weight_decay: 0.01
+device: cpu
+model:
+  name: probe_cnn
+  channels:
+  - 16
+  - 32
+  - 64
+  kernel: 7
+  side_hidden: 16
+variant: C
+description: Variant A plus RR features (rr_prev, rr_next, rr_prev over the mean RR
+  of the previous 10 beats) fed to the probe's side branch.
+representation:
+  name: C_short_window_rr_features
+  window_pre_s: 0.25
+  window_post_s: 0.25
+  bandpass_hz: null
+  target_fs: null
+  normalization: per_beat_zscore
+  rr_features: true
+config_name: C_short_window_rr_features
+min_epochs: 10
+pretrain:
+  lr: 0.001
+  max_epochs: 30
+  patience: 5
+  batch_size: 256
+  weight_decay: 0.01
+representation_source: ../phase1_input_representation/C_short_window_rr_features.yaml
+lr: 0.001
+seed: 0
+run_id: phase2_ptbxl_pretraining-finetuneC.lr1e-03-s0-c4dee0a-202611010839
+split:
+  name: V1
+  val:
+  - 115
+  - 118
+  - 201
+  - 205
+  - 223
+  selection_metric: s_f1
+dataset:
+  path: /kaggle/working/repo/data/processed/candidates/C_short_window_rr_features
+  content_sha256: 2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896
+init:
+  kind: ptbxl_pretrained
+  run_id: phase2_ptbxl_pretraining-pretrainC-s0-c4dee0a-202611010828
+  tensors_copied: 28
