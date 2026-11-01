@@ -504,3 +504,34 @@ Not runnable yet: both need phase 3 (RQ3) or the final evaluation (audit) result
 - Tests: 297 pass; the dress rehearsal fills every results sentence from its (fake) results.
 
 Next: real runs (phase 2 onward on Kaggle); after each gate, `python -m ecgaug.paper` updates the draft.
+
+## 2026-11-01 (Day 26): phase 2 results reviewed before the phase 2 gate
+
+All phase 2 results are in. Gate report: `results/phase2_gate/report.md`. Status: PENDING APPROVAL.
+
+Results (validation S F1, mean ± SD over 3 seeds, lr 1e-3):
+- Baselines: A shallow CNN 0.3486 ± 0.0448; B ResNet 0.2314 ± 0.0969; C BiLSTM 0.3148 ± 0.0195; D CNN+BiLSTM
+  0.2516 ± 0.0288. By rule: cnn = A (lead 0.117, margin 0.076), rnn = C (lead 0.063, margin 0.025).
+- PTB-XL pretraining, C: fine-tuned 0.3184 ± 0.0270, scratch 0.2961 ± 0.0381. Tied (difference 0.0223, margin
+  0.0330), so scratch wins on simplicity and pretraining stays out of the grid.
+- Quality metrics: DTW and spectral pass. FID-analog fails (median CV 0.126, limit 0.10; it does get worse with
+  every degradation). TSTR fails without being measured (below). Composite: dtw, spectral.
+
+Audit: every official run uses the frozen dataset hash (2f6f9843889f); no code, config or lockfile change between
+the run commits; none dirty; baselines and pretraining C on Tesla T4; no epoch-1 picks (the phase 1 early-stopping
+flaw is gone); no `preds_test` files; no test access except the logged phase 1 gate construction. Tests pass.
+
+TSTR was never scored. All 13 sets are NaN in all 3 resamples and the run took 14 s. Its real-data classifier
+stops at epoch 4 with S F1 = 0 (patience 3, no `min_epochs`), so the guard in `tstr_score` returns NaN.
+Reproduced on the frozen dataset on CPU: S F1 0.0000 in all 3 resamples. With `min_epochs: 10` the same recipe
+reaches only 0.0497-0.0679, still rising at its last epoch (`max_epochs: 10`). A15.1 left this recipe out of the
+early-stopping fix on purpose, so the failure stands by the rule and the recipe was not changed. Consequence:
+PREREGISTRATION §9's separate RQ3 analysis of TSTR will have no data unless the team changes the recipe.
+
+Approval dry run in a throwaway worktree (nothing recorded here): the entry writes cnn = A, rnn = C, composite
+dtw + spectral, gammas 0.5/0.75/1, and phase 3 preconditions then pass for the official pilots.
+
+Still open: variant notes are empty templates; A14-A18 are pending team confirmation; PREREGISTRATION v2 must be
+committed and tagged `prereg-v2` before any phase 3 run.
+
+Next: the team approves the phase 2 gate; then the phase 3 pilots on Kaggle.
