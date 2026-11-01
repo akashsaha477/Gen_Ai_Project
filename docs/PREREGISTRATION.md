@@ -176,6 +176,7 @@ team commits it in the version named above:
 | class-weight exponents (v2) | gamma in {0.5, 0.75, 1} | `workflow.PROPOSED_V2`, written into the full grid |
 | seeds (v2) | 3; 5 if the measured run times fit the quota | phase 3 configs `final_seeds` |
 | strengths (v3) | B and D: {0.1, 0.25, 0.5} x N; C: {1, 2, 4} x real count; A: none | `configs/phase4_augmentation_policy/` |
+| policy pilot seeds and tie margin (v3) | seeds 0, 1, 2; ties within max(0.02, pooled SD) (DECISIONS A19) | `configs/phase4_augmentation_policy/pilot_settings.yaml` |
 | SMOTE and random oversampling (v3) | same policy and strengths as the generators; no quality screen | `grid/runner.py` |
 | quality screen of D (v3) | of 2 x the needed bank beats, keep those closest to real beats by DTW | same |
 | low-confidence rule (phase 5) | top probability below 0.6 | `configs/phase5_clinical_notes/shared_settings.yaml` |

@@ -1,9 +1,9 @@
-# Shared by every phase4_augmentation_policy variant (PLAN Phase 4: pilot with the cnn, seed 0, both banks).
+# Shared by every phase4_augmentation_policy variant (PLAN Phase 4: pilot with the cnn, three seeds, both banks).
 # A variant sets only its letter, description, policy, pilot strength, grid strengths and complexity.
 # The strengths of every policy are pre-registered here (PREREGISTRATION v3) before the pilot runs.
 experiment: phase4_augmentation_policy
 classifier: cnn                       # official runs: the cnn chosen at the phase 2 gate, with its settings
-seed: 0
+seeds: [0, 1, 2]                      # classifier seed s uses bank seed s; one seed cannot separate policies (DECISIONS A19)
 banks:                                # the two generators frozen at the phase 3 gate
   cvae: phase3_gate/phase3_cvae
   wgan_gp: phase3_gate/phase3_wgan_gp

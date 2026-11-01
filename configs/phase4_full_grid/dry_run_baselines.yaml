@@ -4,8 +4,8 @@
 #   class_weighted: {gammas: [0.5, 0.75, 1.0]}
 #   random_oversampling: {strengths: [0.1, 0.25, 0.5]}
 #   smote: {strengths: [0.1, 0.25, 0.5], k_neighbors: 5}
-#   cvae: {bank: phase3_cvae-A, strengths: [0.1, 0.25, 0.5]}
-#   wgan_gp: {bank: phase3_wgan_gp-B, strengths: [0.1, 0.25, 0.5]}
+#   cvae: {bank: phase3_cvae-D, strengths: [0.1, 0.25, 0.5]}
+#   wgan_gp: {bank: phase3_wgan_gp-A, strengths: [0.1, 0.25, 0.5]}
 # and the architectures chosen at the phase 2 gate:  architectures: {cnn: phase2_gate, rnn: phase2_gate}
 experiment: phase4_full_grid
 name: dry_run_baselines

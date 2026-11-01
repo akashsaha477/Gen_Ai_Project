@@ -202,3 +202,22 @@ Choices where PLAN Phase 4 and PAPER_TRACK RQ3 leave the detail open:
 ## the phase 2 gate — 2026-11-01 — status: APPROVED by Akash Saha
 phase2_baseline_classifiers: cnn = variant A, rnn = variant C; phase2_quality_metrics: composite = dtw, spectral — evidence: results/phase2_gate/report.md — rule: PLAN Phase 2, PREREGISTRATION §4
 Frozen artifacts (hashes): checkpoints and feature network, see results/manifest.json
+
+## 2026-11-02 (Day 27) — A19: the policy pilot, changed from the phase 3 pilot results — proposed by Akash Saha, PENDING TEAM CONFIRMATION
+
+Evidence: `results/phase3a_gate/report.md`. No phase4_augmentation_policy run existed when these were made, and
+no policy result was seen. They belong in PREREGISTRATION v3, which is committed before that pilot.
+
+- **A19.1 Three seeds and the general tie margin.** The pilot runs seeds 0, 1 and 2 (classifier seed s, bank seed
+  s) instead of seed 0, and ties use max(0.02, pooled SD) instead of the 0.02 floor. In the phase 3 pilots one setting
+  moved by up to 0.154 between two generator seeds, and the variants' SDs were 0.04 to 0.11, so at one seed and a 0.02
+  margin the policy would be chosen by noise. The cost is 27 short classifier runs instead of 9.
+- **A19.2 The reports show what an average hides; the rules do not change.** The phase 4a report adds N recall
+  and V F1 drops per bank and flags a bank past the N recall limit; the limit itself stays on the mean over banks
+  (A14.11). The phase 4 report adds V F1 and flags a chosen strength with N recall more than 0.01 below `none`.
+  In the pilots cVAE D raised N recall by 0.011 and WGAN-GP A lowered it by 0.015 against the same-seed baseline, so
+  an average would look fine; and cVAE D lowered V F1 from 0.679 to 0.542, while selection reads only S F1.
+- **A19.3 All four policies run in one Kaggle session.** They share one reference run and the gate refuses reference
+  runs that differ, so parallel sessions would make the gate fail. The notebook now defaults to all four letters.
+
+Open for the team: whether the N recall limit should apply per bank (stricter; it may leave no policy eligible).
