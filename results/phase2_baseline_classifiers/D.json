@@ -1,0 +1,319 @@
+{
+  "experiment": "phase2_baseline_classifiers",
+  "variant": "D",
+  "description": "CNN + BiLSTM hybrid, two conv blocks then one BiLSTM layer (hidden 64); last and mean-pooled states; linear head.",
+  "role": "rnn",
+  "model": {
+    "name": "cnn_bilstm",
+    "channels": [
+      32,
+      64
+    ],
+    "kernel": 7,
+    "hidden": 64,
+    "side_hidden": 16
+  },
+  "n_parameters": 82570,
+  "provisional": false,
+  "provisional_reasons": [],
+  "representation": {
+    "name": "C_short_window_rr_features",
+    "window_pre_s": 0.25,
+    "window_post_s": 0.25,
+    "bandpass_hz": null,
+    "bandpass_order": 4,
+    "target_fs": null,
+    "normalization": "per_beat_zscore",
+    "rr_features": true,
+    "effective_fs": 360,
+    "window_samples": [
+      90,
+      90
+    ],
+    "n_samples": 180
+  },
+  "dataset": {
+    "source": "rebuilt from the raw records (C_short_window_rr_features) and checked against the frozen hash",
+    "representation": "C_short_window_rr_features",
+    "content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896",
+    "frozen": true
+  },
+  "split": {
+    "name": "V1",
+    "val": [
+      115,
+      118,
+      201,
+      205,
+      223
+    ]
+  },
+  "selection_metric": "s_f1",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "chosen_lr": 0.001,
+  "mean": 0.251555401832275,
+  "sd": 0.028822526404383274,
+  "tie_break_mean": 0.7212179592246454,
+  "tie_break_sd": 0.0733066275197714,
+  "per_seed": [
+    {
+      "seed": 0,
+      "run_id": "phase2_baseline_classifiers-D.lr1e-03-s0-4b2d65f-202611010740",
+      "selection_value": 0.23049645390070922,
+      "tie_break_value": 0.8054862842892768,
+      "rare_macro_f1": 0.12468218921450555,
+      "f1": {
+        "N": 0.971526084836665,
+        "S": 0.23049645390070922,
+        "V": 0.8054862842892768,
+        "F": 0.018867924528301886
+      },
+      "pr_auc": {
+        "N": 0.9938338339496442,
+        "S": 0.14972452397927857,
+        "V": 0.7512887610813007,
+        "F": 0.01381175517835252
+      },
+      "n_recall": 0.9616795366795367,
+      "best_epoch": 8,
+      "epochs_run": 13,
+      "wall_clock_s": 17.90413462699985
+    },
+    {
+      "seed": 1,
+      "run_id": "phase2_baseline_classifiers-D.lr1e-03-s1-4b2d65f-202611010740",
+      "selection_value": 0.28440366972477066,
+      "tie_break_value": 0.6860119047619048,
+      "rare_macro_f1": 0.1657312466270912,
+      "f1": {
+        "N": 0.9704147686406137,
+        "S": 0.28440366972477066,
+        "V": 0.6860119047619048,
+        "F": 0.047058823529411764
+      },
+      "pr_auc": {
+        "N": 0.9868635412456648,
+        "S": 0.2510709185520383,
+        "V": 0.7815224880578288,
+        "F": 0.02095190513195412
+      },
+      "n_recall": 0.9767374517374517,
+      "best_epoch": 4,
+      "epochs_run": 10,
+      "wall_clock_s": 13.427645708000227
+    },
+    {
+      "seed": 2,
+      "run_id": "phase2_baseline_classifiers-D.lr1e-03-s2-4b2d65f-202611010740",
+      "selection_value": 0.23976608187134502,
+      "tie_break_value": 0.6721556886227545,
+      "rare_macro_f1": 0.15559732664995823,
+      "f1": {
+        "N": 0.9656961660420871,
+        "S": 0.23976608187134502,
+        "V": 0.6721556886227545,
+        "F": 0.07142857142857142
+      },
+      "pr_auc": {
+        "N": 0.9862082966510645,
+        "S": 0.11746927017505707,
+        "V": 0.7785114062670524,
+        "F": 0.021114523204002127
+      },
+      "n_recall": 0.9700772200772201,
+      "best_epoch": 8,
+      "epochs_run": 13,
+      "wall_clock_s": 17.64216581999972
+    }
+  ],
+  "run_ids": [
+    "phase2_baseline_classifiers-D.lr1e-03-s0-4b2d65f-202611010740",
+    "phase2_baseline_classifiers-D.lr1e-03-s1-4b2d65f-202611010740",
+    "phase2_baseline_classifiers-D.lr1e-03-s2-4b2d65f-202611010740"
+  ],
+  "lr_grid": {
+    "lr1e-03": {
+      "lr": 0.001,
+      "per_seed": [
+        {
+          "seed": 0,
+          "run_id": "phase2_baseline_classifiers-D.lr1e-03-s0-4b2d65f-202611010740",
+          "selection_value": 0.23049645390070922,
+          "tie_break_value": 0.8054862842892768,
+          "rare_macro_f1": 0.12468218921450555,
+          "f1": {
+            "N": 0.971526084836665,
+            "S": 0.23049645390070922,
+            "V": 0.8054862842892768,
+            "F": 0.018867924528301886
+          },
+          "pr_auc": {
+            "N": 0.9938338339496442,
+            "S": 0.14972452397927857,
+            "V": 0.7512887610813007,
+            "F": 0.01381175517835252
+          },
+          "n_recall": 0.9616795366795367,
+          "best_epoch": 8,
+          "epochs_run": 13,
+          "wall_clock_s": 17.90413462699985
+        },
+        {
+          "seed": 1,
+          "run_id": "phase2_baseline_classifiers-D.lr1e-03-s1-4b2d65f-202611010740",
+          "selection_value": 0.28440366972477066,
+          "tie_break_value": 0.6860119047619048,
+          "rare_macro_f1": 0.1657312466270912,
+          "f1": {
+            "N": 0.9704147686406137,
+            "S": 0.28440366972477066,
+            "V": 0.6860119047619048,
+            "F": 0.047058823529411764
+          },
+          "pr_auc": {
+            "N": 0.9868635412456648,
+            "S": 0.2510709185520383,
+            "V": 0.7815224880578288,
+            "F": 0.02095190513195412
+          },
+          "n_recall": 0.9767374517374517,
+          "best_epoch": 4,
+          "epochs_run": 10,
+          "wall_clock_s": 13.427645708000227
+        },
+        {
+          "seed": 2,
+          "run_id": "phase2_baseline_classifiers-D.lr1e-03-s2-4b2d65f-202611010740",
+          "selection_value": 0.23976608187134502,
+          "tie_break_value": 0.6721556886227545,
+          "rare_macro_f1": 0.15559732664995823,
+          "f1": {
+            "N": 0.9656961660420871,
+            "S": 0.23976608187134502,
+            "V": 0.6721556886227545,
+            "F": 0.07142857142857142
+          },
+          "pr_auc": {
+            "N": 0.9862082966510645,
+            "S": 0.11746927017505707,
+            "V": 0.7785114062670524,
+            "F": 0.021114523204002127
+          },
+          "n_recall": 0.9700772200772201,
+          "best_epoch": 8,
+          "epochs_run": 13,
+          "wall_clock_s": 17.64216581999972
+        }
+      ],
+      "mean": 0.251555401832275,
+      "sd": 0.028822526404383274,
+      "tie_break_mean": 0.7212179592246454,
+      "tie_break_sd": 0.0733066275197714,
+      "wall_clock_s": 48.973946154999794
+    },
+    "lr3e-04": {
+      "lr": 0.0003,
+      "per_seed": [
+        {
+          "seed": 0,
+          "run_id": "phase2_baseline_classifiers-D.lr3e-04-s0-4b2d65f-202611010740",
+          "selection_value": 0.07569721115537849,
+          "tie_break_value": 0.5024834437086093,
+          "rare_macro_f1": 0.037848605577689244,
+          "f1": {
+            "N": 0.9196867784359,
+            "S": 0.07569721115537849,
+            "V": 0.5024834437086093,
+            "F": 0.0
+          },
+          "pr_auc": {
+            "N": 0.9756438193281791,
+            "S": 0.050353941814179515,
+            "V": 0.7321473380209954,
+            "F": 0.008482221563751126
+          },
+          "n_recall": 0.8842664092664093,
+          "best_epoch": 6,
+          "epochs_run": 11,
+          "wall_clock_s": 15.111318701000073
+        },
+        {
+          "seed": 1,
+          "run_id": "phase2_baseline_classifiers-D.lr3e-04-s1-4b2d65f-202611010741",
+          "selection_value": 0.1814516129032258,
+          "tie_break_value": 0.596537949400799,
+          "rare_macro_f1": 0.11246493688639551,
+          "f1": {
+            "N": 0.9574978413124821,
+            "S": 0.1814516129032258,
+            "V": 0.596537949400799,
+            "F": 0.043478260869565216
+          },
+          "pr_auc": {
+            "N": 0.9691206707855349,
+            "S": 0.09866509869668028,
+            "V": 0.6150803598601793,
+            "F": 0.02157102443052557
+          },
+          "n_recall": 0.9633204633204633,
+          "best_epoch": 9,
+          "epochs_run": 14,
+          "wall_clock_s": 19.4983504249999
+        },
+        {
+          "seed": 2,
+          "run_id": "phase2_baseline_classifiers-D.lr3e-04-s2-4b2d65f-202611010741",
+          "selection_value": 0.2024432809773124,
+          "tie_break_value": 0.7020933977455717,
+          "rare_macro_f1": 0.10826389400978297,
+          "f1": {
+            "N": 0.962780622292241,
+            "S": 0.2024432809773124,
+            "V": 0.7020933977455717,
+            "F": 0.014084507042253521
+          },
+          "pr_auc": {
+            "N": 0.9925468687123303,
+            "S": 0.09165606310777338,
+            "V": 0.716972962527332,
+            "F": 0.011139485707137227
+          },
+          "n_recall": 0.9438223938223939,
+          "best_epoch": 13,
+          "epochs_run": 18,
+          "wall_clock_s": 25.18477669899994
+        }
+      ],
+      "mean": 0.15319736834530556,
+      "sd": 0.06793282200439425,
+      "tie_break_mean": 0.60037159695166,
+      "tie_break_sd": 0.0998601826446243,
+      "wall_clock_s": 59.79444582499991
+    }
+  },
+  "wall_clock_s": 108.7683919799997,
+  "budget": {
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "lr_grid": [
+      0.001,
+      0.0003
+    ],
+    "max_epochs": 40,
+    "patience": 5,
+    "min_epochs": 10,
+    "batch_size": 256,
+    "weight_decay": 0.01
+  },
+  "budget_deviations": [],
+  "device": "cuda",
+  "git_sha": "4b2d65fc588d0656b000474afc79f8b73bfc08d2",
+  "dataset_content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896"
+}

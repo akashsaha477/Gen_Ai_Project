@@ -1,0 +1,663 @@
+{
+  "experiment": "phase2_ptbxl_pretraining",
+  "variant": "C",
+  "description": "Variant A plus RR features (rr_prev, rr_next, rr_prev over the mean RR of the previous 10 beats) fed to the probe's side branch.",
+  "representation": {
+    "name": "C_short_window_rr_features",
+    "window_pre_s": 0.25,
+    "window_post_s": 0.25,
+    "bandpass_hz": null,
+    "bandpass_order": 4,
+    "target_fs": null,
+    "normalization": "per_beat_zscore",
+    "rr_features": true,
+    "effective_fs": 360,
+    "window_samples": [
+      90,
+      90
+    ],
+    "n_samples": 180
+  },
+  "provisional": false,
+  "provisional_reason": null,
+  "split": {
+    "name": "V1",
+    "val": [
+      115,
+      118,
+      201,
+      205,
+      223
+    ]
+  },
+  "selection_metric": "s_f1",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "winner": "scratch",
+  "decision": {
+    "winner": "scratch",
+    "best_by_mean": "pretrained",
+    "margins": {
+      "scratch": 0.03300004753612403,
+      "pretrained": 0.026972895017250576
+    },
+    "steps": [
+      {
+        "step": "selection metric",
+        "tied": [
+          "scratch",
+          "pretrained"
+        ]
+      },
+      {
+        "step": "tie-break metric",
+        "tied": [
+          "scratch",
+          "pretrained"
+        ]
+      },
+      {
+        "step": "simplicity, then wall-clock",
+        "winner": "scratch"
+      }
+    ]
+  },
+  "difference_pretrained_minus_scratch": 0.022327832827830796,
+  "arms": {
+    "scratch": {
+      "chosen_lr": 0.001,
+      "mean": 0.2960978798661217,
+      "sd": 0.03808502604910847,
+      "tie_break_mean": 0.6718966652342999,
+      "tie_break_sd": 0.05549188070809678,
+      "per_seed": [
+        {
+          "seed": 0,
+          "run_id": "phase2_ptbxl_pretraining-scratchC.lr1e-03-s0-c4dee0a-202611010836",
+          "selection_value": 0.25572519083969464,
+          "tie_break_value": 0.6638537271448663,
+          "rare_macro_f1": 0.15208404870704456,
+          "f1": {
+            "N": 0.9711934156378601,
+            "S": 0.25572519083969464,
+            "V": 0.6638537271448663,
+            "F": 0.04844290657439446
+          },
+          "pr_auc": {
+            "N": 0.9912349121802317,
+            "S": 0.1388459695628613,
+            "V": 0.6191414166175874,
+            "F": 0.022643964309780745
+          },
+          "n_recall": 0.9681467181467182,
+          "best_epoch": 5,
+          "epochs_run": 10,
+          "wall_clock_s": 19.73140572300008
+        },
+        {
+          "seed": 1,
+          "run_id": "phase2_ptbxl_pretraining-scratchC.lr1e-03-s1-c4dee0a-202611010836",
+          "selection_value": 0.3313840155945419,
+          "tie_break_value": 0.7309711286089239,
+          "rare_macro_f1": 0.16569200779727095,
+          "f1": {
+            "N": 0.98000768935025,
+            "S": 0.3313840155945419,
+            "V": 0.7309711286089239,
+            "F": 0.0
+          },
+          "pr_auc": {
+            "N": 0.997808912954029,
+            "S": 0.2903992135409141,
+            "V": 0.7128964092098463,
+            "F": 0.022360600376346636
+          },
+          "n_recall": 0.9841698841698842,
+          "best_epoch": 20,
+          "epochs_run": 25,
+          "wall_clock_s": 49.30948796899975
+        },
+        {
+          "seed": 2,
+          "run_id": "phase2_ptbxl_pretraining-scratchC.lr1e-03-s2-c4dee0a-202611010837",
+          "selection_value": 0.3011844331641286,
+          "tie_break_value": 0.6208651399491094,
+          "rare_macro_f1": 0.17020005971931917,
+          "f1": {
+            "N": 0.96952988972722,
+            "S": 0.3011844331641286,
+            "V": 0.6208651399491094,
+            "F": 0.0392156862745098
+          },
+          "pr_auc": {
+            "N": 0.9932982675731973,
+            "S": 0.21779307075300486,
+            "V": 0.5295745968033932,
+            "F": 0.07096198776664059
+          },
+          "n_recall": 0.9674710424710424,
+          "best_epoch": 6,
+          "epochs_run": 11,
+          "wall_clock_s": 21.738223995000226
+        }
+      ],
+      "run_ids": [
+        "phase2_ptbxl_pretraining-scratchC.lr1e-03-s0-c4dee0a-202611010836",
+        "phase2_ptbxl_pretraining-scratchC.lr1e-03-s1-c4dee0a-202611010836",
+        "phase2_ptbxl_pretraining-scratchC.lr1e-03-s2-c4dee0a-202611010837"
+      ],
+      "lr_grid": {
+        "lr1e-03": {
+          "lr": 0.001,
+          "per_seed": [
+            {
+              "seed": 0,
+              "run_id": "phase2_ptbxl_pretraining-scratchC.lr1e-03-s0-c4dee0a-202611010836",
+              "selection_value": 0.25572519083969464,
+              "tie_break_value": 0.6638537271448663,
+              "rare_macro_f1": 0.15208404870704456,
+              "f1": {
+                "N": 0.9711934156378601,
+                "S": 0.25572519083969464,
+                "V": 0.6638537271448663,
+                "F": 0.04844290657439446
+              },
+              "pr_auc": {
+                "N": 0.9912349121802317,
+                "S": 0.1388459695628613,
+                "V": 0.6191414166175874,
+                "F": 0.022643964309780745
+              },
+              "n_recall": 0.9681467181467182,
+              "best_epoch": 5,
+              "epochs_run": 10,
+              "wall_clock_s": 19.73140572300008
+            },
+            {
+              "seed": 1,
+              "run_id": "phase2_ptbxl_pretraining-scratchC.lr1e-03-s1-c4dee0a-202611010836",
+              "selection_value": 0.3313840155945419,
+              "tie_break_value": 0.7309711286089239,
+              "rare_macro_f1": 0.16569200779727095,
+              "f1": {
+                "N": 0.98000768935025,
+                "S": 0.3313840155945419,
+                "V": 0.7309711286089239,
+                "F": 0.0
+              },
+              "pr_auc": {
+                "N": 0.997808912954029,
+                "S": 0.2903992135409141,
+                "V": 0.7128964092098463,
+                "F": 0.022360600376346636
+              },
+              "n_recall": 0.9841698841698842,
+              "best_epoch": 20,
+              "epochs_run": 25,
+              "wall_clock_s": 49.30948796899975
+            },
+            {
+              "seed": 2,
+              "run_id": "phase2_ptbxl_pretraining-scratchC.lr1e-03-s2-c4dee0a-202611010837",
+              "selection_value": 0.3011844331641286,
+              "tie_break_value": 0.6208651399491094,
+              "rare_macro_f1": 0.17020005971931917,
+              "f1": {
+                "N": 0.96952988972722,
+                "S": 0.3011844331641286,
+                "V": 0.6208651399491094,
+                "F": 0.0392156862745098
+              },
+              "pr_auc": {
+                "N": 0.9932982675731973,
+                "S": 0.21779307075300486,
+                "V": 0.5295745968033932,
+                "F": 0.07096198776664059
+              },
+              "n_recall": 0.9674710424710424,
+              "best_epoch": 6,
+              "epochs_run": 11,
+              "wall_clock_s": 21.738223995000226
+            }
+          ],
+          "mean": 0.2960978798661217,
+          "sd": 0.03808502604910847,
+          "tie_break_mean": 0.6718966652342999,
+          "tie_break_sd": 0.05549188070809678,
+          "wall_clock_s": 90.77911768700005
+        },
+        "lr3e-04": {
+          "lr": 0.0003,
+          "per_seed": [
+            {
+              "seed": 0,
+              "run_id": "phase2_ptbxl_pretraining-scratchC.lr3e-04-s0-c4dee0a-202611010837",
+              "selection_value": 0.16296296296296298,
+              "tie_break_value": 0.5780254777070064,
+              "rare_macro_f1": 0.08148148148148149,
+              "f1": {
+                "N": 0.9699315553457635,
+                "S": 0.16296296296296298,
+                "V": 0.5780254777070064,
+                "F": 0.0
+              },
+              "pr_auc": {
+                "N": 0.993148330861088,
+                "S": 0.246766497997254,
+                "V": 0.6310832719872677,
+                "F": 0.017765526349724822
+              },
+              "n_recall": 0.9916988416988417,
+              "best_epoch": 14,
+              "epochs_run": 19,
+              "wall_clock_s": 37.54891058300018
+            },
+            {
+              "seed": 1,
+              "run_id": "phase2_ptbxl_pretraining-scratchC.lr3e-04-s1-c4dee0a-202611010838",
+              "selection_value": 0.28618968386023297,
+              "tie_break_value": 0.6852756454989533,
+              "rare_macro_f1": 0.14309484193011648,
+              "f1": {
+                "N": 0.9719832764669134,
+                "S": 0.28618968386023297,
+                "V": 0.6852756454989533,
+                "F": 0.0
+              },
+              "pr_auc": {
+                "N": 0.9920063752090132,
+                "S": 0.17150784500564895,
+                "V": 0.7007890020352151,
+                "F": 0.025939090502688666
+              },
+              "n_recall": 0.9761583011583012,
+              "best_epoch": 23,
+              "epochs_run": 28,
+              "wall_clock_s": 55.36038756500011
+            },
+            {
+              "seed": 2,
+              "run_id": "phase2_ptbxl_pretraining-scratchC.lr3e-04-s2-c4dee0a-202611010839",
+              "selection_value": 0.2976190476190476,
+              "tie_break_value": 0.740356937248129,
+              "rare_macro_f1": 0.1707875457875458,
+              "f1": {
+                "N": 0.9717105584599599,
+                "S": 0.2976190476190476,
+                "V": 0.740356937248129,
+                "F": 0.04395604395604396
+              },
+              "pr_auc": {
+                "N": 0.9972214948231878,
+                "S": 0.22562976596123022,
+                "V": 0.7394379562568896,
+                "F": 0.01916622272179193
+              },
+              "n_recall": 0.9598455598455599,
+              "best_epoch": 18,
+              "epochs_run": 23,
+              "wall_clock_s": 45.33059543899981
+            }
+          ],
+          "mean": 0.24892389814741453,
+          "sd": 0.07466337370037558,
+          "tie_break_mean": 0.6678860201513629,
+          "tie_break_sd": 0.08255104476313398,
+          "wall_clock_s": 138.2398935870001
+        }
+      },
+      "wall_clock_s": 229.01901127400015,
+      "n_parameters": 18762
+    },
+    "pretrained": {
+      "chosen_lr": 0.001,
+      "mean": 0.3184257126939525,
+      "sd": 0.026972895017250576,
+      "tie_break_mean": 0.6916486926239257,
+      "tie_break_sd": 0.01858193984513317,
+      "per_seed": [
+        {
+          "seed": 0,
+          "run_id": "phase2_ptbxl_pretraining-finetuneC.lr1e-03-s0-c4dee0a-202611010839",
+          "selection_value": 0.29961089494163423,
+          "tie_break_value": 0.6853538892782061,
+          "rare_macro_f1": 0.19235863896017882,
+          "f1": {
+            "N": 0.9752979623221838,
+            "S": 0.29961089494163423,
+            "V": 0.6853538892782061,
+            "F": 0.0851063829787234
+          },
+          "pr_auc": {
+            "N": 0.9965243656816245,
+            "S": 0.19476533817082922,
+            "V": 0.6856565688712015,
+            "F": 0.04283717368115587
+          },
+          "n_recall": 0.9794401544401544,
+          "best_epoch": 11,
+          "epochs_run": 16,
+          "wall_clock_s": 31.60597034400007
+        },
+        {
+          "seed": 1,
+          "run_id": "phase2_ptbxl_pretraining-finetuneC.lr1e-03-s1-c4dee0a-202611010840",
+          "selection_value": 0.3493282149712092,
+          "tie_break_value": 0.7125603864734299,
+          "rare_macro_f1": 0.1746641074856046,
+          "f1": {
+            "N": 0.9750157667491389,
+            "S": 0.3493282149712092,
+            "V": 0.7125603864734299,
+            "F": 0.0
+          },
+          "pr_auc": {
+            "N": 0.9958018640103087,
+            "S": 0.24713873450048252,
+            "V": 0.6633774058920112,
+            "F": 0.011800097738368076
+          },
+          "n_recall": 0.969980694980695,
+          "best_epoch": 18,
+          "epochs_run": 23,
+          "wall_clock_s": 45.32879478299992
+        },
+        {
+          "seed": 2,
+          "run_id": "phase2_ptbxl_pretraining-finetuneC.lr1e-03-s2-c4dee0a-202611010841",
+          "selection_value": 0.30633802816901406,
+          "tie_break_value": 0.6770318021201414,
+          "rare_macro_f1": 0.16879401408450703,
+          "f1": {
+            "N": 0.9745238209470806,
+            "S": 0.30633802816901406,
+            "V": 0.6770318021201414,
+            "F": 0.03125
+          },
+          "pr_auc": {
+            "N": 0.9951725052140595,
+            "S": 0.2003178829870428,
+            "V": 0.6271353787400699,
+            "F": 0.028835638326820772
+          },
+          "n_recall": 0.9803088803088803,
+          "best_epoch": 8,
+          "epochs_run": 13,
+          "wall_clock_s": 25.588351862999843
+        }
+      ],
+      "run_ids": [
+        "phase2_ptbxl_pretraining-finetuneC.lr1e-03-s0-c4dee0a-202611010839",
+        "phase2_ptbxl_pretraining-finetuneC.lr1e-03-s1-c4dee0a-202611010840",
+        "phase2_ptbxl_pretraining-finetuneC.lr1e-03-s2-c4dee0a-202611010841"
+      ],
+      "lr_grid": {
+        "lr1e-03": {
+          "lr": 0.001,
+          "per_seed": [
+            {
+              "seed": 0,
+              "run_id": "phase2_ptbxl_pretraining-finetuneC.lr1e-03-s0-c4dee0a-202611010839",
+              "selection_value": 0.29961089494163423,
+              "tie_break_value": 0.6853538892782061,
+              "rare_macro_f1": 0.19235863896017882,
+              "f1": {
+                "N": 0.9752979623221838,
+                "S": 0.29961089494163423,
+                "V": 0.6853538892782061,
+                "F": 0.0851063829787234
+              },
+              "pr_auc": {
+                "N": 0.9965243656816245,
+                "S": 0.19476533817082922,
+                "V": 0.6856565688712015,
+                "F": 0.04283717368115587
+              },
+              "n_recall": 0.9794401544401544,
+              "best_epoch": 11,
+              "epochs_run": 16,
+              "wall_clock_s": 31.60597034400007
+            },
+            {
+              "seed": 1,
+              "run_id": "phase2_ptbxl_pretraining-finetuneC.lr1e-03-s1-c4dee0a-202611010840",
+              "selection_value": 0.3493282149712092,
+              "tie_break_value": 0.7125603864734299,
+              "rare_macro_f1": 0.1746641074856046,
+              "f1": {
+                "N": 0.9750157667491389,
+                "S": 0.3493282149712092,
+                "V": 0.7125603864734299,
+                "F": 0.0
+              },
+              "pr_auc": {
+                "N": 0.9958018640103087,
+                "S": 0.24713873450048252,
+                "V": 0.6633774058920112,
+                "F": 0.011800097738368076
+              },
+              "n_recall": 0.969980694980695,
+              "best_epoch": 18,
+              "epochs_run": 23,
+              "wall_clock_s": 45.32879478299992
+            },
+            {
+              "seed": 2,
+              "run_id": "phase2_ptbxl_pretraining-finetuneC.lr1e-03-s2-c4dee0a-202611010841",
+              "selection_value": 0.30633802816901406,
+              "tie_break_value": 0.6770318021201414,
+              "rare_macro_f1": 0.16879401408450703,
+              "f1": {
+                "N": 0.9745238209470806,
+                "S": 0.30633802816901406,
+                "V": 0.6770318021201414,
+                "F": 0.03125
+              },
+              "pr_auc": {
+                "N": 0.9951725052140595,
+                "S": 0.2003178829870428,
+                "V": 0.6271353787400699,
+                "F": 0.028835638326820772
+              },
+              "n_recall": 0.9803088803088803,
+              "best_epoch": 8,
+              "epochs_run": 13,
+              "wall_clock_s": 25.588351862999843
+            }
+          ],
+          "mean": 0.3184257126939525,
+          "sd": 0.026972895017250576,
+          "tie_break_mean": 0.6916486926239257,
+          "tie_break_sd": 0.01858193984513317,
+          "wall_clock_s": 102.52311698999983
+        },
+        "lr3e-04": {
+          "lr": 0.0003,
+          "per_seed": [
+            {
+              "seed": 0,
+              "run_id": "phase2_ptbxl_pretraining-finetuneC.lr3e-04-s0-c4dee0a-202611010841",
+              "selection_value": 0.2868686868686869,
+              "tie_break_value": 0.754983922829582,
+              "rare_macro_f1": 0.17752525252525253,
+              "f1": {
+                "N": 0.9783153430994603,
+                "S": 0.2868686868686869,
+                "V": 0.754983922829582,
+                "F": 0.06818181818181818
+              },
+              "pr_auc": {
+                "N": 0.9974974289764006,
+                "S": 0.2219087092412721,
+                "V": 0.7094454499493527,
+                "F": 0.03097540818698077
+              },
+              "n_recall": 0.9798262548262548,
+              "best_epoch": 30,
+              "epochs_run": 35,
+              "wall_clock_s": 68.96490253399998
+            },
+            {
+              "seed": 1,
+              "run_id": "phase2_ptbxl_pretraining-finetuneC.lr3e-04-s1-c4dee0a-202611010842",
+              "selection_value": 0.33073929961089493,
+              "tie_break_value": 0.6773967809657103,
+              "rare_macro_f1": 0.19276691007942007,
+              "f1": {
+                "N": 0.9716840536512668,
+                "S": 0.33073929961089493,
+                "V": 0.6773967809657103,
+                "F": 0.0547945205479452
+              },
+              "pr_auc": {
+                "N": 0.9955861123200934,
+                "S": 0.23166727068880705,
+                "V": 0.6482227433317169,
+                "F": 0.017172813197539556
+              },
+              "n_recall": 0.9754826254826254,
+              "best_epoch": 39,
+              "epochs_run": 40,
+              "wall_clock_s": 78.86161193299995
+            },
+            {
+              "seed": 2,
+              "run_id": "phase2_ptbxl_pretraining-finetuneC.lr3e-04-s2-c4dee0a-202611010844",
+              "selection_value": 0.2936802973977695,
+              "tie_break_value": 0.7101063829787234,
+              "rare_macro_f1": 0.21580566594026407,
+              "f1": {
+                "N": 0.9769278936467415,
+                "S": 0.2936802973977695,
+                "V": 0.7101063829787234,
+                "F": 0.13793103448275862
+              },
+              "pr_auc": {
+                "N": 0.9952286127179312,
+                "S": 0.17615554725786653,
+                "V": 0.631141316550799,
+                "F": 0.0926984913622744
+              },
+              "n_recall": 0.9788610038610038,
+              "best_epoch": 22,
+              "epochs_run": 27,
+              "wall_clock_s": 53.24733776999983
+            }
+          ],
+          "mean": 0.30376276129245044,
+          "sd": 0.023609314353340613,
+          "tie_break_mean": 0.7141623622580053,
+          "tie_break_sd": 0.03895227042916256,
+          "wall_clock_s": 201.07385223699976
+        }
+      },
+      "wall_clock_s": 732.7562605569997,
+      "n_parameters": 18762
+    }
+  },
+  "pretraining": {
+    "settings": {
+      "lr": 0.001,
+      "max_epochs": 30,
+      "patience": 5,
+      "batch_size": 256,
+      "weight_decay": 0.01
+    },
+    "labels": [
+      "NORM",
+      "MI",
+      "STTC",
+      "CD",
+      "HYP"
+    ],
+    "val_macro_auroc_mean": 0.8312154389639695,
+    "val_macro_auroc_sd": 0.0016051985802810103,
+    "per_seed": [
+      {
+        "seed": 0,
+        "run_id": "phase2_ptbxl_pretraining-pretrainC-s0-c4dee0a-202611010828",
+        "macro_auroc": 0.829857325399909,
+        "auroc": {
+          "NORM": 0.8889883893672567,
+          "MI": 0.8225839075839183,
+          "STTC": 0.8373439580794313,
+          "CD": 0.8755511180110873,
+          "HYP": 0.7248192539578512
+        },
+        "best_epoch": 8,
+        "epochs_run": 13,
+        "wall_clock_s": 108.35144453800012
+      },
+      {
+        "seed": 1,
+        "run_id": "phase2_ptbxl_pretraining-pretrainC-s1-c4dee0a-202611010830",
+        "macro_auroc": 0.8329868821897423,
+        "auroc": {
+          "NORM": 0.8907779512253573,
+          "MI": 0.8256058288883086,
+          "STTC": 0.837840399923076,
+          "CD": 0.8777060627146874,
+          "HYP": 0.7330041681972815
+        },
+        "best_epoch": 14,
+        "epochs_run": 19,
+        "wall_clock_s": 160.36513078200005
+      },
+      {
+        "seed": 2,
+        "run_id": "phase2_ptbxl_pretraining-pretrainC-s2-c4dee0a-202611010833",
+        "macro_auroc": 0.8308021093022575,
+        "auroc": {
+          "NORM": 0.8900032330037089,
+          "MI": 0.8143612380788048,
+          "STTC": 0.8381032460688823,
+          "CD": 0.8765832197063337,
+          "HYP": 0.734959609653558
+        },
+        "best_epoch": 14,
+        "epochs_run": 19,
+        "wall_clock_s": 160.4427160099999
+      }
+    ],
+    "n_train_beats": 170083,
+    "n_val_beats": 21490,
+    "wall_clock_s": 429.1592913300001
+  },
+  "ptbxl_data": {
+    "content_sha256": "756d2c53064cc273612fe0d55675a1441cec0e4ed6dc82e15a014270d3ca7854",
+    "recordings_kept": 20918,
+    "beats_kept": 213133,
+    "partial_run": false
+  },
+  "alignment_with_mitbih_train": {
+    "n_ptbxl_beats": 72495,
+    "n_mitbih_beats": 35464,
+    "mean_beat_correlation": 0.947467934302394,
+    "ptbxl_peak_at_centre": 0.95730740051038,
+    "mitbih_peak_at_centre": 0.9666140311301602,
+    "tolerance_samples": 2
+  },
+  "budget": {
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "lr_grid": [
+      0.001,
+      0.0003
+    ],
+    "max_epochs": 40,
+    "patience": 5,
+    "batch_size": 256,
+    "weight_decay": 0.01,
+    "min_epochs": 10
+  },
+  "budget_deviations": [],
+  "device": "cuda",
+  "git_sha": "c4dee0a31ddbc79997849088018d196aa8f275f1",
+  "dataset_content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896"
+}
