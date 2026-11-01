@@ -1,0 +1,320 @@
+{
+  "experiment": "phase2_baseline_classifiers",
+  "variant": "B",
+  "description": "1D-ResNet, stem convolution and four residual stages, global average pooling, linear head.",
+  "role": "cnn",
+  "model": {
+    "name": "resnet1d",
+    "channels": [
+      32,
+      64,
+      128,
+      128
+    ],
+    "kernel": 7,
+    "side_hidden": 16
+  },
+  "n_parameters": 488362,
+  "provisional": false,
+  "provisional_reasons": [],
+  "representation": {
+    "name": "C_short_window_rr_features",
+    "window_pre_s": 0.25,
+    "window_post_s": 0.25,
+    "bandpass_hz": null,
+    "bandpass_order": 4,
+    "target_fs": null,
+    "normalization": "per_beat_zscore",
+    "rr_features": true,
+    "effective_fs": 360,
+    "window_samples": [
+      90,
+      90
+    ],
+    "n_samples": 180
+  },
+  "dataset": {
+    "source": "rebuilt from the raw records (C_short_window_rr_features) and checked against the frozen hash",
+    "representation": "C_short_window_rr_features",
+    "content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896",
+    "frozen": true
+  },
+  "split": {
+    "name": "V1",
+    "val": [
+      115,
+      118,
+      201,
+      205,
+      223
+    ]
+  },
+  "selection_metric": "s_f1",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "chosen_lr": 0.001,
+  "mean": 0.23143526219626,
+  "sd": 0.09687666654054365,
+  "tie_break_mean": 0.6367777257916738,
+  "tie_break_sd": 0.06515512713260344,
+  "per_seed": [
+    {
+      "seed": 0,
+      "run_id": "phase2_baseline_classifiers-B.lr1e-03-s0-cf1f960-202611010721",
+      "selection_value": 0.273972602739726,
+      "tie_break_value": 0.6956521739130435,
+      "rare_macro_f1": 0.1543776057176891,
+      "f1": {
+        "N": 0.9699309812249626,
+        "S": 0.273972602739726,
+        "V": 0.6956521739130435,
+        "F": 0.034782608695652174
+      },
+      "pr_auc": {
+        "N": 0.9905513831032143,
+        "S": 0.2074030863608201,
+        "V": 0.7518783717050117,
+        "F": 0.020226670632150216
+      },
+      "n_recall": 0.9698841698841699,
+      "best_epoch": 8,
+      "epochs_run": 13,
+      "wall_clock_s": 50.38004617399997
+    },
+    {
+      "seed": 1,
+      "run_id": "phase2_baseline_classifiers-B.lr1e-03-s1-cf1f960-202611010722",
+      "selection_value": 0.2997658079625293,
+      "tie_break_value": 0.6479057591623036,
+      "rare_macro_f1": 0.1682652569224411,
+      "f1": {
+        "N": 0.9664617916081886,
+        "S": 0.2997658079625293,
+        "V": 0.6479057591623036,
+        "F": 0.03676470588235294
+      },
+      "pr_auc": {
+        "N": 0.9931105691816104,
+        "S": 0.25753810269450306,
+        "V": 0.693170043320417,
+        "F": 0.014029173908589456
+      },
+      "n_recall": 0.9638030888030888,
+      "best_epoch": 15,
+      "epochs_run": 20,
+      "wall_clock_s": 81.99934891200007
+    },
+    {
+      "seed": 2,
+      "run_id": "phase2_baseline_classifiers-B.lr1e-03-s2-cf1f960-202611010723",
+      "selection_value": 0.12056737588652482,
+      "tie_break_value": 0.5667752442996743,
+      "rare_macro_f1": 0.06028368794326241,
+      "f1": {
+        "N": 0.9222249690976514,
+        "S": 0.12056737588652482,
+        "V": 0.5667752442996743,
+        "F": 0.0
+      },
+      "pr_auc": {
+        "N": 0.9798249438628299,
+        "S": 0.09446317615542987,
+        "V": 0.6222738356836641,
+        "F": 0.04660847900717695
+      },
+      "n_recall": 0.9001930501930502,
+      "best_epoch": 5,
+      "epochs_run": 10,
+      "wall_clock_s": 42.63554549700007
+    }
+  ],
+  "run_ids": [
+    "phase2_baseline_classifiers-B.lr1e-03-s0-cf1f960-202611010721",
+    "phase2_baseline_classifiers-B.lr1e-03-s1-cf1f960-202611010722",
+    "phase2_baseline_classifiers-B.lr1e-03-s2-cf1f960-202611010723"
+  ],
+  "lr_grid": {
+    "lr1e-03": {
+      "lr": 0.001,
+      "per_seed": [
+        {
+          "seed": 0,
+          "run_id": "phase2_baseline_classifiers-B.lr1e-03-s0-cf1f960-202611010721",
+          "selection_value": 0.273972602739726,
+          "tie_break_value": 0.6956521739130435,
+          "rare_macro_f1": 0.1543776057176891,
+          "f1": {
+            "N": 0.9699309812249626,
+            "S": 0.273972602739726,
+            "V": 0.6956521739130435,
+            "F": 0.034782608695652174
+          },
+          "pr_auc": {
+            "N": 0.9905513831032143,
+            "S": 0.2074030863608201,
+            "V": 0.7518783717050117,
+            "F": 0.020226670632150216
+          },
+          "n_recall": 0.9698841698841699,
+          "best_epoch": 8,
+          "epochs_run": 13,
+          "wall_clock_s": 50.38004617399997
+        },
+        {
+          "seed": 1,
+          "run_id": "phase2_baseline_classifiers-B.lr1e-03-s1-cf1f960-202611010722",
+          "selection_value": 0.2997658079625293,
+          "tie_break_value": 0.6479057591623036,
+          "rare_macro_f1": 0.1682652569224411,
+          "f1": {
+            "N": 0.9664617916081886,
+            "S": 0.2997658079625293,
+            "V": 0.6479057591623036,
+            "F": 0.03676470588235294
+          },
+          "pr_auc": {
+            "N": 0.9931105691816104,
+            "S": 0.25753810269450306,
+            "V": 0.693170043320417,
+            "F": 0.014029173908589456
+          },
+          "n_recall": 0.9638030888030888,
+          "best_epoch": 15,
+          "epochs_run": 20,
+          "wall_clock_s": 81.99934891200007
+        },
+        {
+          "seed": 2,
+          "run_id": "phase2_baseline_classifiers-B.lr1e-03-s2-cf1f960-202611010723",
+          "selection_value": 0.12056737588652482,
+          "tie_break_value": 0.5667752442996743,
+          "rare_macro_f1": 0.06028368794326241,
+          "f1": {
+            "N": 0.9222249690976514,
+            "S": 0.12056737588652482,
+            "V": 0.5667752442996743,
+            "F": 0.0
+          },
+          "pr_auc": {
+            "N": 0.9798249438628299,
+            "S": 0.09446317615542987,
+            "V": 0.6222738356836641,
+            "F": 0.04660847900717695
+          },
+          "n_recall": 0.9001930501930502,
+          "best_epoch": 5,
+          "epochs_run": 10,
+          "wall_clock_s": 42.63554549700007
+        }
+      ],
+      "mean": 0.23143526219626,
+      "sd": 0.09687666654054365,
+      "tie_break_mean": 0.6367777257916738,
+      "tie_break_sd": 0.06515512713260344,
+      "wall_clock_s": 175.0149405830001
+    },
+    "lr3e-04": {
+      "lr": 0.0003,
+      "per_seed": [
+        {
+          "seed": 0,
+          "run_id": "phase2_baseline_classifiers-B.lr3e-04-s0-cf1f960-202611010724",
+          "selection_value": 0.10857142857142857,
+          "tie_break_value": 0.3353546005800158,
+          "rare_macro_f1": 0.054285714285714284,
+          "f1": {
+            "N": 0.8644704367421397,
+            "S": 0.10857142857142857,
+            "V": 0.3353546005800158,
+            "F": 0.0
+          },
+          "pr_auc": {
+            "N": 0.9809398728237244,
+            "S": 0.0716594784608556,
+            "V": 0.47227181399248136,
+            "F": 0.007778674852489269
+          },
+          "n_recall": 0.7776061776061776,
+          "best_epoch": 7,
+          "epochs_run": 12,
+          "wall_clock_s": 50.62267056199994
+        },
+        {
+          "seed": 1,
+          "run_id": "phase2_baseline_classifiers-B.lr3e-04-s1-cf1f960-202611010725",
+          "selection_value": 0.05896414342629482,
+          "tie_break_value": 0.5070729053318824,
+          "rare_macro_f1": 0.02948207171314741,
+          "f1": {
+            "N": 0.9064238745574102,
+            "S": 0.05896414342629482,
+            "V": 0.5070729053318824,
+            "F": 0.0
+          },
+          "pr_auc": {
+            "N": 0.9782802778740298,
+            "S": 0.06828334918750188,
+            "V": 0.6013114508631402,
+            "F": 0.024823559842624545
+          },
+          "n_recall": 0.8648648648648649,
+          "best_epoch": 5,
+          "epochs_run": 10,
+          "wall_clock_s": 42.31168033500012
+        },
+        {
+          "seed": 2,
+          "run_id": "phase2_baseline_classifiers-B.lr3e-04-s2-cf1f960-202611010725",
+          "selection_value": 0.07665505226480836,
+          "tie_break_value": 0.5332190312901843,
+          "rare_macro_f1": 0.05774500186055952,
+          "f1": {
+            "N": 0.9337022132796781,
+            "S": 0.07665505226480836,
+            "V": 0.5332190312901843,
+            "F": 0.038834951456310676
+          },
+          "pr_auc": {
+            "N": 0.9884303801163898,
+            "S": 0.06089029507912698,
+            "V": 0.6209135364615498,
+            "F": 0.01066322939628516
+          },
+          "n_recall": 0.8958494208494209,
+          "best_epoch": 7,
+          "epochs_run": 12,
+          "wall_clock_s": 50.576223417000165
+        }
+      ],
+      "mean": 0.08139687475417724,
+      "sd": 0.025141287661099725,
+      "tie_break_mean": 0.4585488457340275,
+      "tie_break_sd": 0.10748730857620774,
+      "wall_clock_s": 143.51057431400022
+    }
+  },
+  "wall_clock_s": 318.52551489700033,
+  "budget": {
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "lr_grid": [
+      0.001,
+      0.0003
+    ],
+    "max_epochs": 40,
+    "patience": 5,
+    "min_epochs": 10,
+    "batch_size": 256,
+    "weight_decay": 0.01
+  },
+  "budget_deviations": [],
+  "device": "cuda",
+  "git_sha": "cf1f9602a0b4ded4293befa9f07c218d4612be05",
+  "dataset_content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896"
+}
