@@ -11,7 +11,7 @@ to GitHub, so you only `git pull`. No logic lives in the notebooks.
 | `phase2_quality_metrics.ipynb` | the sanity harness of the four quality-metric families (A–D) | `mitdb-raw` |
 | `phase2_ptbxl_pretraining.ipynb` | PTB-XL preprocessing, pretraining, MIT-BIH fine-tuning, and from scratch for comparison | `mitdb-raw`, PTB-XL |
 | `phase3_cvae.ipynb`, `phase3_wgan_gp.ipynb` | generator pilots (`MODE = "pilot"`), or the chosen generator's full runs and banks (`MODE = "final"`) | `mitdb-raw` |
-| `phase4_augmentation_policy.ipynb` | the four augmentation policies with both frozen banks | `mitdb-raw`, banks |
+| `phase4_augmentation_policy.ipynb` | the four augmentation policies with both frozen banks, seeds 0-2; run all four in one session (they share one reference run) | `mitdb-raw`, banks |
 | `phase4_full_grid.ipynb` | the full grid; resumable across sessions | `mitdb-raw`, banks |
 | `phase4_leakage_audit.ipynb` | the leakage audit, only after the final evaluation (`CONFIRM_AUDIT = True`) | `mitdb-raw`, audit banks for `PART = "classifiers"` |
 | `phase5_explainability.ipynb`, `phase5_clinical_notes.ipynb` | saliency methods and note generators on the phase 4 models | `mitdb-raw`, artifacts (checkpoints) |
@@ -42,7 +42,7 @@ in each notebook's Output.
 | `REPRESENTATION` | phase 2-4 | preview only: which phase1_input_representation letter to use (`""` = the phase 1 gate report's winner) |
 | `MODE` | phase 3 | `"pilot"` (seeds 0 and 1, for the phase 3a gate) or `"final"` (the chosen variant, seeds 0-2, banks) |
 | `BANKS_DATASET_DIR` | phase 4 | the attached artifacts dataset holding the banks |
-| `PREVIEW_BANKS` | phase 4 policy | preview only: which banks to use, e.g. `{"cvae": "phase3_cvae-A", "wgan_gp": "phase3_wgan_gp-B"}` |
+| `PREVIEW_BANKS` | phase 4 policy | preview only: which banks to use, e.g. `{"cvae": "phase3_cvae-D", "wgan_gp": "phase3_wgan_gp-A"}` |
 | `ARTIFACTS_DIR` | phase 5 | the attached artifacts dataset holding the grid's weights |
 
 The note variants B-D call an LLM: add a Kaggle secret named `LLM_API_KEY` and tick it for the

@@ -255,7 +255,7 @@ quality table, training curves, failure-mode figure.
 
 **Goal:** complete validation-level grid, then a single test evaluation with pre-registered statistics.
 
-### phase4_augmentation_policy — Augmentation policy variants (pilot Days 16–17: `cnn`, seed 0, both banks)
+### phase4_augmentation_policy — Augmentation policy variants (pilot: `cnn`, seeds 0–2, both banks; DECISIONS A19)
 
 | Variant | Definition |
 |---|---|
@@ -264,8 +264,8 @@ quality table, training curves, failure-mode figure.
 | C | Add a fixed multiple of the real minority count. |
 | D | As B, but quality-screened: keep the best synthetic beats by DTW to real training beats. |
 
-**Selection:** validation primary metric, with N recall drop ≤ 0.01 versus no augmentation; tie →
-simpler. The chosen policy gets three pre-registered strengths (low / medium / high), e.g. fractions
+**Selection:** validation primary metric, with N recall drop ≤ 0.01 versus no augmentation; ties within
+max(0.02, pooled SD) → V F1, then simpler. The chosen policy gets three pre-registered strengths (low / medium / high), e.g. fractions
 {0.1, 0.25, 0.5} for B, or multiples {1×, 2×, 4×} for C. The chosen policy and strengths apply
 identically to SMOTE and to random oversampling.
 

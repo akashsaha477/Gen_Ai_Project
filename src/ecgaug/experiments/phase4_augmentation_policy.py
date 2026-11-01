@@ -3,7 +3,7 @@
 Usage:
     python -m ecgaug.experiments.phase4_augmentation_policy --config configs/phase4_augmentation_policy/B_fraction_of_n.yaml
     python -m ecgaug.experiments.phase4_augmentation_policy --config ... --smoke
-    add --preview [--bank cvae=phase3_cvae-A --bank wgan_gp=phase3_wgan_gp-B] to run before the gates
+    add --preview [--bank cvae=phase3_cvae-D --bank wgan_gp=phase3_wgan_gp-A] to run before the gates
 
 | variant | policy |
 |---|---|
@@ -12,13 +12,14 @@ Usage:
 | C | a fixed multiple of each minority class's real count added |
 | D | as B, quality-screened: of twice as many bank beats, keep those closest to real beats by DTW |
 
-The pilot (Days 16-17) trains the ``cnn`` with seed 0 once per frozen bank (cVAE and WGAN-GP) at the
-variant's pilot strength, plus one reference run without augmentation that every variant shares. A
-variant's score is the mean over the two banks of the validation selection metric. At the phase 4a
-gate, variants that lower validation N recall by more than 0.01 against the reference are out; the
-best of the rest wins, and ties within the 0.02 margin go to the simpler policy. The winner's three
-pre-registered strengths then define the full grid. Runs go through the grid runner, so they are
-logged and resumable like grid cells.
+The pilot trains the ``cnn`` on the grid seeds, once per frozen bank (cVAE and WGAN-GP) at the variant's
+pilot strength, plus one reference run per seed without augmentation that every variant shares.
+Classifier seed s uses bank seed s. A seed's score is the mean over the two banks of the validation
+selection metric, and a variant's score is the mean over seeds. At the phase 4a gate, variants that
+lower validation N recall by more than 0.01 against the reference are out; the best of the rest wins,
+and ties within max(0.02, pooled SD) go to V F1, then to the simpler policy (DECISIONS A19). The
+winner's three pre-registered strengths then define the full grid. Runs go through the grid runner,
+so they are logged and resumable like grid cells.
 
 Official runs need the phase 1, phase 2 and phase 3 gates. The test set is never read.
 """
@@ -33,7 +34,7 @@ import numpy as np
 import yaml
 
 from ecgaug import paths, runs, workflow
-from ecgaug.experiments.common import PreconditionError, check_preconditions
+from ecgaug.experiments.common import PreconditionError, check_preconditions, mean_sd
 from ecgaug.experiments.data_source import DataSource, load_data, smoke_data
 from ecgaug.generators.bank import BankError
 from ecgaug.grid import runner as grid_runner
@@ -42,7 +43,7 @@ from ecgaug.train.loop import resolve_device
 
 EXPERIMENT = PHASE4_AUGMENTATION_POLICY
 VARIANT_KEYS = {"base", "variant", "description", "policy", "pilot_strength", "grid_strengths", "complexity"}
-SHARED_KEYS = {"experiment", "classifier", "seed", "banks", "max_n_recall_drop", "preview_classifier"}
+SHARED_KEYS = {"experiment", "classifier", "seeds", "banks", "max_n_recall_drop", "preview_classifier"}
 REFERENCE_GRID = "reference_none"
 
 
@@ -69,7 +70,7 @@ def classifier_spec(cfg: dict, preview: bool) -> tuple[object, str | None]:
 
 def pilot_grids(cfg: dict, classifier: object, banks: dict[str, str]) -> tuple[dict, dict]:
     """The variant's pilot as a grid (one cell per bank) and the shared reference grid (no augmentation)."""
-    base = {"experiment": EXPERIMENT, "seeds": [int(cfg["seed"])], "architectures": {cfg["classifier"]: classifier}}
+    base = {"experiment": EXPERIMENT, "seeds": [int(s) for s in cfg["seeds"]], "architectures": {cfg["classifier"]: classifier}}
     strengths = [] if cfg["pilot_strength"] is None else [float(cfg["pilot_strength"])]
     pilot = {**base, "name": cfg["config_name"], "variant": cfg["variant"], "policy": cfg["policy"], "file": f"configs/{EXPERIMENT}/{cfg['config_name']}.yaml",
              "conditions": {family: {"bank": bank, "strengths": strengths} for family, bank in banks.items()}}  # fmt: skip
@@ -94,18 +95,21 @@ def run_variant(cfg: dict, split, data: DataSource, device_name: str | None, pre
     per_bank = {}
     for family in banks:
         cell = summary[(family, strength, arch)]
-        per_bank[family] = {"bank": cell["bank"], "selection_value": cell["mean"], "tie_break_value": cell["tie_break_mean"],
+        per_bank[family] = {"bank": cell["bank"], "selection_value": cell["mean"], "selection_sd": cell["sd"], "per_seed": cell["values"],
+                            "tie_break_value": cell["tie_break_mean"], "tie_break_drop": ref["tie_break_mean"] - cell["tie_break_mean"],
                             "n_recall": cell["n_recall"], "n_recall_drop": ref["n_recall"] - cell["n_recall"], "run_ids": cell["run_ids"]}  # fmt: skip
-    mean = float(np.mean([b["selection_value"] for b in per_bank.values()]))
+    cells = [summary[(family, strength, arch)] for family in banks]
+    mean, sd = mean_sd(np.mean([c["values"] for c in cells], axis=0))  # per seed: the mean over the banks
+    tie_mean, tie_sd = mean_sd(np.mean([c["tie_break_values"] for c in cells], axis=0))
     drop = float(np.mean([b["n_recall_drop"] for b in per_bank.values()]))
     result = {
         "experiment": EXPERIMENT, "variant": cfg["variant"], "description": cfg["description"], "policy": cfg["policy"],
         "pilot_strength": cfg["pilot_strength"], "grid_strengths": cfg["grid_strengths"], "complexity": cfg["complexity"],
-        "classifier": cfg["classifier"], "seed": cfg["seed"], "per_bank": per_bank, "mean": mean, "sd": 0.0,
-        "tie_break_mean": float(np.mean([b["tie_break_value"] for b in per_bank.values()])), "tie_break_sd": 0.0,
-        "reference": {"run_ids": ref["run_ids"], "selection_value": ref["mean"], "n_recall": ref["n_recall"]},
+        "classifier": cfg["classifier"], "seeds": cfg["seeds"], "per_bank": per_bank, "mean": mean, "sd": sd,
+        "tie_break_mean": tie_mean, "tie_break_sd": tie_sd,
+        "reference": {"run_ids": ref["run_ids"], "selection_value": ref["mean"], "tie_break_value": ref["tie_break_mean"], "n_recall": ref["n_recall"]},
         "constraint": {"max_n_recall_drop": cfg["max_n_recall_drop"], "n_recall_drop": drop, "passed": bool(drop <= cfg["max_n_recall_drop"])},
-        "note": "one seed: the tie margin is the 0.02 floor", "provisional": bool(reasons), "provisional_reasons": reasons,
+        "provisional": bool(reasons), "provisional_reasons": reasons,
         "split": {"name": split.name, "val": list(split.val)}, "selection_metric": split.selection_metric, "dataset": data.info,
         "git_sha": runs.git_sha(),
     }  # fmt: skip
@@ -121,7 +125,7 @@ def smoke(cfg: dict) -> dict:
     from ecgaug.generators.bank import bank_counts, export_bank
     from ecgaug.generators.base import training_beats
 
-    small = {**cfg, "preview_classifier": {**cfg["preview_classifier"], "max_epochs": 1}}
+    small = {**cfg, "seeds": [0], "preview_classifier": {**cfg["preview_classifier"], "max_epochs": 1}}
     with smoke_data() as (split, data):
         train = training_beats(data.arrays)
         fake = augment.random_oversample(train, bank_counts(train["y"]), seed=0)  # sized like a real bank
@@ -141,7 +145,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--smoke", action="store_true", help="end-to-end run on fake data in a temp directory")
     parser.add_argument("--preview", action="store_true", help="run before the gates; results are marked provisional")
     parser.add_argument("--representation", default=None, help="preview only: the phase1_input_representation variant letter")
-    parser.add_argument("--bank", action="append", default=[], metavar="FAMILY=GENERATOR_ID", help="preview only: a bank to use, e.g. cvae=phase3_cvae-A")
+    parser.add_argument("--bank", action="append", default=[], metavar="FAMILY=GENERATOR_ID", help="preview only: a bank to use, e.g. cvae=phase3_cvae-D")
     args = parser.parse_args(argv)
     cfg = load_config(Path(args.config))
     if args.smoke:

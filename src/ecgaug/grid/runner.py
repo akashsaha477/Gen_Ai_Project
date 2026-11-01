@@ -280,6 +280,7 @@ def summarize(grid: dict) -> dict[tuple, dict]:
         mean, sd = mean_sd([r["selection_value"] for r in rows])
         tie_mean, tie_sd = mean_sd([r["tie_break_value"] for r in rows])
         out[key] = {"seeds": [r["seed"] for r in rows], "run_ids": [r["run_id"] for r in rows], "mean": mean, "sd": sd,
+                    "values": [r["selection_value"] for r in rows], "tie_break_values": [r["tie_break_value"] for r in rows],
                     "tie_break_mean": tie_mean, "tie_break_sd": tie_sd, "n_recall": float(np.mean([r["n_recall"] for r in rows])),
                     "provisional": any(r.get("provisional") for r in rows), "bank": rows[0].get("bank")}  # fmt: skip
     return out

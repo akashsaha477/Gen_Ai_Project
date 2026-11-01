@@ -63,6 +63,7 @@ def _shrink() -> None:
         c.update(beats_per_class=12, synthetic_beats_per_class=12, random_orders=2)
         c["method_settings"].update(ig_steps=4, smoothgrad_samples=3)
 
+    _edit("phase4_augmentation_policy/pilot_settings.yaml", lambda c: c.update(seeds=[0, 1]))  # the banks exist for final_seeds only
     _edit("phase5_explainability/shared_settings.yaml", explain)
     _edit("phase5_clinical_notes/shared_settings.yaml", lambda c: c.update(n_cases=12, min_low_confidence=2))
     _edit("phase5_clinical_notes/shared_settings.yaml", lambda c: c["method_settings"].update(ig_steps=4))

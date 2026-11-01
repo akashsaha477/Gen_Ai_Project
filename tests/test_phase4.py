@@ -14,6 +14,7 @@ from ecgaug import augment, final_eval, paths, runs, workflow
 from ecgaug.data.counts import count_record
 from ecgaug.data.records import CLASS_INDEX, DS1
 from ecgaug.experiments import phase4_augmentation_policy as policy
+from ecgaug.experiments.data_source import smoke_data
 from ecgaug.generators.bank import bank_counts, export_bank
 from ecgaug.generators.base import training_beats
 from ecgaug.grid import runner as grid_runner
@@ -73,12 +74,13 @@ def _manifest(**entries):
     path.write_text(json.dumps({**current, **entries}))
 
 
-def _policy_result(letter, mean, drop, complexity, provisional=False):
+def _policy_result(letter, mean, drop, complexity, provisional=False, sd=0.0, bank_drops=(0.0, 0.0)):
     cfg = policy.load_config(variant_config(paths.configs_dir() / "phase4_augmentation_policy", letter))
     result = {
         "experiment": "phase4_augmentation_policy", "variant": letter, "policy": cfg["policy"], "pilot_strength": cfg["pilot_strength"],
-        "grid_strengths": cfg["grid_strengths"], "complexity": complexity, "classifier": "cnn", "seed": 0, "mean": mean, "sd": 0.0,
-        "tie_break_mean": 0.5, "tie_break_sd": 0.0, "per_bank": {"cvae": {"bank": "b1", "selection_value": mean}, "wgan_gp": {"bank": "b2", "selection_value": mean}},
+        "grid_strengths": cfg["grid_strengths"], "complexity": complexity, "classifier": "cnn", "seeds": [0, 1, 2], "mean": mean, "sd": sd,
+        "tie_break_mean": 0.5, "tie_break_sd": 0.0, "per_bank": {"cvae": {"bank": "b1", "selection_value": mean, "n_recall_drop": bank_drops[0], "tie_break_drop": 0.1},
+                                                       "wgan_gp": {"bank": "b2", "selection_value": mean, "n_recall_drop": bank_drops[1], "tie_break_drop": 0.0}},
         "reference": {"run_ids": ["ref"], "selection_value": 0.2, "n_recall": 0.97}, "dataset": {"content_sha256": "d"},
         "constraint": {"max_n_recall_drop": 0.01, "n_recall_drop": drop, "passed": drop <= 0.01}, "provisional": provisional,
         "selection_metric": "s_f1",
@@ -101,6 +103,45 @@ def test_phase4a_gate_applies_the_n_recall_limit_and_writes_the_full_grid(projec
     assert len(grid_runner.cells(grid)) == (1 + 5 * 3) * 2 * 3  # 96 runs at 3 seeds (PLAN Phase 4)
     with pytest.raises(workflow.GateError, match="already approved"):
         workflow.approve_phase4a_gate(["Ann"])
+
+
+def test_phase4a_gate_uses_the_seed_spread_as_tie_margin(project):
+    # 0.05 apart: not tied at the 0.02 floor, tied once the seeds spread by 0.08, so the simpler policy wins
+    for sd, winner in ((0.0, "B"), (0.08, "A")):
+        for letter, mean, complexity in (("A", 0.40, 1), ("B", 0.45, 2), ("C", 0.30, 2), ("D", 0.30, 3)):
+            _policy_result(letter, mean, 0.0, complexity, sd=sd)
+        assert workflow.evaluate_phase4a_gate()["winner"] == winner
+
+
+def test_phase4a_report_flags_a_bank_the_average_hides(project):
+    for letter in "ABCD":
+        _policy_result(letter, 0.4, 0.002, 1, bank_drops=(-0.011, 0.015) if letter == "B" else (0.0, 0.0))
+    gate = workflow.evaluate_phase4a_gate()
+    assert "B" not in gate["excluded"]  # the rule is the average over the banks
+    assert "B with wgan_gp (+0.0150)" in workflow.phase4a_gate_markdown(gate)
+
+
+def test_policy_pilot_runs_every_seed():
+    cfg = policy.load_config(variant_config(POLICIES, "B"))
+    assert cfg["seeds"] == [0, 1, 2]
+    pilot, reference = policy.pilot_grids(cfg, "phase2_gate", {"cvae": "b1", "wgan_gp": "b2"})
+    assert len(grid_runner.cells(pilot)) == 6 and len(grid_runner.cells(reference)) == 3
+
+
+def test_policy_score_is_the_seed_mean_of_the_bank_mean():
+    cfg = policy.load_config(variant_config(POLICIES, "C"))
+    small = {**cfg, "seeds": [0, 1], "preview_classifier": {**cfg["preview_classifier"], "max_epochs": 1}}
+    with smoke_data() as (split, data):
+        train = training_beats(data.arrays)
+        fake = augment.random_oversample(train, bank_counts(train["y"]), seed=0)
+        fake["is_synthetic"][:] = True
+        for name in ("b1", "b2"):
+            for seed in (0, 1):
+                export_bank(fake, name, seed, {"train_only_check": "passed"})
+        result = policy.run_variant(small, split, data, "cpu", True, ["test"], {"cvae": "b1", "wgan_gp": "b2"})
+    per_seed = np.mean([result["per_bank"][k]["per_seed"] for k in ("cvae", "wgan_gp")], axis=0)
+    assert result["mean"] == pytest.approx(per_seed.mean()) and result["sd"] == pytest.approx(per_seed.std(ddof=1))
+    assert len(result["reference"]["run_ids"]) == 2
 
 
 def test_phase4a_gate_refuses_previews(project):

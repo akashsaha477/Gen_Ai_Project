@@ -539,3 +539,33 @@ Next: the team approves the phase 2 gate; then the phase 3 pilots on Kaggle.
 Later the same day: the phase 2 gate was approved ("approve gate 2", Akash Saha) and recorded in
 `results/manifest.json` and DECISIONS: cnn = A, rnn = C, composite dtw + spectral. PREREGISTRATION v2 committed and
 tagged `prereg-v2`. Next: the phase 3 pilots on Kaggle (`phase3_cvae`, `phase3_wgan_gp`, `MODE = "pilot"`).
+
+## 2026-11-02 (Day 27) — Phase 3 pilots reviewed; phase 4 adjusted
+
+All 8 phase 3 pilots are in `main` (18 runs, no source, config or doc change between the run commits). Gate report
+written: `results/phase3a_gate/report.md`, figure `figures/phase3a_gate/variants.png`. Status: PENDING APPROVAL.
+
+Pilot results (validation S F1, mean ± SD over generator seeds 0 and 1, classifier seed 0; no-augmentation cnn: 0.3486
+over 3 seeds, 0.2980 at seed 0):
+- cVAE: D 0.4854 ± 0.0392, A 0.3961 ± 0.1010, C 0.3868 ± 0.0622, B (beta 0.1) 0.3685 ± 0.0711. By rule: D.
+- WGAN-GP: D 0.4680 ± 0.0453, A 0.4310 ± 0.1090, B 0.4241 ± 0.0481, C 0.3664 ± 0.0371 (fails: S diversity 0.551). A, B
+  and D tie; A and B tie on quality rank; A has fewer parameters. By rule: A.
+
+Worth carrying forward:
+- V F1 falls with cVAE D (0.679 to 0.542) and holds with WGAN-GP A (0.675). Selection does not read V F1.
+- C2ST is at least 0.876 for every class of every variant: all synthetic beats are easy to tell from real ones.
+- F F1 stays between 0 and 0.129; validation holds only 27 F beats.
+- cVAE D's lowest diversity is 0.720, just above the 0.7 floor. Check it again on the 20,000-step banks.
+- Variant notes are still empty templates, and the real-versus-synthetic sample figures were not committed; they
+  should be in the teammates' Kaggle zips.
+
+Phase 4 changed from these results before any policy run (DECISIONS A19, pending team confirmation): three seeds and
+the general tie margin in the policy pilot; per-bank N recall and V F1 in the gate reports; all policies in one session.
+
+Run-time estimates from the measured pilots and baselines: final runs about 2 GPU-hours in total (cVAE D about 0.8,
+WGAN-GP A about 1.2); policy pilot under 1 hour; full grid at 3 seeds about 2 GPU-hours. These are estimates, not runs.
+
+Report for the team: phases 1 to 3 summary with architecture diagrams, (shared with the team separately)
+
+Next: the team approves the phase 3a gate; then the final runs (`MODE = "final"`), one notebook per family.
+
