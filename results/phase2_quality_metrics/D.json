@@ -1,0 +1,291 @@
+{
+  "experiment": "phase2_quality_metrics",
+  "variant": "D",
+  "description": "TSTR: validation selection metric with the real minority training beats replaced by synthetic ones, relative to train-on-real.",
+  "family": "tstr",
+  "higher_is_better": true,
+  "scores": {
+    "reference:0": {
+      "kind": "reference",
+      "level": 0,
+      "severity": 0,
+      "values": [
+        NaN,
+        NaN,
+        NaN
+      ],
+      "mean": NaN,
+      "sd": NaN,
+      "cv": NaN
+    },
+    "noise:0.1": {
+      "kind": "noise",
+      "level": 0.1,
+      "severity": 1,
+      "values": [
+        NaN,
+        NaN,
+        NaN
+      ],
+      "mean": NaN,
+      "sd": NaN,
+      "cv": NaN
+    },
+    "noise:0.3": {
+      "kind": "noise",
+      "level": 0.3,
+      "severity": 2,
+      "values": [
+        NaN,
+        NaN,
+        NaN
+      ],
+      "mean": NaN,
+      "sd": NaN,
+      "cv": NaN
+    },
+    "noise:1": {
+      "kind": "noise",
+      "level": 1.0,
+      "severity": 3,
+      "values": [
+        NaN,
+        NaN,
+        NaN
+      ],
+      "mean": NaN,
+      "sd": NaN,
+      "cv": NaN
+    },
+    "label_shuffle:0.25": {
+      "kind": "label_shuffle",
+      "level": 0.25,
+      "severity": 1,
+      "values": [
+        NaN,
+        NaN,
+        NaN
+      ],
+      "mean": NaN,
+      "sd": NaN,
+      "cv": NaN
+    },
+    "label_shuffle:0.5": {
+      "kind": "label_shuffle",
+      "level": 0.5,
+      "severity": 2,
+      "values": [
+        NaN,
+        NaN,
+        NaN
+      ],
+      "mean": NaN,
+      "sd": NaN,
+      "cv": NaN
+    },
+    "label_shuffle:1": {
+      "kind": "label_shuffle",
+      "level": 1.0,
+      "severity": 3,
+      "values": [
+        NaN,
+        NaN,
+        NaN
+      ],
+      "mean": NaN,
+      "sd": NaN,
+      "cv": NaN
+    },
+    "time_shift:5": {
+      "kind": "time_shift",
+      "level": 5,
+      "severity": 1,
+      "values": [
+        NaN,
+        NaN,
+        NaN
+      ],
+      "mean": NaN,
+      "sd": NaN,
+      "cv": NaN
+    },
+    "time_shift:15": {
+      "kind": "time_shift",
+      "level": 15,
+      "severity": 2,
+      "values": [
+        NaN,
+        NaN,
+        NaN
+      ],
+      "mean": NaN,
+      "sd": NaN,
+      "cv": NaN
+    },
+    "time_shift:40": {
+      "kind": "time_shift",
+      "level": 40,
+      "severity": 3,
+      "values": [
+        NaN,
+        NaN,
+        NaN
+      ],
+      "mean": NaN,
+      "sd": NaN,
+      "cv": NaN
+    },
+    "smoothing:3": {
+      "kind": "smoothing",
+      "level": 3,
+      "severity": 1,
+      "values": [
+        NaN,
+        NaN,
+        NaN
+      ],
+      "mean": NaN,
+      "sd": NaN,
+      "cv": NaN
+    },
+    "smoothing:9": {
+      "kind": "smoothing",
+      "level": 9,
+      "severity": 2,
+      "values": [
+        NaN,
+        NaN,
+        NaN
+      ],
+      "mean": NaN,
+      "sd": NaN,
+      "cv": NaN
+    },
+    "smoothing:27": {
+      "kind": "smoothing",
+      "level": 27,
+      "severity": 3,
+      "values": [
+        NaN,
+        NaN,
+        NaN
+      ],
+      "mean": NaN,
+      "sd": NaN,
+      "cv": NaN
+    }
+  },
+  "spearman": {
+    "noise": NaN,
+    "label_shuffle": NaN,
+    "time_shift": NaN,
+    "smoothing": NaN
+  },
+  "reference_best": false,
+  "median_cv": NaN,
+  "checks": [
+    {
+      "check": "the unchanged held-out beats score best",
+      "passed": false
+    },
+    {
+      "check": "noise: worse with severity (Spearman nan >= 0.8)",
+      "passed": false
+    },
+    {
+      "check": "label_shuffle: worse with severity (Spearman nan >= 0.8)",
+      "passed": false
+    },
+    {
+      "check": "time_shift: worse with severity (Spearman nan >= 0.8)",
+      "passed": false
+    },
+    {
+      "check": "smoothing: worse with severity (Spearman nan >= 0.8)",
+      "passed": false
+    },
+    {
+      "check": "stable over 3 resamples (median CV nan < 0.1)",
+      "passed": false
+    }
+  ],
+  "passed": false,
+  "provisional": false,
+  "provisional_reasons": [],
+  "dataset": {
+    "source": "rebuilt from the raw records (C_short_window_rr_features) and checked against the frozen hash",
+    "representation": "C_short_window_rr_features",
+    "content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896",
+    "frozen": true
+  },
+  "split": {
+    "name": "V1",
+    "val": [
+      115,
+      118,
+      201,
+      205,
+      223
+    ]
+  },
+  "selection_metric": "s_f1",
+  "settings": {
+    "resamples": 3,
+    "degradations": {
+      "noise": [
+        0.1,
+        0.3,
+        1.0
+      ],
+      "label_shuffle": [
+        0.25,
+        0.5,
+        1.0
+      ],
+      "time_shift": [
+        5,
+        15,
+        40
+      ],
+      "smoothing": [
+        3,
+        9,
+        27
+      ]
+    },
+    "pass_rule": {
+      "spearman_min": 0.8,
+      "cv_max": 0.1
+    },
+    "metrics": {
+      "dtw_max_beats": 200,
+      "dtw_candidates": 20,
+      "dtw_neighbours": 5,
+      "dtw_window_fraction": 0.1,
+      "spectral_nperseg": 64,
+      "fid_max_beats": 1000,
+      "tstr_classifier": {
+        "model": {
+          "name": "probe_cnn",
+          "channels": [
+            16,
+            32,
+            64
+          ],
+          "kernel": 7,
+          "side_hidden": 16
+        },
+        "lr": 0.001,
+        "max_epochs": 10,
+        "patience": 3,
+        "batch_size": 256,
+        "weight_decay": 0.01,
+        "seed": 0
+      }
+    }
+  },
+  "feature_net": null,
+  "wall_clock_s": 14.331897290999677,
+  "device": "cuda",
+  "git_sha": "7f0beaad53fe558e987502545060efacf46cd615"
+}
