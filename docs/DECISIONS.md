@@ -198,3 +198,7 @@ Choices where PLAN Phase 4 and PAPER_TRACK RQ3 leave the detail open:
   DOI or publisher page, or an institutional repository record (named above each entry), because the
   container cannot reach doi.org or arxiv.org directly (this deviates from A14.15's "from its DOI or
   arXiv page" for 9 entries). Fields no page confirmed (some DOIs, issue and article numbers) are left out.
+
+## the phase 2 gate — 2026-11-01 — status: APPROVED by Akash Saha
+phase2_baseline_classifiers: cnn = variant A, rnn = variant C; phase2_quality_metrics: composite = dtw, spectral — evidence: results/phase2_gate/report.md — rule: PLAN Phase 2, PREREGISTRATION §4
+Frozen artifacts (hashes): checkpoints and feature network, see results/manifest.json

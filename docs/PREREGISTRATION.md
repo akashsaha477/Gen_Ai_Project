@@ -1,6 +1,6 @@
 # PREREGISTRATION
 
-**Version:** 1
+**Version:** 2 (committed 2026-11-01 at the phase 2 gate, see §10)
 **Status:** reference document (not enforced by code since 2026-10-13)
 **Drafted:** 2026-10-08 (Day 2)
 
@@ -181,6 +181,17 @@ team commits it in the version named above:
 | low-confidence rule (phase 5) | top probability below 0.6 | `configs/phase5_clinical_notes/shared_settings.yaml` |
 | explainability evaluation set (phase 5) | 200 validation beats per class (all if fewer), seed 0 | `configs/phase5_explainability/shared_settings.yaml` |
 
+**v2, committed 2026-11-01 at the phase 2 gate, before any official phase 3 run:**
+
+| item | rule |
+|---|---|
+| composite quality metric | equal-weight average of the ranks of DTW and spectral, the families that passed the sanity harness (`results/phase2_gate/report.md`) |
+| excluded families | FID-analog (median CV 0.126, limit 0.10). TSTR (never scored: its fixed recipe gives S F1 = 0 on real beats, so every score is NaN; fails by the rule, recipe unchanged, DECISIONS A15.1) |
+| diversity floor | 0.7 x real, every generated class and pilot seed |
+| memorization ceiling | 10%, threshold = 5th percentile of leave-one-out real distances |
+| class-weight exponents | gamma in {0.5, 0.75, 1} |
+| seeds | 3 (`final_seeds: [0, 1, 2]`; pilots use 0 and 1). 5 only if approved at the phase 3 gate (CLAUDE.md rule 8) |
+
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 
 ## 11. Deviations and amendments
@@ -188,3 +199,4 @@ Each version is committed before the experiments it governs, tagged `prereg-vK` 
 | date | section | change | reason | approved by |
 |---|---|---|---|---|
 | 2026-10-26 | §4 early stopping | `min_epochs: 10` for every MIT-BIH classifier from phase 2 on | 10 of 24 phase 1 runs stopped at epoch 6 on an all-N model (PHASE1_REPORT §6); fixed before any phase 2 run | Akash Saha (DECISIONS A15), pending team confirmation |
+| 2026-11-01 | §9 RQ3 | The separate TSTR analysis has no data: TSTR was not scored in the sanity harness and is not in the composite | Fixed recipe gives S F1 = 0 on real beats (PROGRESS 2026-11-01); to be stated in the paper | Akash Saha (phase 2 gate) |

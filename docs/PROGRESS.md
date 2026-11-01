@@ -535,3 +535,7 @@ Still open: variant notes are empty templates; A14-A18 are pending team confirma
 committed and tagged `prereg-v2` before any phase 3 run.
 
 Next: the team approves the phase 2 gate; then the phase 3 pilots on Kaggle.
+
+Later the same day: the phase 2 gate was approved ("approve gate 2", Akash Saha) and recorded in
+`results/manifest.json` and DECISIONS: cnn = A, rnn = C, composite dtw + spectral. PREREGISTRATION v2 committed and
+tagged `prereg-v2`. Next: the phase 3 pilots on Kaggle (`phase3_cvae`, `phase3_wgan_gp`, `MODE = "pilot"`).
