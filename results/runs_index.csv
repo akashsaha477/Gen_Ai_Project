@@ -87,3 +87,5 @@ phase3_cvae-C-s0-9beed2a-202611011100,3,phase3_cvae,C,,0,done,s_f1,0.43076923076
 phase3_cvae-C-s1-9beed2a-202611011103,3,phase3_cvae,C,,1,done,s_f1,0.34275618374558303,0.17137809187279152,168.5,9beed2a,phase3_cvae/C_conv_spectral_loss/pilot
 phase3_cvae-D-s0-2b0adc2-202611011109,3,phase3_cvae,D,,0,done,s_f1,0.4576659038901602,0.2288329519450801,350.6,2b0adc2,phase3_cvae/D_residual_film/pilot
 phase3_cvae-D-s1-2b0adc2-202611011114,3,phase3_cvae,D,,1,done,s_f1,0.5130434782608696,0.32035152636447733,358.0,2b0adc2,phase3_cvae/D_residual_film/pilot
+phase3_wgan_gp-A-s0-24d512a-202611011502,3,phase3_wgan_gp,A,,0,done,s_f1,0.5080545229244114,0.2956939281288724,462.1,24d512a,phase3_wgan_gp/A_concat_embedding/pilot
+phase3_wgan_gp-A-s1-24d512a-202611011510,3,phase3_wgan_gp,A,,1,done,s_f1,0.35384615384615387,0.20496046010064703,444.4,24d512a,phase3_wgan_gp/A_concat_embedding/pilot
