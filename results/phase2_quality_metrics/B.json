@@ -1,0 +1,291 @@
+{
+  "experiment": "phase2_quality_metrics",
+  "variant": "B",
+  "description": "Spectral: Jensen-Shannon distance between class-mean normalised Welch spectra of real and synthetic beats.",
+  "family": "spectral",
+  "higher_is_better": false,
+  "scores": {
+    "reference:0": {
+      "kind": "reference",
+      "level": 0,
+      "severity": 0,
+      "values": [
+        0.014070635087336239,
+        0.01300901615122677,
+        0.012966343449876306
+      ],
+      "mean": 0.013348664896146438,
+      "sd": 0.0006256084698796156,
+      "cv": 0.046866744707946
+    },
+    "noise:0.1": {
+      "kind": "noise",
+      "level": 0.1,
+      "severity": 1,
+      "values": [
+        0.06095276427701205,
+        0.060618285837204654,
+        0.05554538226978489
+      ],
+      "mean": 0.0590388107946672,
+      "sd": 0.0030300166832082005,
+      "cv": 0.051322454541748545
+    },
+    "noise:0.3": {
+      "kind": "noise",
+      "level": 0.3,
+      "severity": 2,
+      "values": [
+        0.1896967236207903,
+        0.18907387370769926,
+        0.1844695284932124
+      ],
+      "mean": 0.18774670860723397,
+      "sd": 0.002855156322929314,
+      "cv": 0.01520749068843758
+    },
+    "noise:1": {
+      "kind": "noise",
+      "level": 1.0,
+      "severity": 3,
+      "values": [
+        0.5073422350099396,
+        0.5044987864257732,
+        0.5015372631265055
+      ],
+      "mean": 0.5044594281874061,
+      "sd": 0.002902686074149359,
+      "cv": 0.005754052579766663
+    },
+    "label_shuffle:0.25": {
+      "kind": "label_shuffle",
+      "level": 0.25,
+      "severity": 1,
+      "values": [
+        0.05590092484205092,
+        0.05650098752378605,
+        0.059394234261271404
+      ],
+      "mean": 0.057265382209036125,
+      "sd": 0.0018678937605582817,
+      "cv": 0.032618201232638235
+    },
+    "label_shuffle:0.5": {
+      "kind": "label_shuffle",
+      "level": 0.5,
+      "severity": 2,
+      "values": [
+        0.10462187157303814,
+        0.09316640341959913,
+        0.10873866649402782
+      ],
+      "mean": 0.1021756471622217,
+      "sd": 0.008069191701518777,
+      "cv": 0.07897372735704354
+    },
+    "label_shuffle:1": {
+      "kind": "label_shuffle",
+      "level": 1.0,
+      "severity": 3,
+      "values": [
+        0.20568458006790488,
+        0.19417338478924462,
+        0.20290314729138315
+      ],
+      "mean": 0.20092037071617755,
+      "sd": 0.006006284741522884,
+      "cv": 0.029893856556772094
+    },
+    "time_shift:5": {
+      "kind": "time_shift",
+      "level": 5,
+      "severity": 1,
+      "values": [
+        0.03740977136923004,
+        0.03898687835650916,
+        0.03831416630563784
+      ],
+      "mean": 0.03823693867712568,
+      "sd": 0.0007913846677093042,
+      "cv": 0.020696862643523575
+    },
+    "time_shift:15": {
+      "kind": "time_shift",
+      "level": 15,
+      "severity": 2,
+      "values": [
+        0.07930994057042386,
+        0.07701195311157753,
+        0.07947474321583615
+      ],
+      "mean": 0.07859887896594585,
+      "sd": 0.0013767861956130582,
+      "cv": 0.017516613642919406
+    },
+    "time_shift:40": {
+      "kind": "time_shift",
+      "level": 40,
+      "severity": 3,
+      "values": [
+        0.04772115365432119,
+        0.04880031233353944,
+        0.04926523550961869
+      ],
+      "mean": 0.04859556716582644,
+      "sd": 0.0007921411690734877,
+      "cv": 0.01630068780492679
+    },
+    "smoothing:3": {
+      "kind": "smoothing",
+      "level": 3,
+      "severity": 1,
+      "values": [
+        0.02434157263621876,
+        0.022000281475140816,
+        0.028925519549794245
+      ],
+      "mean": 0.02508912455371794,
+      "sd": 0.0035226206153480266,
+      "cv": 0.1404042858412934
+    },
+    "smoothing:9": {
+      "kind": "smoothing",
+      "level": 9,
+      "severity": 2,
+      "values": [
+        0.1294421775374408,
+        0.12725196409748477,
+        0.13152598397163873
+      ],
+      "mean": 0.12940670853552141,
+      "sd": 0.0021372306868325253,
+      "cv": 0.01651560966984851
+    },
+    "smoothing:27": {
+      "kind": "smoothing",
+      "level": 27,
+      "severity": 3,
+      "values": [
+        0.30120275393245705,
+        0.2981984686707608,
+        0.30111978986198346
+      ],
+      "mean": 0.30017367082173374,
+      "sd": 0.0017110781432049251,
+      "cv": 0.005700293894933561
+    }
+  },
+  "spearman": {
+    "noise": 1.0,
+    "label_shuffle": 1.0,
+    "time_shift": 0.8,
+    "smoothing": 1.0
+  },
+  "reference_best": true,
+  "median_cv": 0.01910673814322149,
+  "checks": [
+    {
+      "check": "the unchanged held-out beats score best",
+      "passed": true
+    },
+    {
+      "check": "noise: worse with severity (Spearman 1.00 >= 0.8)",
+      "passed": true
+    },
+    {
+      "check": "label_shuffle: worse with severity (Spearman 1.00 >= 0.8)",
+      "passed": true
+    },
+    {
+      "check": "time_shift: worse with severity (Spearman 0.80 >= 0.8)",
+      "passed": true
+    },
+    {
+      "check": "smoothing: worse with severity (Spearman 1.00 >= 0.8)",
+      "passed": true
+    },
+    {
+      "check": "stable over 3 resamples (median CV 0.019 < 0.1)",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "provisional": false,
+  "provisional_reasons": [],
+  "dataset": {
+    "source": "rebuilt from the raw records (C_short_window_rr_features) and checked against the frozen hash",
+    "representation": "C_short_window_rr_features",
+    "content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896",
+    "frozen": true
+  },
+  "split": {
+    "name": "V1",
+    "val": [
+      115,
+      118,
+      201,
+      205,
+      223
+    ]
+  },
+  "selection_metric": "s_f1",
+  "settings": {
+    "resamples": 3,
+    "degradations": {
+      "noise": [
+        0.1,
+        0.3,
+        1.0
+      ],
+      "label_shuffle": [
+        0.25,
+        0.5,
+        1.0
+      ],
+      "time_shift": [
+        5,
+        15,
+        40
+      ],
+      "smoothing": [
+        3,
+        9,
+        27
+      ]
+    },
+    "pass_rule": {
+      "spearman_min": 0.8,
+      "cv_max": 0.1
+    },
+    "metrics": {
+      "dtw_max_beats": 200,
+      "dtw_candidates": 20,
+      "dtw_neighbours": 5,
+      "dtw_window_fraction": 0.1,
+      "spectral_nperseg": 64,
+      "fid_max_beats": 1000,
+      "tstr_classifier": {
+        "model": {
+          "name": "probe_cnn",
+          "channels": [
+            16,
+            32,
+            64
+          ],
+          "kernel": 7,
+          "side_hidden": 16
+        },
+        "lr": 0.001,
+        "max_epochs": 10,
+        "patience": 3,
+        "batch_size": 256,
+        "weight_decay": 0.01,
+        "seed": 0
+      }
+    }
+  },
+  "feature_net": null,
+  "wall_clock_s": 0.9464751519999481,
+  "device": "cuda",
+  "git_sha": "1161fc4dba5655a51e7646be8e19f307445141c5"
+}
