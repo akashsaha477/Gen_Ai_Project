@@ -17,6 +17,9 @@ run python -m ecgaug.workflow status                           # where the proje
 # Phase 4: kaggle/phase4_augmentation_policy.ipynb; phase4a-gate (writes configs/phase4_full_grid/full_grid.yaml);
 #   kaggle/phase4_full_grid.ipynb until every cell is done (ingest the zips: they hold the checkpoints); phase4-gate;
 #   python -m ecgaug.final_eval --plan; ALLOW_TEST=1 python -m ecgaug.final_eval --confirm "run final eval"   (once)
+#   python -m ecgaug.eval.rq3   (RQ3, from the phase 3 checkpoints)
+#   optional, after the final evaluation: kaggle/phase4_leakage_audit.ipynb (ALLOW_TEST_AUDIT=1), then
+#   python -m ecgaug.experiments.phase4_leakage_audit --config configs/phase4_leakage_audit/audit.yaml --part report
 # Phase 5: python -m ecgaug.experiments.phase5_explainability --config configs/phase5_explainability/<variant>.yaml (A-D)
 #   python -m ecgaug.experiments.phase5_clinical_notes --config configs/phase5_clinical_notes/<variant>.yaml (A-D)
 #   python -m ecgaug.report.error_analysis [--test]; python -m ecgaug.workflow phase5-gate [--approve ...]; git tag v1.0

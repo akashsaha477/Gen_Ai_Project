@@ -163,3 +163,38 @@ Choices made where the plan left the detail open (each one needs the team's agre
 ## the phase 1 gate — 2026-10-26 — status: APPROVED by Akash Saha
 phase1_input_representation: winner C (C_short_window_rr_features) — evidence: results/phase1_gate/report.md — rule: PREREGISTRATION §4–5
 Frozen artifacts (hashes): data/processed/v1, see results/manifest.json
+
+## 2026-10-27 (Day 21) — A16: the leakage audit and the RQ3 analysis built — decided by Akash Saha, PENDING TEAM CONFIRMATION
+
+Choices where PLAN Phase 4 and PAPER_TRACK RQ3 leave the detail open:
+
+| ID | Choice | Why |
+|---|---|---|
+| A16.1 | Intra-patient split: DS1 and DS2 beats pooled; each class's beats assigned at random (seed 0) to train, validation and test with the inter-patient counts of each part. | Only the patient separation changes; data amount and class balance stay equal. |
+| A16.2 | The generator variants frozen at the phase 3 gate are retrained at their full budget on the intra-patient training beats, on the grid seeds (banks in `data/synthetic/audit/`). | "The same pipeline": a generator must not have seen the intra-patient test beats. |
+| A16.3 | Medium strength = the middle of the full grid's strengths for each generative condition (the upper of two); the phase 4a gate's policy; the cnn of the phase 2 gate; validation selection as in the approved split. | PLAN: "{none, cVAE, WGAN-GP} at medium strength, `cnn`, 3 seeds". |
+| A16.4 | Report: intra-patient test rare-class macro-F1 (mean and SD over seeds) beside the final evaluation's result for the same condition (at the strength the phase 4 gate chose); gain over none on each side; inflation = intra minus inter for none. | The final evaluation is not repeated; strengths are shown on both sides. |
+| A16.5 | DS2 for the audit is read with `ALLOW_TEST_AUDIT=1`, only after the final evaluation, from `data/processed/v1` or rebuilt from the raw records and checked against the frozen hash; every read is logged as `audit`. Audit runs and banks are refused by the final evaluation, the grid and the ingest before the final evaluation. | DECISIONS A4, A6. |
+| A16.6 | RQ3: Spearman's rho between each metric (the composite's families; diversity, memorization and C2ST averaged over S, V, F) and the pilot score across all checkpoints of the official pilot and final generator runs; 95% percentile interval from 2,000 resamples of runs; TSTR apart. The gain's zero is the phase 2 gate cnn's seed-0 run without synthetic beats (a constant shift, so rho is unchanged). | PREREGISTRATION §9, PAPER_TRACK RQ3. |
+
+## 2026-10-27 (Day 21) — A17: two fixes found by the dress rehearsal — decided by Akash Saha, PENDING TEAM CONFIRMATION
+
+- **A17.1** Selection rule: an undefined (NaN) tie-break value counts as "not given", like a missing one,
+  so the tie-break step is skipped and simplicity decides; the gate report prints the skipped step.
+  Before, the rule crashed. Seen with Grad-CAM, whose maps can be constant (stability undefined).
+- **A17.2** phase4_augmentation_policy run IDs carry the variant letter (`phase4_augmentation_policy-B.cnn.cvae_0.25-s0-...`);
+  before, variants B and D produced the same run ID for the same strength and seed.
+
+## 2026-10-27 (Day 21) — A18: the paper's text and references — decided by Akash Saha, PENDING TEAM CONFIRMATION
+
+- **A18.1** Results sentences, the abstract's results sentence and the hypothesis verdicts are generated
+  from the result files (`src/ecgaug/paper_text.py`). A difference is called an improvement only when its
+  Holm-adjusted p is below 0.05; otherwise "did not detectably change", with the interval. Verdicts:
+  H1 supported if any confirmatory comparison is a significant gain; H1c supported if, for one
+  architecture, the best generative condition significantly beats all three baselines (partly if some);
+  H1b, H2, H3 and H4 are exploratory and described as consistent, mixed or not consistent. No number or
+  outcome is written before the result exists.
+- **A18.2** `paper/refs.bib`: 29 entries verified on 2026-10-27 by web search of each entry's arXiv page,
+  DOI or publisher page, or an institutional repository record (named above each entry), because the
+  container cannot reach doi.org or arxiv.org directly (this deviates from A14.15's "from its DOI or
+  arXiv page" for 9 entries). Fields no page confirmed (some DOIs, issue and article numbers) are left out.

@@ -71,7 +71,7 @@ def pilot_grids(cfg: dict, classifier: object, banks: dict[str, str]) -> tuple[d
     """The variant's pilot as a grid (one cell per bank) and the shared reference grid (no augmentation)."""
     base = {"experiment": EXPERIMENT, "seeds": [int(cfg["seed"])], "architectures": {cfg["classifier"]: classifier}}
     strengths = [] if cfg["pilot_strength"] is None else [float(cfg["pilot_strength"])]
-    pilot = {**base, "name": cfg["config_name"], "policy": cfg["policy"], "file": f"configs/{EXPERIMENT}/{cfg['config_name']}.yaml",
+    pilot = {**base, "name": cfg["config_name"], "variant": cfg["variant"], "policy": cfg["policy"], "file": f"configs/{EXPERIMENT}/{cfg['config_name']}.yaml",
              "conditions": {family: {"bank": bank, "strengths": strengths} for family, bank in banks.items()}}  # fmt: skip
     reference = {**base, "name": REFERENCE_GRID, "policy": {"kind": "fraction_of_n"}, "file": "reference", "conditions": {"none": {}}}
     return pilot, reference
@@ -130,6 +130,7 @@ def smoke(cfg: dict) -> dict:
             export_bank(fake, name, 0, {"train_only_check": "passed"})
         result = run_variant(small, split, data, "cpu", True, [data.provisional], {"cvae": "smoke_cvae", "wgan_gp": "smoke_wgan_gp"})
         return {"variant": result["variant"], "policy": result["policy"]["kind"], "banks": sorted(result["per_bank"]),
+                "run_ids": sorted(r for b in result["per_bank"].values() for r in b["run_ids"]),
                 "constraint_evaluated": "passed" in result["constraint"], "note": "fake data; the numbers mean nothing"}  # fmt: skip
 
 

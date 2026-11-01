@@ -25,7 +25,7 @@ REPO = Path(__file__).resolve().parents[1]
 # Kept in step with ecgaug.names (this script runs before the package is installed; a test checks it).
 EXPERIMENTS = (
     "phase1_input_representation", "phase2_baseline_classifiers", "phase2_quality_metrics", "phase2_ptbxl_pretraining",
-    "phase3_cvae", "phase3_wgan_gp", "phase4_augmentation_policy", "phase5_explainability", "phase5_clinical_notes",
+    "phase3_cvae", "phase3_wgan_gp", "phase4_augmentation_policy", "phase4_leakage_audit", "phase5_explainability", "phase5_clinical_notes",
 )  # fmt: skip
 RESULT_FOLDERS = (*EXPERIMENTS, "phase4_full_grid")  # every experiment's results, plus the full grid's ledger
 EXTRA_RESULT_FILES = ("results/phase2_ptbxl_data/ptbxl_preprocessing.json",)
@@ -137,12 +137,13 @@ def setup_artifacts(artifacts_dir: str, repo: Path = REPO) -> list[str]:
     checks banks and checkpoints against their recorded SHA-256 before using them."""
     copied = []
     for meta in sorted(Path(artifacts_dir).rglob("bank.json")):
-        target = repo / BANKS / meta.parent.name
+        name = Path("audit", meta.parent.name) if meta.parent.parent.name == "audit" else Path(meta.parent.name)  # audit banks stay apart
+        target = repo / BANKS / name
         target.mkdir(parents=True, exist_ok=True)
         for path in sorted(p for p in meta.parent.iterdir() if p.is_file()):
             if not (target / path.name).exists():
                 shutil.copy2(path, target / path.name)
-                copied.append(f"{BANKS}/{meta.parent.name}/{path.name}")
+                copied.append(f"{BANKS}/{name.as_posix()}/{path.name}")
     for runs_root in sorted(p for p in Path(artifacts_dir).rglob("runs") if p.is_dir()):
         for path in sorted(p for p in runs_root.rglob("*") if p.is_file()):
             target = repo / "runs" / path.relative_to(runs_root)

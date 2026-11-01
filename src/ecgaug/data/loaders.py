@@ -37,3 +37,18 @@ def load_test(version: str = "v1", run_ids: str = "", approved_by: str = "") -> 
     arrays = _load(paths.processed_dir() / version, TEST_FILE)
     log_test_access("evaluation", f"load_test('{version}')", run_ids=run_ids, approved_by=approved_by)
     return arrays
+
+
+def load_test_for_audit(version: str = "v1", purpose: str = "") -> dict[str, np.ndarray] | None:
+    """Test arrays for the leakage audit (``ALLOW_TEST_AUDIT=1``, logged); None where the file is not on disk."""
+    require_test_access("audit")
+    if not (paths.processed_dir() / version / TEST_FILE).is_file():
+        return None
+    arrays = _load(paths.processed_dir() / version, TEST_FILE)
+    log_test_access("audit", f"{purpose} (data/processed/{version})")
+    return arrays
+
+
+def frozen_test_sha256(files: dict) -> str:
+    """The content hash of the frozen test arrays, from the ``files`` block of a manifest entry."""
+    return files[TEST_FILE]["content_sha256"]

@@ -468,3 +468,39 @@ Next: phase 2 on Kaggle (baselines, quality metrics, PTB-XL with C).
   local mirror, and once against the real mirror (144 files, 33 s, all match). Tests: 275 pass.
 
 Next: rerun the phase 2 notebooks with `GIT_REF = "main"` and Internet on.
+
+## 2026-10-27 (Day 21): the last code: RQ3 analysis and the leakage audit
+
+Done (branch `finish-project`; results will be added as they come):
+- RQ3 (`python -m ecgaug.eval.rq3`): Spearman of each quality metric with the downstream gain across
+  generator checkpoints, interval from resampling runs, TSTR apart; table in the paper, Fig 5 figure.
+- Leakage audit (`phase4_leakage_audit`, optional, after the final evaluation): intra-patient split of
+  DS1+DS2, generators retrained on it, cnn with none / cVAE / WGAN-GP at medium strength; runs in
+  `runs/audit/`, banks in `data/synthetic/audit/`; new access kind `audit` (`ALLOW_TEST_AUDIT=1`);
+  final evaluation, grid and ingest refuse audit artifacts. Notebook, config, paper table (Table 5).
+- DECISIONS A16 (choices pending team confirmation). Tests: 290 pass.
+
+Not runnable yet: both need phase 3 (RQ3) or the final evaluation (audit) results.
+
+## 2026-10-27 (Day 21): dress rehearsal of the whole project
+
+- `tests/test_rehearsal.py` (run with `ECGAUG_REHEARSAL=1`, about 8 min on CPU): on fake records with
+  shrunk budgets, every runner, gate (approved as "Rehearsal") and the final evaluation in order, then
+  RQ3, the leakage audit, phase 5, error analysis, the demo and the paper build. It passes; the paper
+  build has no table left waiting. The numbers mean nothing.
+- It found two bugs, fixed (DECISIONS A17): colliding policy run IDs, and the selection rule crashing on
+  an undefined tie-break value. Tests: 291 pass (+1 skipped: the rehearsal).
+
+## 2026-10-27 (Day 21): the paper and the course report, written to fill themselves in
+
+- `paper/main.tex`: every section written (abstract, introduction, related work, data, methods,
+  statistics, results, notes, limitations and ethics, reproducibility). Results sentences, the abstract's
+  results sentence and a hypothesis-verdict table are generated from the result files by
+  `src/ecgaug/paper_text.py` with the pre-registered criteria (DECISIONS A18.1); until a result exists the
+  draft shows a red placeholder. No number or outcome was assumed.
+- `paper/refs.bib`: 29 verified references (A18.2). `paper/report.tex`: the course report from the same
+  generated files. Team contributions stay a placeholder until `docs/ASSIGNMENTS.md` is filled.
+- Not done here: compiling LaTeX (no TeX in this container); run pdflatex + bibtex on main.tex and report.tex.
+- Tests: 297 pass; the dress rehearsal fills every results sentence from its (fake) results.
+
+Next: real runs (phase 2 onward on Kaggle); after each gate, `python -m ecgaug.paper` updates the draft.
