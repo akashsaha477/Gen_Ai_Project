@@ -1,0 +1,291 @@
+{
+  "experiment": "phase2_quality_metrics",
+  "variant": "A",
+  "description": "DTW: mean DTW distance from each synthetic beat to its 5 nearest real training beats of its class, relative to real beats.",
+  "family": "dtw",
+  "higher_is_better": false,
+  "scores": {
+    "reference:0": {
+      "kind": "reference",
+      "level": 0,
+      "severity": 0,
+      "values": [
+        0.9205113227315836,
+        1.058275737253748,
+        0.9626626522466277
+      ],
+      "mean": 0.980483237410653,
+      "sd": 0.07058993142686772,
+      "cv": 0.07199504156061644
+    },
+    "noise:0.1": {
+      "kind": "noise",
+      "level": 0.1,
+      "severity": 1,
+      "values": [
+        1.3937247807349726,
+        1.5040353191043963,
+        1.4444068484784667
+      ],
+      "mean": 1.4473889827726119,
+      "sd": 0.05521570032653084,
+      "cv": 0.038148487368447344
+    },
+    "noise:0.3": {
+      "kind": "noise",
+      "level": 0.3,
+      "severity": 2,
+      "values": [
+        3.1462157353422047,
+        3.2645096550478847,
+        3.206288367449878
+      ],
+      "mean": 3.2056712526133224,
+      "sd": 0.05914937432361049,
+      "cv": 0.01845147853991292
+    },
+    "noise:1": {
+      "kind": "noise",
+      "level": 1.0,
+      "severity": 3,
+      "values": [
+        7.7705212373781976,
+        7.946720844816698,
+        7.83424403070708
+      ],
+      "mean": 7.850495370967326,
+      "sd": 0.08921689840249517,
+      "cv": 0.011364492836010933
+    },
+    "label_shuffle:0.25": {
+      "kind": "label_shuffle",
+      "level": 0.25,
+      "severity": 1,
+      "values": [
+        1.4482000211014625,
+        1.553255290284558,
+        1.5141921785714778
+      ],
+      "mean": 1.5052158299858327,
+      "sd": 0.05309975067014366,
+      "cv": 0.035277167308719735
+    },
+    "label_shuffle:0.5": {
+      "kind": "label_shuffle",
+      "level": 0.5,
+      "severity": 2,
+      "values": [
+        1.975445768341827,
+        2.202936138752844,
+        2.1916362707088752
+      ],
+      "mean": 2.123339392601182,
+      "sd": 0.1282041919239705,
+      "cv": 0.06037856800975885
+    },
+    "label_shuffle:1": {
+      "kind": "label_shuffle",
+      "level": 1.0,
+      "severity": 3,
+      "values": [
+        2.9754094888962324,
+        3.1498284513414188,
+        3.1806689524524963
+      ],
+      "mean": 3.1019689642300494,
+      "sd": 0.11068315013936776,
+      "cv": 0.035681578834506754
+    },
+    "time_shift:5": {
+      "kind": "time_shift",
+      "level": 5,
+      "severity": 1,
+      "values": [
+        1.603568711408049,
+        1.8642512493903858,
+        1.6605178477720048
+      ],
+      "mean": 1.7094459361901466,
+      "sd": 0.1370558819584852,
+      "cv": 0.08017561658834473
+    },
+    "time_shift:15": {
+      "kind": "time_shift",
+      "level": 15,
+      "severity": 2,
+      "values": [
+        2.555443549246697,
+        2.9117173118603934,
+        2.753784075926672
+      ],
+      "mean": 2.740314979011254,
+      "sd": 0.1785183769546369,
+      "cv": 0.065145203497391
+    },
+    "time_shift:40": {
+      "kind": "time_shift",
+      "level": 40,
+      "severity": 3,
+      "values": [
+        10.83685557553651,
+        11.25431092070014,
+        11.480044672720515
+      ],
+      "mean": 11.190403722985723,
+      "sd": 0.3263221584935292,
+      "cv": 0.029160892365594014
+    },
+    "smoothing:3": {
+      "kind": "smoothing",
+      "level": 3,
+      "severity": 1,
+      "values": [
+        0.9518795995655465,
+        1.0521089148638454,
+        1.0001590857672684
+      ],
+      "mean": 1.0013825333988868,
+      "sd": 0.05012585689414137,
+      "cv": 0.05005665190105171
+    },
+    "smoothing:9": {
+      "kind": "smoothing",
+      "level": 9,
+      "severity": 2,
+      "values": [
+        1.091141585543557,
+        1.2177040186838373,
+        1.149849961148602
+      ],
+      "mean": 1.1528985217919987,
+      "sd": 0.06333626656264431,
+      "cv": 0.05493654937140355
+    },
+    "smoothing:27": {
+      "kind": "smoothing",
+      "level": 27,
+      "severity": 3,
+      "values": [
+        2.304249774144013,
+        2.5151820531867144,
+        2.3103376888503484
+      ],
+      "mean": 2.3765898387270252,
+      "sd": 0.12006297142748992,
+      "cv": 0.050519012355871785
+    }
+  },
+  "spearman": {
+    "noise": 1.0,
+    "label_shuffle": 1.0,
+    "time_shift": 1.0,
+    "smoothing": 1.0
+  },
+  "reference_best": true,
+  "median_cv": 0.044102569634749525,
+  "checks": [
+    {
+      "check": "the unchanged held-out beats score best",
+      "passed": true
+    },
+    {
+      "check": "noise: worse with severity (Spearman 1.00 >= 0.8)",
+      "passed": true
+    },
+    {
+      "check": "label_shuffle: worse with severity (Spearman 1.00 >= 0.8)",
+      "passed": true
+    },
+    {
+      "check": "time_shift: worse with severity (Spearman 1.00 >= 0.8)",
+      "passed": true
+    },
+    {
+      "check": "smoothing: worse with severity (Spearman 1.00 >= 0.8)",
+      "passed": true
+    },
+    {
+      "check": "stable over 3 resamples (median CV 0.044 < 0.1)",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "provisional": false,
+  "provisional_reasons": [],
+  "dataset": {
+    "source": "rebuilt from the raw records (C_short_window_rr_features) and checked against the frozen hash",
+    "representation": "C_short_window_rr_features",
+    "content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896",
+    "frozen": true
+  },
+  "split": {
+    "name": "V1",
+    "val": [
+      115,
+      118,
+      201,
+      205,
+      223
+    ]
+  },
+  "selection_metric": "s_f1",
+  "settings": {
+    "resamples": 3,
+    "degradations": {
+      "noise": [
+        0.1,
+        0.3,
+        1.0
+      ],
+      "label_shuffle": [
+        0.25,
+        0.5,
+        1.0
+      ],
+      "time_shift": [
+        5,
+        15,
+        40
+      ],
+      "smoothing": [
+        3,
+        9,
+        27
+      ]
+    },
+    "pass_rule": {
+      "spearman_min": 0.8,
+      "cv_max": 0.1
+    },
+    "metrics": {
+      "dtw_max_beats": 200,
+      "dtw_candidates": 20,
+      "dtw_neighbours": 5,
+      "dtw_window_fraction": 0.1,
+      "spectral_nperseg": 64,
+      "fid_max_beats": 1000,
+      "tstr_classifier": {
+        "model": {
+          "name": "probe_cnn",
+          "channels": [
+            16,
+            32,
+            64
+          ],
+          "kernel": 7,
+          "side_hidden": 16
+        },
+        "lr": 0.001,
+        "max_epochs": 10,
+        "patience": 3,
+        "batch_size": 256,
+        "weight_decay": 0.01,
+        "seed": 0
+      }
+    }
+  },
+  "feature_net": null,
+  "wall_clock_s": 52.57674893600006,
+  "device": "cuda",
+  "git_sha": "433bab8626912e7937cb05ec4cdd1ff548bfd1ab"
+}
