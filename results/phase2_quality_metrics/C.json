@@ -1,0 +1,318 @@
+{
+  "experiment": "phase2_quality_metrics",
+  "variant": "C",
+  "description": "FID-analog: Frechet distance between Gaussians fitted to frozen feature-network features, relative to real-vs-real.",
+  "family": "fid_analog",
+  "higher_is_better": false,
+  "scores": {
+    "reference:0": {
+      "kind": "reference",
+      "level": 0,
+      "severity": 0,
+      "values": [
+        1.255978099190086,
+        1.4671458520578302,
+        0.984050613373233
+      ],
+      "mean": 1.2357248548737163,
+      "sd": 0.24218360357162066,
+      "cv": 0.19598505493876336
+    },
+    "noise:0.1": {
+      "kind": "noise",
+      "level": 0.1,
+      "severity": 1,
+      "values": [
+        589.2972821462749,
+        520.7284415325125,
+        453.31865401476244
+      ],
+      "mean": 521.1147925645166,
+      "sd": 67.9901373544133,
+      "cv": 0.13047055720644465
+    },
+    "noise:0.3": {
+      "kind": "noise",
+      "level": 0.3,
+      "severity": 2,
+      "values": [
+        2852.4378478105714,
+        2503.6608853561934,
+        2207.21988174128
+      ],
+      "mean": 2521.1062049693483,
+      "sd": 322.96255249943783,
+      "cv": 0.12810350942885582
+    },
+    "noise:1": {
+      "kind": "noise",
+      "level": 1.0,
+      "severity": 3,
+      "values": [
+        10521.537112032947,
+        9417.808274379599,
+        8314.420454889643
+      ],
+      "mean": 9417.92194710073,
+      "sd": 1103.5583329625008,
+      "cv": 0.11717641526029282
+    },
+    "label_shuffle:0.25": {
+      "kind": "label_shuffle",
+      "level": 0.25,
+      "severity": 1,
+      "values": [
+        40.765641911880046,
+        39.01406283050415,
+        34.23633102379235
+      ],
+      "mean": 38.00534525539218,
+      "sd": 3.3795130607944026,
+      "cv": 0.08892204604600767
+    },
+    "label_shuffle:0.5": {
+      "kind": "label_shuffle",
+      "level": 0.5,
+      "severity": 2,
+      "values": [
+        116.09566909975672,
+        97.962053419712,
+        89.53380932725408
+      ],
+      "mean": 101.19717728224093,
+      "sd": 13.57323168769883,
+      "cv": 0.13412658388526805
+    },
+    "label_shuffle:1": {
+      "kind": "label_shuffle",
+      "level": 1.0,
+      "severity": 3,
+      "values": [
+        317.5284244822783,
+        276.14324143163213,
+        240.4332399895832
+      ],
+      "mean": 278.03496863449783,
+      "sd": 38.58239030760303,
+      "cv": 0.13876812149598017
+    },
+    "time_shift:5": {
+      "kind": "time_shift",
+      "level": 5,
+      "severity": 1,
+      "values": [
+        5.36698538931901,
+        4.3143958891501235,
+        4.81913648674649
+      ],
+      "mean": 4.833505921738541,
+      "sd": 0.5264418528792515,
+      "cv": 0.10891511490895166
+    },
+    "time_shift:15": {
+      "kind": "time_shift",
+      "level": 15,
+      "severity": 2,
+      "values": [
+        5.775504499217994,
+        4.851361969816384,
+        4.074200577756211
+      ],
+      "mean": 4.90035568226353,
+      "sd": 0.8517094846189193,
+      "cv": 0.17380564592517597
+    },
+    "time_shift:40": {
+      "kind": "time_shift",
+      "level": 40,
+      "severity": 3,
+      "values": [
+        17.698520892839678,
+        14.433249039434278,
+        13.336398021003033
+      ],
+      "mean": 15.156055984425663,
+      "sd": 2.26911136726383,
+      "cv": 0.14971648096282866
+    },
+    "smoothing:3": {
+      "kind": "smoothing",
+      "level": 3,
+      "severity": 1,
+      "values": [
+        8.78688701507152,
+        7.124957363952059,
+        7.676925160869764
+      ],
+      "mean": 7.862923179964447,
+      "sd": 0.8464330975616869,
+      "cv": 0.10764865409323689
+    },
+    "smoothing:9": {
+      "kind": "smoothing",
+      "level": 9,
+      "severity": 2,
+      "values": [
+        43.51416283918675,
+        34.2991201216194,
+        41.96695439785832
+      ],
+      "mean": 39.926745786221495,
+      "sd": 4.934682508114942,
+      "cv": 0.12359340614776258
+    },
+    "smoothing:27": {
+      "kind": "smoothing",
+      "level": 27,
+      "severity": 3,
+      "values": [
+        106.43461048866384,
+        91.1686410177458,
+        100.87882131045917
+      ],
+      "mean": 99.49402427228961,
+      "sd": 7.726623007462108,
+      "cv": 0.07765916660799974
+    }
+  },
+  "spearman": {
+    "noise": 1.0,
+    "label_shuffle": 1.0,
+    "time_shift": 1.0,
+    "smoothing": 1.0
+  },
+  "reference_best": true,
+  "median_cv": 0.1258484577883092,
+  "checks": [
+    {
+      "check": "the unchanged held-out beats score best",
+      "passed": true
+    },
+    {
+      "check": "noise: worse with severity (Spearman 1.00 >= 0.8)",
+      "passed": true
+    },
+    {
+      "check": "label_shuffle: worse with severity (Spearman 1.00 >= 0.8)",
+      "passed": true
+    },
+    {
+      "check": "time_shift: worse with severity (Spearman 1.00 >= 0.8)",
+      "passed": true
+    },
+    {
+      "check": "smoothing: worse with severity (Spearman 1.00 >= 0.8)",
+      "passed": true
+    },
+    {
+      "check": "stable over 3 resamples (median CV 0.126 < 0.1)",
+      "passed": false
+    }
+  ],
+  "passed": false,
+  "provisional": false,
+  "provisional_reasons": [],
+  "dataset": {
+    "source": "rebuilt from the raw records (C_short_window_rr_features) and checked against the frozen hash",
+    "representation": "C_short_window_rr_features",
+    "content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896",
+    "frozen": true
+  },
+  "split": {
+    "name": "V1",
+    "val": [
+      115,
+      118,
+      201,
+      205,
+      223
+    ]
+  },
+  "selection_metric": "s_f1",
+  "settings": {
+    "resamples": 3,
+    "degradations": {
+      "noise": [
+        0.1,
+        0.3,
+        1.0
+      ],
+      "label_shuffle": [
+        0.25,
+        0.5,
+        1.0
+      ],
+      "time_shift": [
+        5,
+        15,
+        40
+      ],
+      "smoothing": [
+        3,
+        9,
+        27
+      ]
+    },
+    "pass_rule": {
+      "spearman_min": 0.8,
+      "cv_max": 0.1
+    },
+    "metrics": {
+      "dtw_max_beats": 200,
+      "dtw_candidates": 20,
+      "dtw_neighbours": 5,
+      "dtw_window_fraction": 0.1,
+      "spectral_nperseg": 64,
+      "fid_max_beats": 1000,
+      "tstr_classifier": {
+        "model": {
+          "name": "probe_cnn",
+          "channels": [
+            16,
+            32,
+            64
+          ],
+          "kernel": 7,
+          "side_hidden": 16
+        },
+        "lr": 0.001,
+        "max_epochs": 10,
+        "patience": 3,
+        "batch_size": 256,
+        "weight_decay": 0.01,
+        "seed": 0
+      }
+    }
+  },
+  "feature_net": {
+    "path": "results/phase2_quality_metrics/feature_net_2f6f9843889f.pt",
+    "sha256": "0b10da781e877836a2aa0f0d3e35ce5d7bc3244f4830ce12597145a1444e11f0",
+    "dataset_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896",
+    "settings": {
+      "model": {
+        "name": "probe_cnn",
+        "channels": [
+          16,
+          32,
+          64
+        ],
+        "kernel": 7,
+        "side_hidden": 16
+      },
+      "lr": 0.001,
+      "max_epochs": 10,
+      "patience": 3,
+      "batch_size": 256,
+      "weight_decay": 0.01,
+      "seed": 0
+    },
+    "fit": {
+      "best_epoch": 9,
+      "selection_value": 0.06751054852320675,
+      "epochs_run": 10
+    }
+  },
+  "wall_clock_s": 29.80174093000005,
+  "device": "cuda",
+  "git_sha": "01c886eeec0e282ffa97212a068d93aecb3e626f"
+}
