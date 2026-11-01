@@ -33,9 +33,9 @@
       "p99": 136.70886075949366
     },
     "qrs_contrast": {
-      "p1": 4.633703340112816,
-      "p5": 6.289990862374635,
-      "p50": 14.820745548512772
+      "p1": 4.6337033401128185,
+      "p5": 6.2899908623746335,
+      "p50": 14.820745548512646
     },
     "powerline_50hz_ratio": {
       "p50": 1.7058251660869646,
@@ -132,7 +132,17 @@
       "ptbxl_database.csv": "cd9bf4e6445c5e022605857c4d6f90c90ff0e62df847da52efaebe94de786156",
       "scp_statements.csv": "ad05b0b1fcae83bb1230755ad9cfc7c96f303feddc08a4a9ad5bdc9ca63bac8f"
     },
-    "reference_available": false
+    "reference_available": true,
+    "matched": 42703,
+    "mismatched": 1,
+    "not_in_reference": 72,
+    "examples_mismatched": [
+      "ptbxl_database.csv"
+    ],
+    "metadata_matches_reference": {
+      "ptbxl_database.csv": false,
+      "scp_statements.csv": true
+    }
   },
   "partial_run": false,
   "file_sha256": "de72b44c240337058c191e0ad509bb595046dc14e37ebf69971ad4ac60ffddd8"
