@@ -40,5 +40,104 @@
         "F": 388
       }
     }
+  },
+  "phase2_gate": {
+    "cnn": {
+      "variant": "A",
+      "config": "configs/phase2_baseline_classifiers/A_shallow_cnn.yaml",
+      "model": {
+        "name": "shallow_cnn",
+        "channels": [
+          32,
+          64,
+          128
+        ],
+        "kernel": 7,
+        "side_hidden": 16
+      },
+      "lr": 0.001,
+      "max_epochs": 40,
+      "patience": 5,
+      "min_epochs": 10,
+      "batch_size": 256,
+      "weight_decay": 0.01,
+      "run_ids": [
+        "phase2_baseline_classifiers-A.lr1e-03-s0-a6ac8bf-202611010715",
+        "phase2_baseline_classifiers-A.lr1e-03-s1-a6ac8bf-202611010715",
+        "phase2_baseline_classifiers-A.lr1e-03-s2-a6ac8bf-202611010715"
+      ],
+      "checkpoints": {
+        "phase2_baseline_classifiers-A.lr1e-03-s0-a6ac8bf-202611010715": "04e6f6f4c1fc4d0fcf3b6e16ff68e92e640fc99d25d84780b9781340976ef88c",
+        "phase2_baseline_classifiers-A.lr1e-03-s1-a6ac8bf-202611010715": "0235e139af9fe276d4455a2043c44fc5bc838d84f6842a7d6a64f273f8011416",
+        "phase2_baseline_classifiers-A.lr1e-03-s2-a6ac8bf-202611010715": "f307abff674461fe3d4b7f3d7beec6e63eed913d8a1fb758b882ad10da1ce2dd"
+      }
+    },
+    "rnn": {
+      "variant": "C",
+      "config": "configs/phase2_baseline_classifiers/C_bilstm.yaml",
+      "model": {
+        "name": "bilstm",
+        "hidden": 64,
+        "layers": 2,
+        "side_hidden": 16
+      },
+      "lr": 0.001,
+      "max_epochs": 40,
+      "patience": 5,
+      "min_epochs": 10,
+      "batch_size": 256,
+      "weight_decay": 0.01,
+      "run_ids": [
+        "phase2_baseline_classifiers-C.lr1e-03-s0-1b5a746-202611010730",
+        "phase2_baseline_classifiers-C.lr1e-03-s1-1b5a746-202611010731",
+        "phase2_baseline_classifiers-C.lr1e-03-s2-1b5a746-202611010733"
+      ],
+      "checkpoints": {
+        "phase2_baseline_classifiers-C.lr1e-03-s0-1b5a746-202611010730": "f38e920a12b35bff0a3ce635b07e167bb122027ae08bf2930eb08d5654e11670",
+        "phase2_baseline_classifiers-C.lr1e-03-s1-1b5a746-202611010731": "a8031fa32ae25c6068ba90a9b1da49097168aaca2e3a1d68b9b0bba702c85f56",
+        "phase2_baseline_classifiers-C.lr1e-03-s2-1b5a746-202611010733": "04ffc1496509f8f20e9a85189fac835d55d714c933c7ac4785e7468c17af4b07"
+      }
+    },
+    "class_weight_gammas": [
+      0.5,
+      0.75,
+      1.0
+    ],
+    "quality_composite": [
+      "dtw",
+      "spectral"
+    ],
+    "quality_settings": {
+      "dtw_max_beats": 200,
+      "dtw_candidates": 20,
+      "dtw_neighbours": 5,
+      "dtw_window_fraction": 0.1,
+      "spectral_nperseg": 64,
+      "fid_max_beats": 1000,
+      "tstr_classifier": {
+        "model": {
+          "name": "probe_cnn",
+          "channels": [
+            16,
+            32,
+            64
+          ],
+          "kernel": 7,
+          "side_hidden": 16
+        },
+        "lr": 0.001,
+        "max_epochs": 10,
+        "patience": 3,
+        "batch_size": 256,
+        "weight_decay": 0.01,
+        "seed": 0
+      }
+    },
+    "feature_net": null,
+    "approved_by": [
+      "Akash Saha"
+    ],
+    "approved_on": "2026-11-01",
+    "git_sha": "38fd30129c398ffe4f9731a95457c5433ed89d73"
   }
 }
