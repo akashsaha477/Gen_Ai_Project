@@ -1,0 +1,47 @@
+{
+  "cnn": {
+    "winner": "A",
+    "best_by_mean": "A",
+    "margins": {
+      "A": 0.04479524686570814,
+      "B": 0.07547086411910037
+    },
+    "steps": [
+      {
+        "step": "selection metric",
+        "tied": [
+          "A"
+        ]
+      },
+      {
+        "step": "simplicity, then wall-clock",
+        "winner": "A"
+      }
+    ]
+  },
+  "rnn": {
+    "winner": "C",
+    "best_by_mean": "C",
+    "margins": {
+      "C": 0.02,
+      "D": 0.024614897625440287
+    },
+    "steps": [
+      {
+        "step": "selection metric",
+        "tied": [
+          "C"
+        ]
+      },
+      {
+        "step": "simplicity, then wall-clock",
+        "winner": "C"
+      }
+    ]
+  },
+  "composite": [
+    "dtw",
+    "spectral"
+  ],
+  "provisional": []
+}
