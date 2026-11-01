@@ -1,0 +1,28 @@
+{
+  "path": "results/phase2_quality_metrics/feature_net_2f6f9843889f.pt",
+  "sha256": "0b10da781e877836a2aa0f0d3e35ce5d7bc3244f4830ce12597145a1444e11f0",
+  "dataset_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896",
+  "settings": {
+    "model": {
+      "name": "probe_cnn",
+      "channels": [
+        16,
+        32,
+        64
+      ],
+      "kernel": 7,
+      "side_hidden": 16
+    },
+    "lr": 0.001,
+    "max_epochs": 10,
+    "patience": 3,
+    "batch_size": 256,
+    "weight_decay": 0.01,
+    "seed": 0
+  },
+  "fit": {
+    "best_epoch": 9,
+    "selection_value": 0.06751054852320675,
+    "epochs_run": 10
+  }
+}
