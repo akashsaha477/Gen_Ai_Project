@@ -1,0 +1,108 @@
+{
+  "selection_metric": "s_f1",
+  "diverged": false,
+  "divergence": null,
+  "steps_done": 5000,
+  "n_beats": 11445,
+  "accuracy": 0.9171690694626474,
+  "rare_macro_f1": 0.20496046010064703,
+  "macro_f1": 0.48792370375423794,
+  "n_recall": 0.9622586872586872,
+  "aami": {
+    "se_S": 0.23,
+    "ppv_S": 0.7666666666666667,
+    "se_V": 0.5976253298153035,
+    "ppv_V": 0.5648379052369077
+  },
+  "per_class": {
+    "N": {
+      "support": 10360,
+      "predicted": 10363,
+      "precision": 0.9619801215864132,
+      "recall": 0.9622586872586872,
+      "f1": 0.9621193842590359
+    },
+    "S": {
+      "support": 300,
+      "predicted": 90,
+      "precision": 0.7666666666666667,
+      "recall": 0.23,
+      "f1": 0.35384615384615387
+    },
+    "V": {
+      "support": 758,
+      "predicted": 805,
+      "precision": 0.5627329192546584,
+      "recall": 0.5976253298153035,
+      "f1": 0.5796545105566219
+    },
+    "F": {
+      "support": 27,
+      "predicted": 187,
+      "precision": 0.03208556149732621,
+      "recall": 0.2222222222222222,
+      "f1": 0.056074766355140186
+    }
+  },
+  "confusion_matrix": [
+    [
+      9969,
+      15,
+      237,
+      139
+    ],
+    [
+      116,
+      69,
+      112,
+      3
+    ],
+    [
+      260,
+      6,
+      453,
+      39
+    ],
+    [
+      18,
+      0,
+      3,
+      6
+    ]
+  ],
+  "pr_auc": {
+    "N": 0.9886291464560142,
+    "S": 0.43770945766084896,
+    "V": 0.6590862258189797,
+    "F": 0.0348576746256653
+  },
+  "macro_pr_auc": 0.530070626140377,
+  "rare_macro_pr_auc": 0.23628356614325713,
+  "selection_value": 0.35384615384615387,
+  "best_epoch": 9,
+  "epochs_run": 14,
+  "diagnostics": {
+    "S": {
+      "n_scored": 1000,
+      "diversity_ratio": 0.9518945295886587,
+      "memorization_fraction": 0.0,
+      "c2st_accuracy": 0.9479111995897809
+    },
+    "V": {
+      "n_scored": 1000,
+      "diversity_ratio": 1.0668389339820248,
+      "memorization_fraction": 0.0,
+      "c2st_accuracy": 0.9235
+    },
+    "F": {
+      "n_scored": 1000,
+      "diversity_ratio": 0.9878107340824808,
+      "memorization_fraction": 0.001,
+      "c2st_accuracy": 0.9715793883535818
+    }
+  },
+  "quality": {
+    "dtw": 1.51138272089179,
+    "spectral": 0.02655025760708489
+  }
+}
