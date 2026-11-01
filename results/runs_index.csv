@@ -91,3 +91,7 @@ phase3_wgan_gp-A-s0-24d512a-202611011502,3,phase3_wgan_gp,A,,0,done,s_f1,0.50805
 phase3_wgan_gp-A-s1-24d512a-202611011510,3,phase3_wgan_gp,A,,1,done,s_f1,0.35384615384615387,0.20496046010064703,444.4,24d512a,phase3_wgan_gp/A_concat_embedding/pilot
 phase3_wgan_gp-B-s0-2cacc53-202611011711,3,phase3_wgan_gp,B,,0,done,s_f1,0.4581196581196581,0.22905982905982905,456.5,2cacc53,phase3_wgan_gp/B_projection_critic/pilot
 phase3_wgan_gp-B-s1-2cacc53-202611011719,3,phase3_wgan_gp,B,,1,done,s_f1,0.39015151515151514,0.19507575757575757,453.6,2cacc53,phase3_wgan_gp/B_projection_critic/pilot
+phase3_wgan_gp-C-s0-e63ac5d-202611011730,3,phase3_wgan_gp,C,,0,done,s_f1,0.39263803680981596,0.2314067377031536,448.1,e63ac5d,phase3_wgan_gp/C_auxiliary_classifier/pilot
+phase3_wgan_gp-C-s1-e63ac5d-202611011738,3,phase3_wgan_gp,C,,1,done,s_f1,0.3401360544217687,0.17006802721088435,457.6,e63ac5d,phase3_wgan_gp/C_auxiliary_classifier/pilot
+phase3_wgan_gp-D-s0-e63ac5d-202611011745,3,phase3_wgan_gp,D,,0,done,s_f1,0.436,0.2537142857142857,411.0,e63ac5d,phase3_wgan_gp/D_per_class_unconditional/pilot
+phase3_wgan_gp-D-s1-e63ac5d-202611011752,3,phase3_wgan_gp,D,,1,done,s_f1,0.5,0.2685185185185185,517.1,e63ac5d,phase3_wgan_gp/D_per_class_unconditional/pilot

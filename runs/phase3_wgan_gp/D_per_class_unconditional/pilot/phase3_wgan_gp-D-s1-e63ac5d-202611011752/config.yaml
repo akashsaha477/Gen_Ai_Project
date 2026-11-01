@@ -1,0 +1,140 @@
+experiment: phase3_wgan_gp
+family: wgan_gp
+classes:
+- N
+- S
+- V
+- F
+training:
+  batch_size: 128
+  lr: 0.0001
+  adam_betas: &id001
+  - 0.0
+  - 0.9
+  n_critic: 5
+  gradient_penalty: 10.0
+  pilot_steps: 5000
+  final_steps: 20000
+  log_every: 50
+pilot_seeds:
+- 0
+- 1
+final_seeds:
+- 0
+- 1
+- 2
+checkpoint_fractions:
+- 0.25
+- 0.5
+- 0.75
+- 1.0
+pilot:
+  policy_fraction_of_n: 0.5
+  classifier: cnn
+  classifier_seed: 0
+  preview_classifier:
+    model:
+      name: probe_cnn
+      channels:
+      - 16
+      - 32
+      - 64
+      kernel: 7
+      side_hidden: 16
+    lr: 0.001
+    max_epochs: 40
+    patience: 5
+    min_epochs: 10
+    batch_size: 256
+    weight_decay: 0.01
+diagnostics:
+  max_beats: 1000
+  memorization_percentile: 5
+  c2st_folds: 5
+hard_gates:
+  diversity_min_ratio: 0.7
+  memorization_max_fraction: 0.1
+bank:
+  size: balance_to_n
+variant: D
+description: A separate unconditional WGAN-GP for each of S, V and F; the step budget
+  is shared, a third per class.
+generator:
+  batch_size: 128
+  lr: 0.0001
+  adam_betas: *id001
+  n_critic: 5
+  gradient_penalty: 10.0
+  pilot_steps: 5000
+  final_steps: 20000
+  log_every: 50
+  conditioning: per_class
+  noise_dim: 64
+  embed_dim: 16
+  generator_channels:
+  - 128
+  - 64
+  - 32
+  critic_channels:
+  - 32
+  - 64
+  - 128
+  kernel: 7
+  auxiliary_weight: 1.0
+  classes:
+  - N
+  - S
+  - V
+  - F
+config_name: D_per_class_unconditional
+setting: default
+mode: pilot
+seed: 1
+steps: 5000
+run_id: phase3_wgan_gp-D-s1-e63ac5d-202611011752
+split:
+  name: V1
+  val:
+  - 115
+  - 118
+  - 201
+  - 205
+  - 223
+  selection_metric: s_f1
+dataset:
+  source: rebuilt from the raw records (C_short_window_rr_features) and checked against
+    the frozen hash
+  representation: C_short_window_rr_features
+  content_sha256: 2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896
+  frozen: true
+pilot_classifier:
+  source: cnn chosen at the phase 2 gate
+  variant: A
+  config: configs/phase2_baseline_classifiers/A_shallow_cnn.yaml
+  model:
+    name: shallow_cnn
+    channels:
+    - 32
+    - 64
+    - 128
+    kernel: 7
+    side_hidden: 16
+  lr: 0.001
+  max_epochs: 40
+  patience: 5
+  min_epochs: 10
+  batch_size: 256
+  weight_decay: 0.01
+  run_ids:
+  - phase2_baseline_classifiers-A.lr1e-03-s0-a6ac8bf-202611010715
+  - phase2_baseline_classifiers-A.lr1e-03-s1-a6ac8bf-202611010715
+  - phase2_baseline_classifiers-A.lr1e-03-s2-a6ac8bf-202611010715
+  checkpoints:
+    phase2_baseline_classifiers-A.lr1e-03-s0-a6ac8bf-202611010715: 04e6f6f4c1fc4d0fcf3b6e16ff68e92e640fc99d25d84780b9781340976ef88c
+    phase2_baseline_classifiers-A.lr1e-03-s1-a6ac8bf-202611010715: 0235e139af9fe276d4455a2043c44fc5bc838d84f6842a7d6a64f273f8011416
+    phase2_baseline_classifiers-A.lr1e-03-s2-a6ac8bf-202611010715: f307abff674461fe3d4b7f3d7beec6e63eed913d8a1fb758b882ad10da1ce2dd
+quality_families:
+- dtw
+- spectral
+provisional: false
+provisional_reasons: []
