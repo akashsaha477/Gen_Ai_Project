@@ -139,5 +139,24 @@
     ],
     "approved_on": "2026-11-01",
     "git_sha": "38fd30129c398ffe4f9731a95457c5433ed89d73"
+  },
+  "phase3a_gate": {
+    "phase3_cvae": {
+      "winner": "D",
+      "setting": "default",
+      "config": "configs/phase3_cvae/D_residual_film.yaml",
+      "generator_id": "phase3_cvae-D"
+    },
+    "phase3_wgan_gp": {
+      "winner": "A",
+      "setting": "default",
+      "config": "configs/phase3_wgan_gp/A_concat_embedding.yaml",
+      "generator_id": "phase3_wgan_gp-A"
+    },
+    "approved_by": [
+      "Akash Saha"
+    ],
+    "approved_on": "2026-11-02",
+    "git_sha": "115741d1b1e7b4ed9d357957cea783a359122277"
   }
 }

@@ -39,7 +39,7 @@ the one before it; the code refuses to skip ahead and says what is missing.
 | 2 baselines | `phase2_ptbxl_pretraining` for the phase 1 winner | `kaggle/phase2_ptbxl_pretraining.ipynb` | done for C: tied, scratch wins by the rule |
 | 2 baselines | phase 2 gate: the `cnn`, the `rnn`, the quality composite | `python -m ecgaug.workflow phase2-gate [--approve ...]` | approved 2026-11-01: cnn A, rnn C, composite DTW + spectral |
 | 3 generators | `phase3_cvae` A–D and `phase3_wgan_gp` A–D, pilots | `kaggle/phase3_cvae.ipynb`, `kaggle/phase3_wgan_gp.ipynb` (`MODE = "pilot"`) | done 2026-11-01 |
-| 3 generators | phase 3a gate: one generator per family | `python -m ecgaug.workflow phase3a-gate [--approve ...]` | report written, pending approval: cVAE D, WGAN-GP A by rule |
+| 3 generators | phase 3a gate: one generator per family | `python -m ecgaug.workflow phase3a-gate [--approve ...]` | approved 2026-11-02: cVAE D, WGAN-GP A; next: final runs (`MODE = "final"`) |
 | 3 generators | final runs of the two winners, synthetic banks | the same notebooks with `MODE = "final"` | built |
 | 3 generators | phase 3 gate: banks frozen | `python -m ecgaug.workflow phase3-gate [--approve ...]` | built |
 | 4 comparison | `phase4_augmentation_policy` A–D, seeds 0–2 (DECISIONS A19) | `kaggle/phase4_augmentation_policy.ipynb`, all four letters in one session | built |
