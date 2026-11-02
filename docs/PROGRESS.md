@@ -569,3 +569,12 @@ Report for the team: phases 1 to 3 summary with architecture diagrams, (shared w
 
 Next: the team approves the phase 3a gate; then the final runs (`MODE = "final"`), one notebook per family.
 
+
+## 2026-11-02 (Day 27) — Phase 3a gate approved
+
+Approved by Akash Saha: phase3_cvae variant D (default), phase3_wgan_gp variant A (default). Recorded in
+`results/manifest.json` and `docs/DECISIONS.md`. The final runs can now start.
+
+Next: `kaggle/phase3_cvae.ipynb` and `kaggle/phase3_wgan_gp.ipynb` with `MODE = "final"` (about 2 GPU-hours in total,
+estimated), ingest the zips, then the phase 3 gate. Still open: A19 confirmation, per-bank or average N recall limit,
+3 or 5 seeds (decided at the phase 3 gate).

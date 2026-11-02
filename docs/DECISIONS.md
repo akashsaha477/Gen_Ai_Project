@@ -221,3 +221,6 @@ no policy result was seen. They belong in PREREGISTRATION v3, which is committed
   runs that differ, so parallel sessions would make the gate fail. The notebook now defaults to all four letters.
 
 Open for the team: whether the N recall limit should apply per bank (stricter; it may leave no policy eligible).
+
+## the phase 3a gate — 2026-11-02 — status: APPROVED by Akash Saha
+phase3_cvae: winner D (setting default) — phase3_wgan_gp: winner A (setting default) — evidence: results/phase3a_gate/report.md — rule: PLAN Phase 3 selection, PREREGISTRATION §9
