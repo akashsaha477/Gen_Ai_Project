@@ -43,7 +43,7 @@ the one before it; the code refuses to skip ahead and says what is missing.
 | 3 generators | final runs of the two winners, synthetic banks | the same notebooks with `MODE = "final"` | built |
 | 3 generators | phase 3 gate: banks frozen | `python -m ecgaug.workflow phase3-gate [--approve ...]` | approved 2026-11-03: banks frozen (cVAE D seed 1 S diversity 0.694 kept and disclosed, DECISIONS A20) |
 | 4 comparison | `phase4_augmentation_policy` A–D, seeds 0–2 (DECISIONS A19) | `kaggle/phase4_augmentation_policy.ipynb`, all four letters in one session | built |
-| 4 comparison | phase 4a gate: the policy; writes the full grid | `python -m ecgaug.workflow phase4a-gate [--approve ...]` | report written 2026-11-04, pending approval: policy D by rule (only policy within the N recall limit) |
+| 4 comparison | phase 4a gate: the policy; writes the full grid | `python -m ecgaug.workflow phase4a-gate [--approve ...]` | approved 2026-11-04: policy D (0.5 x N, DTW-screened); full grid strengths 0.1, 0.25, 0.5 |
 | 4 comparison | the full grid (96 runs at 3 seeds, resumable) | `kaggle/phase4_full_grid.ipynb` | built |
 | 4 comparison | phase 4 gate: strengths and checkpoints, on validation | `python -m ecgaug.workflow phase4-gate [--approve ...]` | built |
 | 4 comparison | the single final evaluation on the test set | `ALLOW_TEST=1 python -m ecgaug.final_eval --confirm "run final eval"` | built |

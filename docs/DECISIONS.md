@@ -244,3 +244,7 @@ Evidence: `results/phase3_gate/report.md`, `figures/phase3_gate/banks.png`. No p
   `main` uploaded as the private dataset `akashsaha477/ecgaug-repo` (the GitHub repository is private), and the banks
   from a private dataset. The run commit is recorded in every run ID as before.
 
+
+## the phase 4a gate — 2026-11-04 — status: APPROVED by Akash Saha
+phase4_augmentation_policy: winner D (fraction_of_n_screened, strengths [0.1, 0.25, 0.5]) — evidence: results/phase4a_gate/report.md — rule: PLAN Phase 4
+Full grid: configs/phase4_full_grid/full_grid.yaml
