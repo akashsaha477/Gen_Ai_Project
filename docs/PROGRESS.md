@@ -665,3 +665,28 @@ Tests updated (`tests/test_phase5.py`, all pass). Notebook, kaggle/README.md and
 Model probe (one made-up beat, no project data): default set to `gemini-3.5-flash` with thinking level `minimal`;
 at the default thinking level the note was cut off after 396 thinking tokens (details in A21). Key is in the macOS
 Keychain; the `~/.zshrc` export line still has to be added by Akash.
+
+## 2026-11-04 (Day 29) — Full grid done; phase 4 gate report written
+
+phase4_full_grid on Kaggle (T4, one session, run commit 382e1b1): 96 of 96 runs done, ingested
+(`results/phase4_full_grid/`, `runs/phase4_full_grid/`). `python -m ecgaug.workflow phase4-gate`: all checks pass.
+Validation S F1 at the chosen strength (seed mean ± SD, seeds 0-2; V F1 and N recall are seed means):
+
+| condition | cnn strength | cnn S F1 | cnn V F1 | cnn N recall | rnn strength | rnn S F1 | rnn V F1 | rnn N recall |
+|---|---|---|---|---|---|---|---|---|
+| none | - | 0.3486 ± 0.0448 | 0.6786 | 0.9790 | - | 0.3148 ± 0.0195 | 0.7227 | 0.9805 |
+| class-weighted (gamma) | 0.5 | 0.3701 ± 0.0347 | 0.4967 | 0.9616 | 0.75 | 0.4253 ± 0.0410 | 0.7762 | 0.8764 |
+| random oversampling | 0.1 | 0.4396 ± 0.0180 | 0.5777 | 0.9105 | 0.1 | 0.4141 ± 0.0635 | 0.6124 | 0.9328 |
+| SMOTE | 0.1 | 0.3690 ± 0.0382 | 0.4402 | 0.9905 | 0.1 | 0.3700 ± 0.0661 | 0.6835 | 0.8881 |
+| cVAE D | 0.25 | 0.4234 ± 0.0659 | 0.5446 | 0.9832 | 0.1 | 0.3592 ± 0.0201 | 0.2985 | 0.9879 |
+| WGAN-GP A | 0.1 | 0.3870 ± 0.0261 | 0.4816 | 0.9301 | 0.5 | 0.2578 ± 0.0206 | 0.7098 | 0.9391 |
+
+Best generative condition by rule: cVAE for both architectures. Several strengths were picked by the tie rule (tied on
+S F1 within max(0.02, pooled SD), then V F1, then the lower strength): e.g. rnn WGAN-GP 0.5 (all three tied on S F1; 0.5
+had the best V F1). The report now lists the selection steps per condition. Seed spread is large (S F1 SD up to 0.066 at
+the chosen strengths), so most differences between conditions are within noise on validation. rnn cVAE at 0.1 has V F1
+0.2985 (none: 0.7227). N recall drops more than 0.01 below `none` for cnn class-weighted, ROS, WGAN-GP and rnn
+class-weighted, ROS, SMOTE, WGAN-GP (reported, not enforced at this gate). Figure: `figures/phase4_gate/conditions.png`
+(`scripts/phase4_gate_figure.py`). Test pipeline: `tests/test_phase4.py` passes.
+
+Next: `approve gate 4`, then `/final-eval` (the only test-set read).

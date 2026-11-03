@@ -1,0 +1,29 @@
+{
+  "cell_sha": "19e44a094bacf91110022036439bdc8c6100317a108c2b20ec33ed3c92d35c61",
+  "cell": {
+    "condition": "wgan_gp",
+    "strength": 0.5,
+    "architecture": "rnn",
+    "seed": 0
+  },
+  "condition": "wgan_gp",
+  "strength": 0.5,
+  "architecture": "rnn",
+  "seed": 0,
+  "run_id": "phase4_full_grid-rnn.wgan_gp_0.5-s0-382e1b1-202611032210",
+  "status": "done",
+  "bank": "phase3_wgan_gp-A",
+  "selection_metric": "s_f1",
+  "selection_value": 0.2812051649928264,
+  "tie_break_value": 0.5749385749385749,
+  "rare_macro_f1": 0.22095972535355607,
+  "n_recall": 0.963996138996139,
+  "n_added": {
+    "N": 0,
+    "S": 17089,
+    "V": 14702,
+    "F": 17345
+  },
+  "wall_clock_s": 96.6,
+  "provisional": false
+}

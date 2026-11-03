@@ -1,0 +1,29 @@
+{
+  "cell_sha": "ac5be8858796b524d22302a4758501d25bf843f000502a12356b67f33d036ee3",
+  "cell": {
+    "condition": "random_oversampling",
+    "strength": 0.5,
+    "architecture": "rnn",
+    "seed": 2
+  },
+  "condition": "random_oversampling",
+  "strength": 0.5,
+  "architecture": "rnn",
+  "seed": 2,
+  "run_id": "phase4_full_grid-rnn.random_oversampling_0.5-s2-382e1b1-202611032006",
+  "status": "done",
+  "bank": null,
+  "selection_metric": "s_f1",
+  "selection_value": 0.33202614379084966,
+  "tie_break_value": 0.6454005934718101,
+  "rare_macro_f1": 0.17220676558911852,
+  "n_recall": 0.635907335907336,
+  "n_added": {
+    "N": 0,
+    "S": 17089,
+    "V": 14702,
+    "F": 17345
+  },
+  "wall_clock_s": 95.2,
+  "provisional": false
+}
