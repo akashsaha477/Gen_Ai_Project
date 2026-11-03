@@ -248,3 +248,12 @@ Evidence: `results/phase3_gate/report.md`, `figures/phase3_gate/banks.png`. No p
 ## the phase 4a gate — 2026-11-04 — status: APPROVED by Akash Saha
 phase4_augmentation_policy: winner D (fraction_of_n_screened, strengths [0.1, 0.25, 0.5]) — evidence: results/phase4a_gate/report.md — rule: PLAN Phase 4
 Full grid: configs/phase4_full_grid/full_grid.yaml
+
+## 2026-11-04 (Day 29) — A21: Gemini as the default LLM for the note variants — Akash Saha
+
+The note variants B-D (phase5_clinical_notes) call Gemini by default (`ECGAUG_LLM_PROVIDER=gemini`, key `GEMINI_API_KEY`,
+free tier), not the paid API first planned, which is billed separately. The other provider stayed available with
+`ECGAUG_LLM_PROVIDER=otherllm`. Nothing pre-registered changes: PREREGISTRATION does not name a provider or model;
+prompts, the fact checker, `max_tokens` 400, 50 cases and 2 retries are unchanged. The model used is recorded in each
+variant's result (`model`). Free-tier inputs may be used by Google; the inputs are only the beat JSON of docs/RULES.md §5
+(anonymised record id, class probabilities, segment masses) from the public MIT-BIH database.

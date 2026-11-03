@@ -656,3 +656,11 @@ Next: `approve gate 4a`, then the full grid.
 Approved by Akash Saha: policy D (fraction_of_n_screened), strengths 0.1, 0.25, 0.5 x N. `configs/phase4_full_grid/full_grid.yaml`
 written by the gate: none, class-weighted (gamma 0.5, 0.75, 1), random oversampling, SMOTE, cVAE D and WGAN-GP A, for the
 cnn and rnn, seeds 0-2: 96 runs. Started on Kaggle in one session.
+
+## 2026-11-04 (Day 29) — Note LLM switched to Gemini (A21)
+
+`src/ecgaug/report/notes.py`: `LLMClient` now speaks Gemini (default) or another provider, with the key in a header and waits on
+rate-limit replies (429/503); usage maps to the same input/output token fields (Gemini thinking tokens count as output).
+Tests updated (`tests/test_phase5.py`, all pass). Notebook, kaggle/README.md and README.md name `GEMINI_API_KEY`.
+Open: confirm the default model name against the key's model list and run a 2-3 beat smoke test (notes cut off at 400
+tokens?) before the real run.

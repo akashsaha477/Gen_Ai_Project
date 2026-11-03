@@ -135,15 +135,32 @@ def test_llm_variants_with_a_fake_client():
 
 
 def test_llm_client_comes_from_the_environment_and_hides_the_key(monkeypatch):
-    monkeypatch.delenv("LLM_API_KEY", raising=False)
+    for name in ("GEMINI_API_KEY", "LLM_API_KEY", "ECGAUG_LLM_PROVIDER", "ECGAUG_LLM_MODEL"):
+        monkeypatch.delenv(name, raising=False)
+    assert notes.client_from_env() is None
+    monkeypatch.setenv("GEMINI_API_KEY", "g-secret-value")
+    client = notes.client_from_env()
+    assert client.provider == "gemini" and client.model == notes.DEFAULT_MODELS["gemini"] and "secret" not in repr(client)
+    monkeypatch.setenv("ECGAUG_LLM_PROVIDER", "otherllm")
     assert notes.client_from_env() is None
     monkeypatch.setenv("LLM_API_KEY", "sk-secret-value")
     monkeypatch.setenv("ECGAUG_LLM_MODEL", "llm-model")
     client = notes.client_from_env()
-    assert client.model == "llm-model" and "secret" not in repr(client)
+    assert client.provider == "otherllm" and client.model == "llm-model" and "secret" not in repr(client)
     monkeypatch.setenv("ECGAUG_LLM_PROVIDER", "other")
     with pytest.raises(ValueError, match="not built"):
         notes.client_from_env()
+
+
+def test_gemini_request_and_reply_map_to_the_shared_format():
+    client = notes.LLMClient("gemini-test", "g-secret-value", "gemini")
+    request = client._request("system text", [{"role": "user", "content": "q"}, {"role": "assistant", "content": "a"}])
+    body = json.loads(request.data)
+    assert "g-secret-value" not in request.full_url and request.get_header("X-goog-api-key") == "g-secret-value"
+    assert [c["role"] for c in body["contents"]] == ["user", "model"] and body["systemInstruction"]["parts"][0]["text"] == "system text"
+    reply = {"candidates": [{"content": {"parts": [{"text": "hidden", "thought": True}, {"text": "The note."}]}}],
+             "usageMetadata": {"promptTokenCount": 12, "candidatesTokenCount": 5, "thoughtsTokenCount": 3}}  # fmt: skip
+    assert client._parse(reply) == ("The note.", {"input_tokens": 12, "output_tokens": 8})
 
 
 def test_cases_are_stratified_with_enough_low_confidence():

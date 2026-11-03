@@ -63,7 +63,7 @@ def test_policy_smoke_run():
 
 @pytest.fixture
 def project(tmp_root):
-    shutil.copytree(REPO / "configs", paths.configs_dir())
+    shutil.copytree(REPO / "configs", paths.configs_dir(), ignore=shutil.ignore_patterns("full_grid.yaml"))  # written by the 4a gate
     return tmp_root
 
 

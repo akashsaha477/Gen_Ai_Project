@@ -204,8 +204,9 @@ uv run python -m ecgaug.paper
 What each variant is, how to run it and what to check: `docs/briefs/<experiment>_<variant>.md`.
 `scripts/reproduce.sh` lists the whole order. The paper's results sentences and hypothesis verdicts are
 written by `python -m ecgaug.paper` from the result files (`src/ecgaug/paper_text.py`); compile
-`paper/main.tex` and `paper/report.tex` with pdflatex and bibtex. The LLM note variants need `LLM_API_KEY` (and
-optionally `ECGAUG_LLM_MODEL`) in the environment; without it the template note is used.
+`paper/main.tex` and `paper/report.tex` with pdflatex and bibtex. The LLM note variants need `GEMINI_API_KEY` (free
+tier from aistudio.google.com; or `ECGAUG_LLM_PROVIDER=otherllm` with `LLM_API_KEY`, and optionally
+`ECGAUG_LLM_MODEL`) in the environment; without it the template note is used.
 
 ## Troubleshooting
 

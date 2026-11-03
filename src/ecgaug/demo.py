@@ -1,7 +1,7 @@
 """Demo: one validation beat in, prediction, probabilities, saliency plot and a fact-checked note out (PLAN Phase 5).
 
     python -m ecgaug.demo --record 118 --beat 100              # the beat at position 100 among the record's usable beats
-    python -m ecgaug.demo --record 118 --beat 100 --notes llm  # the note variant chosen at the phase 5 gate (needs LLM_API_KEY)
+    python -m ecgaug.demo --record 118 --beat 100 --notes llm  # the note variant chosen at the phase 5 gate (needs GEMINI_API_KEY)
     python -m ecgaug.demo --smoke                              # a fake record and a tiny model, to check a fresh clone
 
 Only validation records are accepted (the test records are locked anyway). The model is the best seed
