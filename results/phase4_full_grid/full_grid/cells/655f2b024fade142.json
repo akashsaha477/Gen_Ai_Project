@@ -1,0 +1,29 @@
+{
+  "cell_sha": "655f2b024fade142f975eb38b643f38867b02a92b17586aebb7ba72c980f9c9a",
+  "cell": {
+    "condition": "smote",
+    "strength": 0.5,
+    "architecture": "cnn",
+    "seed": 2
+  },
+  "condition": "smote",
+  "strength": 0.5,
+  "architecture": "cnn",
+  "seed": 2,
+  "run_id": "phase4_full_grid-cnn.smote_0.5-s2-382e1b1-202611032016",
+  "status": "done",
+  "bank": null,
+  "selection_metric": "s_f1",
+  "selection_value": 0.3155080213903743,
+  "tie_break_value": 0.3222049689440994,
+  "rare_macro_f1": 0.18347748336399744,
+  "n_recall": 0.8663127413127413,
+  "n_added": {
+    "N": 0,
+    "S": 17089,
+    "V": 14702,
+    "F": 17345
+  },
+  "wall_clock_s": 22.3,
+  "provisional": false
+}

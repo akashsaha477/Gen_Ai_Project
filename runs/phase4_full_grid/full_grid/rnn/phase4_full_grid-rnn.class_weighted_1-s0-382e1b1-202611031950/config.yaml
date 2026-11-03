@@ -1,0 +1,67 @@
+grid: configs/phase4_full_grid/full_grid.yaml
+grid_name: full_grid
+cell:
+  condition: class_weighted
+  strength: 1.0
+  architecture: rnn
+  seed: 0
+cell_sha: 8dc0305512214be4b6fd8dd04ab7cf0c8a49cba870080ebacbed8728b0c3536d
+policy:
+  kind: fraction_of_n_screened
+  pool_factor: 2.0
+condition_settings:
+  gammas:
+  - 0.5
+  - 0.75
+  - 1.0
+bank: null
+classifier:
+  variant: C
+  config: configs/phase2_baseline_classifiers/C_bilstm.yaml
+  model:
+    name: bilstm
+    hidden: 64
+    layers: 2
+    side_hidden: 16
+  lr: 0.001
+  max_epochs: 40
+  patience: 5
+  min_epochs: 10
+  batch_size: 256
+  weight_decay: 0.01
+  run_ids:
+  - phase2_baseline_classifiers-C.lr1e-03-s0-1b5a746-202611010730
+  - phase2_baseline_classifiers-C.lr1e-03-s1-1b5a746-202611010731
+  - phase2_baseline_classifiers-C.lr1e-03-s2-1b5a746-202611010733
+  checkpoints:
+    phase2_baseline_classifiers-C.lr1e-03-s0-1b5a746-202611010730: f38e920a12b35bff0a3ce635b07e167bb122027ae08bf2930eb08d5654e11670
+    phase2_baseline_classifiers-C.lr1e-03-s1-1b5a746-202611010731: a8031fa32ae25c6068ba90a9b1da49097168aaca2e3a1d68b9b0bba702c85f56
+    phase2_baseline_classifiers-C.lr1e-03-s2-1b5a746-202611010733: 04ffc1496509f8f20e9a85189fac835d55d714c933c7ac4785e7468c17af4b07
+class_weights:
+- 1.0
+- 55.153965785381025
+- 11.704290429042905
+- 91.63824289405684
+n_added:
+  N: 0
+  S: 0
+  V: 0
+  F: 0
+run_id: phase4_full_grid-rnn.class_weighted_1-s0-382e1b1-202611031950
+split:
+  name: V1
+  val:
+  - 115
+  - 118
+  - 201
+  - 205
+  - 223
+  selection_metric: s_f1
+dataset:
+  source: rebuilt from the raw records (C_short_window_rr_features) and checked against
+    the frozen hash
+  representation: C_short_window_rr_features
+  content_sha256: 2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896
+  frozen: true
+provisional: false
+provisional_reasons: []
