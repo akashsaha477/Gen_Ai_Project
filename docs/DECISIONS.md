@@ -255,5 +255,9 @@ The note variants B-D (phase5_clinical_notes) call Gemini by default (`ECGAUG_LL
 free tier), not the paid API first planned, which is billed separately. The other provider stayed available with
 `ECGAUG_LLM_PROVIDER=otherllm`. Nothing pre-registered changes: PREREGISTRATION does not name a provider or model;
 prompts, the fact checker, `max_tokens` 400, 50 cases and 2 retries are unchanged. The model used is recorded in each
-variant's result (`model`). Free-tier inputs may be used by Google; the inputs are only the beat JSON of docs/RULES.md §5
+variant's result (`model`). Model `gemini-3.5-flash` with thinking level `minimal` (`ECGAUG_LLM_THINKING`), chosen
+from a one-request probe on a made-up beat (no project data): `gemini-2.5-flash` is closed to new keys, the Pro models
+have no free quota, `gemini-3.8-flash` answered 503 (high demand) repeatedly, and `gemini-3.5-flash` at its default
+thinking level spent 396 of the 400 output tokens thinking and cut the note off; at `minimal` it used 89 tokens and
+passed the fact checker. The 400-token limit is not pre-registered and is unchanged. Free-tier inputs may be used by Google; the inputs are only the beat JSON of docs/RULES.md §5
 (anonymised record id, class probabilities, segment masses) from the public MIT-BIH database.

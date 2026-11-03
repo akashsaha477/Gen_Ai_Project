@@ -135,7 +135,7 @@ def test_llm_variants_with_a_fake_client():
 
 
 def test_llm_client_comes_from_the_environment_and_hides_the_key(monkeypatch):
-    for name in ("GEMINI_API_KEY", "LLM_API_KEY", "ECGAUG_LLM_PROVIDER", "ECGAUG_LLM_MODEL"):
+    for name in ("GEMINI_API_KEY", "LLM_API_KEY", "ECGAUG_LLM_PROVIDER", "ECGAUG_LLM_MODEL", "ECGAUG_LLM_THINKING"):
         monkeypatch.delenv(name, raising=False)
     assert notes.client_from_env() is None
     monkeypatch.setenv("GEMINI_API_KEY", "g-secret-value")
@@ -158,6 +158,7 @@ def test_gemini_request_and_reply_map_to_the_shared_format():
     body = json.loads(request.data)
     assert "g-secret-value" not in request.full_url and request.get_header("X-goog-api-key") == "g-secret-value"
     assert [c["role"] for c in body["contents"]] == ["user", "model"] and body["systemInstruction"]["parts"][0]["text"] == "system text"
+    assert body["generationConfig"] == {"maxOutputTokens": 400, "thinkingConfig": {"thinkingLevel": notes.GEMINI_THINKING}}
     reply = {"candidates": [{"content": {"parts": [{"text": "hidden", "thought": True}, {"text": "The note."}]}}],
              "usageMetadata": {"promptTokenCount": 12, "candidatesTokenCount": 5, "thoughtsTokenCount": 3}}  # fmt: skip
     assert client._parse(reply) == ("The note.", {"input_tokens": 12, "output_tokens": 8})

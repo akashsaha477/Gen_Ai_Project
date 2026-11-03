@@ -18,7 +18,8 @@ present word for word, and a low-confidence case must say that clinician review 
 
 **LLM provider** from the environment: ``ECGAUG_LLM_PROVIDER`` (``gemini``, the default, or
 ``otherllm``), ``ECGAUG_LLM_MODEL`` (default per provider in ``DEFAULT_MODELS``) and the provider's key
-(``GEMINI_API_KEY`` or ``LLM_API_KEY``). The key is read from the environment only and is never
+(``GEMINI_API_KEY`` or ``LLM_API_KEY``). Gemini's thinking level is ``ECGAUG_LLM_THINKING`` (default
+``minimal``): thinking tokens count against the 400-token limit, and at the model's default level they used it all. The key is read from the environment only and is never
 printed or written. The request uses the standard library (no new dependency); rate-limit replies (429,
 503) are retried with a wait. Without a key, B, C and D cannot run and the template is used.
 """
@@ -36,7 +37,8 @@ CLASS_NAMES = {"N": "normal beat", "S": "supraventricular ectopic beat", "V": "v
 SEGMENT_NAMES = {"P": "P wave", "QRS": "QRS complex", "ST": "ST segment", "T": "T wave"}
 DISCLAIMER = "This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician."
 REVIEW_REQUIRED = "Clinician review is required."
-DEFAULT_MODELS = {"gemini": "gemini-2.5-flash", "otherllm": "llm-model"}
+DEFAULT_MODELS = {"gemini": "gemini-3.5-flash", "otherllm": "llm-model"}
+GEMINI_THINKING = "minimal"
 API_KEYS = {"gemini": "GEMINI_API_KEY", "otherllm": "LLM_API_KEY"}
 API_URLS = {"gemini": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
             "otherllm": "https://api.example.invalid/v1/messages"}  # fmt: skip
@@ -142,11 +144,11 @@ class LLMClient:
     """Gemini or another provider text generation over HTTPS (standard library only)."""
 
     def __init__(self, model: str, api_key: str, provider: str = "gemini", max_tokens: int = 400, timeout_s: float = 60.0,
-                 max_waits: int = 6) -> None:  # fmt: skip
+                 max_waits: int = 6, thinking: str | None = GEMINI_THINKING) -> None:  # fmt: skip
         if provider not in API_URLS:
             raise ValueError(f"LLM provider {provider!r} is not built; use one of {sorted(API_URLS)}")
         self.model, self._key, self.provider = model, api_key, provider
-        self.max_tokens, self.timeout_s, self.max_waits = max_tokens, timeout_s, max_waits
+        self.max_tokens, self.timeout_s, self.max_waits, self.thinking = max_tokens, timeout_s, max_waits, thinking
 
     def _request(self, system: str, messages: list[dict]) -> urllib.request.Request:
         if self.provider == "otherllm":
@@ -156,6 +158,8 @@ class LLMClient:
             contents = [{"role": "model" if m["role"] == "assistant" else "user", "parts": [{"text": m["content"]}]} for m in messages]
             body = {"systemInstruction": {"parts": [{"text": system}]}, "contents": contents,
                     "generationConfig": {"maxOutputTokens": self.max_tokens}}  # fmt: skip
+            if self.thinking:
+                body["generationConfig"]["thinkingConfig"] = {"thinkingLevel": self.thinking}
             headers = {"x-goog-api-key": self._key}  # in a header, never in the URL
         url = API_URLS[self.provider].format(model=self.model)
         return urllib.request.Request(url, data=json.dumps(body).encode(), method="POST", headers={**headers, "content-type": "application/json"})
@@ -185,7 +189,7 @@ class LLMClient:
         return {"text": text.strip(), "usage": usage, "latency_s": time.perf_counter() - started}
 
     def __repr__(self) -> str:  # never show the key
-        return f"LLMClient(provider={self.provider!r}, model={self.model!r})"
+        return f"LLMClient(provider={self.provider!r}, model={self.model!r}, thinking={self.thinking!r})"
 
 
 def client_from_env() -> LLMClient | None:
@@ -194,7 +198,10 @@ def client_from_env() -> LLMClient | None:
     if provider not in API_KEYS:
         raise ValueError(f"LLM provider {provider!r} is not built; use one of {sorted(API_KEYS)}")
     key = os.environ.get(API_KEYS[provider])
-    return LLMClient(os.environ.get("ECGAUG_LLM_MODEL", DEFAULT_MODELS[provider]), key, provider) if key else None
+    if not key:
+        return None
+    thinking = os.environ.get("ECGAUG_LLM_THINKING", GEMINI_THINKING) if provider == "gemini" else None
+    return LLMClient(os.environ.get("ECGAUG_LLM_MODEL", DEFAULT_MODELS[provider]), key, provider, thinking=thinking)
 
 
 SYSTEM_B = (
