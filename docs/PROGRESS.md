@@ -662,5 +662,6 @@ cnn and rnn, seeds 0-2: 96 runs. Started on Kaggle in one session.
 `src/ecgaug/report/notes.py`: `LLMClient` now speaks Gemini (default) or another provider, with the key in a header and waits on
 rate-limit replies (429/503); usage maps to the same input/output token fields (Gemini thinking tokens count as output).
 Tests updated (`tests/test_phase5.py`, all pass). Notebook, kaggle/README.md and README.md name `GEMINI_API_KEY`.
-Open: confirm the default model name against the key's model list and run a 2-3 beat smoke test (notes cut off at 400
-tokens?) before the real run.
+Model probe (one made-up beat, no project data): default set to `gemini-3.5-flash` with thinking level `minimal`;
+at the default thinking level the note was cut off after 396 thinking tokens (details in A21). Key is in the macOS
+Keychain; the `~/.zshrc` export line still has to be added by Akash.
