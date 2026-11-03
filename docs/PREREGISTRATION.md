@@ -193,6 +193,20 @@ team commits it in the version named above:
 | class-weight exponents | gamma in {0.5, 0.75, 1} |
 | seeds | 3 (`final_seeds: [0, 1, 2]`; pilots use 0 and 1). 5 only if approved at the phase 3 gate (docs/RULES.md rule 8) |
 
+**v3, committed 2026-11-03 at the phase 3 gate, before any phase4_augmentation_policy run:**
+
+| item | rule |
+|---|---|
+| policies | A balance each minority class to the training N count; B each minority class up to a fraction of N; C add a multiple of each minority class's real count; D as B, keeping of 2 x the needed bank beats those closest to real beats by DTW |
+| pilot strengths | A none; B 0.5 x N; C 2 x real count; D 0.5 x N |
+| grid strengths of the winner | B and D {0.1, 0.25, 0.5} x N; C {1, 2, 4} x real count; A none |
+| pilot classifier and seeds | the phase 2 `cnn` (variant A); seeds 0, 1, 2, classifier seed s with bank seed s of both banks |
+| pilot score | per seed the mean over the two banks of validation S F1; a policy's score is the mean over seeds |
+| constraint | a policy whose mean N recall over the two banks is more than 0.01 below the no-augmentation reference is out (A14.11; per-bank drops are reported, not enforced) |
+| selection | best score; ties within max(0.02, pooled SD) go to V F1, then to lower complexity (A 1, B 2, C 2, D 3) (A19) |
+| SMOTE and random oversampling | same policy and strengths as the generators; no quality screen |
+| seeds of the full grid | 3 (`[0, 1, 2]`); 5 not adopted (decided at the phase 3 gate, DECISIONS A20) |
+
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 
 ## 11. Deviations and amendments
@@ -201,3 +215,4 @@ Each version is committed before the experiments it governs, tagged `prereg-vK` 
 |---|---|---|---|---|
 | 2026-10-26 | §4 early stopping | `min_epochs: 10` for every MIT-BIH classifier from phase 2 on | 10 of 24 phase 1 runs stopped at epoch 6 on an all-N model (PHASE1_REPORT §6); fixed before any phase 2 run | Akash Saha (DECISIONS A15), pending team confirmation |
 | 2026-11-01 | §9 RQ3 | The separate TSTR analysis has no data: TSTR was not scored in the sanity harness and is not in the composite | Fixed recipe gives S F1 = 0 on real beats (PROGRESS 2026-11-01); to be stated in the paper | Akash Saha (phase 2 gate) |
+| 2026-11-03 | §10 v2 diversity floor | cVAE D bank seed 1 has lowest diversity 0.694 (class S), under the 0.7 floor; the bank is kept and frozen | The floor is pre-registered for pilot seeds only; final banks have no rule, and adding one after seeing the result would be post hoc. Disclosed in the paper | Akash Saha (phase 3 gate, DECISIONS A20) |

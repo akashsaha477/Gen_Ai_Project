@@ -609,3 +609,11 @@ Needs a team decision before approval:
 - cVAE D F banks contain a few beats with late artefacts (visible in the figure); WGAN-GP A F beats look closer to real.
 
 Next: team decision on the diversity point, then `approve gate 3`; then the banks dataset and the phase 4 policy pilot.
+
+## 2026-11-03 (Day 28) — Phase 3 gate approved; PREREGISTRATION v3 committed
+
+Phase 3 gate approved by Akash Saha: banks phase3_cvae-D and phase3_wgan_gp-A, seeds 0-2, frozen (hashes in
+`results/manifest.json`). DECISIONS A20: the cVAE D seed 1 bank (diversity 0.694) is kept and disclosed; 3 seeds; A19
+confirmed. PREREGISTRATION v3 (policy pilot and grid strengths) committed and tagged `prereg-v3` before any policy run.
+
+Next: banks as a private Kaggle dataset, then the phase4_augmentation_policy pilot (all four letters, one session).

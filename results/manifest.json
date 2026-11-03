@@ -158,5 +158,202 @@
     ],
     "approved_on": "2026-11-02",
     "git_sha": "115741d1b1e7b4ed9d357957cea783a359122277"
+  },
+  "phase3_gate": {
+    "phase3_cvae": {
+      "generator_id": "phase3_cvae-D",
+      "banks": {
+        "0": {
+          "file": "data/synthetic/phase3_cvae-D/seed0.npz",
+          "sha256": "d4a236a8da1d345f2740d51e9b7182ace27db808838743ed5f57e85bb101668d",
+          "content_sha256": "562f4dfd4c43649bf81fb7c1d60d0cf840fd4b83023e634efce2078d909bb995",
+          "counts": {
+            "S": 34821,
+            "V": 32434,
+            "F": 35077
+          },
+          "diagnostics": {
+            "S": {
+              "n_scored": 1000,
+              "diversity_ratio": 0.8089919745718489,
+              "memorization_fraction": 0.049,
+              "c2st_accuracy": 0.934678611287063
+            },
+            "V": {
+              "n_scored": 1000,
+              "diversity_ratio": 0.9707169645713225,
+              "memorization_fraction": 0.001,
+              "c2st_accuracy": 0.9299999999999999
+            },
+            "F": {
+              "n_scored": 1000,
+              "diversity_ratio": 0.9185072132122143,
+              "memorization_fraction": 0.083,
+              "c2st_accuracy": 0.9586426476749057
+            }
+          }
+        },
+        "1": {
+          "file": "data/synthetic/phase3_cvae-D/seed1.npz",
+          "sha256": "66774136332bb95dd7193665549b942f09ed20c124d93a84515d05328808d3bb",
+          "content_sha256": "4f596a4b806aeec61f058e93e73bf022ef48933e126274e8e052b48ad8a3239b",
+          "counts": {
+            "S": 34821,
+            "V": 32434,
+            "F": 35077
+          },
+          "diagnostics": {
+            "S": {
+              "n_scored": 1000,
+              "diversity_ratio": 0.6939545539137361,
+              "memorization_fraction": 0.04,
+              "c2st_accuracy": 0.9517781196271832
+            },
+            "V": {
+              "n_scored": 1000,
+              "diversity_ratio": 0.9377955626048835,
+              "memorization_fraction": 0.006,
+              "c2st_accuracy": 0.9339999999999999
+            },
+            "F": {
+              "n_scored": 1000,
+              "diversity_ratio": 0.7955939024905467,
+              "memorization_fraction": 0.077,
+              "c2st_accuracy": 0.9689652283200669
+            }
+          }
+        },
+        "2": {
+          "file": "data/synthetic/phase3_cvae-D/seed2.npz",
+          "sha256": "82b4d51ca70cf8a538d1d54d8c4a52eb03b30f5e0286aa53dc5be46d40492c5b",
+          "content_sha256": "b34ee2ad5b26dfc60ba836f5b24c6081a3787b64298e793fea31c4c831a3a04b",
+          "counts": {
+            "S": 34821,
+            "V": 32434,
+            "F": 35077
+          },
+          "diagnostics": {
+            "S": {
+              "n_scored": 1000,
+              "diversity_ratio": 0.7887724089482768,
+              "memorization_fraction": 0.042,
+              "c2st_accuracy": 0.9408922269477877
+            },
+            "V": {
+              "n_scored": 1000,
+              "diversity_ratio": 0.9597184900754431,
+              "memorization_fraction": 0.0,
+              "c2st_accuracy": 0.9259999999999999
+            },
+            "F": {
+              "n_scored": 1000,
+              "diversity_ratio": 0.9847495946447545,
+              "memorization_fraction": 0.07,
+              "c2st_accuracy": 0.9690071219103478
+            }
+          }
+        }
+      }
+    },
+    "phase3_wgan_gp": {
+      "generator_id": "phase3_wgan_gp-A",
+      "banks": {
+        "0": {
+          "file": "data/synthetic/phase3_wgan_gp-A/seed0.npz",
+          "sha256": "f951e694e1fc1ecb6849d63d8bd65ade8ba0e3a45244fe11c7faa25b64c44840",
+          "content_sha256": "888378df83a9848dd7fe9c715468c848417f5fef645a581ecf1255fcde220367",
+          "counts": {
+            "S": 34821,
+            "V": 32434,
+            "F": 35077
+          },
+          "diagnostics": {
+            "S": {
+              "n_scored": 1000,
+              "diversity_ratio": 1.000274882400649,
+              "memorization_fraction": 0.0,
+              "c2st_accuracy": 0.9261092510481707
+            },
+            "V": {
+              "n_scored": 1000,
+              "diversity_ratio": 0.9752471825169948,
+              "memorization_fraction": 0.0,
+              "c2st_accuracy": 0.9494999999999999
+            },
+            "F": {
+              "n_scored": 1000,
+              "diversity_ratio": 0.9603818710752969,
+              "memorization_fraction": 0.0,
+              "c2st_accuracy": 0.9444407205697528
+            }
+          }
+        },
+        "1": {
+          "file": "data/synthetic/phase3_wgan_gp-A/seed1.npz",
+          "sha256": "f393be937eeafbfdbd52fcff9d9d11201132b6f3980553496a9e1c97fc40d75b",
+          "content_sha256": "f031890d9d00335f450a7cb2c0d7980102aac3b5ff83707da8c1fbe84791d0a2",
+          "counts": {
+            "S": 34821,
+            "V": 32434,
+            "F": 35077
+          },
+          "diagnostics": {
+            "S": {
+              "n_scored": 1000,
+              "diversity_ratio": 1.0179911435137972,
+              "memorization_fraction": 0.0,
+              "c2st_accuracy": 0.9362501131119357
+            },
+            "V": {
+              "n_scored": 1000,
+              "diversity_ratio": 1.008967373350791,
+              "memorization_fraction": 0.0,
+              "c2st_accuracy": 0.9354999999999999
+            },
+            "F": {
+              "n_scored": 1000,
+              "diversity_ratio": 0.9877150471443953,
+              "memorization_fraction": 0.0,
+              "c2st_accuracy": 0.9625638877251781
+            }
+          }
+        },
+        "2": {
+          "file": "data/synthetic/phase3_wgan_gp-A/seed2.npz",
+          "sha256": "b35c8cd088f2b492b1fa354e41eca7491e7ac093d3d521cd51e258298ce3c145",
+          "content_sha256": "cde43a905b35ec35cefefdedb3571f0ddcaf4fbfe2c908e7df7cf58867fcabc8",
+          "counts": {
+            "S": 34821,
+            "V": 32434,
+            "F": 35077
+          },
+          "diagnostics": {
+            "S": {
+              "n_scored": 1000,
+              "diversity_ratio": 0.9974558496454482,
+              "memorization_fraction": 0.001,
+              "c2st_accuracy": 0.9595662534310622
+            },
+            "V": {
+              "n_scored": 1000,
+              "diversity_ratio": 1.0115302986230938,
+              "memorization_fraction": 0.0,
+              "c2st_accuracy": 0.9520000000000002
+            },
+            "F": {
+              "n_scored": 1000,
+              "diversity_ratio": 0.9803229883261162,
+              "memorization_fraction": 0.0,
+              "c2st_accuracy": 0.9715458734813573
+            }
+          }
+        }
+      }
+    },
+    "approved_by": [
+      "Akash Saha"
+    ],
+    "approved_on": "2026-11-03",
+    "git_sha": "c6e65fa12d6bc33694c57f2de20d78dd31ddb40b"
   }
 }
