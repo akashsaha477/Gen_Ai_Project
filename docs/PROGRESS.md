@@ -578,3 +578,34 @@ Approved by Akash Saha: phase3_cvae variant D (default), phase3_wgan_gp variant 
 Next: `kaggle/phase3_cvae.ipynb` and `kaggle/phase3_wgan_gp.ipynb` with `MODE = "final"` (about 2 GPU-hours in total,
 estimated), ingest the zips, then the phase 3 gate. Still open: A19 confirmation, per-bank or average N recall limit,
 3 or 5 seeds (decided at the phase 3 gate).
+
+## 2026-11-03 (Day 28) — Phase 3 final runs done; phase 3 gate report written
+
+Final runs on Kaggle T4 (private notebooks on Akash's account; the code came from a git bundle of `main` at d68d316,
+uploaded as the private dataset `akashsaha477/ecgaug-repo`, because the GitHub repository is private). 20,000 steps,
+seeds 0-2, no divergence, every bank's train-only check passed, hashes recorded.
+
+| generator | seed | run ID | val S F1 | V F1 | F F1 | N recall | wall-clock (s) |
+|---|---|---|---|---|---|---|---|
+| cVAE D | 0 | phase3_cvae-D.final-s0-d68d316-202611031658 | 0.5245 | 0.5385 | 0.079 | 0.9788 | 1035 |
+| cVAE D | 1 | phase3_cvae-D.final-s1-d68d316-202611031715 | 0.5064 | 0.5900 | 0.000 | 0.9888 | 1006 |
+| cVAE D | 2 | phase3_cvae-D.final-s2-d68d316-202611031732 | 0.3598 | 0.4449 | 0.000 | 0.9768 | 1024 |
+| WGAN-GP A | 0 | see results/phase3_wgan_gp/A_final.json | 0.3411 | 0.6777 | 0.056 | 0.9776 | 1394 |
+| WGAN-GP A | 1 | same | 0.4966 | 0.2718 | 0.000 | 0.9871 | 1366 |
+| WGAN-GP A | 2 | same | 0.3636 | 0.4303 | 0.058 | 0.8252 | 1385 |
+
+Means over seeds (S F1): cVAE D 0.4636 ± 0.0903, WGAN-GP A 0.4005 ± 0.0841. These come from the pilot classifier inside
+each run and are diagnostics, not the phase 4 comparison. Total about 2.3 GPU-hours (sum of wall-clock), close to the
+estimate.
+
+Gate report: `results/phase3_gate/report.md`; figure `figures/phase3_gate/banks.png` (`scripts/phase3_bank_figure.py`:
+real training beats next to bank seed 0 of each family, per class).
+
+Needs a team decision before approval:
+- cVAE D bank seed 1: lowest diversity ratio 0.694 (class S), below the 0.7 floor. The run's own diagnostic sample gave
+  0.701. The pre-registered floor covers pilot seeds only (PLAN Phase 3, PREREGISTRATION §10), so the gate checks pass
+  as written; the rule does not say what to do with a final bank under the floor.
+- WGAN-GP A: V F1 varies widely across seeds (0.272 to 0.678), and N recall at seed 2 is 0.825.
+- cVAE D F banks contain a few beats with late artefacts (visible in the figure); WGAN-GP A F beats look closer to real.
+
+Next: team decision on the diversity point, then `approve gate 3`; then the banks dataset and the phase 4 policy pilot.

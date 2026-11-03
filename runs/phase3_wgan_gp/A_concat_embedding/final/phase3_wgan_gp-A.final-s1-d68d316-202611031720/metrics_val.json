@@ -1,0 +1,108 @@
+{
+  "selection_metric": "s_f1",
+  "diverged": false,
+  "divergence": null,
+  "steps_done": 20000,
+  "n_beats": 11445,
+  "accuracy": 0.9176059414591524,
+  "rare_macro_f1": 0.2483221476510067,
+  "macro_f1": 0.43190089420380545,
+  "n_recall": 0.9870656370656371,
+  "aami": {
+    "se_S": 0.49333333333333335,
+    "ppv_S": 0.5,
+    "se_V": 0.16886543535620052,
+    "ppv_V": 0.6956521739130435
+  },
+  "per_class": {
+    "N": {
+      "support": 10360,
+      "predicted": 10962,
+      "precision": 0.9328589673417259,
+      "recall": 0.9870656370656371,
+      "f1": 0.9591970734452678
+    },
+    "S": {
+      "support": 300,
+      "predicted": 296,
+      "precision": 0.5,
+      "recall": 0.49333333333333335,
+      "f1": 0.4966442953020134
+    },
+    "V": {
+      "support": 758,
+      "predicted": 184,
+      "precision": 0.6956521739130435,
+      "recall": 0.16886543535620052,
+      "f1": 0.27176220806794055
+    },
+    "F": {
+      "support": 27,
+      "predicted": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      10226,
+      132,
+      2,
+      0
+    ],
+    [
+      98,
+      148,
+      54,
+      0
+    ],
+    [
+      611,
+      16,
+      128,
+      3
+    ],
+    [
+      27,
+      0,
+      0,
+      0
+    ]
+  ],
+  "pr_auc": {
+    "N": 0.9674456155976328,
+    "S": 0.45108615957528925,
+    "V": 0.5405026815375725,
+    "F": 0.05337352092949484
+  },
+  "macro_pr_auc": 0.5031019944099974,
+  "rare_macro_pr_auc": 0.25222984025239203,
+  "selection_value": 0.4966442953020134,
+  "best_epoch": 3,
+  "epochs_run": 10,
+  "diagnostics": {
+    "S": {
+      "n_scored": 1000,
+      "diversity_ratio": 0.9690721336495004,
+      "memorization_fraction": 0.0,
+      "c2st_accuracy": 0.9518022501734384
+    },
+    "V": {
+      "n_scored": 1000,
+      "diversity_ratio": 1.0479376140359353,
+      "memorization_fraction": 0.0,
+      "c2st_accuracy": 0.942
+    },
+    "F": {
+      "n_scored": 1000,
+      "diversity_ratio": 0.9710207719966257,
+      "memorization_fraction": 0.0,
+      "c2st_accuracy": 0.9677167993297026
+    }
+  },
+  "quality": {
+    "dtw": 1.4039834121443844,
+    "spectral": 0.013473703068304192
+  }
+}

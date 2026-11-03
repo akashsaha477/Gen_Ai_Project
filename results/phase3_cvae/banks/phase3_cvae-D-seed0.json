@@ -1,0 +1,48 @@
+{
+  "generator_id": "phase3_cvae-D",
+  "seed": 0,
+  "file": "seed0.npz",
+  "sha256": "d4a236a8da1d345f2740d51e9b7182ace27db808838743ed5f57e85bb101668d",
+  "content_sha256": "562f4dfd4c43649bf81fb7c1d60d0cf840fd4b83023e634efce2078d909bb995",
+  "n_beats": 102332,
+  "counts": {
+    "S": 34821,
+    "V": 32434,
+    "F": 35077
+  },
+  "created_utc": "2026-11-03T17:15:41Z",
+  "run_id": "phase3_cvae-D.final-s0-d68d316-202611031658",
+  "config": "configs/phase3_cvae/D_residual_film.yaml",
+  "setting": "default",
+  "step": 20000,
+  "checkpoint_sha256": "00a9f5568121b385a8477a7bc3d63eecdf9e6cf6dd6ee3b6b071b71fb098e1e9",
+  "train_only_check": "passed",
+  "dataset": {
+    "source": "rebuilt from the raw records (C_short_window_rr_features) and checked against the frozen hash",
+    "representation": "C_short_window_rr_features",
+    "content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896",
+    "frozen": true
+  },
+  "diagnostics": {
+    "S": {
+      "n_scored": 1000,
+      "diversity_ratio": 0.8089919745718489,
+      "memorization_fraction": 0.049,
+      "c2st_accuracy": 0.934678611287063
+    },
+    "V": {
+      "n_scored": 1000,
+      "diversity_ratio": 0.9707169645713225,
+      "memorization_fraction": 0.001,
+      "c2st_accuracy": 0.9299999999999999
+    },
+    "F": {
+      "n_scored": 1000,
+      "diversity_ratio": 0.9185072132122143,
+      "memorization_fraction": 0.083,
+      "c2st_accuracy": 0.9586426476749057
+    }
+  },
+  "provisional": false,
+  "provisional_reasons": []
+}

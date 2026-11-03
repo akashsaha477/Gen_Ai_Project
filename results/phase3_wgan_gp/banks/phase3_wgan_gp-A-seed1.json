@@ -1,0 +1,48 @@
+{
+  "generator_id": "phase3_wgan_gp-A",
+  "seed": 1,
+  "file": "seed1.npz",
+  "sha256": "f393be937eeafbfdbd52fcff9d9d11201132b6f3980553496a9e1c97fc40d75b",
+  "content_sha256": "f031890d9d00335f450a7cb2c0d7980102aac3b5ff83707da8c1fbe84791d0a2",
+  "n_beats": 102332,
+  "counts": {
+    "S": 34821,
+    "V": 32434,
+    "F": 35077
+  },
+  "created_utc": "2026-11-03T17:43:04Z",
+  "run_id": "phase3_wgan_gp-A.final-s1-d68d316-202611031720",
+  "config": "configs/phase3_wgan_gp/A_concat_embedding.yaml",
+  "setting": "default",
+  "step": 20000,
+  "checkpoint_sha256": "24f32d37083de259246eae29e2ea6ac0e6d237e0514199fd5d344f6de72979b8",
+  "train_only_check": "passed",
+  "dataset": {
+    "source": "rebuilt from the raw records (C_short_window_rr_features) and checked against the frozen hash",
+    "representation": "C_short_window_rr_features",
+    "content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896",
+    "frozen": true
+  },
+  "diagnostics": {
+    "S": {
+      "n_scored": 1000,
+      "diversity_ratio": 1.0179911435137972,
+      "memorization_fraction": 0.0,
+      "c2st_accuracy": 0.9362501131119357
+    },
+    "V": {
+      "n_scored": 1000,
+      "diversity_ratio": 1.008967373350791,
+      "memorization_fraction": 0.0,
+      "c2st_accuracy": 0.9354999999999999
+    },
+    "F": {
+      "n_scored": 1000,
+      "diversity_ratio": 0.9877150471443953,
+      "memorization_fraction": 0.0,
+      "c2st_accuracy": 0.9625638877251781
+    }
+  },
+  "provisional": false,
+  "provisional_reasons": []
+}
