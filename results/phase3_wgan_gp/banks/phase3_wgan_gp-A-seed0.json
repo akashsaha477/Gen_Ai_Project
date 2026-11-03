@@ -1,0 +1,48 @@
+{
+  "generator_id": "phase3_wgan_gp-A",
+  "seed": 0,
+  "file": "seed0.npz",
+  "sha256": "f951e694e1fc1ecb6849d63d8bd65ade8ba0e3a45244fe11c7faa25b64c44840",
+  "content_sha256": "888378df83a9848dd7fe9c715468c848417f5fef645a581ecf1255fcde220367",
+  "n_beats": 102332,
+  "counts": {
+    "S": 34821,
+    "V": 32434,
+    "F": 35077
+  },
+  "created_utc": "2026-11-03T17:20:14Z",
+  "run_id": "phase3_wgan_gp-A.final-s0-d68d316-202611031656",
+  "config": "configs/phase3_wgan_gp/A_concat_embedding.yaml",
+  "setting": "default",
+  "step": 20000,
+  "checkpoint_sha256": "6778932c19121fc9bbdb0e8034db7f61c186b17072ca9404732098a1fb754937",
+  "train_only_check": "passed",
+  "dataset": {
+    "source": "rebuilt from the raw records (C_short_window_rr_features) and checked against the frozen hash",
+    "representation": "C_short_window_rr_features",
+    "content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896",
+    "frozen": true
+  },
+  "diagnostics": {
+    "S": {
+      "n_scored": 1000,
+      "diversity_ratio": 1.000274882400649,
+      "memorization_fraction": 0.0,
+      "c2st_accuracy": 0.9261092510481707
+    },
+    "V": {
+      "n_scored": 1000,
+      "diversity_ratio": 0.9752471825169948,
+      "memorization_fraction": 0.0,
+      "c2st_accuracy": 0.9494999999999999
+    },
+    "F": {
+      "n_scored": 1000,
+      "diversity_ratio": 0.9603818710752969,
+      "memorization_fraction": 0.0,
+      "c2st_accuracy": 0.9444407205697528
+    }
+  },
+  "provisional": false,
+  "provisional_reasons": []
+}

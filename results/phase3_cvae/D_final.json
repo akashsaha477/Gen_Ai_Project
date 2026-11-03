@@ -1,0 +1,352 @@
+{
+  "experiment": "phase3_cvae",
+  "variant": "D",
+  "family": "cvae",
+  "mode": "final",
+  "generator_id": "phase3_cvae-D",
+  "setting": "default",
+  "provisional": false,
+  "provisional_reasons": [],
+  "dataset": {
+    "source": "rebuilt from the raw records (C_short_window_rr_features) and checked against the frozen hash",
+    "representation": "C_short_window_rr_features",
+    "content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896",
+    "frozen": true
+  },
+  "steps": 20000,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "per_seed": [
+    {
+      "seed": 0,
+      "run_id": "phase3_cvae-D.final-s0-d68d316-202611031658",
+      "setting": "default",
+      "steps": 20000,
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "n_parameters": 803841,
+      "generator_seconds": 879.581281808,
+      "wall_clock_s": 1034.50580929,
+      "checkpoints": [
+        {
+          "checkpoint": 1,
+          "step": 5000,
+          "selection_value": 0.42424242424242425,
+          "min_diversity_ratio": 0.80250696796954,
+          "max_memorization_fraction": 0.019
+        },
+        {
+          "checkpoint": 2,
+          "step": 10000,
+          "selection_value": 0.4028103044496487,
+          "min_diversity_ratio": 0.7915902830752278,
+          "max_memorization_fraction": 0.051
+        },
+        {
+          "checkpoint": 3,
+          "step": 15000,
+          "selection_value": 0.4351851851851852,
+          "min_diversity_ratio": 0.8210298098350103,
+          "max_memorization_fraction": 0.066
+        },
+        {
+          "checkpoint": 4,
+          "step": 20000,
+          "selection_value": 0.5244618395303327,
+          "min_diversity_ratio": 0.8118578028778366,
+          "max_memorization_fraction": 0.08
+        }
+      ],
+      "selection_value": 0.5244618395303327,
+      "tie_break_value": 0.5385179750550256,
+      "rare_macro_f1": 0.3016009985053238,
+      "f1": {
+        "N": 0.9708458997558523,
+        "S": 0.5244618395303327,
+        "V": 0.5385179750550256,
+        "F": 0.07874015748031496
+      },
+      "pr_auc": {
+        "N": 0.9915201542233826,
+        "S": 0.4867003071862636,
+        "V": 0.622505665743123,
+        "F": 0.06819818604223608
+      },
+      "n_recall": 0.9787644787644788,
+      "diagnostics": {
+        "S": {
+          "n_scored": 1000,
+          "diversity_ratio": 0.8118578028778366,
+          "memorization_fraction": 0.05,
+          "c2st_accuracy": 0.9268934938014659
+        },
+        "V": {
+          "n_scored": 1000,
+          "diversity_ratio": 0.961859959258815,
+          "memorization_fraction": 0.005,
+          "c2st_accuracy": 0.93
+        },
+        "F": {
+          "n_scored": 1000,
+          "diversity_ratio": 0.9609369903425303,
+          "memorization_fraction": 0.08,
+          "c2st_accuracy": 0.9625219941348974
+        }
+      },
+      "quality": {
+        "dtw": 1.1226753428107745,
+        "spectral": 0.03187694145801536
+      },
+      "classifier_best_epoch": 13,
+      "classifier_epochs_run": 18,
+      "bank": {
+        "generator_id": "phase3_cvae-D",
+        "file": "seed0.npz",
+        "sha256": "d4a236a8da1d345f2740d51e9b7182ace27db808838743ed5f57e85bb101668d",
+        "content_sha256": "562f4dfd4c43649bf81fb7c1d60d0cf840fd4b83023e634efce2078d909bb995",
+        "counts": {
+          "S": 34821,
+          "V": 32434,
+          "F": 35077
+        }
+      }
+    },
+    {
+      "seed": 1,
+      "run_id": "phase3_cvae-D.final-s1-d68d316-202611031715",
+      "setting": "default",
+      "steps": 20000,
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "n_parameters": 803841,
+      "generator_seconds": 882.0188822650002,
+      "wall_clock_s": 1006.3289369350002,
+      "checkpoints": [
+        {
+          "checkpoint": 1,
+          "step": 5000,
+          "selection_value": 0.3206751054852321,
+          "min_diversity_ratio": 0.805652130324881,
+          "max_memorization_fraction": 0.007
+        },
+        {
+          "checkpoint": 2,
+          "step": 10000,
+          "selection_value": 0.44081632653061226,
+          "min_diversity_ratio": 0.6848057016953236,
+          "max_memorization_fraction": 0.036
+        },
+        {
+          "checkpoint": 3,
+          "step": 15000,
+          "selection_value": 0.4989339019189765,
+          "min_diversity_ratio": 0.7826685470476317,
+          "max_memorization_fraction": 0.045
+        },
+        {
+          "checkpoint": 4,
+          "step": 20000,
+          "selection_value": 0.5063752276867031,
+          "min_diversity_ratio": 0.7013196312477601,
+          "max_memorization_fraction": 0.069
+        }
+      ],
+      "selection_value": 0.5063752276867031,
+      "tie_break_value": 0.590032154340836,
+      "rare_macro_f1": 0.25318761384335153,
+      "f1": {
+        "N": 0.9723777883246322,
+        "S": 0.5063752276867031,
+        "V": 0.590032154340836,
+        "F": 0.0
+      },
+      "pr_auc": {
+        "N": 0.9844163310154297,
+        "S": 0.4472210886556043,
+        "V": 0.6399238800236348,
+        "F": 0.05415419142963253
+      },
+      "n_recall": 0.9888030888030888,
+      "diagnostics": {
+        "S": {
+          "n_scored": 1000,
+          "diversity_ratio": 0.7013196312477601,
+          "memorization_fraction": 0.031,
+          "c2st_accuracy": 0.9572286067625857
+        },
+        "V": {
+          "n_scored": 1000,
+          "diversity_ratio": 0.9069984911668406,
+          "memorization_fraction": 0.004,
+          "c2st_accuracy": 0.9269999999999999
+        },
+        "F": {
+          "n_scored": 1000,
+          "diversity_ratio": 0.8047717484986819,
+          "memorization_fraction": 0.069,
+          "c2st_accuracy": 0.9793045664013406
+        }
+      },
+      "quality": {
+        "dtw": 0.9989747555955167,
+        "spectral": 0.041193978716303835
+      },
+      "classifier_best_epoch": 5,
+      "classifier_epochs_run": 10,
+      "bank": {
+        "generator_id": "phase3_cvae-D",
+        "file": "seed1.npz",
+        "sha256": "66774136332bb95dd7193665549b942f09ed20c124d93a84515d05328808d3bb",
+        "content_sha256": "4f596a4b806aeec61f058e93e73bf022ef48933e126274e8e052b48ad8a3239b",
+        "counts": {
+          "S": 34821,
+          "V": 32434,
+          "F": 35077
+        }
+      }
+    },
+    {
+      "seed": 2,
+      "run_id": "phase3_cvae-D.final-s2-d68d316-202611031732",
+      "setting": "default",
+      "steps": 20000,
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "n_parameters": 803841,
+      "generator_seconds": 880.9600237600002,
+      "wall_clock_s": 1023.8914301210002,
+      "checkpoints": [
+        {
+          "checkpoint": 1,
+          "step": 5000,
+          "selection_value": 0.3588516746411483,
+          "min_diversity_ratio": 0.8516311850610133,
+          "max_memorization_fraction": 0.05
+        },
+        {
+          "checkpoint": 2,
+          "step": 10000,
+          "selection_value": 0.37474541751527496,
+          "min_diversity_ratio": 0.781500951423923,
+          "max_memorization_fraction": 0.037
+        },
+        {
+          "checkpoint": 3,
+          "step": 15000,
+          "selection_value": 0.5862785862785863,
+          "min_diversity_ratio": 0.8036092500812707,
+          "max_memorization_fraction": 0.07
+        },
+        {
+          "checkpoint": 4,
+          "step": 20000,
+          "selection_value": 0.3598130841121495,
+          "min_diversity_ratio": 0.7939468872416411,
+          "max_memorization_fraction": 0.067
+        }
+      ],
+      "selection_value": 0.3598130841121495,
+      "tie_break_value": 0.4449182658137882,
+      "rare_macro_f1": 0.17990654205607476,
+      "f1": {
+        "N": 0.9625261556020545,
+        "S": 0.3598130841121495,
+        "V": 0.4449182658137882,
+        "F": 0.0
+      },
+      "pr_auc": {
+        "N": 0.9796490456750797,
+        "S": 0.3268417561675941,
+        "V": 0.460058926889871,
+        "F": 0.09154786593961388
+      },
+      "n_recall": 0.9768339768339769,
+      "diagnostics": {
+        "S": {
+          "n_scored": 1000,
+          "diversity_ratio": 0.7939468872416411,
+          "memorization_fraction": 0.031,
+          "c2st_accuracy": 0.9385666455524386
+        },
+        "V": {
+          "n_scored": 1000,
+          "diversity_ratio": 0.9613165118309864,
+          "memorization_fraction": 0.002,
+          "c2st_accuracy": 0.9279999999999999
+        },
+        "F": {
+          "n_scored": 1000,
+          "diversity_ratio": 0.9894174827704763,
+          "memorization_fraction": 0.067,
+          "c2st_accuracy": 0.9741600335148721
+        }
+      },
+      "quality": {
+        "dtw": 1.0549663336973403,
+        "spectral": 0.038121957560369346
+      },
+      "classifier_best_epoch": 5,
+      "classifier_epochs_run": 10,
+      "bank": {
+        "generator_id": "phase3_cvae-D",
+        "file": "seed2.npz",
+        "sha256": "82b4d51ca70cf8a538d1d54d8c4a52eb03b30f5e0286aa53dc5be46d40492c5b",
+        "content_sha256": "b34ee2ad5b26dfc60ba836f5b24c6081a3787b64298e793fea31c4c831a3a04b",
+        "counts": {
+          "S": 34821,
+          "V": 32434,
+          "F": 35077
+        }
+      }
+    }
+  ],
+  "run_ids": [
+    "phase3_cvae-D.final-s0-d68d316-202611031658",
+    "phase3_cvae-D.final-s1-d68d316-202611031715",
+    "phase3_cvae-D.final-s2-d68d316-202611031732"
+  ],
+  "banks": [
+    {
+      "generator_id": "phase3_cvae-D",
+      "file": "seed0.npz",
+      "sha256": "d4a236a8da1d345f2740d51e9b7182ace27db808838743ed5f57e85bb101668d",
+      "content_sha256": "562f4dfd4c43649bf81fb7c1d60d0cf840fd4b83023e634efce2078d909bb995",
+      "counts": {
+        "S": 34821,
+        "V": 32434,
+        "F": 35077
+      }
+    },
+    {
+      "generator_id": "phase3_cvae-D",
+      "file": "seed1.npz",
+      "sha256": "66774136332bb95dd7193665549b942f09ed20c124d93a84515d05328808d3bb",
+      "content_sha256": "4f596a4b806aeec61f058e93e73bf022ef48933e126274e8e052b48ad8a3239b",
+      "counts": {
+        "S": 34821,
+        "V": 32434,
+        "F": 35077
+      }
+    },
+    {
+      "generator_id": "phase3_cvae-D",
+      "file": "seed2.npz",
+      "sha256": "82b4d51ca70cf8a538d1d54d8c4a52eb03b30f5e0286aa53dc5be46d40492c5b",
+      "content_sha256": "b34ee2ad5b26dfc60ba836f5b24c6081a3787b64298e793fea31c4c831a3a04b",
+      "counts": {
+        "S": 34821,
+        "V": 32434,
+        "F": 35077
+      }
+    }
+  ],
+  "diverged_seeds": [],
+  "device": "cuda",
+  "git_sha": "d68d31642d31b064c58fd4bf91f92b30e305aaff"
+}

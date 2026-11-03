@@ -1,0 +1,352 @@
+{
+  "experiment": "phase3_wgan_gp",
+  "variant": "A",
+  "family": "wgan_gp",
+  "mode": "final",
+  "generator_id": "phase3_wgan_gp-A",
+  "setting": "default",
+  "provisional": false,
+  "provisional_reasons": [],
+  "dataset": {
+    "source": "rebuilt from the raw records (C_short_window_rr_features) and checked against the frozen hash",
+    "representation": "C_short_window_rr_features",
+    "content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896",
+    "frozen": true
+  },
+  "steps": 20000,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "per_seed": [
+    {
+      "seed": 0,
+      "run_id": "phase3_wgan_gp-A.final-s0-d68d316-202611031656",
+      "setting": "default",
+      "steps": 20000,
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "n_parameters": 501362,
+      "generator_seconds": 1235.8980350539998,
+      "wall_clock_s": 1394.0042509369998,
+      "checkpoints": [
+        {
+          "checkpoint": 1,
+          "step": 5000,
+          "selection_value": 0.37322515212981744,
+          "min_diversity_ratio": 0.9803365962721834,
+          "max_memorization_fraction": 0.0
+        },
+        {
+          "checkpoint": 2,
+          "step": 10000,
+          "selection_value": 0.34498834498834496,
+          "min_diversity_ratio": 0.9830740044229906,
+          "max_memorization_fraction": 0.0
+        },
+        {
+          "checkpoint": 3,
+          "step": 15000,
+          "selection_value": 0.3463203463203463,
+          "min_diversity_ratio": 1.0080323891809635,
+          "max_memorization_fraction": 0.0
+        },
+        {
+          "checkpoint": 4,
+          "step": 20000,
+          "selection_value": 0.34108527131782945,
+          "min_diversity_ratio": 1.0030436639506268,
+          "max_memorization_fraction": 0.0
+        }
+      ],
+      "selection_value": 0.34108527131782945,
+      "tie_break_value": 0.6777281429483089,
+      "rare_macro_f1": 0.1983204134366925,
+      "f1": {
+        "N": 0.9752058158008762,
+        "S": 0.34108527131782945,
+        "V": 0.6777281429483089,
+        "F": 0.05555555555555555
+      },
+      "pr_auc": {
+        "N": 0.9929065427672013,
+        "S": 0.27919941240290536,
+        "V": 0.6853442898945297,
+        "F": 0.047586745900520554
+      },
+      "n_recall": 0.9776061776061776,
+      "diagnostics": {
+        "S": {
+          "n_scored": 1000,
+          "diversity_ratio": 1.0276545618852955,
+          "memorization_fraction": 0.0,
+          "c2st_accuracy": 0.9183542967453928
+        },
+        "V": {
+          "n_scored": 1000,
+          "diversity_ratio": 1.0148873006676769,
+          "memorization_fraction": 0.0,
+          "c2st_accuracy": 0.9400000000000001
+        },
+        "F": {
+          "n_scored": 1000,
+          "diversity_ratio": 1.0030436639506268,
+          "memorization_fraction": 0.0,
+          "c2st_accuracy": 0.9638039379974863
+        }
+      },
+      "quality": {
+        "dtw": 1.296212657145199,
+        "spectral": 0.013411160019622857
+      },
+      "classifier_best_epoch": 8,
+      "classifier_epochs_run": 13,
+      "bank": {
+        "generator_id": "phase3_wgan_gp-A",
+        "file": "seed0.npz",
+        "sha256": "f951e694e1fc1ecb6849d63d8bd65ade8ba0e3a45244fe11c7faa25b64c44840",
+        "content_sha256": "888378df83a9848dd7fe9c715468c848417f5fef645a581ecf1255fcde220367",
+        "counts": {
+          "S": 34821,
+          "V": 32434,
+          "F": 35077
+        }
+      }
+    },
+    {
+      "seed": 1,
+      "run_id": "phase3_wgan_gp-A.final-s1-d68d316-202611031720",
+      "setting": "default",
+      "steps": 20000,
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "n_parameters": 501362,
+      "generator_seconds": 1243.2681023930004,
+      "wall_clock_s": 1365.815684004,
+      "checkpoints": [
+        {
+          "checkpoint": 1,
+          "step": 5000,
+          "selection_value": 0.4174573055028463,
+          "min_diversity_ratio": 0.9341225888522555,
+          "max_memorization_fraction": 0.0
+        },
+        {
+          "checkpoint": 2,
+          "step": 10000,
+          "selection_value": 0.3741648106904232,
+          "min_diversity_ratio": 0.9894867536197534,
+          "max_memorization_fraction": 0.0
+        },
+        {
+          "checkpoint": 3,
+          "step": 15000,
+          "selection_value": 0.43014705882352944,
+          "min_diversity_ratio": 0.9854741459986945,
+          "max_memorization_fraction": 0.0
+        },
+        {
+          "checkpoint": 4,
+          "step": 20000,
+          "selection_value": 0.4966442953020134,
+          "min_diversity_ratio": 0.9690721336495004,
+          "max_memorization_fraction": 0.0
+        }
+      ],
+      "selection_value": 0.4966442953020134,
+      "tie_break_value": 0.27176220806794055,
+      "rare_macro_f1": 0.2483221476510067,
+      "f1": {
+        "N": 0.9591970734452678,
+        "S": 0.4966442953020134,
+        "V": 0.27176220806794055,
+        "F": 0.0
+      },
+      "pr_auc": {
+        "N": 0.9674456155976328,
+        "S": 0.45108615957528925,
+        "V": 0.5405026815375725,
+        "F": 0.05337352092949484
+      },
+      "n_recall": 0.9870656370656371,
+      "diagnostics": {
+        "S": {
+          "n_scored": 1000,
+          "diversity_ratio": 0.9690721336495004,
+          "memorization_fraction": 0.0,
+          "c2st_accuracy": 0.9518022501734384
+        },
+        "V": {
+          "n_scored": 1000,
+          "diversity_ratio": 1.0479376140359353,
+          "memorization_fraction": 0.0,
+          "c2st_accuracy": 0.942
+        },
+        "F": {
+          "n_scored": 1000,
+          "diversity_ratio": 0.9710207719966257,
+          "memorization_fraction": 0.0,
+          "c2st_accuracy": 0.9677167993297026
+        }
+      },
+      "quality": {
+        "dtw": 1.4039834121443844,
+        "spectral": 0.013473703068304192
+      },
+      "classifier_best_epoch": 3,
+      "classifier_epochs_run": 10,
+      "bank": {
+        "generator_id": "phase3_wgan_gp-A",
+        "file": "seed1.npz",
+        "sha256": "f393be937eeafbfdbd52fcff9d9d11201132b6f3980553496a9e1c97fc40d75b",
+        "content_sha256": "f031890d9d00335f450a7cb2c0d7980102aac3b5ff83707da8c1fbe84791d0a2",
+        "counts": {
+          "S": 34821,
+          "V": 32434,
+          "F": 35077
+        }
+      }
+    },
+    {
+      "seed": 2,
+      "run_id": "phase3_wgan_gp-A.final-s2-d68d316-202611031743",
+      "setting": "default",
+      "steps": 20000,
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "n_parameters": 501362,
+      "generator_seconds": 1243.2352401730004,
+      "wall_clock_s": 1385.4613859289993,
+      "checkpoints": [
+        {
+          "checkpoint": 1,
+          "step": 5000,
+          "selection_value": 0.3168831168831169,
+          "min_diversity_ratio": 0.958025375514181,
+          "max_memorization_fraction": 0.0
+        },
+        {
+          "checkpoint": 2,
+          "step": 10000,
+          "selection_value": 0.4163568773234201,
+          "min_diversity_ratio": 0.9454078656164524,
+          "max_memorization_fraction": 0.0
+        },
+        {
+          "checkpoint": 3,
+          "step": 15000,
+          "selection_value": 0.373015873015873,
+          "min_diversity_ratio": 0.9722011874712312,
+          "max_memorization_fraction": 0.0
+        },
+        {
+          "checkpoint": 4,
+          "step": 20000,
+          "selection_value": 0.36363636363636365,
+          "min_diversity_ratio": 0.9305246386942109,
+          "max_memorization_fraction": 0.0
+        }
+      ],
+      "selection_value": 0.36363636363636365,
+      "tie_break_value": 0.43028624192059095,
+      "rare_macro_f1": 0.210595160235448,
+      "f1": {
+        "N": 0.8990430118834788,
+        "S": 0.36363636363636365,
+        "V": 0.43028624192059095,
+        "F": 0.05755395683453238
+      },
+      "pr_auc": {
+        "N": 0.9948784959646766,
+        "S": 0.2900913139685036,
+        "V": 0.6742651470322987,
+        "F": 0.03552745497887243
+      },
+      "n_recall": 0.8251930501930502,
+      "diagnostics": {
+        "S": {
+          "n_scored": 1000,
+          "diversity_ratio": 1.025564520487354,
+          "memorization_fraction": 0.0,
+          "c2st_accuracy": 0.9533496214520557
+        },
+        "V": {
+          "n_scored": 1000,
+          "diversity_ratio": 1.0470886430799788,
+          "memorization_fraction": 0.0,
+          "c2st_accuracy": 0.9555
+        },
+        "F": {
+          "n_scored": 1000,
+          "diversity_ratio": 0.9305246386942109,
+          "memorization_fraction": 0.0,
+          "c2st_accuracy": 0.9638123167155426
+        }
+      },
+      "quality": {
+        "dtw": 1.408244531692522,
+        "spectral": 0.012565898600223549
+      },
+      "classifier_best_epoch": 10,
+      "classifier_epochs_run": 15,
+      "bank": {
+        "generator_id": "phase3_wgan_gp-A",
+        "file": "seed2.npz",
+        "sha256": "b35c8cd088f2b492b1fa354e41eca7491e7ac093d3d521cd51e258298ce3c145",
+        "content_sha256": "cde43a905b35ec35cefefdedb3571f0ddcaf4fbfe2c908e7df7cf58867fcabc8",
+        "counts": {
+          "S": 34821,
+          "V": 32434,
+          "F": 35077
+        }
+      }
+    }
+  ],
+  "run_ids": [
+    "phase3_wgan_gp-A.final-s0-d68d316-202611031656",
+    "phase3_wgan_gp-A.final-s1-d68d316-202611031720",
+    "phase3_wgan_gp-A.final-s2-d68d316-202611031743"
+  ],
+  "banks": [
+    {
+      "generator_id": "phase3_wgan_gp-A",
+      "file": "seed0.npz",
+      "sha256": "f951e694e1fc1ecb6849d63d8bd65ade8ba0e3a45244fe11c7faa25b64c44840",
+      "content_sha256": "888378df83a9848dd7fe9c715468c848417f5fef645a581ecf1255fcde220367",
+      "counts": {
+        "S": 34821,
+        "V": 32434,
+        "F": 35077
+      }
+    },
+    {
+      "generator_id": "phase3_wgan_gp-A",
+      "file": "seed1.npz",
+      "sha256": "f393be937eeafbfdbd52fcff9d9d11201132b6f3980553496a9e1c97fc40d75b",
+      "content_sha256": "f031890d9d00335f450a7cb2c0d7980102aac3b5ff83707da8c1fbe84791d0a2",
+      "counts": {
+        "S": 34821,
+        "V": 32434,
+        "F": 35077
+      }
+    },
+    {
+      "generator_id": "phase3_wgan_gp-A",
+      "file": "seed2.npz",
+      "sha256": "b35c8cd088f2b492b1fa354e41eca7491e7ac093d3d521cd51e258298ce3c145",
+      "content_sha256": "cde43a905b35ec35cefefdedb3571f0ddcaf4fbfe2c908e7df7cf58867fcabc8",
+      "counts": {
+        "S": 34821,
+        "V": 32434,
+        "F": 35077
+      }
+    }
+  ],
+  "diverged_seeds": [],
+  "device": "cuda",
+  "git_sha": "d68d31642d31b064c58fd4bf91f92b30e305aaff"
+}
