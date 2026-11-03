@@ -355,5 +355,24 @@
     ],
     "approved_on": "2026-11-03",
     "git_sha": "c6e65fa12d6bc33694c57f2de20d78dd31ddb40b"
+  },
+  "phase4a_gate": {
+    "winner": "D",
+    "config": "configs/phase4_augmentation_policy/D_fraction_of_n_screened.yaml",
+    "policy": {
+      "kind": "fraction_of_n_screened",
+      "pool_factor": 2.0
+    },
+    "strengths": [
+      0.1,
+      0.25,
+      0.5
+    ],
+    "full_grid": "configs/phase4_full_grid/full_grid.yaml",
+    "approved_by": [
+      "Akash Saha"
+    ],
+    "approved_on": "2026-11-04",
+    "git_sha": "5e572fdf2bbb58cb7d9797f8eef1a6e2305be4ba"
   }
 }

@@ -650,3 +650,9 @@ Full grid if D is approved: 96 runs (cnn and rnn x 16 cells x 3 seeds) with 18 D
 pilot times: about 3 hours in one Kaggle session (rnn runs dominate). Estimate, not a run.
 
 Next: `approve gate 4a`, then the full grid.
+
+## 2026-11-04 (Day 29) — Phase 4a gate approved; full grid started
+
+Approved by Akash Saha: policy D (fraction_of_n_screened), strengths 0.1, 0.25, 0.5 x N. `configs/phase4_full_grid/full_grid.yaml`
+written by the gate: none, class-weighted (gamma 0.5, 0.75, 1), random oversampling, SMOTE, cVAE D and WGAN-GP A, for the
+cnn and rnn, seeds 0-2: 96 runs. Started on Kaggle in one session.
