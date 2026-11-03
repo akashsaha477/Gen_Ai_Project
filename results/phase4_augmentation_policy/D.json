@@ -1,0 +1,101 @@
+{
+  "experiment": "phase4_augmentation_policy",
+  "variant": "D",
+  "description": "As B, but quality-screened: from twice as many bank beats keep those closest to real training beats by DTW.",
+  "policy": {
+    "kind": "fraction_of_n_screened",
+    "pool_factor": 2.0
+  },
+  "pilot_strength": 0.5,
+  "grid_strengths": [
+    0.1,
+    0.25,
+    0.5
+  ],
+  "complexity": 3,
+  "classifier": "cnn",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "per_bank": {
+    "cvae": {
+      "bank": "phase3_cvae-D",
+      "selection_value": 0.3853851793690952,
+      "selection_sd": 0.0631691733194652,
+      "per_seed": [
+        0.4581196581196581,
+        0.35377358490566035,
+        0.3442622950819672
+      ],
+      "tie_break_value": 0.5772551717463221,
+      "tie_break_drop": 0.10137645079774915,
+      "n_recall": 0.9919562419562421,
+      "n_recall_drop": -0.012998712998713025,
+      "run_ids": [
+        "phase4_augmentation_policy-D.cnn.cvae_0.5-s0-aa1bb1d-202611031851",
+        "phase4_augmentation_policy-D.cnn.cvae_0.5-s1-aa1bb1d-202611031856",
+        "phase4_augmentation_policy-D.cnn.cvae_0.5-s2-aa1bb1d-202611031902"
+      ]
+    },
+    "wgan_gp": {
+      "bank": "phase3_wgan_gp-A",
+      "selection_value": 0.3798277376089374,
+      "selection_sd": 0.0064100144489837915,
+      "per_seed": [
+        0.3724696356275304,
+        0.3828125,
+        0.38420107719928187
+      ],
+      "tie_break_value": 0.5615962548515547,
+      "tie_break_drop": 0.11703536769251655,
+      "n_recall": 0.9787323037323037,
+      "n_recall_drop": 0.00022522522522538946,
+      "run_ids": [
+        "phase4_augmentation_policy-D.cnn.wgan_gp_0.5-s0-aa1bb1d-202611031907",
+        "phase4_augmentation_policy-D.cnn.wgan_gp_0.5-s1-aa1bb1d-202611031912",
+        "phase4_augmentation_policy-D.cnn.wgan_gp_0.5-s2-aa1bb1d-202611031917"
+      ]
+    }
+  },
+  "mean": 0.3826064584890163,
+  "sd": 0.028381541513330718,
+  "tie_break_mean": 0.5694257132989384,
+  "tie_break_sd": 0.029722397096646716,
+  "reference": {
+    "run_ids": [
+      "phase4_augmentation_policy-cnn.none-s0-aa1bb1d-202611031835",
+      "phase4_augmentation_policy-cnn.none-s1-aa1bb1d-202611031835",
+      "phase4_augmentation_policy-cnn.none-s2-aa1bb1d-202611031836"
+    ],
+    "selection_value": 0.34859079758471173,
+    "tie_break_value": 0.6786316225440713,
+    "n_recall": 0.9789575289575291
+  },
+  "constraint": {
+    "max_n_recall_drop": 0.01,
+    "n_recall_drop": -0.0063867438867438175,
+    "passed": true
+  },
+  "provisional": false,
+  "provisional_reasons": [],
+  "split": {
+    "name": "V1",
+    "val": [
+      115,
+      118,
+      201,
+      205,
+      223
+    ]
+  },
+  "selection_metric": "s_f1",
+  "dataset": {
+    "source": "rebuilt from the raw records (C_short_window_rr_features) and checked against the frozen hash",
+    "representation": "C_short_window_rr_features",
+    "content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896",
+    "frozen": true
+  },
+  "git_sha": "aa1bb1dade08ab64a8f012ad43bce6562ac7eefe"
+}
