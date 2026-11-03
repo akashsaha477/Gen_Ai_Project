@@ -617,3 +617,14 @@ Phase 3 gate approved by Akash Saha: banks phase3_cvae-D and phase3_wgan_gp-A, s
 confirmed. PREREGISTRATION v3 (policy pilot and grid strengths) committed and tagged `prereg-v3` before any policy run.
 
 Next: banks as a private Kaggle dataset, then the phase4_augmentation_policy pilot (all four letters, one session).
+
+## 2026-11-04 (Day 29) — RQ3 run; policy pilot started
+
+RQ3 (`python -m ecgaug.eval.rq3`, exploratory, no decision uses it): 96 checkpoints from 24 generator runs (pilots and
+finals). Spearman rho between each quality metric and the downstream gain, 95% interval from resampling runs: DTW -0.20
+[-0.44, +0.06], spectral -0.00 [-0.25, +0.23], diversity -0.12 [-0.34, +0.13], memorization +0.18 [-0.07, +0.40],
+C2ST +0.04 [-0.20, +0.25]. Every interval includes 0: no quality metric predicted the gain (H3 not supported at this
+sample size). Figure: `figures/phase4_quality_vs_gain/quality_vs_gain.png`.
+
+Banks uploaded as the private Kaggle dataset `akashsaha477/ecgaug-banks` (6 banks, sizes match); repo bundle updated to
+aa1bb1d. phase4_augmentation_policy pilot started on Kaggle (all four letters, one session, T4).
