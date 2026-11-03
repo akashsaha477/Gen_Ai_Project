@@ -16,10 +16,11 @@ input's probabilities or segment masses (as a decimal or a percentage), every cl
 must be in the input, no diagnosis outside the four beat classes may appear, the disclaimer must be
 present word for word, and a low-confidence case must say that clinician review is required.
 
-**LLM provider** from the environment: ``ECGAUG_LLM_PROVIDER`` (``otherllm``, the only one built),
-``ECGAUG_LLM_MODEL`` (default ``llm-model``) and ``LLM_API_KEY``. The key is read from the
-environment only and is never printed or written. The request uses the standard library (no new
-dependency). Without a key, B, C and D cannot run and the template is used.
+**LLM provider** from the environment: ``ECGAUG_LLM_PROVIDER`` (``gemini``, the default, or
+``otherllm``), ``ECGAUG_LLM_MODEL`` (default per provider in ``DEFAULT_MODELS``) and the provider's key
+(``GEMINI_API_KEY`` or ``LLM_API_KEY``). The key is read from the environment only and is never
+printed or written. The request uses the standard library (no new dependency); rate-limit replies (429,
+503) are retried with a wait. Without a key, B, C and D cannot run and the template is used.
 """
 
 from __future__ import annotations
@@ -28,14 +29,17 @@ import json
 import os
 import re
 import time
+import urllib.error
 import urllib.request
 
 CLASS_NAMES = {"N": "normal beat", "S": "supraventricular ectopic beat", "V": "ventricular ectopic beat", "F": "fusion beat"}
 SEGMENT_NAMES = {"P": "P wave", "QRS": "QRS complex", "ST": "ST segment", "T": "T wave"}
 DISCLAIMER = "This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician."
 REVIEW_REQUIRED = "Clinician review is required."
-DEFAULT_MODEL = "llm-model"
-API_URL = "https://api.example.invalid/v1/messages"
+DEFAULT_MODELS = {"gemini": "gemini-2.5-flash", "otherllm": "llm-model"}
+API_KEYS = {"gemini": "GEMINI_API_KEY", "otherllm": "LLM_API_KEY"}
+API_URLS = {"gemini": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+            "otherllm": "https://api.example.invalid/v1/messages"}  # fmt: skip
 
 # Terms that would be claims beyond the input (diagnoses, causes, advice).
 UNSUPPORTED_TERMS = (
@@ -135,32 +139,62 @@ def check_note(note: str, payload: dict) -> dict:
 
 
 class LLMClient:
-    """LLM API over HTTPS (standard library only)."""
+    """Gemini or another provider text generation over HTTPS (standard library only)."""
 
-    def __init__(self, model: str, api_key: str, max_tokens: int = 400, timeout_s: float = 60.0) -> None:
-        self.model, self._key, self.max_tokens, self.timeout_s = model, api_key, max_tokens, timeout_s
+    def __init__(self, model: str, api_key: str, provider: str = "gemini", max_tokens: int = 400, timeout_s: float = 60.0,
+                 max_waits: int = 6) -> None:  # fmt: skip
+        if provider not in API_URLS:
+            raise ValueError(f"LLM provider {provider!r} is not built; use one of {sorted(API_URLS)}")
+        self.model, self._key, self.provider = model, api_key, provider
+        self.max_tokens, self.timeout_s, self.max_waits = max_tokens, timeout_s, max_waits
+
+    def _request(self, system: str, messages: list[dict]) -> urllib.request.Request:
+        if self.provider == "otherllm":
+            body = {"model": self.model, "max_tokens": self.max_tokens, "system": system, "messages": messages}
+            headers = {"x-api-key": self._key, "api-version": "2023-06-01"}
+        else:
+            contents = [{"role": "model" if m["role"] == "assistant" else "user", "parts": [{"text": m["content"]}]} for m in messages]
+            body = {"systemInstruction": {"parts": [{"text": system}]}, "contents": contents,
+                    "generationConfig": {"maxOutputTokens": self.max_tokens}}  # fmt: skip
+            headers = {"x-goog-api-key": self._key}  # in a header, never in the URL
+        url = API_URLS[self.provider].format(model=self.model)
+        return urllib.request.Request(url, data=json.dumps(body).encode(), method="POST", headers={**headers, "content-type": "application/json"})
+
+    def _parse(self, data: dict) -> tuple[str, dict]:
+        if self.provider == "otherllm":
+            text = "".join(block.get("text", "") for block in data.get("content", []) if block.get("type") == "text")
+            return text, data.get("usage", {})
+        parts = (data.get("candidates") or [{}])[0].get("content", {}).get("parts", [])
+        text = "".join(part.get("text", "") for part in parts if not part.get("thought"))
+        meta = data.get("usageMetadata", {})
+        output = int(meta.get("candidatesTokenCount", 0)) + int(meta.get("thoughtsTokenCount", 0))
+        return text, {"input_tokens": int(meta.get("promptTokenCount", 0)), "output_tokens": output}
 
     def complete(self, system: str, messages: list[dict]) -> dict:
-        body = json.dumps({"model": self.model, "max_tokens": self.max_tokens, "system": system, "messages": messages}).encode()
-        request = urllib.request.Request(API_URL, data=body, method="POST", headers={
-            "x-api-key": self._key, "api-version": "2023-06-01", "content-type": "application/json"})  # fmt: skip
-        started = time.perf_counter()
-        with urllib.request.urlopen(request, timeout=self.timeout_s) as response:
-            data = json.loads(response.read())
-        text = "".join(block.get("text", "") for block in data.get("content", []) if block.get("type") == "text")
-        return {"text": text.strip(), "usage": data.get("usage", {}), "latency_s": time.perf_counter() - started}
+        for wait in range(self.max_waits + 1):
+            started = time.perf_counter()
+            try:
+                with urllib.request.urlopen(self._request(system, messages), timeout=self.timeout_s) as response:
+                    data = json.loads(response.read())
+                break
+            except urllib.error.HTTPError as error:  # rate limit or overload: wait and try again
+                if error.code not in (429, 503) or wait == self.max_waits:
+                    raise
+                time.sleep(float(error.headers.get("retry-after") or min(60, 5 * 2**wait)))
+        text, usage = self._parse(data)
+        return {"text": text.strip(), "usage": usage, "latency_s": time.perf_counter() - started}
 
     def __repr__(self) -> str:  # never show the key
-        return f"LLMClient(model={self.model!r})"
+        return f"LLMClient(provider={self.provider!r}, model={self.model!r})"
 
 
 def client_from_env() -> LLMClient | None:
-    """The configured LLM client, or None if no provider key is set."""
-    provider = os.environ.get("ECGAUG_LLM_PROVIDER", "otherllm")
-    if provider != "otherllm":
-        raise ValueError(f"LLM provider {provider!r} is not built; only 'otherllm' is")
-    key = os.environ.get("LLM_API_KEY")
-    return LLMClient(os.environ.get("ECGAUG_LLM_MODEL", DEFAULT_MODEL), key) if key else None
+    """The configured LLM client, or None if the provider's key is not set."""
+    provider = os.environ.get("ECGAUG_LLM_PROVIDER", "gemini")
+    if provider not in API_KEYS:
+        raise ValueError(f"LLM provider {provider!r} is not built; use one of {sorted(API_KEYS)}")
+    key = os.environ.get(API_KEYS[provider])
+    return LLMClient(os.environ.get("ECGAUG_LLM_MODEL", DEFAULT_MODELS[provider]), key, provider) if key else None
 
 
 SYSTEM_B = (
