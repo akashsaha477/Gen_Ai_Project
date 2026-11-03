@@ -1,0 +1,287 @@
+{
+  "question": "RQ3 / H3 (exploratory): Spearman rho between each quality metric and the downstream gain across generator checkpoints",
+  "selection_metric": "s_f1",
+  "n_boot": 2000,
+  "boot_seed": 0,
+  "resampling_unit": "generator training run (variant x setting x seed)",
+  "reference": {
+    "run_id": "phase2_baseline_classifiers-A.lr1e-03-s0-a6ac8bf-202611010715",
+    "selection_value": 0.297951582867784
+  },
+  "provisional": false,
+  "skipped_provisional_results": [],
+  "n_runs": 24,
+  "n_checkpoints": 96,
+  "runs": [
+    {
+      "run_id": "phase3_cvae-A-s0-8b001be-202611011036",
+      "experiment": "phase3_cvae",
+      "family": "cvae",
+      "variant": "A",
+      "setting": "default",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_cvae-A-s1-8b001be-202611011039",
+      "experiment": "phase3_cvae",
+      "family": "cvae",
+      "variant": "A",
+      "setting": "default",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_cvae-B.beta0.1-s0-81ad720-202611011047",
+      "experiment": "phase3_cvae",
+      "family": "cvae",
+      "variant": "B",
+      "setting": "beta0.1",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_cvae-B.beta0.1-s1-81ad720-202611011050",
+      "experiment": "phase3_cvae",
+      "family": "cvae",
+      "variant": "B",
+      "setting": "beta0.1",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_cvae-B.beta0.25-s0-81ad720-202611011052",
+      "experiment": "phase3_cvae",
+      "family": "cvae",
+      "variant": "B",
+      "setting": "beta0.25",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_cvae-B.beta0.25-s1-81ad720-202611011055",
+      "experiment": "phase3_cvae",
+      "family": "cvae",
+      "variant": "B",
+      "setting": "beta0.25",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_cvae-C-s0-9beed2a-202611011100",
+      "experiment": "phase3_cvae",
+      "family": "cvae",
+      "variant": "C",
+      "setting": "default",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_cvae-C-s1-9beed2a-202611011103",
+      "experiment": "phase3_cvae",
+      "family": "cvae",
+      "variant": "C",
+      "setting": "default",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_cvae-D-s0-2b0adc2-202611011109",
+      "experiment": "phase3_cvae",
+      "family": "cvae",
+      "variant": "D",
+      "setting": "default",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_cvae-D-s1-2b0adc2-202611011114",
+      "experiment": "phase3_cvae",
+      "family": "cvae",
+      "variant": "D",
+      "setting": "default",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_cvae-D.final-s0-d68d316-202611031658",
+      "experiment": "phase3_cvae",
+      "family": "cvae",
+      "variant": "D",
+      "setting": "default",
+      "mode": "final",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_cvae-D.final-s1-d68d316-202611031715",
+      "experiment": "phase3_cvae",
+      "family": "cvae",
+      "variant": "D",
+      "setting": "default",
+      "mode": "final",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_cvae-D.final-s2-d68d316-202611031732",
+      "experiment": "phase3_cvae",
+      "family": "cvae",
+      "variant": "D",
+      "setting": "default",
+      "mode": "final",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_wgan_gp-A-s0-24d512a-202611011502",
+      "experiment": "phase3_wgan_gp",
+      "family": "wgan_gp",
+      "variant": "A",
+      "setting": "default",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_wgan_gp-A-s1-24d512a-202611011510",
+      "experiment": "phase3_wgan_gp",
+      "family": "wgan_gp",
+      "variant": "A",
+      "setting": "default",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_wgan_gp-B-s0-2cacc53-202611011711",
+      "experiment": "phase3_wgan_gp",
+      "family": "wgan_gp",
+      "variant": "B",
+      "setting": "default",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_wgan_gp-B-s1-2cacc53-202611011719",
+      "experiment": "phase3_wgan_gp",
+      "family": "wgan_gp",
+      "variant": "B",
+      "setting": "default",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_wgan_gp-C-s0-e63ac5d-202611011730",
+      "experiment": "phase3_wgan_gp",
+      "family": "wgan_gp",
+      "variant": "C",
+      "setting": "default",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_wgan_gp-C-s1-e63ac5d-202611011738",
+      "experiment": "phase3_wgan_gp",
+      "family": "wgan_gp",
+      "variant": "C",
+      "setting": "default",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_wgan_gp-D-s0-e63ac5d-202611011745",
+      "experiment": "phase3_wgan_gp",
+      "family": "wgan_gp",
+      "variant": "D",
+      "setting": "default",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_wgan_gp-D-s1-e63ac5d-202611011752",
+      "experiment": "phase3_wgan_gp",
+      "family": "wgan_gp",
+      "variant": "D",
+      "setting": "default",
+      "mode": "pilot",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_wgan_gp-A.final-s0-d68d316-202611031656",
+      "experiment": "phase3_wgan_gp",
+      "family": "wgan_gp",
+      "variant": "A",
+      "setting": "default",
+      "mode": "final",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_wgan_gp-A.final-s1-d68d316-202611031720",
+      "experiment": "phase3_wgan_gp",
+      "family": "wgan_gp",
+      "variant": "A",
+      "setting": "default",
+      "mode": "final",
+      "provisional": false
+    },
+    {
+      "run_id": "phase3_wgan_gp-A.final-s2-d68d316-202611031743",
+      "experiment": "phase3_wgan_gp",
+      "family": "wgan_gp",
+      "variant": "A",
+      "setting": "default",
+      "mode": "final",
+      "provisional": false
+    }
+  ],
+  "runs_without_checkpoints": [],
+  "metrics": {
+    "quality_dtw": {
+      "group": "fidelity and diversity",
+      "rho": -0.19819587628865978,
+      "n_points": 96,
+      "n_runs": 24,
+      "ci_low": -0.43891310268988665,
+      "ci_high": 0.05881229853936842,
+      "excludes_zero": false,
+      "frac_undefined": 0.0
+    },
+    "quality_spectral": {
+      "group": "fidelity and diversity",
+      "rho": -0.002170374389582203,
+      "n_points": 96,
+      "n_runs": 24,
+      "ci_low": -0.2501036468745712,
+      "ci_high": 0.22936686045777446,
+      "excludes_zero": false,
+      "frac_undefined": 0.0
+    },
+    "diversity_ratio_mean": {
+      "group": "fidelity and diversity",
+      "rho": -0.12027943570265871,
+      "n_points": 96,
+      "n_runs": 24,
+      "ci_low": -0.34155246618222024,
+      "ci_high": 0.1317315520937932,
+      "excludes_zero": false,
+      "frac_undefined": 0.0
+    },
+    "memorization_fraction_mean": {
+      "group": "fidelity and diversity",
+      "rho": 0.17551362702998055,
+      "n_points": 96,
+      "n_runs": 24,
+      "ci_low": -0.0669915485550802,
+      "ci_high": 0.4032161626407177,
+      "excludes_zero": false,
+      "frac_undefined": 0.0
+    },
+    "c2st_accuracy_mean": {
+      "group": "fidelity and diversity",
+      "rho": 0.03878187737384699,
+      "n_points": 96,
+      "n_runs": 24,
+      "ci_low": -0.19812485206855607,
+      "ci_high": 0.24594846349002691,
+      "excludes_zero": false,
+      "frac_undefined": 0.0
+    }
+  },
+  "git_sha": "aa1bb1dade08ab64a8f012ad43bce6562ac7eefe"
+}
