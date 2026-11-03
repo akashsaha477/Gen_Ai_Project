@@ -94,6 +94,7 @@ for pretraining.
 | `configs/` | one folder per experiment (`<experiment>/<letter>_<name>.yaml` plus a shared settings file), `validation_split/`, `phase4_full_grid/` |
 | `paper/` | the LaTeX draft (`main.tex`), `generated/` tables and numbers, `claims_vs_evidence.md` |
 | `scripts/reproduce.sh` | the whole pipeline in order |
+| `scripts/phase3_bank_figure.py` | real training beats next to each frozen bank, per class (`figures/phase3_gate/banks.png`) |
 | `kaggle/` | everything for running on Kaggle; start with `kaggle/README.md` |
 | `runs/` | one folder per training run, grouped by experiment, variant and kind of run |
 | `figures/` | before-and-after figures for each phase, made by code |
