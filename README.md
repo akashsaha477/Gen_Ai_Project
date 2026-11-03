@@ -43,7 +43,7 @@ the one before it; the code refuses to skip ahead and says what is missing.
 | 3 generators | final runs of the two winners, synthetic banks | the same notebooks with `MODE = "final"` | built |
 | 3 generators | phase 3 gate: banks frozen | `python -m ecgaug.workflow phase3-gate [--approve ...]` | approved 2026-11-03: banks frozen (cVAE D seed 1 S diversity 0.694 kept and disclosed, DECISIONS A20) |
 | 4 comparison | `phase4_augmentation_policy` A–D, seeds 0–2 (DECISIONS A19) | `kaggle/phase4_augmentation_policy.ipynb`, all four letters in one session | built |
-| 4 comparison | phase 4a gate: the policy; writes the full grid | `python -m ecgaug.workflow phase4a-gate [--approve ...]` | built |
+| 4 comparison | phase 4a gate: the policy; writes the full grid | `python -m ecgaug.workflow phase4a-gate [--approve ...]` | report written 2026-11-04, pending approval: policy D by rule (only policy within the N recall limit) |
 | 4 comparison | the full grid (96 runs at 3 seeds, resumable) | `kaggle/phase4_full_grid.ipynb` | built |
 | 4 comparison | phase 4 gate: strengths and checkpoints, on validation | `python -m ecgaug.workflow phase4-gate [--approve ...]` | built |
 | 4 comparison | the single final evaluation on the test set | `ALLOW_TEST=1 python -m ecgaug.final_eval --confirm "run final eval"` | built |
@@ -95,6 +95,7 @@ for pretraining.
 | `paper/` | the LaTeX draft (`main.tex`), `generated/` tables and numbers, `claims_vs_evidence.md` |
 | `scripts/reproduce.sh` | the whole pipeline in order |
 | `scripts/phase3_bank_figure.py` | real training beats next to each frozen bank, per class (`figures/phase3_gate/banks.png`) |
+| `scripts/phase4a_policy_figure.py` | the policy pilot against no augmentation, per bank (`figures/phase4a_gate/policies.png`) |
 | `kaggle/` | everything for running on Kaggle; start with `kaggle/README.md` |
 | `runs/` | one folder per training run, grouped by experiment, variant and kind of run |
 | `figures/` | before-and-after figures for each phase, made by code |

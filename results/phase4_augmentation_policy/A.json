@@ -1,0 +1,96 @@
+{
+  "experiment": "phase4_augmentation_policy",
+  "variant": "A",
+  "description": "Balance each minority class up to the training N count.",
+  "policy": {
+    "kind": "balance_to_n"
+  },
+  "pilot_strength": null,
+  "grid_strengths": null,
+  "complexity": 1,
+  "classifier": "cnn",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "per_bank": {
+    "cvae": {
+      "bank": "phase3_cvae-D",
+      "selection_value": 0.42574753856828124,
+      "selection_sd": 0.07276357085584123,
+      "per_seed": [
+        0.4849624060150376,
+        0.44776119402985076,
+        0.34451901565995524
+      ],
+      "tie_break_value": 0.6049419035367368,
+      "tie_break_drop": 0.07368971900733445,
+      "n_recall": 0.9865508365508365,
+      "n_recall_drop": -0.007593307593307452,
+      "run_ids": [
+        "phase4_augmentation_policy-A.cnn.cvae-s0-aa1bb1d-202611031836",
+        "phase4_augmentation_policy-A.cnn.cvae-s1-aa1bb1d-202611031837",
+        "phase4_augmentation_policy-A.cnn.cvae-s2-aa1bb1d-202611031838"
+      ]
+    },
+    "wgan_gp": {
+      "bank": "phase3_wgan_gp-A",
+      "selection_value": 0.36600541940009296,
+      "selection_sd": 0.053896874480494086,
+      "per_seed": [
+        0.41830065359477125,
+        0.31063829787234043,
+        0.3690773067331671
+      ],
+      "tie_break_value": 0.5112890279018011,
+      "tie_break_drop": 0.1673425946422702,
+      "n_recall": 0.8869047619047619,
+      "n_recall_drop": 0.09205276705276721,
+      "run_ids": [
+        "phase4_augmentation_policy-A.cnn.wgan_gp-s0-aa1bb1d-202611031838",
+        "phase4_augmentation_policy-A.cnn.wgan_gp-s1-aa1bb1d-202611031839",
+        "phase4_augmentation_policy-A.cnn.wgan_gp-s2-aa1bb1d-202611031840"
+      ]
+    }
+  },
+  "mean": 0.39587647898418704,
+  "sd": 0.049567398750531864,
+  "tie_break_mean": 0.558115465719269,
+  "tie_break_sd": 0.05738318036791461,
+  "reference": {
+    "run_ids": [
+      "phase4_augmentation_policy-cnn.none-s0-aa1bb1d-202611031835",
+      "phase4_augmentation_policy-cnn.none-s1-aa1bb1d-202611031835",
+      "phase4_augmentation_policy-cnn.none-s2-aa1bb1d-202611031836"
+    ],
+    "selection_value": 0.34859079758471173,
+    "tie_break_value": 0.6786316225440713,
+    "n_recall": 0.9789575289575291
+  },
+  "constraint": {
+    "max_n_recall_drop": 0.01,
+    "n_recall_drop": 0.04222972972972988,
+    "passed": false
+  },
+  "provisional": false,
+  "provisional_reasons": [],
+  "split": {
+    "name": "V1",
+    "val": [
+      115,
+      118,
+      201,
+      205,
+      223
+    ]
+  },
+  "selection_metric": "s_f1",
+  "dataset": {
+    "source": "rebuilt from the raw records (C_short_window_rr_features) and checked against the frozen hash",
+    "representation": "C_short_window_rr_features",
+    "content_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896",
+    "frozen": true
+  },
+  "git_sha": "aa1bb1dade08ab64a8f012ad43bce6562ac7eefe"
+}

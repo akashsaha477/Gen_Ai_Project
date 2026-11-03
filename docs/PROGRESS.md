@@ -628,3 +628,25 @@ sample size). Figure: `figures/phase4_quality_vs_gain/quality_vs_gain.png`.
 
 Banks uploaded as the private Kaggle dataset `akashsaha477/ecgaug-banks` (6 banks, sizes match); repo bundle updated to
 aa1bb1d. phase4_augmentation_policy pilot started on Kaggle (all four letters, one session, T4).
+
+## 2026-11-04 (Day 29) — Policy pilot done; phase 4a gate report written
+
+phase4_augmentation_policy on Kaggle (T4, one session, run commit aa1bb1d): 24 policy runs and 3 shared reference runs,
+ingested. Reference (cnn, no augmentation, seeds 0-2): S F1 0.3486, V F1 0.6786, N recall 0.9790, identical to the
+phase 2 baseline. Policy scores (S F1, mean over seeds of the mean over banks; N recall drop on the mean over banks):
+
+| policy | S F1 | V F1 | N recall drop | within limit |
+|---|---|---|---|---|
+| A balance to N | 0.3959 ± 0.0496 | 0.5581 | +0.0422 | no |
+| B 0.5 x N | 0.4463 ± 0.0458 | 0.4574 | +0.0156 | no |
+| C 2 x real | 0.4008 ± 0.0461 | 0.5615 | +0.0348 | no |
+| D 0.5 x N, DTW-screened | 0.3826 ± 0.0284 | 0.5694 | -0.0064 | yes |
+
+By rule (PREREGISTRATION v3): D, the only policy within the N recall limit. Every policy raised S F1 above the reference
+and lowered V F1 (by 0.11 to 0.22). WGAN-GP A with policy A dropped N recall to 0.887. Report:
+`results/phase4a_gate/report.md`; figure `figures/phase4a_gate/policies.png` (`scripts/phase4a_policy_figure.py`).
+
+Full grid if D is approved: 96 runs (cnn and rnn x 16 cells x 3 seeds) with 18 DTW screens. Estimate from the measured
+pilot times: about 3 hours in one Kaggle session (rnn runs dominate). Estimate, not a run.
+
+Next: `approve gate 4a`, then the full grid.
