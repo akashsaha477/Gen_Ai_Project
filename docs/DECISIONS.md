@@ -203,7 +203,7 @@ Choices where PLAN Phase 4 and PAPER_TRACK RQ3 leave the detail open:
 phase2_baseline_classifiers: cnn = variant A, rnn = variant C; phase2_quality_metrics: composite = dtw, spectral — evidence: results/phase2_gate/report.md — rule: PLAN Phase 2, PREREGISTRATION §4
 Frozen artifacts (hashes): checkpoints and feature network, see results/manifest.json
 
-## 2026-11-02 (Day 27) — A19: the policy pilot, changed from the phase 3 pilot results — proposed by Akash Saha, PENDING TEAM CONFIRMATION
+## 2026-11-02 (Day 27) — A19: the policy pilot, changed from the phase 3 pilot results — proposed by Akash Saha, confirmed by Akash Saha on 2026-11-03 (A20)
 
 Evidence: `results/phase3a_gate/report.md`. No phase4_augmentation_policy run existed when these were made, and
 no policy result was seen. They belong in PREREGISTRATION v3, which is committed before that pilot.
@@ -224,3 +224,23 @@ Open for the team: whether the N recall limit should apply per bank (stricter; i
 
 ## the phase 3a gate — 2026-11-02 — status: APPROVED by Akash Saha
 phase3_cvae: winner D (setting default) — phase3_wgan_gp: winner A (setting default) — evidence: results/phase3a_gate/report.md — rule: PLAN Phase 3 selection, PREREGISTRATION §9
+
+## the phase 3 gate — 2026-11-03 — status: APPROVED by Akash Saha
+Frozen banks: phase3_cvae-D, phase3_wgan_gp-A (hashes in results/manifest.json) — evidence: results/phase3_gate/report.md
+
+## 2026-11-03 (Day 28) — A20: decisions at the phase 3 gate — Akash Saha
+
+Evidence: `results/phase3_gate/report.md`, `figures/phase3_gate/banks.png`. No phase 4 run existed.
+
+- **A20.1 cVAE D bank seed 1 is kept.** Its lowest diversity ratio is 0.694 (class S), under the 0.7 floor; the run's
+  own diagnostic sample gave 0.701. The floor is pre-registered for pilot seeds only, so the gate checks pass as
+  written. Dropping or rerunning the seed would apply a rule made after seeing the result and leave the families with
+  unequal seeds. The value is disclosed in the paper's limitations (PREREGISTRATION §11).
+- **A20.2 Three seeds.** The full grid stays at seeds 0, 1, 2. The banks exist for these seeds only, and the deadline
+  does not leave quota for 5.
+- **A20.3 A19 is confirmed as proposed,** with the N recall limit on the mean over the two banks (A14.11); per-bank drops
+  are reported. Committed as PREREGISTRATION v3 before the policy pilot.
+- **A20.4 Runs on Akash's Kaggle account.** Notebooks are pushed as private kernels; the code comes from a git bundle of
+  `main` uploaded as the private dataset `akashsaha477/ecgaug-repo` (the GitHub repository is private), and the banks
+  from a private dataset. The run commit is recorded in every run ID as before.
+
