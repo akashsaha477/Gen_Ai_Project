@@ -3,6 +3,7 @@
     python -m ecgaug.figures phase1_data          # MIT-BIH: raw signal, filtering, the four inputs, class counts
     python -m ecgaug.figures phase2_ptbxl_data    # PTB-XL: resampling and detected beats, exclusions, labels
     python -m ecgaug.figures results              # every experiment result: curves, confusion matrices, the phase 1 gate
+    python -m ecgaug.figures posthoc              # the post-hoc analyses (PREREGISTRATION v4), from their summaries
     python -m ecgaug.figures all
 
 Figures are written to ``figures/<experiment or phase folder>/``, named like ``results/`` as PNG files and are committed. The runners also call
@@ -804,6 +805,35 @@ def final_eval_figures(stats: dict) -> list[Path]:
     return written
 
 
+def external_data_figure() -> list[Path]:
+    """P2 data: class-average beats of INCART and SVDB beside the MIT-BIH training beats (same representation)."""
+    from ecgaug.data.loaders import load_trainval
+
+    plt = _plt()
+    train = load_trainval("v1")
+    sets = {"MIT-BIH DS1 training": {k: np.asarray(v)[np.asarray(train["split"]) == "train"] for k, v in train.items()}}
+    for db, label in (("incartdb", "INCART (lead II)"), ("svdb", "SVDB (ECG1)")):
+        path = paths.processed_dir() / "external" / f"{db}.npz"
+        if path.is_file():
+            with np.load(path) as f:
+                sets[label] = {"X": f["X"], "y": f["y"]}
+    colors = ["#2a78d6", "#eb6834", "#1baf7a"]  # first three hues, fixed order
+    fig, axes = plt.subplots(1, len(CLASS_COLORS), figsize=(13, 3.2), sharey=True)
+    t = (np.arange(next(iter(sets.values()))["X"].shape[1]) - 90) / 360 * 1000
+    for ax, (i, cls) in zip(axes, enumerate(CLASS_COLORS)):
+        for color, (label, arrays) in zip(colors, sets.items()):
+            beats = arrays["X"][arrays["y"] == i]
+            if len(beats):
+                ax.plot(t, beats.mean(axis=0), color=color, label=f"{label} (n={len(beats):,})")
+        ax.set_title(cls, loc="left")
+        ax.set_xlabel("ms from R peak")
+        ax.legend(loc="lower right", fontsize=6)
+    axes[0].set_ylabel("z-scored amplitude (class mean)")
+    caption = ("Beats cut exactly as the frozen dataset (0.5 s at 360 Hz around the reference R peak, z-scored per beat); INCART resampled from 257 Hz, "
+               "SVDB from 128 Hz. Differences in shape are what the frozen models meet on external data. Post hoc (PREREGISTRATION v4, P2).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_external_validation") / "class_mean_beats.png", "External databases against the training data", caption)]
+
+
 def leakage_audit_figure(summary: dict) -> list[Path]:
     """RQ2: the cnn's rare-class macro-F1 on a random beat-level split (intra-patient) beside the final evaluation (inter-patient)."""
     plt = _plt()
@@ -828,6 +858,121 @@ def leakage_audit_figure(summary: dict) -> list[Path]:
                "Inter-patient: the final evaluation with its 95% record-level interval, at the strengths chosen on validation. "
                "Run after the final evaluation; never used for any decision. Exploratory (H2).")  # fmt: skip
     return [_save(fig, paths.figures_for("phase4_leakage_audit") / "intra_vs_inter.png", "RQ2: the same pipeline, with and without patient overlap", caption)]
+
+
+def _interval(ax, value: dict, y: float, color: str, label: str | None = None, marker: str = "o") -> None:
+    ax.errorbar(value["point"], y, xerr=[[value["point"] - value["ci_low"]], [value["ci_high"] - value["point"]]], fmt=marker, color=color, capsize=3, label=label)
+
+
+def _summary(experiment: str, name: str = "summary.json") -> dict | None:
+    path = paths.results_for(experiment) / name
+    return json.loads(path.read_text()) if path.is_file() else None
+
+
+def rr_reference_figure(summary: dict, final: dict) -> list[Path]:
+    """P1: the RR references beside the cnn without augmentation and with cVAE, on the test set."""
+    plt = _plt()
+    rows = [("cnn, cVAE", final["conditions"]["cnn/cvae"]), ("cnn, no augmentation", final["conditions"]["cnn/none"]),
+            *((f"reference {r}", e) for r, e in summary["references"].items())]  # fmt: skip
+    fig, axes = plt.subplots(1, 2, figsize=(11, 0.5 * len(rows) + 1.4), sharey=True)
+    for ax, metric, xlabel in ((axes[0], "rare_macro_f1", "test rare-class macro-F1"), (axes[1], "f1_S", "test S F1")):
+        for i, (name, entry) in enumerate(reversed(rows)):
+            _interval(ax, entry[metric], i, "#2a78d6" if name.startswith("cnn") else "#eb6834")
+            ax.annotate(f"{entry[metric]['point']:.3f}", (entry[metric]["ci_high"], i), xytext=(5, 0), textcoords="offset points", va="center", fontsize=7, color=INK_2)
+        ax.set_xlabel(f"{xlabel} (95% record-level CI)")
+        ax.set_xlim(left=0)
+    axes[0].set_yticks(range(len(rows)), [name for name, _ in reversed(rows)])
+    diff = summary["references"]["rr_lda"]["vs_cnn"]["none"]
+    caption = (f"Blue: the cnn of the main study (3 seeds, final evaluation). Orange: fixed linear discriminants fitted once on the training records "
+               f"(rr_lda: three RR features; rr_morph_lda: RR features plus every 10th window sample). rr_lda minus cnn without augmentation: "
+               f"{diff['point']:+.3f} [{diff['ci_low']:+.3f}, {diff['ci_high']:+.3f}]. Post hoc (PREREGISTRATION v4, P1).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_rr_reference") / "references_vs_cnn.png", "Is the cnn weaker than a simple RR-interval classifier?", caption)]
+
+
+def external_validation_figure(summaries: dict[str, dict], final: dict) -> list[Path]:
+    """P2: each frozen condition's primary metric on INCART and SVDB beside the same metric in the final evaluation."""
+    plt = _plt()
+    keys = list(final["conditions"])
+    fig, axes = plt.subplots(1, len(summaries), figsize=(6.2 * len(summaries), 0.42 * len(keys) + 1.8), sharey=True, squeeze=False)
+    for ax, (db, s) in zip(axes[0], summaries.items()):
+        metric = s["primary_metric"]
+        for i, key in enumerate(reversed(keys)):
+            _interval(ax, s["conditions"][key][metric], i + 0.15, "#2a78d6", f"{db} (external)" if i == 0 else None)
+            _interval(ax, final["conditions"][key][metric], i - 0.15, "#eb6834", "MIT-BIH test records (final evaluation)" if i == 0 else None)
+        ax.set_yticks(range(len(keys)), list(reversed(keys)), fontsize=7)
+        ax.set_xlim(left=0)
+        ax.set_xlabel(f"{'rare-class macro-F1' if metric == 'rare_macro_f1' else 'S F1'} (95% record-level CI)")
+        reject = [k for k, v in s["confirmatory"].items() if v["reject_holm"]]
+        ax.set_title(f"{db} ({s['role']}; {s['records']} records){'; Holm rejects: ' + ', '.join(reject) if reject else '; no confirmatory difference'}",
+                     loc="left", fontsize=9)  # fmt: skip
+        ax.legend(loc="lower right", fontsize=7)
+    caption = ("Every frozen checkpoint of the phase 4 gate (3 seeds) applied unchanged to external databases; beats cut like the frozen dataset. "
+               "INCART: lead II, 257 Hz resampled to 360 Hz; SVDB: ECG1, 128 Hz resampled (S F1 is its primary metric, fewer than 50 F beats). "
+               "Post hoc (PREREGISTRATION v4, P2).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_external_validation") / "conditions_external_vs_ds2.png", "Do the frozen models carry over to other databases?", caption)]
+
+
+def extra_seeds_figure(summary: dict, final: dict) -> list[Path]:
+    """P3: each pre-registered comparison with 3 seeds (final evaluation) and with 5 seeds."""
+    plt = _plt()
+    rows = [(family, name) for family, items in final["families"].items() for name in items]
+    fig, ax = plt.subplots(figsize=(8.5, 0.5 * len(rows) + 1.4))
+    for i, (family, name) in enumerate(reversed(rows)):
+        _interval(ax, final["families"][family][name], i + 0.15, "#2a78d6", "3 seeds (final evaluation)" if i == 0 else None)
+        five = summary["families"][family][name]
+        _interval(ax, five, i - 0.15, "#eb6834", "5 seeds (post hoc)" if i == 0 else None)
+        ax.annotate(f"Holm p {five['p_holm']:.3f}", (five["ci_high"], i - 0.15), xytext=(6, 0), textcoords="offset points", va="center", fontsize=7, color=INK_2)
+    ax.axvline(0, color=GRID, linewidth=1.2)
+    ax.set_yticks(range(len(rows)), [f"{family[:4]}. {name}" for family, name in reversed(rows)])
+    ax.set_xlabel("difference in test rare-class macro-F1 (95% record-level CI)")
+    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=2)
+    changed = summary["changed"]
+    caption = (f"Seeds 3 and 4 trained post hoc with the frozen configurations, strengths and generators of the main study. "
+               f"Holm verdicts that change with 5 seeds: {', '.join(changed) if changed else 'none'}. Post hoc (PREREGISTRATION v4, P3).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_extra_seeds") / "three_vs_five_seeds.png", "Do two more seeds change any verdict?", caption)]
+
+
+def audit_check_figure(summary: dict) -> list[Path]:
+    """P4: the leakage audit's intra-patient values beside the two checks."""
+    plt = _plt()
+    names = {"none": "none", "cvae": "cVAE", "wgan_gp": "WGAN-GP"}
+    rows = [(f"split 0, {names[c]}{'' if c == 'none' else ' (0.25, audit)'}", v) for c, v in summary["audit_split0"].items()]
+    for c in summary["checks"]:
+        strength = "" if c["strength"] is None else f" ({c['strength']}, check)"
+        rows.append((f"split {c['split_seed']}, {names[c['condition']]}{strength}", c["intra"]))
+    fig, ax = plt.subplots(figsize=(8, 0.45 * len(rows) + 1.4))
+    for i, (name, intra) in enumerate(reversed(rows)):
+        ax.scatter(intra["per_seed"], [i] * len(intra["per_seed"]), s=22, color="#2a78d6", alpha=0.45, edgecolor=SURFACE, linewidth=0.6)
+        ax.errorbar(intra["mean"], i, xerr=intra["sd"], fmt="o", color="#2a78d6", capsize=3)
+        ax.annotate(f"{intra['mean']:.3f}", (intra["mean"], i), xytext=(0, 7), textcoords="offset points", ha="center", fontsize=7, color=INK_2)
+    inter = summary["inter_patient"]["none"]
+    ax.axvline(inter["point"], color="#eb6834", linewidth=1.4, label=f"inter-patient, none (final evaluation): {inter['point']:.3f}")
+    ax.set_yticks(range(len(rows)), [name for name, _ in reversed(rows)])
+    ax.set_xlim(0, 1)
+    ax.set_xlabel("test rare-class macro-F1 (cnn), intra-patient random beat split")
+    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.0))
+    caption = ("Mean ± SD over seeds 0-2 (faint dots: seeds). The audit's own rows (split 0) beside WGAN-GP at the strength the phase 4 gate chose and "
+               "no augmentation on two more random beat-level splits. Post hoc (PREREGISTRATION v4, P4); never used for any decision.")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_audit_check") / "audit_checks.png", "Does the intra-patient inflation depend on the split or the strength?", caption)]
+
+
+def posthoc_figures() -> list[Path]:
+    """Every post-hoc figure whose summary exists (PREREGISTRATION v4, P1-P4); nothing is re-run."""
+    final, written = _summary("final_eval"), []
+    if final is None:
+        return written
+    if (s := _summary("phase6_rr_reference")) is not None:
+        written += rr_reference_figure(s, final)
+    external = {db: s for db in ("incartdb", "svdb") if (s := _summary("phase6_external_validation", f"{db}_summary.json")) is not None}
+    if external:
+        written += external_validation_figure(external, final)
+    if (paths.processed_dir() / "external").is_dir():
+        written += external_data_figure()
+    if (s := _summary("phase6_extra_seeds")) is not None:
+        written += extra_seeds_figure(s, final)
+    if (s := _summary("phase6_audit_check")) is not None:
+        written += audit_check_figure(s)
+    return written
 
 
 def quality_vs_gain_figure(summary: dict, rows: list[dict]) -> list[Path]:
@@ -944,7 +1089,7 @@ def results_figures() -> list[Path]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Before-and-after figures for each phase.")
-    parser.add_argument("what", choices=["phase1_data", "phase2_ptbxl_data", "results", "final_eval", "leakage_audit", "all"])
+    parser.add_argument("what", choices=["phase1_data", "phase2_ptbxl_data", "results", "final_eval", "leakage_audit", "posthoc", "all"])
     parser.add_argument("--ptbxl-root", default=None, help="folder with PTB-XL recordings (default data/raw/ptbxl)")
     args = parser.parse_args(argv)
     written = []
@@ -958,6 +1103,8 @@ def main(argv: list[str] | None = None) -> int:
         written += final_eval_figures(json.loads((paths.results_for("final_eval") / "summary.json").read_text()))
     if args.what == "leakage_audit":  # from the audit's summary; nothing is re-run
         written += leakage_audit_figure(json.loads((paths.results_for("phase4_leakage_audit") / "summary.json").read_text()))
+    if args.what == "posthoc":  # from the saved post-hoc summaries; nothing is re-run
+        written += posthoc_figures()
     for path in written:
         print(path.relative_to(paths.repo_root()))
     return 0
