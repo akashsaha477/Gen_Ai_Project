@@ -164,6 +164,29 @@ def test_gemini_request_and_reply_map_to_the_shared_format():
     assert client._parse(reply) == ("The note.", {"input_tokens": 12, "output_tokens": 8})
 
 
+def test_llm_client_retries_timeouts_and_stops_on_a_daily_quota(monkeypatch):
+    import io
+    import urllib.error
+
+    client = notes.LLMClient("gemini-test", "g-secret-value", "gemini", max_waits=2)
+    monkeypatch.setattr(notes.time, "sleep", lambda s: None)
+    ok = json.dumps({"candidates": [{"content": {"parts": [{"text": "A note."}]}}], "usageMetadata": {}}).encode()
+    replies = [TimeoutError("read timed out"), io.BytesIO(ok)]
+
+    def fake_urlopen(request, timeout):
+        reply = replies.pop(0)
+        if isinstance(reply, Exception):
+            raise reply
+        return reply
+
+    monkeypatch.setattr(notes.urllib.request, "urlopen", fake_urlopen)
+    assert client.complete("s", [{"role": "user", "content": "q"}])["text"] == "A note."
+    daily = urllib.error.HTTPError("u", 429, "Too Many Requests", {}, io.BytesIO(b'{"quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier"}'))
+    monkeypatch.setattr(notes.urllib.request, "urlopen", lambda request, timeout: (_ for _ in ()).throw(daily))
+    with pytest.raises(notes.LLMQuotaError, match="daily request quota"):
+        client.complete("s", [{"role": "user", "content": "q"}])
+
+
 def test_cases_are_stratified_with_enough_low_confidence():
     rng = np.random.default_rng(0)
     y = np.repeat(np.arange(4), 100)

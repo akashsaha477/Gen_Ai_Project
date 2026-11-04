@@ -37,7 +37,7 @@ CLASS_NAMES = {"N": "normal beat", "S": "supraventricular ectopic beat", "V": "v
 SEGMENT_NAMES = {"P": "P wave", "QRS": "QRS complex", "ST": "ST segment", "T": "T wave"}
 DISCLAIMER = "This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician."
 REVIEW_REQUIRED = "Clinician review is required."
-DEFAULT_MODELS = {"gemini": "gemini-3.5-flash", "otherllm": "llm-model"}
+DEFAULT_MODELS = {"gemini": "gemini-3.5-flash-lite", "otherllm": "llm-model"}  # A23: flash allows 20 free requests a day
 GEMINI_THINKING = "minimal"
 API_KEYS = {"gemini": "GEMINI_API_KEY", "otherllm": "LLM_API_KEY"}
 API_URLS = {"gemini": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
@@ -140,6 +140,10 @@ def check_note(note: str, payload: dict) -> dict:
 # --------------------------------------------------------------------------------------------------
 
 
+class LLMQuotaError(RuntimeError):
+    """The provider's daily request quota is used up; waiting will not help."""
+
+
 class LLMClient:
     """Gemini or another provider text generation over HTTPS (standard library only)."""
 
@@ -182,9 +186,16 @@ class LLMClient:
                     data = json.loads(response.read())
                 break
             except urllib.error.HTTPError as error:  # rate limit or overload: wait and try again
+                body = error.read().decode(errors="replace")
+                if error.code == 429 and "PerDay" in body:  # a daily quota does not come back by waiting
+                    raise LLMQuotaError(f"{self.provider} {self.model}: the daily request quota is used up; try tomorrow or another model") from error
                 if error.code not in (429, 503) or wait == self.max_waits:
                     raise
                 time.sleep(float(error.headers.get("retry-after") or min(60, 5 * 2**wait)))
+            except (TimeoutError, urllib.error.URLError) as error:  # timeout or dropped connection: try again
+                if wait == self.max_waits:
+                    raise
+                time.sleep(min(60, 5 * 2**wait))
         text, usage = self._parse(data)
         return {"text": text.strip(), "usage": usage, "latency_s": time.perf_counter() - started}
 
