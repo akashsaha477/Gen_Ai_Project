@@ -572,5 +572,17 @@
     ],
     "approved_on": "2026-11-04",
     "git_sha": "2b89705996e2ee5837681b4a98970b9cd98784da"
+  },
+  "phase5_gate": {
+    "explainability": {
+      "cnn": "gradcam",
+      "rnn": "occlusion"
+    },
+    "notes_variant": "C",
+    "approved_by": [
+      "Akash Saha"
+    ],
+    "approved_on": "2026-11-04",
+    "git_sha": "3356102d16c7df8af9605b0743ce85d29a1a518c"
   }
 }
