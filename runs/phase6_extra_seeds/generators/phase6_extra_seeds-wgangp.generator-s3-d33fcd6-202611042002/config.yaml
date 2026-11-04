@@ -1,0 +1,48 @@
+experiment: phase6_extra_seeds
+condition: wgan_gp
+generator_id: phase3_wgan_gp-A
+family: wgan_gp
+setting: default
+settings:
+  batch_size: 128
+  lr: 0.0001
+  adam_betas:
+  - 0.0
+  - 0.9
+  n_critic: 5
+  gradient_penalty: 10.0
+  pilot_steps: 5000
+  final_steps: 20000
+  log_every: 50
+  conditioning: concat
+  noise_dim: 64
+  embed_dim: 16
+  generator_channels:
+  - 128
+  - 64
+  - 32
+  critic_channels:
+  - 32
+  - 64
+  - 128
+  kernel: 7
+  auxiliary_weight: 1.0
+  classes:
+  - N
+  - S
+  - V
+  - F
+steps: 20000
+seed: 3
+dataset:
+  source: rebuilt from the raw records (C_short_window_rr_features) and checked against
+    the frozen hash
+  representation: C_short_window_rr_features
+  content_sha256: 2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896
+  frozen: true
+bank:
+  file: seed3.npz
+  sha256: d42b9861ca37070d16c0fffb93f00cedaae734cd9dbebcf27ba2dfc463d60485
+  content_sha256: aab9ebdacf34060ce79e7de534e5a287ee614e347a52c1ed15b7ce658b7fd9e8
+  run_id: phase6_extra_seeds-wgangp.generator-s3-d33fcd6-202611042002
+  steps: 20000

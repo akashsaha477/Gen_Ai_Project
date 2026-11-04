@@ -1,0 +1,29 @@
+{
+  "cell_sha": "b6152e879fd37755c196301a1cd49e72e0332582114399f370465e10d70685ec",
+  "cell": {
+    "condition": "none",
+    "strength": null,
+    "architecture": "rnn",
+    "seed": 4
+  },
+  "condition": "none",
+  "strength": null,
+  "architecture": "rnn",
+  "seed": 4,
+  "run_id": "phase6_extra_seeds-rnn.none-s4-d33fcd6-202611042034",
+  "status": "done",
+  "bank": null,
+  "selection_metric": "s_f1",
+  "selection_value": 0.327683615819209,
+  "tie_break_value": 0.5841584158415841,
+  "rare_macro_f1": 0.1770868410221873,
+  "n_recall": 0.9808880308880309,
+  "n_added": {
+    "N": 0,
+    "S": 0,
+    "V": 0,
+    "F": 0
+  },
+  "wall_clock_s": 49.7,
+  "provisional": false
+}

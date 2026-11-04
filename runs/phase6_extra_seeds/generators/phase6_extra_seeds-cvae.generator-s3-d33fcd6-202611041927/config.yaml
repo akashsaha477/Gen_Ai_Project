@@ -1,0 +1,40 @@
+experiment: phase6_extra_seeds
+condition: cvae
+generator_id: phase3_cvae-D
+family: cvae
+setting: default
+settings:
+  batch_size: 128
+  lr: 0.001
+  pilot_steps: 5000
+  final_steps: 20000
+  log_every: 50
+  architecture: residual_film
+  channels:
+  - 32
+  - 64
+  - 128
+  kernel: 7
+  latent_dim: 16
+  beta: 1.0
+  kl_anneal_fraction: 0.3
+  spectral_weight: 0.0
+  classes:
+  - N
+  - S
+  - V
+  - F
+steps: 20000
+seed: 3
+dataset:
+  source: rebuilt from the raw records (C_short_window_rr_features) and checked against
+    the frozen hash
+  representation: C_short_window_rr_features
+  content_sha256: 2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896
+  frozen: true
+bank:
+  file: seed3.npz
+  sha256: 12bd996d07e572075b17d3b1b247de5e960c4f4b7a8351f7df5d39358a7de8aa
+  content_sha256: 33df468ab9431e848340ebe54b7c160d0a5c18f7523b6af994a3dae69acad1f6
+  run_id: phase6_extra_seeds-cvae.generator-s3-d33fcd6-202611041927
+  steps: 20000
