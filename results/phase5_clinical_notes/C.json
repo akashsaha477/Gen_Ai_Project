@@ -1,0 +1,28 @@
+{
+  "experiment": "phase5_clinical_notes",
+  "variant": "C",
+  "description": "As B plus two few-shot examples and a fixed JSON output schema, rendered to a note.",
+  "generator": "C",
+  "not_run": false,
+  "n_cases": 50,
+  "n_low_confidence": 16,
+  "unsupported_claims": 0,
+  "notes_with_issues": 0,
+  "passes_hard_gate": true,
+  "coverage": 0.996,
+  "fell_back_to_template": 0,
+  "variant_used": {
+    "A": 0,
+    "B": 0,
+    "C": 50,
+    "D": 0
+  },
+  "latency_s_mean": 2.6310147783253344,
+  "input_tokens": 36050,
+  "output_tokens": 3860,
+  "model": "gemini-3.5-flash-lite",
+  "wall_clock_s": 164.8756471669767,
+  "provisional": false,
+  "provisional_reasons": [],
+  "git_sha": "9c898e93c5945cae0d8bc5975def6bc1ab88b324"
+}

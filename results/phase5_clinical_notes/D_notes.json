@@ -1,0 +1,1002 @@
+[
+  {
+    "case": "case-00",
+    "note": "The heartbeat classifier predicts the beat is normal beat (N) with a probability of 0.98. The top contributing segments are P wave (mass 0.54) and QRS complex (mass 0.28). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.0915616659913212,
+    "input_tokens": 326,
+    "output_tokens": 72,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-01",
+    "note": "The heartbeat classifier predicts the beat is a normal beat (N) with a probability of 0.98. The top contributing segments are the QRS complex with a mass of 0.34 and the P wave with a mass of 0.28. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.2655262909829617,
+    "input_tokens": 326,
+    "output_tokens": 78,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-02",
+    "note": "The model classified the heartbeat as a normal beat (N) with a probability of 0.97. The top contributing segments are the QRS complex with a mass of 0.36 and the ST segment with a mass of 0.25. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.8071256669936702,
+    "input_tokens": 326,
+    "output_tokens": 77,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-03",
+    "note": "The heartbeat classifier predicts the beat is a ventricular ectopic beat (V) with a probability of 0.39. The top segments contributing to this are the QRS complex with a mass of 0.74 and the T wave with a mass of 0.26. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.636696125031449,
+    "input_tokens": 327,
+    "output_tokens": 87,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-04",
+    "note": "The heartbeat classifier predicts the beat is a normal beat (N) with a probability of 0.52. The top segments identified are the P wave with a mass of 0.36 and the ST segment with a mass of 0.29. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.1250427910126746,
+    "input_tokens": 325,
+    "output_tokens": 83,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-05",
+    "note": "The heartbeat classifier predicts the beat is a normal beat (N) with a probability of 0.99. The top segments identified are the P wave with a mass of 0.34 and the QRS complex with a mass of 0.27. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 6.880348000093363,
+    "input_tokens": 325,
+    "output_tokens": 78,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-06",
+    "note": "The heartbeat classifier predicted the class as supraventricular ectopic beat with a probability of 0.49. The top segments identified are the T wave with a mass of 0.35 and the QRS complex with a mass of 0.23. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.6107976250350475,
+    "input_tokens": 328,
+    "output_tokens": 83,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-07",
+    "note": "The heartbeat classifier predicted the class as supraventricular ectopic beat with a probability of 0.45. The segments identified in top_segments are ST segment with a mass of 0.48 and P wave with a mass of 0.34. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 6.991210000007413,
+    "input_tokens": 327,
+    "output_tokens": 83,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-08",
+    "note": "The heartbeat classifier predicted the beat is a supraventricular ectopic beat (S) with a probability of 0.56. The top contributing segments are the ST segment with a mass of 0.54 and the P wave with a mass of 0.37. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.7698585420148447,
+    "input_tokens": 327,
+    "output_tokens": 86,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-09",
+    "note": "The heartbeat classifier predicted a ventricular ectopic beat (V) with a probability of 0.97. The top contributing segments are the QRS complex with a mass of 0.81 and the ST segment with a mass of 0.19. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 5.041673416970298,
+    "input_tokens": 326,
+    "output_tokens": 76,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-10",
+    "note": "The heartbeat classifier predicts the beat is a normal beat (N) with a probability of 0.57. The top contributing segments are the QRS complex with a mass of 0.28 and the T wave with a mass of 0.24. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.354762666975148,
+    "input_tokens": 328,
+    "output_tokens": 84,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-11",
+    "note": "The heartbeat classifier predicts the beat is a ventricular ectopic beat (V) with a probability of 0.88. The most influential segments are the ST segment with a mass of 0.57 and the QRS complex with a mass of 0.43. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.53607054206077,
+    "input_tokens": 326,
+    "output_tokens": 79,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-12",
+    "note": "The heartbeat classifier predicts the beat is a normal beat (N) with a probability of 0.46. The top contributing segments are the QRS complex with a mass of 0.27 and the P wave with a mass of 0.26. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.3361912500113249,
+    "input_tokens": 328,
+    "output_tokens": 84,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-13",
+    "note": "The heartbeat classifier predicted the class ventricular ectopic beat (V) with a probability of 0.95. The top contributing segments are the QRS complex with a mass of 0.63 and the ST segment with a mass of 0.35. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.1419182500103489,
+    "input_tokens": 327,
+    "output_tokens": 77,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-14",
+    "note": "The heartbeat classifier predicts the beat is a ventricular ectopic beat (V) with a probability of 0.50. The top contributing segments are QRS complex with a mass of 0.54 and ST segment with a mass of 0.43. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.4574804999865592,
+    "input_tokens": 326,
+    "output_tokens": 83,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-15",
+    "note": "The heartbeat classifier predicted the beat is a supraventricular ectopic beat (S) with a probability of 0.93. The top contributing segments are P wave with a mass of 0.55 and ST segment with a mass of 0.26. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.6645164169603959,
+    "input_tokens": 325,
+    "output_tokens": 78,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-16",
+    "note": "The model classifies this heartbeat as a normal beat (N) with a probability of 0.54. The top contributing segments are the P wave with a mass of 0.46 and the ST segment with a mass of 0.29. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 5.117195333004929,
+    "input_tokens": 326,
+    "output_tokens": 82,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-17",
+    "note": "The heartbeat classifier predicted the class as ventricular ectopic beat (V) with a probability of 0.5. The top segments identified are P with a mass of 0.0 and QRS with a mass of 0.0. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.1839902080828324,
+    "input_tokens": 325,
+    "output_tokens": 77,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": false,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 0.8
+  },
+  {
+    "case": "case-18",
+    "note": "The heartbeat classifier predicted the class normal beat (N) with a probability of 0.83. The most important segments contributing to this decision are the ST segment with a mass of 0.35 and the P wave with a mass of 0.3. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 5.776727082906291,
+    "input_tokens": 324,
+    "output_tokens": 78,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-19",
+    "note": "The heartbeat classifier predicted class S (supraventricular ectopic beat) with a probability of 0.52. The top segments identified are P with a mass of 0.73 and ST with a mass of 0.08. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.831821082974784,
+    "input_tokens": 327,
+    "output_tokens": 80,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": false,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 0.8
+  },
+  {
+    "case": "case-20",
+    "note": "The heartbeat classifier predicts the beat is a supraventricular ectopic beat (S) with a probability of 0.9. The top contributing segments are the P wave with a mass of 0.75 and the ST segment with a mass of 0.16. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.2135685839457437,
+    "input_tokens": 323,
+    "output_tokens": 79,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-21",
+    "note": "The heartbeat classifier predicts the beat is a normal beat (N) with a probability of 0.93, while the probability for a fusion beat (F) is 0.07. The top segments identified by the model are the P wave with a mass of 0.32 and the T wave with a mass of 0.23. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.1172917920630425,
+    "input_tokens": 325,
+    "output_tokens": 97,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-22",
+    "note": "The heartbeat classifier predicted the class N (normal beat) with a probability of 0.93. The top contributing segments are P wave with a mass of 0.33 and T wave with a mass of 0.24. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.3286758329486474,
+    "input_tokens": 325,
+    "output_tokens": 73,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-23",
+    "note": "The heartbeat classifier predicts the beat is a normal beat (N) with a probability of 0.83. The top segments identified are the P wave with a mass of 0.37 and the T wave with a mass of 0.24. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.2291982499882579,
+    "input_tokens": 325,
+    "output_tokens": 77,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-24",
+    "note": "The heartbeat classifier predicts the beat is normal beat with a probability of 0.73. The top contributing segments are P wave with a mass of 0.36 and T wave with a mass of 0.35. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.4036105000413954,
+    "input_tokens": 325,
+    "output_tokens": 71,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-25",
+    "note": "The heartbeat classifier predicts the beat is normal beat with a probability of 0.98, and also predicts fusion beat with a probability of 0.02. The most important segments identified for this classification are the P wave, with a mass of 0.31, and the QRS complex, with a mass of 0.26. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.3998610420385376,
+    "input_tokens": 326,
+    "output_tokens": 96,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-26",
+    "note": "The heartbeat classifier predicts the beat is a normal beat (N) with a probability of 0.83. The top contributing segments are the T wave with a mass of 0.35 and the P wave with a mass of 0.31. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.2932269589509815,
+    "input_tokens": 325,
+    "output_tokens": 77,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-27",
+    "note": "The heartbeat classifier predicted the class N (normal beat) with a probability of 0.94. The top segments are T with a mass of 0.28 and P with a mass of 0.26. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.4490420420188457,
+    "input_tokens": 325,
+    "output_tokens": 70,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": false,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 0.8
+  },
+  {
+    "case": "case-28",
+    "note": "The heartbeat classifier predicts the beat is a normal beat (N) with a probability of 0.63. The segments identified in top_segments are P wave with a mass of 0.4 and T wave with a mass of 0.26. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.033510832930915,
+    "input_tokens": 324,
+    "output_tokens": 77,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-29",
+    "note": "The heartbeat classifier predicts the beat is a normal beat (N) with a probability of 0.99. The top segments identified are the P wave with a mass of 0.37 and the QRS complex with a mass of 0.21. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 0.9478756670141593,
+    "input_tokens": 326,
+    "output_tokens": 78,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-30",
+    "note": "The heartbeat classifier predicted the class as N (normal beat) with a probability of 1.0. The top contributing segments are P wave with a mass of 0.33 and T wave with a mass of 0.23. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.3318980420008302,
+    "input_tokens": 323,
+    "output_tokens": 73,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-31",
+    "note": "The heartbeat classifier predicted the beat belongs to class V (ventricular ectopic beat) with a probability of 0.99. The most important segments identified for this classification are the QRS complex with a mass of 0.84 and the T wave with a mass of 0.13. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.375075582996942,
+    "input_tokens": 326,
+    "output_tokens": 85,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-32",
+    "note": "The heartbeat classifier predicted the class as a supraventricular ectopic beat (S) with a probability of 0.97. The top contributing segments are the QRS complex with a mass of 0.54 and the P wave with a mass of 0.25. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 5.686279207933694,
+    "input_tokens": 326,
+    "output_tokens": 81,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-33",
+    "note": "The heartbeat classifier predicts the beat is a normal beat (N) with a probability of 0.94. The top contributing segments are the T wave with a mass of 0.38 and the QRS complex with a mass of 0.32. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.1758041250286624,
+    "input_tokens": 327,
+    "output_tokens": 78,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-34",
+    "note": "The heartbeat classifier predicts the beat is a normal beat (N) with a probability of 0.97. The top contributing segments are the QRS complex with a mass of 0.34 and the T wave with a mass of 0.3. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.1581917910370976,
+    "input_tokens": 325,
+    "output_tokens": 77,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-35",
+    "note": "The heartbeat classifier predicts the beat is a normal beat (N) with a probability of 0.45. The segments listed in top_segments are T wave with a mass of 0.42 and ST segment with a mass of 0.31. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.698202042025514,
+    "input_tokens": 327,
+    "output_tokens": 84,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-36",
+    "note": "The model predicted the heartbeat class as a ventricular ectopic beat with a probability of 0.53. The segments identified in top_segments are the QRS complex with a mass of 0.54 and the T wave with a mass of 0.44. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 0.9870272920234129,
+    "input_tokens": 327,
+    "output_tokens": 85,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-37",
+    "note": "The model predicts the heartbeat class as N (normal beat) with a probability of 0.95. The top contributing segments are P wave with a mass of 0.29 and QRS complex with a mass of 0.28. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.1405754159204662,
+    "input_tokens": 326,
+    "output_tokens": 75,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-38",
+    "note": "The heartbeat classifier predicted the beat is a supraventricular ectopic beat with a probability of 0.94. The top contributing segments are the ST segment with a mass of 0.45 and the T wave with a mass of 0.21. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.3614742080681026,
+    "input_tokens": 326,
+    "output_tokens": 77,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-39",
+    "note": "The heartbeat classifier predicted the class normal beat (N) with a probability of 0.73. The top segments identified are the ST segment with a mass of 0.48 and the T wave with a mass of 0.29. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.322291708085686,
+    "input_tokens": 326,
+    "output_tokens": 75,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-40",
+    "note": "The heartbeat classifier predicted the class as N with a probability of 0.67. The top segments identified are ST with a mass of 0.49 and T with a mass of 0.37. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.4893343340372667,
+    "input_tokens": 327,
+    "output_tokens": 68,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": false,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 0.8
+  },
+  {
+    "case": "case-41",
+    "note": "The heartbeat classifier predicts the beat is a supraventricular ectopic beat (S) with a probability of 0.96. The top contributing segments are the ST segment with a mass of 0.42 and the QRS complex with a mass of 0.27. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 5.365108208032325,
+    "input_tokens": 327,
+    "output_tokens": 81,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-42",
+    "note": "The heartbeat classifier predicted the class as N (normal beat) with a probability of 0.43. The top contributing segments are T wave with a mass of 0.43 and ST segment with a mass of 0.27. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 0.8728634159779176,
+    "input_tokens": 327,
+    "output_tokens": 80,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-43",
+    "note": "The model predicted the beat class as N (normal beat) with a probability of 0.81. The top contributing segments are P wave with a mass of 0.52 and QRS complex with a mass of 0.25. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.236437916988507,
+    "input_tokens": 328,
+    "output_tokens": 75,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-44",
+    "note": "The heartbeat classifier predicts the beat is a normal beat (N) with a probability of 0.84. The most important segments for this prediction are the P wave with a mass of 0.4 and the ST segment with a mass of 0.26. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.2152203330770135,
+    "input_tokens": 326,
+    "output_tokens": 79,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-45",
+    "note": "The heartbeat classifier predicts the beat is a ventricular ectopic beat (class V) with a probability of 0.48, alongside probabilities of 0.22 for N, 0.08 for S, and 0.21 for F. The top contributing segments are the QRS complex with a mass of 0.7 and the ST segment with a mass of 0.21. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.5443545419257134,
+    "input_tokens": 327,
+    "output_tokens": 113,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-46",
+    "note": "The heartbeat classifier predicted a ventricular ectopic beat (V) with a probability of 0.40. The top contributing segments are the QRS complex with a mass of 0.82 and the ST segment with a mass of 0.18. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 6.200396417058073,
+    "input_tokens": 327,
+    "output_tokens": 82,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-47",
+    "note": "The heartbeat classifier predicts the beat is a normal beat (N) with a probability of 0.97. The top segments identified are the P wave with a mass of 0.36 and the QRS complex with a mass of 0.25. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 1.4293594170594588,
+    "input_tokens": 327,
+    "output_tokens": 78,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-48",
+    "note": "The heartbeat classifier predicts the beat is a normal beat (N) with a probability of 0.97. The top segments contributing to this classification are the P wave with a mass of 0.43 and the ST segment with a mass of 0.25. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 0.9190390829462558,
+    "input_tokens": 326,
+    "output_tokens": 80,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-49",
+    "note": "The heartbeat classifier predicts the beat is a supraventricular ectopic beat (S) with a probability of 0.92. The top contributing segments are the ST segment with a mass of 0.41 and the T wave with a mass of 0.3. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "D",
+    "attempts": 1,
+    "latency_s": 7.171926875016652,
+    "input_tokens": 325,
+    "output_tokens": 79,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  }
+]
