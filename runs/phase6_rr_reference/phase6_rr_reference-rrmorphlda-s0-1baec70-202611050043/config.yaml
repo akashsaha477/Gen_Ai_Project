@@ -1,0 +1,9 @@
+experiment: phase6_rr_reference
+reference: rr_morph_lda
+description: LDA on the RR features plus every 10th window sample
+features: rr_morph_lda
+morph_step: 10
+priors: uniform
+dataset: data/processed/v1
+train_records: v1 split 'train'
+run_id: phase6_rr_reference-rrmorphlda-s0-1baec70-202611050043

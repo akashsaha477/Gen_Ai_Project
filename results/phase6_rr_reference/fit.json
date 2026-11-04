@@ -1,0 +1,28 @@
+{
+  "rr_lda": {
+    "run_id": "phase6_rr_reference-rrlda-s0-1baec70-202611050043",
+    "sha256": "68316fad75ef08cf598f02289c3e902152b000f11df1df631cca8f761885dfc7",
+    "validation": {
+      "rare_macro_f1": 0.05702364394993046,
+      "f1": {
+        "N": 0.9421320821351092,
+        "S": 0.11404728789986092,
+        "V": 0.5518118245390973,
+        "F": 0.0
+      }
+    }
+  },
+  "rr_morph_lda": {
+    "run_id": "phase6_rr_reference-rrmorphlda-s0-1baec70-202611050043",
+    "sha256": "3c325ba6a9ecdbf3a1a9639becfc4a4d496a8efebbbdf44ce1b034a4ae06e482",
+    "validation": {
+      "rare_macro_f1": 0.043389754237599595,
+      "f1": {
+        "N": 0.7969664863659176,
+        "S": 0.060328369606720125,
+        "V": 0.1780962128966223,
+        "F": 0.02645113886847906
+      }
+    }
+  }
+}
