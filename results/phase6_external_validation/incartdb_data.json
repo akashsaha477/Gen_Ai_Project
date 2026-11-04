@@ -1,0 +1,1069 @@
+{
+  "database": "incartdb",
+  "lead": "II",
+  "role": "primary",
+  "exclude_paced": true,
+  "representation": "C_short_window_rr_features",
+  "records_used": 75,
+  "records_excluded": [],
+  "beats": {
+    "N": 153541,
+    "S": 1958,
+    "V": 20000,
+    "F": 219
+  },
+  "primary_metric": "rare_macro_f1",
+  "content_sha256": "546a8c43f1e6f2ffb690f64c19b37521d9745247046c19b1c97cfd65e2214d96",
+  "records": [
+    {
+      "record": "I01",
+      "number": 1,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2411,
+        "S": 0,
+        "V": 344,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I02",
+      "number": 2,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2443,
+        "S": 0,
+        "V": 229,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I03",
+      "number": 3,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2323,
+        "S": 2,
+        "V": 125,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I04",
+      "number": 4,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2268,
+        "S": 16,
+        "V": 121,
+        "F": 17
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I05",
+      "number": 5,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1518,
+        "S": 0,
+        "V": 247,
+        "F": 9
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I06",
+      "number": 6,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2434,
+        "S": 48,
+        "V": 9,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I07",
+      "number": 7,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2638,
+        "S": 65,
+        "V": 1,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I08",
+      "number": 8,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1776,
+        "S": 2,
+        "V": 350,
+        "F": 0
+      },
+      "q_or_unmapped": 1,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I09",
+      "number": 9,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2946,
+        "S": 0,
+        "V": 41,
+        "F": 0
+      },
+      "q_or_unmapped": 8,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I10",
+      "number": 10,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 3597,
+        "S": 0,
+        "V": 83,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I11",
+      "number": 11,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2076,
+        "S": 0,
+        "V": 4,
+        "F": 0
+      },
+      "q_or_unmapped": 24,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I12",
+      "number": 12,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2798,
+        "S": 1,
+        "V": 6,
+        "F": 2
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I13",
+      "number": 13,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1791,
+        "S": 0,
+        "V": 230,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I14",
+      "number": 14,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1800,
+        "S": 0,
+        "V": 64,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I15",
+      "number": 15,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2630,
+        "S": 0,
+        "V": 3,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I16",
+      "number": 16,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1518,
+        "S": 0,
+        "V": 2,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I17",
+      "number": 17,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1644,
+        "S": 0,
+        "V": 27,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I18",
+      "number": 18,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2660,
+        "S": 0,
+        "V": 366,
+        "F": 56
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I19",
+      "number": 19,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1211,
+        "S": 0,
+        "V": 849,
+        "F": 0
+      },
+      "q_or_unmapped": 1,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I20",
+      "number": 20,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2360,
+        "S": 179,
+        "V": 110,
+        "F": 1
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I21",
+      "number": 21,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2070,
+        "S": 104,
+        "V": 8,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I22",
+      "number": 22,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2814,
+        "S": 124,
+        "V": 185,
+        "F": 1
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I23",
+      "number": 23,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2190,
+        "S": 0,
+        "V": 13,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I24",
+      "number": 24,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2563,
+        "S": 0,
+        "V": 6,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I25",
+      "number": 25,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1703,
+        "S": 2,
+        "V": 5,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I26",
+      "number": 26,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1496,
+        "S": 7,
+        "V": 4,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I27",
+      "number": 27,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1884,
+        "S": 0,
+        "V": 719,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I28",
+      "number": 28,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1711,
+        "S": 0,
+        "V": 4,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I29",
+      "number": 29,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1835,
+        "S": 0,
+        "V": 783,
+        "F": 0
+      },
+      "q_or_unmapped": 1,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I30",
+      "number": 30,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1705,
+        "S": 0,
+        "V": 755,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I31",
+      "number": 31,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1843,
+        "S": 0,
+        "V": 1364,
+        "F": 0
+      },
+      "q_or_unmapped": 1,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I32",
+      "number": 32,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1560,
+        "S": 0,
+        "V": 57,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I33",
+      "number": 33,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1245,
+        "S": 589,
+        "V": 1,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I34",
+      "number": 34,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1427,
+        "S": 536,
+        "V": 0,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I35",
+      "number": 35,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 3199,
+        "S": 0,
+        "V": 457,
+        "F": 18
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I36",
+      "number": 36,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 3447,
+        "S": 0,
+        "V": 450,
+        "F": 12
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I37",
+      "number": 37,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2007,
+        "S": 0,
+        "V": 452,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I38",
+      "number": 38,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2153,
+        "S": 0,
+        "V": 543,
+        "F": 0
+      },
+      "q_or_unmapped": 1,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I39",
+      "number": 39,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1460,
+        "S": 0,
+        "V": 313,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I40",
+      "number": 40,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2566,
+        "S": 6,
+        "V": 92,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I41",
+      "number": 41,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1622,
+        "S": 5,
+        "V": 1,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I42",
+      "number": 42,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1544,
+        "S": 0,
+        "V": 1554,
+        "F": 9
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I43",
+      "number": 43,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1085,
+        "S": 0,
+        "V": 1120,
+        "F": 2
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I44",
+      "number": 44,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1802,
+        "S": 8,
+        "V": 683,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I45",
+      "number": 45,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1435,
+        "S": 0,
+        "V": 491,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I46",
+      "number": 46,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2230,
+        "S": 1,
+        "V": 422,
+        "F": 3
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I47",
+      "number": 47,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1857,
+        "S": 1,
+        "V": 93,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I48",
+      "number": 48,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2117,
+        "S": 2,
+        "V": 235,
+        "F": 1
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I49",
+      "number": 49,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2118,
+        "S": 0,
+        "V": 27,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I50",
+      "number": 50,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2992,
+        "S": 0,
+        "V": 4,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I51",
+      "number": 51,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1969,
+        "S": 3,
+        "V": 802,
+        "F": 1
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I52",
+      "number": 52,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1608,
+        "S": 0,
+        "V": 137,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I53",
+      "number": 53,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1150,
+        "S": 0,
+        "V": 1110,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I54",
+      "number": 54,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2338,
+        "S": 1,
+        "V": 22,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I55",
+      "number": 55,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2146,
+        "S": 1,
+        "V": 17,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I56",
+      "number": 56,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1670,
+        "S": 26,
+        "V": 7,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I57",
+      "number": 57,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2840,
+        "S": 3,
+        "V": 21,
+        "F": 3
+      },
+      "q_or_unmapped": 2,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I58",
+      "number": 58,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2311,
+        "S": 0,
+        "V": 12,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I59",
+      "number": 59,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2065,
+        "S": 0,
+        "V": 81,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I60",
+      "number": 60,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2473,
+        "S": 0,
+        "V": 0,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I61",
+      "number": 61,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1451,
+        "S": 1,
+        "V": 0,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I62",
+      "number": 62,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1451,
+        "S": 9,
+        "V": 795,
+        "F": 12
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I63",
+      "number": 63,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1845,
+        "S": 1,
+        "V": 138,
+        "F": 8
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I64",
+      "number": 64,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1885,
+        "S": 0,
+        "V": 23,
+        "F": 3
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I65",
+      "number": 65,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2271,
+        "S": 5,
+        "V": 382,
+        "F": 4
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I66",
+      "number": 66,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2137,
+        "S": 1,
+        "V": 200,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I67",
+      "number": 67,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2436,
+        "S": 5,
+        "V": 531,
+        "F": 1
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I68",
+      "number": 68,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2479,
+        "S": 2,
+        "V": 161,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I69",
+      "number": 69,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1998,
+        "S": 1,
+        "V": 167,
+        "F": 1
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I70",
+      "number": 70,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1538,
+        "S": 126,
+        "V": 0,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I71",
+      "number": 71,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1633,
+        "S": 35,
+        "V": 0,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I72",
+      "number": 72,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1874,
+        "S": 8,
+        "V": 386,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I73",
+      "number": 73,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1888,
+        "S": 32,
+        "V": 70,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I74",
+      "number": 74,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 2081,
+        "S": 0,
+        "V": 274,
+        "F": 48
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "I75",
+      "number": 75,
+      "fs": 257,
+      "lead": "II",
+      "kept": {
+        "N": 1482,
+        "S": 0,
+        "V": 612,
+        "F": 7
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    }
+  ]
+}
