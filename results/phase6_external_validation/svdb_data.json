@@ -1,0 +1,1111 @@
+{
+  "database": "svdb",
+  "lead": "ECG1",
+  "role": "secondary",
+  "exclude_paced": false,
+  "representation": "C_short_window_rr_features",
+  "records_used": 78,
+  "records_excluded": [],
+  "beats": {
+    "N": 162190,
+    "S": 12194,
+    "V": 9937,
+    "F": 23
+  },
+  "primary_metric": "f1_S",
+  "content_sha256": "f444ed1c4d1c3afde74a9582adb9eb2336bb7affd167982a888f88f347b9cbdf",
+  "records": [
+    {
+      "record": "800",
+      "number": 800,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1844,
+        "S": 30,
+        "V": 6,
+        "F": 1
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "801",
+      "number": 801,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2173,
+        "S": 66,
+        "V": 268,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "802",
+      "number": 802,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1584,
+        "S": 0,
+        "V": 85,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "803",
+      "number": 803,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1922,
+        "S": 0,
+        "V": 143,
+        "F": 1
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "804",
+      "number": 804,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2651,
+        "S": 0,
+        "V": 181,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "805",
+      "number": 805,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2089,
+        "S": 0,
+        "V": 207,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "806",
+      "number": 806,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2950,
+        "S": 40,
+        "V": 29,
+        "F": 2
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "807",
+      "number": 807,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1911,
+        "S": 29,
+        "V": 0,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "808",
+      "number": 808,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1744,
+        "S": 20,
+        "V": 8,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "809",
+      "number": 809,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2430,
+        "S": 112,
+        "V": 0,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "810",
+      "number": 810,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1837,
+        "S": 8,
+        "V": 56,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "811",
+      "number": 811,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1404,
+        "S": 1,
+        "V": 28,
+        "F": 1
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "812",
+      "number": 812,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1756,
+        "S": 14,
+        "V": 70,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "820",
+      "number": 820,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2161,
+        "S": 185,
+        "V": 3,
+        "F": 0
+      },
+      "q_or_unmapped": 1,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "821",
+      "number": 821,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2480,
+        "S": 614,
+        "V": 36,
+        "F": 0
+      },
+      "q_or_unmapped": 1,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "822",
+      "number": 822,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1673,
+        "S": 658,
+        "V": 1,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "823",
+      "number": 823,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2477,
+        "S": 382,
+        "V": 0,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "824",
+      "number": 824,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2214,
+        "S": 196,
+        "V": 7,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "825",
+      "number": 825,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2651,
+        "S": 145,
+        "V": 0,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "826",
+      "number": 826,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2579,
+        "S": 80,
+        "V": 0,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "827",
+      "number": 827,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1842,
+        "S": 18,
+        "V": 0,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "828",
+      "number": 828,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1755,
+        "S": 150,
+        "V": 6,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "829",
+      "number": 829,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1885,
+        "S": 80,
+        "V": 0,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "840",
+      "number": 840,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2339,
+        "S": 44,
+        "V": 1,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "841",
+      "number": 841,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1489,
+        "S": 106,
+        "V": 254,
+        "F": 0
+      },
+      "q_or_unmapped": 3,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "842",
+      "number": 842,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2392,
+        "S": 104,
+        "V": 61,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "843",
+      "number": 843,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2647,
+        "S": 21,
+        "V": 38,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "844",
+      "number": 844,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1648,
+        "S": 59,
+        "V": 0,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "845",
+      "number": 845,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2826,
+        "S": 27,
+        "V": 30,
+        "F": 0
+      },
+      "q_or_unmapped": 2,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "846",
+      "number": 846,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1659,
+        "S": 20,
+        "V": 0,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "847",
+      "number": 847,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1665,
+        "S": 51,
+        "V": 44,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "848",
+      "number": 848,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 4225,
+        "S": 30,
+        "V": 1,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 3
+    },
+    {
+      "record": "849",
+      "number": 849,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2058,
+        "S": 74,
+        "V": 6,
+        "F": 0
+      },
+      "q_or_unmapped": 21,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "850",
+      "number": 850,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1829,
+        "S": 7,
+        "V": 0,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "851",
+      "number": 851,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2167,
+        "S": 32,
+        "V": 427,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "852",
+      "number": 852,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2332,
+        "S": 321,
+        "V": 9,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "853",
+      "number": 853,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2105,
+        "S": 48,
+        "V": 64,
+        "F": 0
+      },
+      "q_or_unmapped": 12,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "854",
+      "number": 854,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1788,
+        "S": 460,
+        "V": 478,
+        "F": 0
+      },
+      "q_or_unmapped": 4,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "855",
+      "number": 855,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2033,
+        "S": 227,
+        "V": 276,
+        "F": 0
+      },
+      "q_or_unmapped": 1,
+      "dropped_unusable": 3
+    },
+    {
+      "record": "856",
+      "number": 856,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2810,
+        "S": 12,
+        "V": 28,
+        "F": 0
+      },
+      "q_or_unmapped": 1,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "857",
+      "number": 857,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2400,
+        "S": 38,
+        "V": 144,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "858",
+      "number": 858,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2167,
+        "S": 8,
+        "V": 3,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "859",
+      "number": 859,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 3007,
+        "S": 69,
+        "V": 464,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "860",
+      "number": 860,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1672,
+        "S": 17,
+        "V": 727,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "861",
+      "number": 861,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1873,
+        "S": 569,
+        "V": 27,
+        "F": 0
+      },
+      "q_or_unmapped": 1,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "862",
+      "number": 862,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2132,
+        "S": 26,
+        "V": 23,
+        "F": 0
+      },
+      "q_or_unmapped": 5,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "863",
+      "number": 863,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2560,
+        "S": 321,
+        "V": 240,
+        "F": 0
+      },
+      "q_or_unmapped": 1,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "864",
+      "number": 864,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1742,
+        "S": 19,
+        "V": 132,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "865",
+      "number": 865,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1101,
+        "S": 1818,
+        "V": 234,
+        "F": 0
+      },
+      "q_or_unmapped": 7,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "866",
+      "number": 866,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2050,
+        "S": 167,
+        "V": 447,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "867",
+      "number": 867,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2787,
+        "S": 136,
+        "V": 75,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "868",
+      "number": 868,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2552,
+        "S": 227,
+        "V": 555,
+        "F": 0
+      },
+      "q_or_unmapped": 12,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "869",
+      "number": 869,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1506,
+        "S": 631,
+        "V": 22,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "870",
+      "number": 870,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1785,
+        "S": 454,
+        "V": 437,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "871",
+      "number": 871,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1774,
+        "S": 12,
+        "V": 8,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "872",
+      "number": 872,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1896,
+        "S": 9,
+        "V": 74,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "873",
+      "number": 873,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1624,
+        "S": 15,
+        "V": 26,
+        "F": 17
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "874",
+      "number": 874,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2188,
+        "S": 9,
+        "V": 41,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "875",
+      "number": 875,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1944,
+        "S": 8,
+        "V": 97,
+        "F": 1
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "876",
+      "number": 876,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2004,
+        "S": 135,
+        "V": 0,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "877",
+      "number": 877,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1839,
+        "S": 196,
+        "V": 1,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "878",
+      "number": 878,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1589,
+        "S": 64,
+        "V": 256,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "879",
+      "number": 879,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1470,
+        "S": 48,
+        "V": 542,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "880",
+      "number": 880,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 3102,
+        "S": 241,
+        "V": 141,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 3
+    },
+    {
+      "record": "881",
+      "number": 881,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1323,
+        "S": 628,
+        "V": 307,
+        "F": 0
+      },
+      "q_or_unmapped": 3,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "882",
+      "number": 882,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1887,
+        "S": 41,
+        "V": 5,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "883",
+      "number": 883,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1771,
+        "S": 40,
+        "V": 7,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "884",
+      "number": 884,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2484,
+        "S": 53,
+        "V": 343,
+        "F": 0
+      },
+      "q_or_unmapped": 1,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "885",
+      "number": 885,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1504,
+        "S": 399,
+        "V": 54,
+        "F": 0
+      },
+      "q_or_unmapped": 1,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "886",
+      "number": 886,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2168,
+        "S": 26,
+        "V": 27,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "887",
+      "number": 887,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2352,
+        "S": 125,
+        "V": 210,
+        "F": 0
+      },
+      "q_or_unmapped": 1,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "888",
+      "number": 888,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2189,
+        "S": 68,
+        "V": 54,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "889",
+      "number": 889,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1464,
+        "S": 152,
+        "V": 91,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "890",
+      "number": 890,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2001,
+        "S": 74,
+        "V": 97,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "891",
+      "number": 891,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2120,
+        "S": 277,
+        "V": 207,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "892",
+      "number": 892,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 1740,
+        "S": 523,
+        "V": 577,
+        "F": 0
+      },
+      "q_or_unmapped": 1,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "893",
+      "number": 893,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2188,
+        "S": 0,
+        "V": 338,
+        "F": 0
+      },
+      "q_or_unmapped": 0,
+      "dropped_unusable": 2
+    },
+    {
+      "record": "894",
+      "number": 894,
+      "fs": 128,
+      "lead": "ECG1",
+      "kept": {
+        "N": 2211,
+        "S": 80,
+        "V": 53,
+        "F": 0
+      },
+      "q_or_unmapped": 1,
+      "dropped_unusable": 2
+    }
+  ]
+}

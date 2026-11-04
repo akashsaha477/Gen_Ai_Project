@@ -11,3 +11,4 @@ Kinds: `construction` (labels counted or arrays built, no model involved), `eval
 | 2026-11-04 09:31 +0530 | construction | ce45db3 | `<local scratch>/rebuild_v1.py` | built v1/test.npz for representation C_short_window_rr_features |  |  |
 | 2026-11-04 09:31 +0530 | evaluation | ce45db3 | `src/ecgaug/final_eval.py --confirm 'run final eval'` | load_test('v1') | 36 grid checkpoints (results/final_eval/summary.json) | Akash Saha |
 | 2026-11-04 15:26 +0000 | audit | e1708f2 | `src/ecgaug/experiments/phase4_leakage_audit.py --config configs/phase4_leakage_audit/audit.yaml --part all --device auto` | phase4_leakage_audit: --part all (rebuilt from the raw DS2 records) |  |  |
+| 2026-11-05 00:43 +0530 | posthoc | 9df5c94 | `src/ecgaug/experiments/phase6_rr_reference.py --part test` | phase6_rr_reference: DS2 predictions of the references (data/processed/v1) | phase6_rr_reference-rrlda-s0-1baec70-202611050043, phase6_rr_reference-rrmorphlda-s0-1baec70-202611050043 |  |
