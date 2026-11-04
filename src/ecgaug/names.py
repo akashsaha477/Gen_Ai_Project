@@ -51,8 +51,15 @@ FINAL_EVAL = "final_eval"  # the single test-set evaluation, after the phase 4 g
 PHASE4_QUALITY_VS_GAIN = "phase4_quality_vs_gain"  # RQ3: quality metrics against the downstream gain, from the phase 3 checkpoints
 PHASE5_GATE = "phase5_gate"  # explanation method per architecture, note variant, demo: then the code freeze
 
+# Post-hoc analyses pre-registered after the final evaluation (PREREGISTRATION §10 v4, DECISIONS A24).
+PHASE6_RR_REFERENCE = "phase6_rr_reference"  # fixed RR-feature reference classifiers
+PHASE6_EXTERNAL_VALIDATION = "phase6_external_validation"  # frozen models on INCART and SVDB
+PHASE6_EXTRA_SEEDS = "phase6_extra_seeds"  # seeds 3 and 4 of the final evaluation's conditions
+PHASE6_AUDIT_CHECK = "phase6_audit_check"  # the leakage audit at the chosen WGAN-GP strength and on more splits
+POST_HOC: tuple[str, ...] = (PHASE6_RR_REFERENCE, PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS, PHASE6_AUDIT_CHECK)
+
 # Result folders that travel back from Kaggle: every experiment's, plus the full grid's ledger.
-RESULT_FOLDERS: tuple[str, ...] = (*EXPERIMENTS, PHASE4_FULL_GRID)
+RESULT_FOLDERS: tuple[str, ...] = (*EXPERIMENTS, PHASE4_FULL_GRID, *POST_HOC)
 
 
 def phase_of(name: str) -> int:

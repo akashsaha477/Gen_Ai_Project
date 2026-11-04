@@ -6,6 +6,8 @@ flag, and every use is appended to ``docs/TEST_ACCESS_LOG.md``:
 - ``construction``: counting labels and building arrays; no model sees the data (``ALLOW_TEST_BUILD=1``).
 - ``evaluation``: the single final evaluation, set only by ``/final-eval`` (``ALLOW_TEST=1``).
 - ``audit``: the leakage-audit experiment, only after the final evaluation (``ALLOW_TEST_AUDIT=1``).
+- ``posthoc``: the post-hoc analyses pre-registered in PREREGISTRATION §10 v4, only after the final
+  evaluation (``ALLOW_TEST_POSTHOC=1``); they replace no reported result.
 """
 
 from __future__ import annotations
@@ -17,13 +19,13 @@ import sys
 
 from ecgaug import paths
 
-ACCESS_ENV: dict[str, str] = {"construction": "ALLOW_TEST_BUILD", "evaluation": "ALLOW_TEST", "audit": "ALLOW_TEST_AUDIT"}
+ACCESS_ENV: dict[str, str] = {"construction": "ALLOW_TEST_BUILD", "evaluation": "ALLOW_TEST", "audit": "ALLOW_TEST_AUDIT", "posthoc": "ALLOW_TEST_POSTHOC"}
 
 _LOG_HEADER = (
     "# TEST ACCESS LOG\n\n"
     "Every read of DS2 (the locked test set) is appended here by `ecgaug.data.access`.\n"
     "Kinds: `construction` (labels counted or arrays built, no model involved), `evaluation`\n"
-    "(only `/final-eval`), `audit` (leakage-audit arm, only after `/final-eval`).\n\n"
+    "(only `/final-eval`), `audit` (leakage-audit arm, only after `/final-eval`), `posthoc` (PREREGISTRATION v4).\n\n"
     "| date | kind | git SHA | command | purpose | run IDs | approved by |\n"
     "|---|---|---|---|---|---|---|\n"
 )
@@ -39,8 +41,9 @@ def require_test_access(kind: str | None) -> None:
         raise LockedTestDataError(
             "DS2 is the locked test set. Reading it needs access='construction' (labels and array "
             "building, with ALLOW_TEST_BUILD=1), access='evaluation' (only /final-eval, with "
-            "ALLOW_TEST=1) or access='audit' (the leakage audit after /final-eval, with "
-            f"ALLOW_TEST_AUDIT=1). Got access={kind!r}."
+            "ALLOW_TEST=1), access='audit' (the leakage audit after /final-eval, with "
+            "ALLOW_TEST_AUDIT=1) or access='posthoc' (PREREGISTRATION v4, with ALLOW_TEST_POSTHOC=1). "
+            f"Got access={kind!r}."
         )
     flag = ACCESS_ENV[kind]
     if os.environ.get(flag) != "1":

@@ -14,6 +14,7 @@ to GitHub, so you only `git pull`. No logic lives in the notebooks.
 | `phase4_augmentation_policy.ipynb` | the four augmentation policies with both frozen banks, seeds 0-2; run all four in one session (they share one reference run) | `mitdb-raw`, banks |
 | `phase4_full_grid.ipynb` | the full grid; resumable across sessions | `mitdb-raw`, banks |
 | `phase4_leakage_audit.ipynb` | the leakage audit, only after the final evaluation (`CONFIRM_AUDIT = True`) | `mitdb-raw`, audit banks for `PART = "classifiers"` |
+| `phase6_extra_seeds.ipynb` | post hoc (PREREGISTRATION v4, P3): generators and the 12 conditions for seeds 3 and 4; validation only | `mitdb-raw` |
 | `phase5_explainability.ipynb`, `phase5_clinical_notes.ipynb` | saliency methods and note generators on the phase 4 models | `mitdb-raw`, artifacts (checkpoints) |
 
 Other files in this folder: `kaggle_run.py` (the script every notebook calls), `make_raw_dataset.py`

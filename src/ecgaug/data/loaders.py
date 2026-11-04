@@ -49,6 +49,21 @@ def load_test_for_audit(version: str = "v1", purpose: str = "") -> dict[str, np.
     return arrays
 
 
+
+def load_test_posthoc(version: str = "v1", purpose: str = "", run_ids: str = "") -> dict[str, np.ndarray]:
+    """Test arrays for the post-hoc analyses of PREREGISTRATION v4 (``ALLOW_TEST_POSTHOC=1``, logged).
+
+    Refused before the final evaluation: the log must already hold its ``evaluation`` entry.
+    """
+    from ecgaug.data.access import LockedTestDataError, logged_accesses
+
+    require_test_access("posthoc")
+    if not logged_accesses("evaluation"):
+        raise LockedTestDataError("Post-hoc analyses read DS2 only after the final evaluation")
+    arrays = _load(paths.processed_dir() / version, TEST_FILE)
+    log_test_access("posthoc", f"{purpose} (data/processed/{version})", run_ids=run_ids)
+    return arrays
+
 def frozen_test_sha256(files: dict) -> str:
     """The content hash of the frozen test arrays, from the ``files`` block of a manifest entry."""
     return files[TEST_FILE]["content_sha256"]

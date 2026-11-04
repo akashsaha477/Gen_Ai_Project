@@ -92,6 +92,24 @@ def test_load_test_with_allow_test_loads_and_logs(fake_root, monkeypatch):
     assert len(rows) == 1 and "load_test('v1')" in rows[0] and "team" in rows[0]
 
 
+
+def test_posthoc_reads_need_their_flag_and_a_prior_final_evaluation(fake_root, monkeypatch):
+    from ecgaug.data.loaders import load_test_posthoc
+
+    _write_small_frozen(monkeypatch)
+    with pytest.raises(LockedTestDataError):
+        load_test_posthoc("v1", "p")  # no flag
+    monkeypatch.setenv("ALLOW_TEST_POSTHOC", "1")
+    with pytest.raises(LockedTestDataError):
+        load_test_posthoc("v1", "p")  # no final evaluation logged yet
+    monkeypatch.setenv("ALLOW_TEST", "1")
+    load_test("v1")
+    monkeypatch.delenv("ALLOW_TEST")
+    arrays = load_test_posthoc("v1", "phase6 check")
+    assert set(np.unique(arrays["record"]).tolist()) == {100, 213}
+    rows = [line for line in (paths.docs_dir() / "TEST_ACCESS_LOG.md").read_text().splitlines() if "| posthoc |" in line]
+    assert len(rows) == 1 and "phase6 check" in rows[0]
+
 def test_counting_ds2_labels_is_a_logged_construction_access(fake_root, monkeypatch):
     monkeypatch.setenv("ALLOW_TEST_BUILD", "1")
     row = count_record(100, access="construction")
