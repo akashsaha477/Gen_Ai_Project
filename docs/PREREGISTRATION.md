@@ -147,6 +147,8 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 - Every access is appended to `docs/TEST_ACCESS_LOG.md`. No decision of any kind uses test data.
 - After `/final-eval` nothing is retrained, re-selected or re-tuned. A bug found later is documented
   and any re-run is disclosed.
+- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4): the analyses listed in §10 v4 only, after `/final-eval`, logged;
+  they add evidence beside the primary results and replace none of them.
 
 ## 9. Generators and RQ3 (rules fixed now, thresholds in v2)
 
@@ -206,6 +208,22 @@ team commits it in the version named above:
 | selection | best score; ties within max(0.02, pooled SD) go to V F1, then to lower complexity (A 1, B 2, C 2, D 3) (A19) |
 | SMOTE and random oversampling | same policy and strengths as the generators; no quality screen |
 | seeds of the full grid | 3 (`[0, 1, 2]`); 5 not adopted (decided at the phase 3 gate, DECISIONS A20) |
+
+**v4, committed 2026-11-05, after the final evaluation and the leakage audit, before any of the analyses below
+(DECISIONS A24).** These are post-hoc analyses asked for to answer expected review objections. None replaces a
+reported result: the primary results stay the final evaluation of 2026-11-04 (3 seeds, DS2). Nothing below selects,
+tunes or changes a frozen model, strength, policy or rule, and no result below feeds any decision. All are exploratory
+and labelled post hoc in the paper.
+
+| item | rule |
+|---|---|
+| test access | a new kind `posthoc` (`ALLOW_TEST_POSTHOC=1`), allowed only when the log holds the evaluation entry; each DS2 read is logged. Used by P1 and P3 only |
+| P1 `phase6_rr_reference` | two fixed reference classifiers with no tuning: `rr_lda`, linear discriminant analysis on (rr_prev, rr_next, rr_ratio); `rr_morph_lda`, the same plus every 10th sample of the frozen representation's z-scored window (18 values). Uniform class priors, features standardised on training beats. Trained on the DS1 training records (the frozen v1 split), deterministic, one fit each |
+| P1 report | validation and DS2 rare-class macro-F1, per-class F1, S Se and +P, record-level bootstrap (10,000, seed 0); paired difference (reference minus cnn none, and minus cnn cVAE) with 95% CI, no test. Wording: "the cnn is weaker than the reference" only if the interval of reference minus cnn none excludes zero above |
+| P2 `phase6_external_validation` | the 36 frozen checkpoints of the final evaluation and the two P1 references, unchanged, on two databases never used before: INCART (`incartdb`, primary; lead II by name; all records without paced beats) and SVDB (`svdb`, secondary; the first signal, `ECG1`, by name; all records). Signals resampled to 360 Hz (polyphase), annotation positions scaled; RR features in seconds from the annotations at the native rate; the AAMI map, Q policy, usable-beat rule and the frozen representation (v1, variant C) unchanged. Records whose annotations hold a symbol outside the WFDB table are reported and excluded |
+| P2 report | per database: per-condition statistics as in §7 with record-level bootstrap; the 4 confirmatory comparisons replicated with Holm within the database. Primary metric rare-class macro-F1; if a database holds fewer than 50 usable F beats, S F1 is reported as its primary metric instead (stated before any model is run on it). "Replicated" means the same Holm verdict as on DS2 |
+| P3 `phase6_extra_seeds` | seeds 3 and 4 added for the 12 conditions at the strengths of the phase 4 gate: generator banks for seeds 3 and 4 from the frozen variants (phase3_cvae-D, phase3_wgan_gp-A) at the full budget, then the grid cells; classifier seed s with bank seed s. Seeds 0-2 are the existing checkpoints. 5-seed DS2 statistics with the same families and Holm, as a sensitivity analysis. "Changed" means any Holm verdict differs from the 3-seed result |
+| P4 `phase6_audit_check` | the leakage audit repeated on its frozen split (split seed 0, the existing audit banks) with WGAN-GP at the validation-chosen strength (cnn 0.1), and with `none` on two more random splits (split seeds 1 and 2); seeds 0-2; access kind `audit`. Reported beside the audit |
 
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 
