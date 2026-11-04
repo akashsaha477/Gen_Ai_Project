@@ -152,7 +152,7 @@ def representation_check(cfg: dict) -> dict:
 def smoke(cfg: dict) -> dict:
     """Run the whole variant pipeline on fake records in a temporary root (one seed, two epochs)."""
     train_records, val_records = (101, 106, 108, 114), (118, 201)
-    with temporary_root() as root:
+    with temporary_root():
         write_fake_mitdb(paths.raw_dir(), train_records + val_records, seconds=120.0)
         counts = pd.DataFrame([count_record(r) for r in train_records + val_records])
         split = Split(name="smoke", train=train_records, val=val_records)

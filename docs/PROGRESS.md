@@ -725,3 +725,14 @@ the 1,836 test S beats; S recall there is 0.000-0.100 for every condition. F F1 
 tell apart; redraw for the paper).
 
 Next: phase 5 (explainability, notes with Gemini), then the paper.
+
+## 2026-11-04 (Day 29) — Review and fixes before phase 5 (A22)
+
+Gemini key now loads in new shells. Fixed: note variant C repeated the disclaimer (test added); notes cases now use the
+saliency method the phase 5 rule picks once explainability has run (was always the default); the final-evaluation
+per-record figure is a heatmap (record 232: 1,381 S beats, recall ≤ 0.10 for every condition; record 213: 362 F beats,
+recall ≤ 0.35); notes docstring names Gemini; two lint findings. Error analysis written (`results/error_analysis/`,
+`figures/error_analysis/`) from saved predictions: on test, cnn none labels 1,367 of 1,836 S beats and 333 of 388 F beats
+as N (seed-mean counts). Full test suite passes.
+
+Next: phase5_explainability A-D (local CPU, validation only), then phase5_clinical_notes A-D with Gemini.

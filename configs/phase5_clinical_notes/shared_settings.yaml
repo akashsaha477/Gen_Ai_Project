@@ -6,6 +6,6 @@ min_low_confidence: 10                   # at least this many low-confidence cas
 low_confidence_threshold: 0.6            # proposed rule (pre-registered before phase 5 runs): top probability below this
 case_seed: 0
 model: {architecture: cnn, condition: best_generative}   # whose outputs the notes describe (phase 4 gate)
-saliency_method: integrated_gradients    # the phase 5 gate's method for the architecture replaces this once chosen
+saliency_method: integrated_gradients    # used only if phase5_explainability has not finished; otherwise its rule's method
 method_settings: {ig_steps: 50, smoothgrad_samples: 25, smoothgrad_sd: 0.1, occlusion_window_ms: 50, occlusion_stride_ms: 25, batch_size: 64}
 max_retries: 2                           # variant D: fact-check and regenerate at most this often, then the template

@@ -265,3 +265,19 @@ passed the fact checker. The 400-token limit is not pre-registered and is unchan
 ## the phase 4 gate — 2026-11-04 — status: APPROVED by Akash Saha
 Strengths chosen on validation and best generative condition per architecture: cnn: cvae; rnn: cvae — evidence: results/phase4_gate/report.md — rule: PLAN Phase 4, PAPER_TRACK A5
 Frozen artifacts (hashes): the grid checkpoints in results/manifest.json. Next: /final-eval.
+
+## 2026-11-04 (Day 29) — A22: fixes before phase 5 — Akash Saha (asked for a review and fixes before phase 5)
+
+Nothing here retrains, re-selects or re-tunes a phase 1-4 result (docs/RULES.md and the final evaluation's procedure).
+
+- A22.1 Note variant C: `render_c` dropped a disclaimer the model wrote inside a field and then added its own, so
+  low-confidence notes carried the disclaimer twice (seen in a one-beat Gemini probe). The disclaimer is now added once.
+  Fixed before any official notes run.
+- A22.2 Notes cases and the saliency method: the cases are built once, but the method came only from the approved phase 5
+  gate, which needs the notes results, so the cases would always have used the default (integrated gradients). The cases
+  now use the method that the pre-registered phase 5 rule picks from the finished phase5_explainability results
+  (`workflow.saliency_choice`, the same function the gate uses); explainability runs first.
+- A22.3 Final-evaluation per-record figure redrawn as a heatmap from `results/final_eval/summary.json` (12 blue bar shades
+  could not be told apart); `python -m ecgaug.figures final_eval` redraws it without reading the test set.
+- A22.4 Error analysis run on validation and on the final evaluation's saved test predictions (no new test access).
+- A22.5 Two lint findings fixed (unused import, unused variable); no behaviour change.

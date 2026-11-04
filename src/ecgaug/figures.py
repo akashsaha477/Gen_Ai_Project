@@ -779,19 +779,29 @@ def final_eval_figures(stats: dict) -> list[Path]:
     written.append(_save(fig, out / "forest.png", "Final evaluation: pre-registered comparisons on the test set",
                          "Black: confirmatory family; grey: secondary. Intervals are unadjusted; p-values are Holm-adjusted within each family."))  # fmt: skip
     keys = list(stats["per_record"])
-    fig, axes = plt.subplots(1, 2, figsize=(12, 3.6), sharey=True)
-    for ax, cls in zip(axes, ("S", "F")):
-        records = [r for r in stats["records"] if any(stats["per_record"][k][str(r)][cls]["support"] for k in keys)]
-        width = 0.8 / max(1, len(keys))
-        for j, key in enumerate(keys):
-            values = [stats["per_record"][key][str(r)][cls]["recall"] or 0.0 for r in records]
-            ax.bar(np.arange(len(records)) + j * width, values, width=width, label=key, color=BLUES[2 + j % 6], edgecolor=SURFACE)
-        ax.set_xticks(np.arange(len(records)) + 0.4 - width / 2, [str(r) for r in records], rotation=45)
+    from matplotlib.colors import LinearSegmentedColormap
+
+    cmap = LinearSegmentedColormap.from_list("recall", BLUES[1:])
+    cmap.set_bad(SURFACE)
+    sizes = {cls: [r for r in stats["records"] if any(stats["per_record"][k][str(r)][cls]["support"] for k in keys)] for cls in ("S", "F")}
+    fig, axes = plt.subplots(1, 3, figsize=(13, 0.32 * len(keys) + 1.6), gridspec_kw={"width_ratios": [len(sizes["S"]), len(sizes["F"]), 0.3]})
+    for ax, cls in zip(axes[:2], ("S", "F")):
+        records = sizes[cls]
+        grid = np.array([[stats["per_record"][k][str(r)][cls]["recall"] for r in records] for k in keys], dtype=float)
+        image = ax.imshow(np.ma.masked_invalid(grid), cmap=cmap, vmin=0, vmax=1, aspect="auto")
+        for i, j in np.ndindex(grid.shape):
+            if not np.isnan(grid[i, j]):
+                ax.text(j, i, f"{grid[i, j]:.2f}"[1:] if grid[i, j] < 1 else "1", ha="center", va="center", fontsize=6,
+                        color=SURFACE if grid[i, j] > 0.55 else INK)  # fmt: skip
+        support = [stats["per_record"][keys[0]][str(r)][cls]["support"] for r in records]
+        ax.set_xticks(range(len(records)), [f"{r}\nn={n:,}" for r, n in zip(records, support)], fontsize=7)
+        ax.set_yticks(range(len(keys)), keys if cls == "S" else [""] * len(keys), fontsize=7)
+        ax.grid(False)
         ax.set_title(f"{cls} recall per test record", loc="left")
-    axes[0].set_ylabel("recall (seed mean)")
-    axes[1].legend(loc="upper right", fontsize=6)
+    fig.colorbar(image, cax=axes[2], label="recall (seed mean)")
     written.append(_save(fig, out / "per_record_S_F.png", "Final evaluation: S and F recall per test record",
-                         "Only records holding S (left) or F (right) beats are shown; few records hold most of each class."))  # fmt: skip
+                         "Rows: architecture/condition at the phase 4 gate's strength; columns: records holding S (left) or F (right) beats, "
+                         "with n = beats of that class in the record. A few records hold most of each class."))  # fmt: skip
     return written
 
 
@@ -909,7 +919,7 @@ def results_figures() -> list[Path]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Before-and-after figures for each phase.")
-    parser.add_argument("what", choices=["phase1_data", "phase2_ptbxl_data", "results", "all"])
+    parser.add_argument("what", choices=["phase1_data", "phase2_ptbxl_data", "results", "final_eval", "all"])
     parser.add_argument("--ptbxl-root", default=None, help="folder with PTB-XL recordings (default data/raw/ptbxl)")
     args = parser.parse_args(argv)
     written = []
@@ -919,6 +929,8 @@ def main(argv: list[str] | None = None) -> int:
         written += phase2_ptbxl_data_figures(args.ptbxl_root)
     if args.what in ("results", "all"):
         written += results_figures()
+    if args.what == "final_eval":  # redraw from the saved summary; the test set is not read
+        written += final_eval_figures(json.loads((paths.results_for("final_eval") / "summary.json").read_text()))
     for path in written:
         print(path.relative_to(paths.repo_root()))
     return 0
