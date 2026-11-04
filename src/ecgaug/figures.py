@@ -781,8 +781,7 @@ def final_eval_figures(stats: dict) -> list[Path]:
     keys = list(stats["per_record"])
     from matplotlib.colors import LinearSegmentedColormap
 
-    cmap = LinearSegmentedColormap.from_list("recall", BLUES[1:])
-    cmap.set_bad(SURFACE)
+    cmap = LinearSegmentedColormap.from_list("recall", BLUES[1:]).with_extremes(bad=SURFACE)
     sizes = {cls: [r for r in stats["records"] if any(stats["per_record"][k][str(r)][cls]["support"] for k in keys)] for cls in ("S", "F")}
     fig, axes = plt.subplots(1, 3, figsize=(13, 0.32 * len(keys) + 1.6), gridspec_kw={"width_ratios": [len(sizes["S"]), len(sizes["F"]), 0.3]})
     for ax, cls in zip(axes[:2], ("S", "F")):
