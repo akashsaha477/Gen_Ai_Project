@@ -178,6 +178,28 @@ def read_signal(record: int, access: str | None = None, lead: str = LEAD) -> np.
     return np.asarray(rec.p_signal[:, 0], dtype=np.float64)
 
 
+
+def external_dir(database: str) -> Path:
+    """Folder of an external PhysioNet database (post hoc, PREREGISTRATION v4), next to ``data/raw/mitdb``."""
+    return paths.raw_dir().parent / database
+
+
+def external_records(database: str) -> list[str]:
+    """Record names of an external database on disk (none of them is MIT-BIH, so no test lock applies)."""
+    return sorted(p.stem for p in external_dir(database).glob("*.hea"))
+
+
+def read_external(database: str, record: str, lead: str) -> tuple[np.ndarray, np.ndarray, np.ndarray | None, int, list[str]]:
+    """Annotation samples and symbols, the ``lead`` channel (None if absent), the sampling rate and the signal names."""
+    stem = str(external_dir(database) / record)
+    ann = wfdb.rdann(stem, "atr")
+    header = wfdb.rdheader(stem)
+    signal = None
+    if lead in header.sig_name:
+        rec = wfdb.rdrecord(stem, channel_names=[lead])
+        signal = np.asarray(rec.p_signal[:, 0], dtype=np.float64)
+    return np.asarray(ann.sample, dtype=np.int64), np.asarray(ann.symbol, dtype=str), signal, int(header.fs), list(header.sig_name)
+
 PTBXL_ZIP_URL = "https://physionet.org/content/ptb-xl/get-zip/1.0.3/"
 PTBXL_NEEDED = ("ptbxl_database.csv", "scp_statements.csv")
 
