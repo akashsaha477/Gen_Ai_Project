@@ -295,3 +295,15 @@ checker, `max_tokens`, cases and retries are unchanged.
 ## the phase 5 gate — 2026-11-04 — status: APPROVED by Akash Saha
 Saliency: {'cnn': 'gradcam', 'rnn': 'occlusion'}; notes: variant C — evidence: results/phase5_gate/report.md — rule: PLAN Phase 5
 Next: code freeze (git tag v1.0) and phase 6.
+
+## 2026-11-05 (Day 30) — A24: post-hoc analyses for review objections — Akash Saha ("can you fix all these")
+
+After the paper draft, a review of its weaknesses listed: a weak baseline (test rare-class macro-F1 0.088, below
+published inter-patient classifiers that use RR features), rare test classes in effectively two patients, 3 seeds, one
+database, and a leakage audit with one split and a WGAN-GP strength different from the final evaluation. Akash Saha asked
+for all of them to be addressed. Four post-hoc analyses are pre-registered (PREREGISTRATION §10 v4, tag `prereg-v4`)
+before any is run: P1 RR reference classifiers, P2 external validation on INCART and SVDB, P3 seeds 3 and 4, P4 audit
+check. They break the "nothing retrained after /final-eval" line only in P3 (new seeds of frozen settings) and add DS2
+reads (new access kind `posthoc`, logged); every result is labelled post hoc and none replaces the primary results.
+Not addressable here: blinded readability ratings of the notes (need people) and diffusion generators (out of scope;
+stated as future work).
