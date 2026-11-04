@@ -779,3 +779,21 @@ note cases A22.2, v1 test arrays rebuilt with matching hashes), and the notes li
 notes). `paper/report.tex` likewise. Both compile with tectonic (`paper/main.pdf` 15 pages, `paper/report.pdf`).
 
 Open: leakage audit (H2/RQ2: run, or report as not run), author names and team contributions, the claims-vs-evidence table.
+
+## 2026-11-04 (Day 29) — Leakage audit done (H2/RQ2); paper complete except authors
+
+Akash Saha: "run whatever needs". phase4_leakage_audit ran on Kaggle (T4, kernel phase4-leakage-audit, commit e1708f2,
+`PART = "all"`, about 2 h: generators 15:26-17:11 UTC, classifiers 17:12-17:29). One audit access, merged into
+`docs/TEST_ACCESS_LOG.md` by ingest (new: Kaggle bundles carry the access log and ingest appends rows it lacks; test in
+`tests/test_runs.py`). Ingested: 9 cnn runs `phase4_leakage_audit-cnn.{none,cvae_0.25,wgan_gp_0.25}-s{0,1,2}-e1708f2-*`,
+6 generator runs, 6 audit banks (`data/synthetic/audit/`, not in git); no conflicts or refusals.
+
+Random beat-level split (44 of 44 records in both training and test), cnn rare-class macro-F1, mean ± SD over seeds:
+none 0.837 ± 0.026, cVAE 0.820 ± 0.034, WGAN-GP 0.785 ± 0.060; inter-patient (final evaluation) 0.088, 0.113, 0.079.
+Intra-patient evaluation raised the baseline by 0.748; the generative gains were -0.017 (cVAE) and -0.052 (WGAN-GP)
+intra-patient. H2 verdict by the registered criterion: not consistent (baseline inflated, gains not). The audit uses the
+grid's middle strength (0.25) for both generators, the final evaluation the validation-chosen strength (cVAE 0.25,
+WGAN-GP 0.1); stated in the table caption. Figure: `figures/phase4_leakage_audit/intra_vs_inter.png`.
+
+Paper: every placeholder filled except authors; audit figure, deviation entry and claims row added; claims table (13 rows)
+now survives `python -m ecgaug.paper`. `paper/main.pdf` 16 pages. Open: author names and team contributions.

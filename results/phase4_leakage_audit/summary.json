@@ -1,0 +1,164 @@
+{
+  "experiment": "phase4_leakage_audit",
+  "architecture": "cnn",
+  "metric": "rare_macro_f1",
+  "note": "Never used for any decision (PLAN Phase 4). Intra-patient: mean and SD over seeds; inter-patient: the final evaluation, 95% record-level CI.",
+  "split": {
+    "name": "intra_patient_random",
+    "seed": 0,
+    "records": 44,
+    "records_in_train_and_test": 44,
+    "counts": {
+      "train": {
+        "N": 35464,
+        "S": 643,
+        "V": 3030,
+        "F": 387
+      },
+      "val": {
+        "N": 10360,
+        "S": 300,
+        "V": 758,
+        "F": 27
+      },
+      "test": {
+        "N": 44217,
+        "S": 1836,
+        "V": 3219,
+        "F": 388
+      }
+    }
+  },
+  "conditions": {
+    "none": {
+      "intra": {
+        "mean": 0.8367282959410846,
+        "sd": 0.025880331951380176,
+        "per_seed": [
+          0.8508563208799244,
+          0.8524697820500619,
+          0.8068587848932677
+        ],
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "strength": null,
+        "run_ids": [
+          "phase4_leakage_audit-cnn.none-s0-e1708f2-202611041712",
+          "phase4_leakage_audit-cnn.none-s1-e1708f2-202611041712",
+          "phase4_leakage_audit-cnn.none-s2-e1708f2-202611041713"
+        ]
+      },
+      "inter": {
+        "point": 0.08826996255884435,
+        "ci_low": 0.036754478248240664,
+        "ci_high": 0.19383827243929538,
+        "strength": null
+      }
+    },
+    "cvae": {
+      "intra": {
+        "mean": 0.8198610729467233,
+        "sd": 0.03406405163837886,
+        "per_seed": [
+          0.8513259484319713,
+          0.8245695457035247,
+          0.7836877247046738
+        ],
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "strength": 0.25,
+        "run_ids": [
+          "phase4_leakage_audit-cnn.cvae_0.25-s0-e1708f2-202611041716",
+          "phase4_leakage_audit-cnn.cvae_0.25-s1-e1708f2-202611041719",
+          "phase4_leakage_audit-cnn.cvae_0.25-s2-e1708f2-202611041721"
+        ]
+      },
+      "inter": {
+        "point": 0.11340050915255522,
+        "ci_low": 0.04924571664666749,
+        "ci_high": 0.2170405622722887,
+        "strength": 0.25
+      }
+    },
+    "wgan_gp": {
+      "intra": {
+        "mean": 0.7849427231358076,
+        "sd": 0.06014317258426544,
+        "per_seed": [
+          0.7157918788353571,
+          0.8139664106110058,
+          0.8250698799610594
+        ],
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "strength": 0.25,
+        "run_ids": [
+          "phase4_leakage_audit-cnn.wgan_gp_0.25-s0-e1708f2-202611041724",
+          "phase4_leakage_audit-cnn.wgan_gp_0.25-s1-e1708f2-202611041727",
+          "phase4_leakage_audit-cnn.wgan_gp_0.25-s2-e1708f2-202611041729"
+        ]
+      },
+      "inter": {
+        "point": 0.07901331896961451,
+        "ci_low": 0.03272484687238697,
+        "ci_high": 0.16425049593959148,
+        "strength": 0.1
+      }
+    }
+  },
+  "gains": {
+    "cvae": {
+      "intra": {
+        "mean": -0.016867222994361348,
+        "sd": 0.015199212707722327,
+        "per_seed": [
+          0.0004696275520469362,
+          -0.027900236346537155,
+          -0.02317106018859383
+        ]
+      },
+      "inter": {
+        "point": 0.025130546593710862,
+        "ci_low": -0.01767271621457176,
+        "ci_high": 0.04692042652098958
+      }
+    },
+    "wgan_gp": {
+      "intra": {
+        "mean": -0.05178557280527718,
+        "sd": 0.07749619490091218,
+        "per_seed": [
+          -0.13506444204456725,
+          -0.03850337143905602,
+          0.018211095067791727
+        ]
+      },
+      "inter": {
+        "point": -0.00925664358922984,
+        "ci_low": -0.0454457605871834,
+        "ci_high": 0.015010856615759583
+      }
+    }
+  },
+  "run_ids": [
+    "phase4_leakage_audit-cnn.cvae_0.25-s0-e1708f2-202611041716",
+    "phase4_leakage_audit-cnn.cvae_0.25-s1-e1708f2-202611041719",
+    "phase4_leakage_audit-cnn.cvae_0.25-s2-e1708f2-202611041721",
+    "phase4_leakage_audit-cnn.none-s0-e1708f2-202611041712",
+    "phase4_leakage_audit-cnn.none-s1-e1708f2-202611041712",
+    "phase4_leakage_audit-cnn.none-s2-e1708f2-202611041713",
+    "phase4_leakage_audit-cnn.wgan_gp_0.25-s0-e1708f2-202611041724",
+    "phase4_leakage_audit-cnn.wgan_gp_0.25-s1-e1708f2-202611041727",
+    "phase4_leakage_audit-cnn.wgan_gp_0.25-s2-e1708f2-202611041729"
+  ],
+  "inflation_none": 0.7484583333822402
+}

@@ -1,0 +1,41 @@
+{
+  "cell_sha": "6fbbc6570da5c567bed69a18bc3f3b54acd0af17de63122f5fbf933c82551bf6",
+  "cell": {
+    "condition": "cvae",
+    "strength": 0.25,
+    "architecture": "cnn",
+    "seed": 0
+  },
+  "condition": "cvae",
+  "strength": 0.25,
+  "architecture": "cnn",
+  "seed": 0,
+  "run_id": "phase4_leakage_audit-cnn.cvae_0.25-s0-e1708f2-202611041716",
+  "status": "done",
+  "bank": "audit/phase3_cvae-D",
+  "selection_metric": "s_f1",
+  "selection_value": 0.8850174216027874,
+  "tie_break_value": 0.9706275033377837,
+  "rare_macro_f1": 0.8087058938999853,
+  "n_recall": 0.9975868725868726,
+  "n_added": {
+    "N": 0,
+    "S": 8223,
+    "V": 5836,
+    "F": 8479
+  },
+  "wall_clock_s": 38.1,
+  "provisional": false,
+  "audit_test": {
+    "rare_macro_f1": 0.8513259484319713,
+    "macro_f1": 0.9152488301429371,
+    "n_recall": 0.9981455096456114,
+    "n_beats": 49660,
+    "f1": {
+      "N": 0.9942554629421041,
+      "S": 0.8989869753979739,
+      "V": 0.9640879607657016,
+      "F": 0.8036649214659686
+    }
+  }
+}
