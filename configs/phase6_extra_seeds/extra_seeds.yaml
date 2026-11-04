@@ -1,0 +1,4 @@
+# phase6_extra_seeds (PREREGISTRATION §10 v4, P3; post hoc). Seeds 3 and 4 for the 12 conditions of the phase 4 gate,
+# at its strengths, with banks of the generator variants frozen at the phase 3 gate trained for these seeds.
+experiment: phase6_extra_seeds
+seeds: [3, 4]
