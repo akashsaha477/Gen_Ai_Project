@@ -50,6 +50,7 @@ the one before it; the code refuses to skip ahead and says what is missing.
 | 5 explanations | `phase5_explainability` A–D, `phase5_clinical_notes` A–D, error analysis, demo | `python -m ecgaug.experiments.phase5_*`, `python -m ecgaug.demo` | done 2026-11-04 (local CPU; notes with gemini-3.5-flash-lite) |
 | 5 explanations | phase 5 gate, then `git tag v1.0` | `python -m ecgaug.workflow phase5-gate [--approve ...]` | approved 2026-11-04 by Akash Saha; code tagged `v1.0` |
 | 4 comparison | RQ3 analysis; leakage audit (optional, after the final evaluation) | `python -m ecgaug.eval.rq3`; `kaggle/phase4_leakage_audit.ipynb` | RQ3 done; leakage audit done 2026-11-04 on Kaggle (`results/phase4_leakage_audit/`, `python -m ecgaug.figures leakage_audit`) |
+| 6 paper | post-hoc analyses for the review (PREREGISTRATION v4, P1-P4; reported apart, never replacing the primary results) | `python -m ecgaug.experiments.phase6_rr_reference`, `phase6_external_validation`, `phase6_audit_check`; `kaggle/phase6_extra_seeds.ipynb`; `python -m ecgaug.figures posthoc` | done 2026-11-05: P1 RR references below the cnn; P2 INCART: generative augmentation lowered all 4 confirmatory comparisons, SVDB: 1 of 4 improved (rnn cVAE); P3 five seeds: no verdict changed; P4: inflation holds on two more splits (0.803, 0.777 vs 0.088), WGAN-GP at the gate strength 0.769, H2 verdict unchanged |
 | 6 paper | `paper/main.tex` and the course report `paper/report.tex`: tables, numbers and results sentences | `python -m ecgaug.paper` | drafted 2026-11-04 with every result in (`paper/main.pdf`, `paper/report.pdf`); claims table filled; open: author names and team contributions |
 
 "Built" means the code, configs, notebook, tests and brief exist. A dress rehearsal runs every stage in
@@ -159,6 +160,9 @@ uv run python -m ecgaug.data.counts  # per-record class counts for DS1
 DS2 is read only through `ecgaug.data.load_test()`, which raises unless `ALLOW_TEST=1`, and only
 `/final-eval` sets that. Counting DS2 labels and building `test.npz` need `ALLOW_TEST_BUILD=1`. Every
 access is appended to `docs/TEST_ACCESS_LOG.md`. Do not set either flag by hand outside those steps.
+After the final evaluation two more kinds exist: `ALLOW_TEST_AUDIT=1` for the leakage audit and its checks, and
+`ALLOW_TEST_POSTHOC=1` for the post-hoc analyses of pre-registration v4 (`load_test_posthoc` refuses unless the final
+evaluation is already logged). Neither may feed a decision.
 
 ## Running a variant
 
