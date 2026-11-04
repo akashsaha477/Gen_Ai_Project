@@ -323,19 +323,27 @@ def posthoc_external(summaries: dict[str, dict]) -> str:
         return _missing("P2 external validation: python -m ecgaug.experiments.phase6_external_validation --part evaluate")
     parts = []
     for db, s in summaries.items():
-        metric = s["primary_metric"]
-        none, beats = s["conditions"]["cnn/none"][metric], s["beats"]
+        metric, beats = s["primary_metric"], s["beats"]
+        base = "; ".join(f"the {arch} without augmentation reached {_ci(s['conditions'][f'{arch}/none'][metric])}"
+                         for arch in dict.fromkeys(k.split("/")[0] for k in s["conditions"]))  # fmt: skip
+        comparisons = "; ".join(f"{name.replace('_', ' ')} {_ci(c, signed=True)}, {_p(c)} ({_changed(c)})" for name, c in s["confirmatory"].items())
         rejected = [k for k, v in s["confirmatory"].items() if v["reject_holm"]]
-        best_name, best = max(s["confirmatory"].items(), key=lambda kv: kv[1]["point"])
-        verdict = ("no confirmatory comparison was significant after Holm correction" if not rejected
-                   else f"Holm rejected {', '.join(r.replace('_', ' ') for r in rejected)}")  # fmt: skip
+        context = []
+        for arch in dict.fromkeys(k.split(": ")[0] for k in rejected):  # the same architecture's other conditions on this database
+            others = {c.split("/")[1]: v[metric]["point"] for c, v in s["conditions"].items() if c.startswith(f"{arch}/")}
+            ranked = ", ".join(f"{SHORT[c]} {_n(v)}" for c, v in sorted(others.items(), key=lambda kv: -kv[1]))
+            context.append(f"the {arch}'s conditions ranked by {METRIC[metric]}: {ranked}")
         same = all(v["replicated"] for v in s["confirmatory"].values())
-        parts.append(f"On {DATABASE[db]} ({s['role']}; {s['records']} records; {beats['S']:,} S and {beats['F']:,} F beats; primary metric "
-                     f"{METRIC[metric]}), the cnn without augmentation reached {_ci(none)}; the largest confirmatory difference was "
-                     f"{best_name.replace('_', ' ')}, {_ci(best, signed=True)}, {_p(best)}; {verdict}, which "
-                     f"{'matches' if same else 'does not match'} the verdicts on the MIT-BIH test records")  # fmt: skip
+        text = (f"On {DATABASE[db]} ({s['role']}; {s['records']} records; {beats['S']:,} S and {beats['F']:,} F beats; primary metric {METRIC[metric]}), "
+                f"{base}. Against no augmentation, the confirmatory differences were: {comparisons}. Holm rejected {len(rejected)} of "
+                f"{len(s['confirmatory'])}, which {'matches' if same else 'does not match'} the verdicts on the MIT-BIH test records")  # fmt: skip
+        if context:
+            text += f"; {'; '.join(context)}"
+        parts.append(text)
     return (f"\\paragraph{{External databases (P2).}} Every frozen checkpoint was applied unchanged to two databases no model or decision had seen, "
-            f"with beats cut exactly as in the frozen dataset. {'. '.join(parts)} (Figure~\\ref{{fig:external}}).")  # fmt: skip
+            f"with beats cut exactly as in the frozen dataset. {'. '.join(parts)} (Figure~\\ref{{fig:external}}). The databases differ from "
+            f"MIT-BIH in sampling rate, lead and annotation practice (Figure~\\ref{{fig:external-beats}}), so these results measure transfer as well as "
+            f"augmentation.")  # fmt: skip
 
 
 def posthoc_seeds(summary: dict | None) -> str:
@@ -361,6 +369,25 @@ def posthoc_audit(summary: dict | None) -> str:
     return (f"\\paragraph{{Checks of the audit (P4).}} Intra-patient rare-class macro-F1 of the cnn (mean $\\pm$ SD over seeds): "
             f"{'; '.join(parts)}, against {_n(base['mean'])} $\\pm$ {_n(base['sd'])} without augmentation on the audit's split and "
             f"{_n(summary['inter_patient']['none']['point'])} inter-patient (Figure~\\ref{{fig:audit-checks}}). Exploratory.")  # fmt: skip
+
+
+def abstract_posthoc() -> str:
+    """One abstract sentence for the post-hoc analyses (P2 primary database, P3), from their summaries."""
+    from ecgaug.names import PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS
+
+    incart = _load(paths.results_for(PHASE6_EXTERNAL_VALIDATION) / "incartdb_summary.json")
+    seeds = _load(paths.results_for(PHASE6_EXTRA_SEEDS) / "summary.json")
+    if incart is None or seeds is None:
+        return _missing("post-hoc abstract sentence: after P2 and P3")
+    conf = incart["confirmatory"]
+    verbs = [_changed(c) for c in conf.values()]
+    counts = ", ".join(f"{verb} {'the rare-class macro-F1' if i == 0 else 'it'} in {verbs.count(verb)}" for i, verb in enumerate(dict.fromkeys(verbs)))
+    rejected = [c["p_holm"] for c in conf.values() if c["reject_holm"]]
+    bound = f" (Holm-adjusted $p \\le {max(rejected):.3f}$)" if rejected and len(set(verbs)) == 1 else ""
+    changed = "no pre-registered verdict" if not seeds["changed"] else f"{len(seeds['changed'])} pre-registered verdicts"
+    text = (f"In analyses added after the final evaluation, the frozen models were applied to the St Petersburg INCART database, where generative "
+            f"augmentation {counts} of the {len(conf)} confirmatory comparisons with no augmentation{bound}; two more seeds changed {changed}.")  # fmt: skip
+    return text
 
 
 def posthoc(final: dict | None) -> str:
@@ -423,6 +450,7 @@ def build() -> dict[str, str]:
     files["results_notes"] = notes(gate, note_results)
     files["results_concentration"] = concentration(_load(paths.results_for("error_analysis") / "test.json"))
     files["results_posthoc"] = posthoc(summary)
+    files["abstract_posthoc"] = abstract_posthoc() + "\n"
     files["table_hypotheses"] = hypotheses_table(verdicts)
     files["abstract_results"] = abstract_sentence(summary, verdicts, audit) + "\n"
     return files
