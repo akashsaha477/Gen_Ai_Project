@@ -767,3 +767,15 @@ rule (hard gate, coverage, ratings, latency, tokens) variant C; no blinded ratin
 Akash Saha approved gate 5 (`approve gate 5`). Recorded in `results/manifest.json` and `docs/DECISIONS.md`: saliency cnn
 Grad-CAM, rnn occlusion; notes variant C. Code tagged `v1.0`. Next: phase 6 (paper: regenerate tables and numbers, write
 the negative H1/H1c result, records 232/213, limitations, v1 rebuild, Gemini switch A21/A23, phase 5 results).
+
+## 2026-11-04 (Day 29) — Phase 6 started: paper drafted with every result
+
+`python -m ecgaug.paper` regenerated all tables, numbers and results sentences. New generated paragraph
+`results_concentration` (`src/ecgaug/paper_text.py`, from `results/error_analysis/test.json`): record 232 holds 1,381 of
+1,836 test S beats and record 213 holds 362 of 388 F beats; S recall on 232 ranges 0.00-0.10 and F recall on 213 ranges
+0.00-0.35 across the 12 models (seed means). `paper/main.tex`: figures added (forest plot, per-record recall, test
+confusion matrices, Grad-CAM and occlusion class averages), a "Deviations from the plan" section (Gemini note model A21/A23,
+note cases A22.2, v1 test arrays rebuilt with matching hashes), and the notes limitation corrected (no person rated the
+notes). `paper/report.tex` likewise. Both compile with tectonic (`paper/main.pdf` 15 pages, `paper/report.pdf`).
+
+Open: leakage audit (H2/RQ2: run, or report as not run), author names and team contributions, the claims-vs-evidence table.

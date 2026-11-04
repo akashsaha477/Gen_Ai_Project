@@ -260,6 +260,33 @@ def notes(gate: dict | None, results: dict[str, dict]) -> str:
     return text + "\n"
 
 
+def concentration(errors: dict | None) -> str:
+    """Where the test S and F beats sit and how often each condition finds them (results/error_analysis/test.json, exploratory)."""
+    if not errors:
+        return _missing("per-record test analysis: python -m ecgaug.report.error_analysis --test") + "\n"
+    first = next(iter(errors.values()))
+    parts, recalls = [], []
+    for cls in ("S", "F"):
+        support = {rec: v[cls]["support"] for rec, v in first["per_record"].items() if cls in v}
+        top = max(support, key=support.get)
+        recall = [1 - e["per_record"][top][cls]["missed_fraction"] for e in errors.values()]
+        parts.append(f"record {top} holds {support[top]:,} of the {sum(support.values()):,} test {cls} beats")
+        recalls.append(f"{cls} recall on record {top} ranged from {_n(min(recall), 2)} to {_n(max(recall), 2)}")
+    text = (f"The test rare beats sit in very few patients: {parts[0]}, and {parts[1]}. Across the {len(errors)} models of Table~\\ref{{tab:test}} "
+            f"(seed means), {recalls[0]}, and {recalls[1]}, so these two records set most of the primary metric.")  # fmt: skip
+    base = errors.get("cnn/none")
+    if base:
+        cm = base["confusion_matrix"]
+        s, f = 1, 3
+        text += (f" The cnn without augmentation labelled {cm[s][0]:,.0f} of {sum(cm[s]):,.0f} S beats and {cm[f][0]:,.0f} of {sum(cm[f]):,.0f} F beats "
+                 f"as normal (exploratory).")  # fmt: skip
+        rr = base["rr_context"]
+        if rr.get("S correct", {}).get("rr_ratio_median") and rr.get("S called N", {}).get("rr_ratio_median"):
+            text += (f" With seed 0, S beats it found were more premature than S beats it called normal (median ratio of the previous RR interval to the "
+                     f"local mean {_n(rr['S correct']['rr_ratio_median'], 2)} against {_n(rr['S called N']['rr_ratio_median'], 2)}).")  # fmt: skip
+    return text + "\n"
+
+
 # --------------------------------------------------------------------------------------------------
 # the hypothesis table and the abstract sentence
 # --------------------------------------------------------------------------------------------------
@@ -309,6 +336,7 @@ def build() -> dict[str, str]:
         files[name] = text
         verdicts.update(found)
     files["results_notes"] = notes(gate, note_results)
+    files["results_concentration"] = concentration(_load(paths.results_for("error_analysis") / "test.json"))
     files["table_hypotheses"] = hypotheses_table(verdicts)
     files["abstract_results"] = abstract_sentence(summary, verdicts, audit) + "\n"
     return files

@@ -50,7 +50,7 @@ the one before it; the code refuses to skip ahead and says what is missing.
 | 5 explanations | `phase5_explainability` A–D, `phase5_clinical_notes` A–D, error analysis, demo | `python -m ecgaug.experiments.phase5_*`, `python -m ecgaug.demo` | done 2026-11-04 (local CPU; notes with gemini-3.5-flash-lite) |
 | 5 explanations | phase 5 gate, then `git tag v1.0` | `python -m ecgaug.workflow phase5-gate [--approve ...]` | approved 2026-11-04 by Akash Saha; code tagged `v1.0` |
 | 4 comparison | RQ3 analysis; leakage audit (optional, after the final evaluation) | `python -m ecgaug.eval.rq3`; `kaggle/phase4_leakage_audit.ipynb` | built |
-| 6 paper | `paper/main.tex` and the course report `paper/report.tex`: tables, numbers and results sentences | `python -m ecgaug.paper` | built |
+| 6 paper | `paper/main.tex` and the course report `paper/report.tex`: tables, numbers and results sentences | `python -m ecgaug.paper` | drafted 2026-11-04 with every result in (`paper/main.pdf`, `paper/report.pdf`); open: leakage audit (H2), authors, claims table |
 
 "Built" means the code, configs, notebook, tests and brief exist. A dress rehearsal runs every stage in
 order on fake records (`ECGAUG_REHEARSAL=1 uv run pytest tests/test_rehearsal.py`, about 8 minutes). Every
@@ -205,7 +205,7 @@ uv run python -m ecgaug.paper
 What each variant is, how to run it and what to check: `docs/briefs/<experiment>_<variant>.md`.
 `scripts/reproduce.sh` lists the whole order. The paper's results sentences and hypothesis verdicts are
 written by `python -m ecgaug.paper` from the result files (`src/ecgaug/paper_text.py`); compile
-`paper/main.tex` and `paper/report.tex` with pdflatex and bibtex. The LLM note variants need `GEMINI_API_KEY` (free
+`paper/main.tex` and `paper/report.tex` with pdflatex and bibtex (or `tectonic -X compile main.tex` from `paper/`). The LLM note variants need `GEMINI_API_KEY` (free
 tier from aistudio.google.com; or `ECGAUG_LLM_PROVIDER=otherllm` with `LLM_API_KEY`, and optionally
 `ECGAUG_LLM_MODEL`) in the environment; without it the template note is used.
 
