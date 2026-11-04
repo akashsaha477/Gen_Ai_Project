@@ -736,3 +736,28 @@ recall ≤ 0.35); notes docstring names Gemini; two lint findings. Error analysi
 as N (seed-mean counts). Full test suite passes.
 
 Next: phase5_explainability A-D (local CPU, validation only), then phase5_clinical_notes A-D with Gemini.
+
+## 2026-11-04 (Day 29) — Phase 5 runs done; phase 5 gate report written
+
+phase5_explainability A-D on this Mac (CPU, validation beats only: 627 per model, stratified, seed 0). Faithfulness gain
+over random deletion order (mean over none, cVAE, WGAN-GP) and stability across seeds:
+
+| variant | cnn gain | cnn stability | rnn gain | rnn stability |
+|---|---|---|---|---|
+| A Grad-CAM | +0.1423 | 0.389 | n/a | n/a |
+| B integrated gradients | +0.0279 | 0.558 | +0.0600 | 0.610 |
+| C SmoothGrad | +0.0382 | 0.401 | +0.0297 | 0.498 |
+| D occlusion | +0.0988 | 0.747 | +0.0862 | 0.515 |
+
+By rule: cnn Grad-CAM, rnn occlusion (no ties). RQ4 (descriptive): on real S beats the rnn's saliency mass on the QRS is
+0.263 without augmentation and 0.137 (cVAE) / 0.123 (WGAN-GP) with it (occlusion); on synthetic F beats the augmented rnn
+models put 0.035-0.039 on the QRS and 0.42-0.44 on the P segment. The cnn's QRS mass on real S beats barely moves
+(Grad-CAM 0.287 none, 0.344 cVAE and WGAN-GP). Figures: `figures/phase5_explainability/<letter>/class_average_saliency.png`.
+
+phase5_clinical_notes: 50 validation cases (16 low-confidence) from cnn cVAE 0.25 seed 1 with Grad-CAM (A22.2). First
+Gemini run failed without results (free-tier daily limit of 20 requests on gemini-3.5-flash; A23); rerun with
+gemini-3.5-flash-lite. Unsupported claims / coverage: A 0 / 1.00, B 0 / 0.98, C 0 / 1.00, D 0 / 0.98; no fallbacks. By
+rule (hard gate, coverage, ratings, latency, tokens) variant C; no blinded ratings were filled in.
+
+`python -m ecgaug.workflow phase5-gate`: all 5 checks pass (incl. the demo smoke test). Next: `approve gate 5`, then
+`git tag v1.0` and phase 6 (paper).

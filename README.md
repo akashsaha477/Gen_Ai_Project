@@ -47,8 +47,8 @@ the one before it; the code refuses to skip ahead and says what is missing.
 | 4 comparison | the full grid (96 runs at 3 seeds, resumable) | `kaggle/phase4_full_grid.ipynb` | done 2026-11-04: 96 of 96 runs (Kaggle T4, one session) |
 | 4 comparison | phase 4 gate: strengths and checkpoints, on validation | `python -m ecgaug.workflow phase4-gate [--approve ...]` | approved 2026-11-04 (Akash Saha): cVAE best generative for cnn and rnn |
 | 4 comparison | the single final evaluation on the test set | `ALLOW_TEST=1 python -m ecgaug.final_eval --confirm "run final eval"` | done 2026-11-04 (once; `results/final_eval/`, `figures/final_eval/`) |
-| 5 explanations | `phase5_explainability` A–D, `phase5_clinical_notes` A–D, error analysis, demo | `python -m ecgaug.experiments.phase5_*`, `python -m ecgaug.demo` | built |
-| 5 explanations | phase 5 gate, then `git tag v1.0` | `python -m ecgaug.workflow phase5-gate [--approve ...]` | built |
+| 5 explanations | `phase5_explainability` A–D, `phase5_clinical_notes` A–D, error analysis, demo | `python -m ecgaug.experiments.phase5_*`, `python -m ecgaug.demo` | done 2026-11-04 (local CPU; notes with gemini-3.5-flash-lite) |
+| 5 explanations | phase 5 gate, then `git tag v1.0` | `python -m ecgaug.workflow phase5-gate [--approve ...]` | report written (`results/phase5_gate/report.md`); waiting for approval |
 | 4 comparison | RQ3 analysis; leakage audit (optional, after the final evaluation) | `python -m ecgaug.eval.rq3`; `kaggle/phase4_leakage_audit.ipynb` | built |
 | 6 paper | `paper/main.tex` and the course report `paper/report.tex`: tables, numbers and results sentences | `python -m ecgaug.paper` | built |
 
