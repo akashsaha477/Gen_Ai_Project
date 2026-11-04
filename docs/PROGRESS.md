@@ -690,3 +690,38 @@ class-weighted, ROS, SMOTE, WGAN-GP (reported, not enforced at this gate). Figur
 (`scripts/phase4_gate_figure.py`). Test pipeline: `tests/test_phase4.py` passes.
 
 Next: `approve gate 4`, then `/final-eval` (the only test-set read).
+
+## 2026-11-04 (Day 29) — Phase 4 gate approved; final evaluation done (the only test-set read)
+
+Gate 4 approved by Akash Saha (commit ce45db3). `/final-eval`: checks passed (gate approved, no prior evaluation entry,
+36 checkpoints present with matching hashes); plan confirmed with "run final eval".
+
+First attempt stopped before any test read: `data/processed/v1/` did not exist on this machine (it was built on
+2026-10-26 in another environment; data/ is not in git). Rebuilt with `build_frozen("v1", ...)` from the raw files under
+`ALLOW_TEST_BUILD=1` (logged construction access); both files are byte-identical to the frozen ones (file and content
+SHA-256 match `results/manifest.json`). Then the evaluation ran once (logged `evaluation` entry, commit ce45db3).
+`runs/.../preds_test.npz` are on this Mac only (gitignored).
+
+Test rare-class macro-F1 (mean of S and F F1; seeds averaged; 95% record-level bootstrap CI, 10,000 replicates):
+
+| condition | cnn | rnn |
+|---|---|---|
+| none | 0.088 [0.037, 0.194] | 0.075 [0.014, 0.232] |
+| class-weighted | 0.113 [0.057, 0.207] | 0.061 [0.022, 0.168] |
+| random oversampling | 0.136 [0.061, 0.247] | 0.090 [0.028, 0.196] |
+| SMOTE | 0.070 [0.025, 0.172] | 0.086 [0.025, 0.206] |
+| cVAE | 0.113 [0.049, 0.217] | 0.073 [0.035, 0.157] |
+| WGAN-GP | 0.079 [0.033, 0.164] | 0.069 [0.027, 0.156] |
+
+Confirmatory family (Holm over 4): cnn cVAE − none +0.025 [−0.018, +0.047]; cnn WGAN-GP − none −0.009 [−0.045, +0.015];
+rnn cVAE − none −0.002 [−0.100, +0.032]; rnn WGAN-GP − none −0.006 [−0.138, +0.035]; all Holm p = 1.000. **H1 (generative
+augmentation beats no augmentation on test) is not supported.** Secondary family (Holm over 8): no comparison significant;
+smallest Holm p 0.550 (cnn cVAE vs WGAN-GP, +0.034 [−0.002, +0.068]). Without record 202: same conclusions (all Holm p ≥
+0.456). Undefined bootstrap replicates: 0.0001 of each comparison.
+
+Test scores are far below validation (e.g. cnn none S F1 0.148 on test vs 0.349 on validation). Record 232 holds 1,381 of
+the 1,836 test S beats; S recall there is 0.000-0.100 for every condition. F F1 is 0.002-0.067 everywhere. Figures:
+`figures/final_eval/forest.png`, `figures/final_eval/per_record_S_F.png` (the per-record figure's 12 blue shades are hard to
+tell apart; redraw for the paper).
+
+Next: phase 5 (explainability, notes with Gemini), then the paper.
