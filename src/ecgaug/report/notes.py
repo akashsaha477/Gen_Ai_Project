@@ -235,8 +235,9 @@ def _few_shot() -> list[dict]:
 
 
 def render_c(answer: dict) -> str:
-    parts = [answer.get("prediction", ""), answer.get("attention", ""), answer.get("review", ""), DISCLAIMER]
-    return " ".join(p.strip() for p in parts if p and p.strip())
+    """The note from variant C's JSON; the disclaimer is added here once, even if the model also wrote it in a field."""
+    parts = [str(answer.get(key) or "").replace(DISCLAIMER, "") for key in ("prediction", "attention", "review")]
+    return " ".join(p.strip() for p in [*parts, DISCLAIMER] if p.strip())
 
 
 def generate(variant: str, payload: dict, client: LLMClient | None, max_retries: int = 2) -> dict:

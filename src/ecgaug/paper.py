@@ -14,7 +14,6 @@ import argparse
 import csv
 import json
 import shutil
-from pathlib import Path
 
 from ecgaug import paths, workflow
 from ecgaug.data.records import CLASSES

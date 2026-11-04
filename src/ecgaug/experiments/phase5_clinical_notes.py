@@ -12,8 +12,8 @@ saliency, and saved in ``results/phase5_clinical_notes/cases.json``. Each note i
 (``ecgaug.report.notes.check_note``). The hard gate is zero unsupported claims over the 50 notes; then
 coverage of the required parts, the team's blinded readability ratings, latency and cost.
 
-The LLM variants need ``LLM_API_KEY`` (and optionally ``ECGAUG_LLM_MODEL``); without it they are
-recorded as not run. The test set is never read.
+The LLM variants need ``GEMINI_API_KEY`` (or ``ECGAUG_LLM_PROVIDER=otherllm`` with ``LLM_API_KEY``;
+see ``ecgaug.report.notes``); without it they are recorded as not run. The test set is never read.
 """
 
 from __future__ import annotations
@@ -148,7 +148,11 @@ def rating_sheet(seed: int = 0) -> Path:
 
 
 def notes_model() -> tuple[str, str]:
-    """The run whose outputs the notes describe, and the saliency method (phase 4 and phase 5 gates)."""
+    """The run whose outputs the notes describe, and the saliency method.
+
+    The method is the phase 5 gate's if approved, else the pre-registered rule's choice from the finished
+    phase5_explainability results (``workflow.saliency_choice``), else ``saliency_method`` in the settings.
+    """
     gate = workflow.manifest().get(PHASE4_GATE)
     if not gate:
         raise PreconditionError("The phase 4 gate has not fixed the models yet")
@@ -159,7 +163,8 @@ def notes_model() -> tuple[str, str]:
         condition = gate["best_generative"][arch]
     run_ids = gate["chosen"][arch][condition]["run_ids"]
     values = {r: json.loads((runs.find_run_dir(r) / "metrics_val.json").read_text())["selection_value"] for r in run_ids}
-    method = ((workflow.manifest().get(PHASE5_GATE) or {}).get("explainability") or {}).get(arch, settings["saliency_method"])
+    approved = ((workflow.manifest().get(PHASE5_GATE) or {}).get("explainability") or {}).get(arch)
+    method = approved or workflow.saliency_choice().get(arch, {}).get("method") or settings["saliency_method"]
     return max(values, key=values.get), method
 
 

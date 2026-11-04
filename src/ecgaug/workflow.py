@@ -948,6 +948,27 @@ def note_ratings() -> dict[str, float]:
     return {v: sum(s) / len(s) for v, s in scores.items()}
 
 
+def saliency_choice(explain: dict | None = None) -> dict:
+    """Saliency method per architecture by the pre-registered rule (faithfulness, ties: stability, then cost).
+
+    Empty while any phase5_explainability variant has no result. The phase 5 gate applies the same rule; the
+    notes cases use it before the gate so that the notes describe the method the gate will approve.
+    """
+    explain = experiment_results(PHASE5_EXPLAINABILITY) if explain is None else explain
+    if not explain or any(r is None for r in explain.values()):
+        return {}
+    methods = {}
+    for arch in sorted({a for r in explain.values() for a in r["per_architecture"]}):
+        candidates = [
+            Candidate(name=letter, mean=r["per_architecture"][arch]["mean_gain"], sd=r["per_architecture"][arch]["sd_gain"], complexity=r["cost"],
+                      tie_mean=r["per_architecture"][arch]["mean_stability"], tie_sd=0.0)  # fmt: skip
+            for letter, r in explain.items() if r["per_architecture"].get(arch, {}).get("applicable")
+        ]
+        decision = select_winner(candidates)
+        methods[arch] = {"variant": decision["winner"], "method": explain[decision["winner"]]["method"], "decision": decision}
+    return methods
+
+
 def evaluate_phase5_gate() -> dict:
     """Saliency method per architecture by faithfulness (ties: stability); note variant by the hard gate, coverage and ratings."""
     explain = experiment_results(PHASE5_EXPLAINABILITY)
@@ -956,16 +977,7 @@ def evaluate_phase5_gate() -> dict:
         missing = [letter for letter, r in results.items() if r is None]
         if not results or missing:
             raise GateError(f"{name} variants not run yet: {', '.join(missing) or 'all'}")
-    methods = {}
-    archs = sorted({a for r in explain.values() for a in r["per_architecture"]})
-    for arch in archs:
-        candidates = [
-            Candidate(name=letter, mean=r["per_architecture"][arch]["mean_gain"], sd=r["per_architecture"][arch]["sd_gain"], complexity=r["cost"],
-                      tie_mean=r["per_architecture"][arch]["mean_stability"], tie_sd=0.0)  # fmt: skip
-            for letter, r in explain.items() if r["per_architecture"].get(arch, {}).get("applicable")
-        ]
-        decision = select_winner(candidates)
-        methods[arch] = {"variant": decision["winner"], "method": explain[decision["winner"]]["method"], "decision": decision}
+    methods = saliency_choice(explain)
     ratings = note_ratings()
     template_ok = bool(notes.get("A")) and notes["A"].get("passes_hard_gate", False)
     eligible = [l for l, r in notes.items() if l != "A" and not r.get("not_run") and r.get("passes_hard_gate")]

@@ -173,6 +173,12 @@ def test_cases_are_stratified_with_enough_low_confidence():
     assert min(np.bincount(y[idx], minlength=4)) >= 10
 
 
+def test_variant_c_note_has_the_disclaimer_once():
+    answer = {"prediction": "The beat is S.", "attention": "", "review": f"{notes.REVIEW_REQUIRED} {notes.DISCLAIMER}"}
+    note = notes.render_c(answer)
+    assert note.count(notes.DISCLAIMER) == 1 and note.endswith(notes.DISCLAIMER) and notes.REVIEW_REQUIRED in note
+
+
 def test_notes_runner_records_llm_variants_as_not_run_without_a_key(tmp_root):
     cfg = notes_runner.load_config(variant_config(REPO / "configs" / "phase5_clinical_notes", "B"))
     cases = [{"payload": PAYLOAD}]
