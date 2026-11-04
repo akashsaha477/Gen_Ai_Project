@@ -291,3 +291,7 @@ GenerateRequestsPerDayPerProjectPerModel-FreeTier, value 20); B-D need about 250
 unsupported claims and coverage 1.00. All three LLM variants use it, so they stay comparable. The client now retries
 timeouts and dropped connections, and stops at once with `LLMQuotaError` when a daily quota is used up. Prompts, fact
 checker, `max_tokens`, cases and retries are unchanged.
+
+## the phase 5 gate — 2026-11-04 — status: APPROVED by Akash Saha
+Saliency: {'cnn': 'gradcam', 'rnn': 'occlusion'}; notes: variant C — evidence: results/phase5_gate/report.md — rule: PLAN Phase 5
+Next: code freeze (git tag v1.0) and phase 6.

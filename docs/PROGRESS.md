@@ -761,3 +761,9 @@ rule (hard gate, coverage, ratings, latency, tokens) variant C; no blinded ratin
 
 `python -m ecgaug.workflow phase5-gate`: all 5 checks pass (incl. the demo smoke test). Next: `approve gate 5`, then
 `git tag v1.0` and phase 6 (paper).
+
+## 2026-11-04 (Day 29) — Phase 5 gate approved; code freeze
+
+Akash Saha approved gate 5 (`approve gate 5`). Recorded in `results/manifest.json` and `docs/DECISIONS.md`: saliency cnn
+Grad-CAM, rnn occlusion; notes variant C. Code tagged `v1.0`. Next: phase 6 (paper: regenerate tables and numbers, write
+the negative H1/H1c result, records 232/213, limitations, v1 rebuild, Gemini switch A21/A23, phase 5 results).
