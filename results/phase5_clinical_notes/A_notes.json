@@ -1,0 +1,1002 @@
+[
+  {
+    "case": "case-00",
+    "note": "Beat classification: normal beat (N), probability 0.98. Other classes: S 0.02, V 0.00, F 0.00. The model relied most on the P wave (54%) and the QRS complex (28%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-01",
+    "note": "Beat classification: normal beat (N), probability 0.98. Other classes: S 0.02, V 0.00, F 0.00. The model relied most on the QRS complex (34%) and the P wave (28%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-02",
+    "note": "Beat classification: normal beat (N), probability 0.97. Other classes: S 0.02, V 0.00, F 0.00. The model relied most on the QRS complex (36%) and the ST segment (25%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-03",
+    "note": "Beat classification: ventricular ectopic beat (V), probability 0.39. Other classes: N 0.34, S 0.00, F 0.27. The model relied most on the QRS complex (74%) and the T wave (26%). The model is not confident about this beat. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-04",
+    "note": "Beat classification: normal beat (N), probability 0.52. Other classes: S 0.00, V 0.00, F 0.48. The model relied most on the P wave (36%) and the ST segment (29%). The model is not confident about this beat. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-05",
+    "note": "Beat classification: normal beat (N), probability 0.99. Other classes: S 0.00, V 0.00, F 0.00. The model relied most on the P wave (34%) and the QRS complex (27%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-06",
+    "note": "Beat classification: supraventricular ectopic beat (S), probability 0.49. Other classes: N 0.12, V 0.26, F 0.12. The model relied most on the T wave (35%) and the QRS complex (23%). The model is not confident about this beat. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-07",
+    "note": "Beat classification: supraventricular ectopic beat (S), probability 0.45. Other classes: N 0.45, V 0.08, F 0.02. The model relied most on the ST segment (48%) and the P wave (34%). The model is not confident about this beat. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-08",
+    "note": "Beat classification: supraventricular ectopic beat (S), probability 0.56. Other classes: N 0.28, V 0.13, F 0.03. The model relied most on the ST segment (54%) and the P wave (37%). The model is not confident about this beat. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-09",
+    "note": "Beat classification: ventricular ectopic beat (V), probability 0.97. Other classes: N 0.00, S 0.03, F 0.00. The model relied most on the QRS complex (81%) and the ST segment (19%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-10",
+    "note": "Beat classification: normal beat (N), probability 0.57. Other classes: S 0.31, V 0.01, F 0.11. The model relied most on the QRS complex (28%) and the T wave (24%). The model is not confident about this beat. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-11",
+    "note": "Beat classification: ventricular ectopic beat (V), probability 0.88. Other classes: N 0.00, S 0.12, F 0.00. The model relied most on the ST segment (57%) and the QRS complex (43%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-12",
+    "note": "Beat classification: normal beat (N), probability 0.46. Other classes: S 0.42, V 0.09, F 0.03. The model relied most on the QRS complex (27%) and the P wave (26%). The model is not confident about this beat. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-13",
+    "note": "Beat classification: ventricular ectopic beat (V), probability 0.95. Other classes: N 0.04, S 0.00, F 0.01. The model relied most on the QRS complex (63%) and the ST segment (35%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-14",
+    "note": "Beat classification: ventricular ectopic beat (V), probability 0.50. Other classes: N 0.46, S 0.00, F 0.04. The model relied most on the QRS complex (54%) and the ST segment (43%). The model is not confident about this beat. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-15",
+    "note": "Beat classification: supraventricular ectopic beat (S), probability 0.93. Other classes: N 0.00, V 0.06, F 0.00. The model relied most on the P wave (55%) and the ST segment (26%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-16",
+    "note": "Beat classification: normal beat (N), probability 0.54. Other classes: S 0.00, V 0.33, F 0.13. The model relied most on the P wave (46%) and the ST segment (29%). The model is not confident about this beat. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-17",
+    "note": "Beat classification: ventricular ectopic beat (V), probability 0.50. Other classes: N 0.02, S 0.47, F 0.01. The model relied most on the P wave (0%) and the QRS complex (0%). The model is not confident about this beat. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-18",
+    "note": "Beat classification: normal beat (N), probability 0.83. Other classes: S 0.00, V 0.17, F 0.00. The model relied most on the ST segment (35%) and the P wave (30%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-19",
+    "note": "Beat classification: supraventricular ectopic beat (S), probability 0.52. Other classes: N 0.25, V 0.08, F 0.15. The model relied most on the P wave (73%) and the ST segment (8%). The model is not confident about this beat. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-20",
+    "note": "Beat classification: supraventricular ectopic beat (S), probability 0.90. Other classes: N 0.00, V 0.10, F 0.00. The model relied most on the P wave (75%) and the ST segment (16%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-21",
+    "note": "Beat classification: normal beat (N), probability 0.93. Other classes: S 0.00, V 0.00, F 0.07. The model relied most on the P wave (32%) and the T wave (23%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-22",
+    "note": "Beat classification: normal beat (N), probability 0.93. Other classes: S 0.00, V 0.00, F 0.07. The model relied most on the P wave (33%) and the T wave (24%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-23",
+    "note": "Beat classification: normal beat (N), probability 0.83. Other classes: S 0.00, V 0.00, F 0.17. The model relied most on the P wave (37%) and the T wave (24%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-24",
+    "note": "Beat classification: normal beat (N), probability 0.73. Other classes: S 0.00, V 0.00, F 0.27. The model relied most on the P wave (36%) and the T wave (35%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-25",
+    "note": "Beat classification: normal beat (N), probability 0.98. Other classes: S 0.00, V 0.00, F 0.02. The model relied most on the P wave (31%) and the QRS complex (26%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-26",
+    "note": "Beat classification: normal beat (N), probability 0.83. Other classes: S 0.00, V 0.00, F 0.17. The model relied most on the T wave (35%) and the P wave (31%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-27",
+    "note": "Beat classification: normal beat (N), probability 0.94. Other classes: S 0.00, V 0.00, F 0.06. The model relied most on the T wave (28%) and the P wave (26%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-28",
+    "note": "Beat classification: normal beat (N), probability 0.63. Other classes: S 0.00, V 0.00, F 0.37. The model relied most on the P wave (40%) and the T wave (26%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-29",
+    "note": "Beat classification: normal beat (N), probability 0.99. Other classes: S 0.00, V 0.00, F 0.01. The model relied most on the P wave (37%) and the QRS complex (21%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-30",
+    "note": "Beat classification: normal beat (N), probability 1.00. Other classes: S 0.00, V 0.00, F 0.00. The model relied most on the P wave (33%) and the T wave (23%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-31",
+    "note": "Beat classification: ventricular ectopic beat (V), probability 0.99. Other classes: N 0.00, S 0.00, F 0.01. The model relied most on the QRS complex (84%) and the T wave (13%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-32",
+    "note": "Beat classification: supraventricular ectopic beat (S), probability 0.97. Other classes: N 0.03, V 0.00, F 0.00. The model relied most on the QRS complex (54%) and the P wave (25%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-33",
+    "note": "Beat classification: normal beat (N), probability 0.94. Other classes: S 0.01, V 0.05, F 0.00. The model relied most on the T wave (38%) and the QRS complex (32%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-34",
+    "note": "Beat classification: normal beat (N), probability 0.97. Other classes: S 0.00, V 0.02, F 0.00. The model relied most on the QRS complex (34%) and the T wave (30%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-35",
+    "note": "Beat classification: normal beat (N), probability 0.45. Other classes: S 0.34, V 0.16, F 0.04. The model relied most on the T wave (42%) and the ST segment (31%). The model is not confident about this beat. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-36",
+    "note": "Beat classification: ventricular ectopic beat (V), probability 0.53. Other classes: N 0.01, S 0.00, F 0.46. The model relied most on the QRS complex (54%) and the T wave (44%). The model is not confident about this beat. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-37",
+    "note": "Beat classification: normal beat (N), probability 0.95. Other classes: S 0.04, V 0.00, F 0.00. The model relied most on the P wave (29%) and the QRS complex (28%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-38",
+    "note": "Beat classification: supraventricular ectopic beat (S), probability 0.94. Other classes: N 0.05, V 0.00, F 0.01. The model relied most on the ST segment (45%) and the T wave (21%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-39",
+    "note": "Beat classification: normal beat (N), probability 0.73. Other classes: S 0.03, V 0.20, F 0.05. The model relied most on the ST segment (48%) and the T wave (29%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-40",
+    "note": "Beat classification: normal beat (N), probability 0.67. Other classes: S 0.04, V 0.12, F 0.17. The model relied most on the ST segment (49%) and the T wave (37%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-41",
+    "note": "Beat classification: supraventricular ectopic beat (S), probability 0.96. Other classes: N 0.03, V 0.00, F 0.01. The model relied most on the ST segment (42%) and the QRS complex (27%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-42",
+    "note": "Beat classification: normal beat (N), probability 0.43. Other classes: S 0.18, V 0.34, F 0.06. The model relied most on the T wave (43%) and the ST segment (27%). The model is not confident about this beat. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-43",
+    "note": "Beat classification: normal beat (N), probability 0.81. Other classes: S 0.03, V 0.07, F 0.09. The model relied most on the P wave (52%) and the QRS complex (25%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-44",
+    "note": "Beat classification: normal beat (N), probability 0.84. Other classes: S 0.01, V 0.03, F 0.12. The model relied most on the P wave (40%) and the ST segment (26%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-45",
+    "note": "Beat classification: ventricular ectopic beat (V), probability 0.48. Other classes: N 0.22, S 0.08, F 0.21. The model relied most on the QRS complex (70%) and the ST segment (21%). The model is not confident about this beat. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-46",
+    "note": "Beat classification: ventricular ectopic beat (V), probability 0.40. Other classes: N 0.28, S 0.05, F 0.27. The model relied most on the QRS complex (82%) and the ST segment (18%). The model is not confident about this beat. Clinician review is required. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-47",
+    "note": "Beat classification: normal beat (N), probability 0.97. Other classes: S 0.00, V 0.02, F 0.01. The model relied most on the P wave (36%) and the QRS complex (25%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-48",
+    "note": "Beat classification: normal beat (N), probability 0.97. Other classes: S 0.00, V 0.01, F 0.02. The model relied most on the P wave (43%) and the ST segment (25%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  },
+  {
+    "case": "case-49",
+    "note": "Beat classification: supraventricular ectopic beat (S), probability 0.92. Other classes: N 0.07, V 0.01, F 0.00. The model relied most on the ST segment (41%) and the T wave (30%). This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.",
+    "variant_used": "A",
+    "attempts": 0,
+    "latency_s": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "fell_back": false,
+    "unsupported_claims": 0,
+    "issues": [],
+    "coverage": {
+      "predicted_class": true,
+      "probability": true,
+      "segments": true,
+      "disclaimer": true,
+      "review_statement": true
+    },
+    "coverage_fraction": 1.0
+  }
+]

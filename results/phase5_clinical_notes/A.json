@@ -1,0 +1,28 @@
+{
+  "experiment": "phase5_clinical_notes",
+  "variant": "A",
+  "description": "Deterministic template, no LLM: the permanent fallback.",
+  "generator": "A",
+  "not_run": false,
+  "n_cases": 50,
+  "n_low_confidence": 16,
+  "unsupported_claims": 0,
+  "notes_with_issues": 0,
+  "passes_hard_gate": true,
+  "coverage": 1.0,
+  "fell_back_to_template": 0,
+  "variant_used": {
+    "A": 50,
+    "B": 0,
+    "C": 0,
+    "D": 0
+  },
+  "latency_s_mean": 0.0,
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "model": null,
+  "wall_clock_s": 0.0021710420260205865,
+  "provisional": false,
+  "provisional_reasons": [],
+  "git_sha": "03ceaf8824f9cd4245ff2225654784479799181e"
+}

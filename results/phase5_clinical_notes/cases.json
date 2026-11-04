@@ -1,0 +1,1356 @@
+{
+  "run_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034",
+  "saliency_method": "gradcam",
+  "cases": [
+    {
+      "payload": {
+        "record_anon_id": "case-00",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.98,
+          "S": 0.02,
+          "V": 0.0,
+          "F": 0.0
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.54
+          },
+          {
+            "name": "QRS",
+            "mass": 0.28
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "N",
+      "record": 115,
+      "r_idx": 50915
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-01",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.98,
+          "S": 0.02,
+          "V": 0.0,
+          "F": 0.0
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "QRS",
+            "mass": 0.34
+          },
+          {
+            "name": "P",
+            "mass": 0.28
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "N",
+      "record": 115,
+      "r_idx": 123995
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-02",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.97,
+          "S": 0.02,
+          "V": 0.0,
+          "F": 0.0
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "QRS",
+            "mass": 0.36
+          },
+          {
+            "name": "ST",
+            "mass": 0.25
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "N",
+      "record": 115,
+      "r_idx": 299780
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-03",
+        "predicted_class": "V",
+        "probabilities": {
+          "N": 0.34,
+          "S": 0.0,
+          "V": 0.39,
+          "F": 0.27
+        },
+        "low_confidence": true,
+        "top_segments": [
+          {
+            "name": "QRS",
+            "mass": 0.74
+          },
+          {
+            "name": "T",
+            "mass": 0.26
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "S",
+      "record": 118,
+      "r_idx": 184187
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-04",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.52,
+          "S": 0.0,
+          "V": 0.0,
+          "F": 0.48
+        },
+        "low_confidence": true,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.36
+          },
+          {
+            "name": "ST",
+            "mass": 0.29
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "N",
+      "record": 118,
+      "r_idx": 243934
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-05",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.99,
+          "S": 0.0,
+          "V": 0.0,
+          "F": 0.0
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.34
+          },
+          {
+            "name": "QRS",
+            "mass": 0.27
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "N",
+      "record": 118,
+      "r_idx": 455556
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-06",
+        "predicted_class": "S",
+        "probabilities": {
+          "N": 0.12,
+          "S": 0.49,
+          "V": 0.26,
+          "F": 0.12
+        },
+        "low_confidence": true,
+        "top_segments": [
+          {
+            "name": "T",
+            "mass": 0.35
+          },
+          {
+            "name": "QRS",
+            "mass": 0.23
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "S",
+      "record": 118,
+      "r_idx": 503330
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-07",
+        "predicted_class": "S",
+        "probabilities": {
+          "N": 0.45,
+          "S": 0.45,
+          "V": 0.08,
+          "F": 0.02
+        },
+        "low_confidence": true,
+        "top_segments": [
+          {
+            "name": "ST",
+            "mass": 0.48
+          },
+          {
+            "name": "P",
+            "mass": 0.34
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "N",
+      "record": 201,
+      "r_idx": 16569
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-08",
+        "predicted_class": "S",
+        "probabilities": {
+          "N": 0.28,
+          "S": 0.56,
+          "V": 0.13,
+          "F": 0.03
+        },
+        "low_confidence": true,
+        "top_segments": [
+          {
+            "name": "ST",
+            "mass": 0.54
+          },
+          {
+            "name": "P",
+            "mass": 0.37
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "N",
+      "record": 201,
+      "r_idx": 33362
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-09",
+        "predicted_class": "V",
+        "probabilities": {
+          "N": 0.0,
+          "S": 0.03,
+          "V": 0.97,
+          "F": 0.0
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "QRS",
+            "mass": 0.81
+          },
+          {
+            "name": "ST",
+            "mass": 0.19
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "S",
+      "record": 201,
+      "r_idx": 168513
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-10",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.57,
+          "S": 0.31,
+          "V": 0.01,
+          "F": 0.11
+        },
+        "low_confidence": true,
+        "top_segments": [
+          {
+            "name": "QRS",
+            "mass": 0.28
+          },
+          {
+            "name": "T",
+            "mass": 0.24
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "N",
+      "record": 201,
+      "r_idx": 173187
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-11",
+        "predicted_class": "V",
+        "probabilities": {
+          "N": 0.0,
+          "S": 0.12,
+          "V": 0.88,
+          "F": 0.0
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "ST",
+            "mass": 0.57
+          },
+          {
+            "name": "QRS",
+            "mass": 0.43
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "S",
+      "record": 201,
+      "r_idx": 208519
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-12",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.46,
+          "S": 0.42,
+          "V": 0.09,
+          "F": 0.03
+        },
+        "low_confidence": true,
+        "top_segments": [
+          {
+            "name": "QRS",
+            "mass": 0.27
+          },
+          {
+            "name": "P",
+            "mass": 0.26
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "N",
+      "record": 201,
+      "r_idx": 215293
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-13",
+        "predicted_class": "V",
+        "probabilities": {
+          "N": 0.04,
+          "S": 0.0,
+          "V": 0.95,
+          "F": 0.01
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "QRS",
+            "mass": 0.63
+          },
+          {
+            "name": "ST",
+            "mass": 0.35
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "V",
+      "record": 201,
+      "r_idx": 342286
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-14",
+        "predicted_class": "V",
+        "probabilities": {
+          "N": 0.46,
+          "S": 0.0,
+          "V": 0.5,
+          "F": 0.04
+        },
+        "low_confidence": true,
+        "top_segments": [
+          {
+            "name": "QRS",
+            "mass": 0.54
+          },
+          {
+            "name": "ST",
+            "mass": 0.43
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "V",
+      "record": 201,
+      "r_idx": 372754
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-15",
+        "predicted_class": "S",
+        "probabilities": {
+          "N": 0.0,
+          "S": 0.93,
+          "V": 0.06,
+          "F": 0.0
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.55
+          },
+          {
+            "name": "ST",
+            "mass": 0.26
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "S",
+      "record": 201,
+      "r_idx": 397821
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-16",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.54,
+          "S": 0.0,
+          "V": 0.33,
+          "F": 0.13
+        },
+        "low_confidence": true,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.46
+          },
+          {
+            "name": "ST",
+            "mass": 0.29
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "V",
+      "record": 201,
+      "r_idx": 417225
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-17",
+        "predicted_class": "V",
+        "probabilities": {
+          "N": 0.02,
+          "S": 0.47,
+          "V": 0.5,
+          "F": 0.01
+        },
+        "low_confidence": true,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.0
+          },
+          {
+            "name": "QRS",
+            "mass": 0.0
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "S",
+      "record": 201,
+      "r_idx": 447007
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-18",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.83,
+          "S": 0.0,
+          "V": 0.17,
+          "F": 0.0
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "ST",
+            "mass": 0.35
+          },
+          {
+            "name": "P",
+            "mass": 0.3
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "F",
+      "record": 201,
+      "r_idx": 565565
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-19",
+        "predicted_class": "S",
+        "probabilities": {
+          "N": 0.25,
+          "S": 0.52,
+          "V": 0.08,
+          "F": 0.15
+        },
+        "low_confidence": true,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.73
+          },
+          {
+            "name": "ST",
+            "mass": 0.08
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "N",
+      "record": 201,
+      "r_idx": 637694
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-20",
+        "predicted_class": "S",
+        "probabilities": {
+          "N": 0.0,
+          "S": 0.9,
+          "V": 0.1,
+          "F": 0.0
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.75
+          },
+          {
+            "name": "ST",
+            "mass": 0.16
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "S",
+      "record": 201,
+      "r_idx": 646690
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-21",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.93,
+          "S": 0.0,
+          "V": 0.0,
+          "F": 0.07
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.32
+          },
+          {
+            "name": "T",
+            "mass": 0.23
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "N",
+      "record": 205,
+      "r_idx": 466
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-22",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.93,
+          "S": 0.0,
+          "V": 0.0,
+          "F": 0.07
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.33
+          },
+          {
+            "name": "T",
+            "mass": 0.24
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "N",
+      "record": 205,
+      "r_idx": 23871
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-23",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.83,
+          "S": 0.0,
+          "V": 0.0,
+          "F": 0.17
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.37
+          },
+          {
+            "name": "T",
+            "mass": 0.24
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "N",
+      "record": 205,
+      "r_idx": 59563
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-24",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.73,
+          "S": 0.0,
+          "V": 0.0,
+          "F": 0.27
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.36
+          },
+          {
+            "name": "T",
+            "mass": 0.35
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "F",
+      "record": 205,
+      "r_idx": 294662
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-25",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.98,
+          "S": 0.0,
+          "V": 0.0,
+          "F": 0.02
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.31
+          },
+          {
+            "name": "QRS",
+            "mass": 0.26
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "F",
+      "record": 205,
+      "r_idx": 301785
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-26",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.83,
+          "S": 0.0,
+          "V": 0.0,
+          "F": 0.17
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "T",
+            "mass": 0.35
+          },
+          {
+            "name": "P",
+            "mass": 0.31
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "F",
+      "record": 205,
+      "r_idx": 338719
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-27",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.94,
+          "S": 0.0,
+          "V": 0.0,
+          "F": 0.06
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "T",
+            "mass": 0.28
+          },
+          {
+            "name": "P",
+            "mass": 0.26
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "F",
+      "record": 205,
+      "r_idx": 346899
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-28",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.63,
+          "S": 0.0,
+          "V": 0.0,
+          "F": 0.37
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.4
+          },
+          {
+            "name": "T",
+            "mass": 0.26
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "F",
+      "record": 205,
+      "r_idx": 353821
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-29",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.99,
+          "S": 0.0,
+          "V": 0.0,
+          "F": 0.01
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.37
+          },
+          {
+            "name": "QRS",
+            "mass": 0.21
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "N",
+      "record": 205,
+      "r_idx": 420227
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-30",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 1.0,
+          "S": 0.0,
+          "V": 0.0,
+          "F": 0.0
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.33
+          },
+          {
+            "name": "T",
+            "mass": 0.23
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "N",
+      "record": 205,
+      "r_idx": 477969
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-31",
+        "predicted_class": "V",
+        "probabilities": {
+          "N": 0.0,
+          "S": 0.0,
+          "V": 0.99,
+          "F": 0.01
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "QRS",
+            "mass": 0.84
+          },
+          {
+            "name": "T",
+            "mass": 0.13
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "V",
+      "record": 205,
+      "r_idx": 483511
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-32",
+        "predicted_class": "S",
+        "probabilities": {
+          "N": 0.03,
+          "S": 0.97,
+          "V": 0.0,
+          "F": 0.0
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "QRS",
+            "mass": 0.54
+          },
+          {
+            "name": "P",
+            "mass": 0.25
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "S",
+      "record": 205,
+      "r_idx": 531089
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-33",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.94,
+          "S": 0.01,
+          "V": 0.05,
+          "F": 0.0
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "T",
+            "mass": 0.38
+          },
+          {
+            "name": "QRS",
+            "mass": 0.32
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "F",
+      "record": 223,
+      "r_idx": 53373
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-34",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.97,
+          "S": 0.0,
+          "V": 0.02,
+          "F": 0.0
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "QRS",
+            "mass": 0.34
+          },
+          {
+            "name": "T",
+            "mass": 0.3
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "F",
+      "record": 223,
+      "r_idx": 56551
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-35",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.45,
+          "S": 0.34,
+          "V": 0.16,
+          "F": 0.04
+        },
+        "low_confidence": true,
+        "top_segments": [
+          {
+            "name": "T",
+            "mass": 0.42
+          },
+          {
+            "name": "ST",
+            "mass": 0.31
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "V",
+      "record": 223,
+      "r_idx": 223588
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-36",
+        "predicted_class": "V",
+        "probabilities": {
+          "N": 0.01,
+          "S": 0.0,
+          "V": 0.53,
+          "F": 0.46
+        },
+        "low_confidence": true,
+        "top_segments": [
+          {
+            "name": "QRS",
+            "mass": 0.54
+          },
+          {
+            "name": "T",
+            "mass": 0.44
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "V",
+      "record": 223,
+      "r_idx": 226184
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-37",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.95,
+          "S": 0.04,
+          "V": 0.0,
+          "F": 0.0
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.29
+          },
+          {
+            "name": "QRS",
+            "mass": 0.28
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "V",
+      "record": 223,
+      "r_idx": 285121
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-38",
+        "predicted_class": "S",
+        "probabilities": {
+          "N": 0.05,
+          "S": 0.94,
+          "V": 0.0,
+          "F": 0.01
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "ST",
+            "mass": 0.45
+          },
+          {
+            "name": "T",
+            "mass": 0.21
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "S",
+      "record": 223,
+      "r_idx": 289822
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-39",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.73,
+          "S": 0.03,
+          "V": 0.2,
+          "F": 0.05
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "ST",
+            "mass": 0.48
+          },
+          {
+            "name": "T",
+            "mass": 0.29
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "F",
+      "record": 223,
+      "r_idx": 300077
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-40",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.67,
+          "S": 0.04,
+          "V": 0.12,
+          "F": 0.17
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "ST",
+            "mass": 0.49
+          },
+          {
+            "name": "T",
+            "mass": 0.37
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "F",
+      "record": 223,
+      "r_idx": 300586
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-41",
+        "predicted_class": "S",
+        "probabilities": {
+          "N": 0.03,
+          "S": 0.96,
+          "V": 0.0,
+          "F": 0.01
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "ST",
+            "mass": 0.42
+          },
+          {
+            "name": "QRS",
+            "mass": 0.27
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "S",
+      "record": 223,
+      "r_idx": 309956
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-42",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.43,
+          "S": 0.18,
+          "V": 0.34,
+          "F": 0.06
+        },
+        "low_confidence": true,
+        "top_segments": [
+          {
+            "name": "T",
+            "mass": 0.43
+          },
+          {
+            "name": "ST",
+            "mass": 0.27
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "V",
+      "record": 223,
+      "r_idx": 376860
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-43",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.81,
+          "S": 0.03,
+          "V": 0.07,
+          "F": 0.09
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.52
+          },
+          {
+            "name": "QRS",
+            "mass": 0.25
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "V",
+      "record": 223,
+      "r_idx": 383866
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-44",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.84,
+          "S": 0.01,
+          "V": 0.03,
+          "F": 0.12
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.4
+          },
+          {
+            "name": "ST",
+            "mass": 0.26
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "V",
+      "record": 223,
+      "r_idx": 414676
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-45",
+        "predicted_class": "V",
+        "probabilities": {
+          "N": 0.22,
+          "S": 0.08,
+          "V": 0.48,
+          "F": 0.21
+        },
+        "low_confidence": true,
+        "top_segments": [
+          {
+            "name": "QRS",
+            "mass": 0.7
+          },
+          {
+            "name": "ST",
+            "mass": 0.21
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "V",
+      "record": 223,
+      "r_idx": 476986
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-46",
+        "predicted_class": "V",
+        "probabilities": {
+          "N": 0.28,
+          "S": 0.05,
+          "V": 0.4,
+          "F": 0.27
+        },
+        "low_confidence": true,
+        "top_segments": [
+          {
+            "name": "QRS",
+            "mass": 0.82
+          },
+          {
+            "name": "ST",
+            "mass": 0.18
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "V",
+      "record": 223,
+      "r_idx": 486918
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-47",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.97,
+          "S": 0.0,
+          "V": 0.02,
+          "F": 0.01
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.36
+          },
+          {
+            "name": "QRS",
+            "mass": 0.25
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "V",
+      "record": 223,
+      "r_idx": 500414
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-48",
+        "predicted_class": "N",
+        "probabilities": {
+          "N": 0.97,
+          "S": 0.0,
+          "V": 0.01,
+          "F": 0.02
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "P",
+            "mass": 0.43
+          },
+          {
+            "name": "ST",
+            "mass": 0.25
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "V",
+      "record": 223,
+      "r_idx": 598829
+    },
+    {
+      "payload": {
+        "record_anon_id": "case-49",
+        "predicted_class": "S",
+        "probabilities": {
+          "N": 0.07,
+          "S": 0.92,
+          "V": 0.01,
+          "F": 0.0
+        },
+        "low_confidence": false,
+        "top_segments": [
+          {
+            "name": "ST",
+            "mass": 0.41
+          },
+          {
+            "name": "T",
+            "mass": 0.3
+          }
+        ],
+        "model_id": "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034"
+      },
+      "true_class": "S",
+      "record": 223,
+      "r_idx": 620118
+    }
+  ]
+}
