@@ -897,15 +897,15 @@ def external_validation_figure(summaries: dict[str, dict], final: dict) -> list[
     for ax, (db, s) in zip(axes[0], summaries.items()):
         metric = s["primary_metric"]
         for i, key in enumerate(reversed(keys)):
-            _interval(ax, s["conditions"][key][metric], i + 0.15, "#2a78d6", f"{db} (external)" if i == 0 else None)
+            _interval(ax, s["conditions"][key][metric], i + 0.15, "#2a78d6", "external database" if i == 0 else None)
             _interval(ax, final["conditions"][key][metric], i - 0.15, "#eb6834", "MIT-BIH test records (final evaluation)" if i == 0 else None)
         ax.set_yticks(range(len(keys)), list(reversed(keys)), fontsize=7)
         ax.set_xlim(left=0)
         ax.set_xlabel(f"{'rare-class macro-F1' if metric == 'rare_macro_f1' else 'S F1'} (95% record-level CI)")
-        reject = [k for k, v in s["confirmatory"].items() if v["reject_holm"]]
-        ax.set_title(f"{db} ({s['role']}; {s['records']} records){'; Holm rejects: ' + ', '.join(reject) if reject else '; no confirmatory difference'}",
-                     loc="left", fontsize=9)  # fmt: skip
-        ax.legend(loc="lower right", fontsize=7)
+        reject = sum(v["reject_holm"] for v in s["confirmatory"].values())
+        label = {"incartdb": "INCART", "svdb": "SVDB"}.get(db, db)
+        ax.set_title(f"{label} ({s['role']}, {s['records']} records): Holm rejects {reject} of {len(s['confirmatory'])} vs none", loc="left", fontsize=9)
+    axes[0][0].legend(loc="lower left", bbox_to_anchor=(0, 1.06), ncol=2, fontsize=8)
     caption = ("Every frozen checkpoint of the phase 4 gate (3 seeds) applied unchanged to external databases; beats cut like the frozen dataset. "
                "INCART: lead II, 257 Hz resampled to 360 Hz; SVDB: ECG1, 128 Hz resampled (S F1 is its primary metric, fewer than 50 F beats). "
                "Post hoc (PREREGISTRATION v4, P2).")  # fmt: skip
