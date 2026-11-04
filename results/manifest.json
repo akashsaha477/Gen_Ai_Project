@@ -374,5 +374,203 @@
     ],
     "approved_on": "2026-11-04",
     "git_sha": "5e572fdf2bbb58cb7d9797f8eef1a6e2305be4ba"
+  },
+  "phase4_gate": {
+    "grid": "configs/phase4_full_grid/full_grid.yaml",
+    "chosen": {
+      "cnn": {
+        "none": {
+          "strength": null,
+          "run_ids": [
+            "phase4_full_grid-cnn.none-s0-382e1b1-202611031938",
+            "phase4_full_grid-cnn.none-s1-382e1b1-202611031939",
+            "phase4_full_grid-cnn.none-s2-382e1b1-202611031939"
+          ],
+          "checkpoints": {
+            "phase4_full_grid-cnn.none-s0-382e1b1-202611031938": "04e6f6f4c1fc4d0fcf3b6e16ff68e92e640fc99d25d84780b9781340976ef88c",
+            "phase4_full_grid-cnn.none-s1-382e1b1-202611031939": "0235e139af9fe276d4455a2043c44fc5bc838d84f6842a7d6a64f273f8011416",
+            "phase4_full_grid-cnn.none-s2-382e1b1-202611031939": "f307abff674461fe3d4b7f3d7beec6e63eed913d8a1fb758b882ad10da1ce2dd"
+          },
+          "validation_mean": 0.34859079758471173,
+          "bank": null
+        },
+        "class_weighted": {
+          "strength": 0.5,
+          "run_ids": [
+            "phase4_full_grid-cnn.class_weighted_0.5-s0-382e1b1-202611031943",
+            "phase4_full_grid-cnn.class_weighted_0.5-s1-382e1b1-202611031943",
+            "phase4_full_grid-cnn.class_weighted_0.5-s2-382e1b1-202611031943"
+          ],
+          "checkpoints": {
+            "phase4_full_grid-cnn.class_weighted_0.5-s0-382e1b1-202611031943": "4feea93c63756fbb9cc25a35c613ed8b62a3d0738a72164b02dcb4e781fb4483",
+            "phase4_full_grid-cnn.class_weighted_0.5-s1-382e1b1-202611031943": "0e4a2430a27533d6b2c6233795a6b563bf4d73c64c888f0d81b7a29e2dfab4d9",
+            "phase4_full_grid-cnn.class_weighted_0.5-s2-382e1b1-202611031943": "98df6647a89a1a9a88bc3d6302687c6f3e86b42e348233aa68b846d56c6340b6"
+          },
+          "validation_mean": 0.370115983676548,
+          "bank": null
+        },
+        "random_oversampling": {
+          "strength": 0.1,
+          "run_ids": [
+            "phase4_full_grid-cnn.random_oversampling_0.1-s0-382e1b1-202611031952",
+            "phase4_full_grid-cnn.random_oversampling_0.1-s1-382e1b1-202611031952",
+            "phase4_full_grid-cnn.random_oversampling_0.1-s2-382e1b1-202611031952"
+          ],
+          "checkpoints": {
+            "phase4_full_grid-cnn.random_oversampling_0.1-s0-382e1b1-202611031952": "752c7a3e55ec6100bdce040d0cb73565ef7fa83d19788e8797db6a69db3b3d9c",
+            "phase4_full_grid-cnn.random_oversampling_0.1-s1-382e1b1-202611031952": "d325961afd789798f0a1911f5c045372623e6b31fc4d854fa4c88ef1565a4b95",
+            "phase4_full_grid-cnn.random_oversampling_0.1-s2-382e1b1-202611031952": "1672c1789bdf154c5fe7c46571a5876f4b79bd3bfe86557ff36e95f566dc181e"
+          },
+          "validation_mean": 0.4395544793686936,
+          "bank": null
+        },
+        "smote": {
+          "strength": 0.1,
+          "run_ids": [
+            "phase4_full_grid-cnn.smote_0.1-s0-382e1b1-202611032006",
+            "phase4_full_grid-cnn.smote_0.1-s1-382e1b1-202611032006",
+            "phase4_full_grid-cnn.smote_0.1-s2-382e1b1-202611032006"
+          ],
+          "checkpoints": {
+            "phase4_full_grid-cnn.smote_0.1-s0-382e1b1-202611032006": "0c94d0815188444a7f1fba64dc3fb82b7afeeded953362d61da24490433adf77",
+            "phase4_full_grid-cnn.smote_0.1-s1-382e1b1-202611032006": "e84e49b7c7b0323f7a1be74d4962ba8ae94394545c04c52462b48bb821a83a4b",
+            "phase4_full_grid-cnn.smote_0.1-s2-382e1b1-202611032006": "6a2cdf14c265a4a492089f90759f452a630f0ddcbc55a731515e16f13d8475bc"
+          },
+          "validation_mean": 0.3690089856025505,
+          "bank": null
+        },
+        "cvae": {
+          "strength": 0.25,
+          "run_ids": [
+            "phase4_full_grid-cnn.cvae_0.25-s0-382e1b1-202611032031",
+            "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034",
+            "phase4_full_grid-cnn.cvae_0.25-s2-382e1b1-202611032037"
+          ],
+          "checkpoints": {
+            "phase4_full_grid-cnn.cvae_0.25-s0-382e1b1-202611032031": "ec159ccd2c8afbf316e0b7c35be3b13301f25252634c47224a49a00ff0842c00",
+            "phase4_full_grid-cnn.cvae_0.25-s1-382e1b1-202611032034": "079df8e33cf9b570df4bc08976d1b91315390ed6b22c0ceaacd501ce3cfe120f",
+            "phase4_full_grid-cnn.cvae_0.25-s2-382e1b1-202611032037": "47f8348dc4b64ed399a9bd70c386386b85cd761e7588002cf39a14ad0a97bb31"
+          },
+          "validation_mean": 0.4233865405259695,
+          "bank": "phase3_cvae-D"
+        },
+        "wgan_gp": {
+          "strength": 0.1,
+          "run_ids": [
+            "phase4_full_grid-cnn.wgan_gp_0.1-s0-382e1b1-202611032124",
+            "phase4_full_grid-cnn.wgan_gp_0.1-s1-382e1b1-202611032125",
+            "phase4_full_grid-cnn.wgan_gp_0.1-s2-382e1b1-202611032126"
+          ],
+          "checkpoints": {
+            "phase4_full_grid-cnn.wgan_gp_0.1-s0-382e1b1-202611032124": "abdba9019b2b5842f3bd625a26c49fd71b2c3e95fe5a91df7fc9eded04bc7c9f",
+            "phase4_full_grid-cnn.wgan_gp_0.1-s1-382e1b1-202611032125": "63eea17d33524e7fc4e10e1031cebae4618a26dc5a8aac7eb9000e38355a9958",
+            "phase4_full_grid-cnn.wgan_gp_0.1-s2-382e1b1-202611032126": "b7218a676f971a5f105347a0b5f79dee19965b1a12e5f931d9a3aa7825623c60"
+          },
+          "validation_mean": 0.38704262432569175,
+          "bank": "phase3_wgan_gp-A"
+        }
+      },
+      "rnn": {
+        "none": {
+          "strength": null,
+          "run_ids": [
+            "phase4_full_grid-rnn.none-s0-382e1b1-202611031940",
+            "phase4_full_grid-rnn.none-s1-382e1b1-202611031941",
+            "phase4_full_grid-rnn.none-s2-382e1b1-202611031942"
+          ],
+          "checkpoints": {
+            "phase4_full_grid-rnn.none-s0-382e1b1-202611031940": "f38e920a12b35bff0a3ce635b07e167bb122027ae08bf2930eb08d5654e11670",
+            "phase4_full_grid-rnn.none-s1-382e1b1-202611031941": "a8031fa32ae25c6068ba90a9b1da49097168aaca2e3a1d68b9b0bba702c85f56",
+            "phase4_full_grid-rnn.none-s2-382e1b1-202611031942": "04ffc1496509f8f20e9a85189fac835d55d714c933c7ac4785e7468c17af4b07"
+          },
+          "validation_mean": 0.3147518048853477,
+          "bank": null
+        },
+        "class_weighted": {
+          "strength": 0.75,
+          "run_ids": [
+            "phase4_full_grid-rnn.class_weighted_0.75-s0-382e1b1-202611031947",
+            "phase4_full_grid-rnn.class_weighted_0.75-s1-382e1b1-202611031948",
+            "phase4_full_grid-rnn.class_weighted_0.75-s2-382e1b1-202611031949"
+          ],
+          "checkpoints": {
+            "phase4_full_grid-rnn.class_weighted_0.75-s0-382e1b1-202611031947": "c4a11d594af9ed2f994e3a6bba90719611073a91f6c226fd3096d212caff3564",
+            "phase4_full_grid-rnn.class_weighted_0.75-s1-382e1b1-202611031948": "0ed9341687158356aa47385a68f441e6f2dc3b1eb454c47006b2405188a23c1f",
+            "phase4_full_grid-rnn.class_weighted_0.75-s2-382e1b1-202611031949": "003dd8c101018605dca24dd933e17d5c9eab5574dd1b11d5e23b0b1ff8717505"
+          },
+          "validation_mean": 0.42528140151998434,
+          "bank": null
+        },
+        "random_oversampling": {
+          "strength": 0.1,
+          "run_ids": [
+            "phase4_full_grid-rnn.random_oversampling_0.1-s0-382e1b1-202611031953",
+            "phase4_full_grid-rnn.random_oversampling_0.1-s1-382e1b1-202611031954",
+            "phase4_full_grid-rnn.random_oversampling_0.1-s2-382e1b1-202611031955"
+          ],
+          "checkpoints": {
+            "phase4_full_grid-rnn.random_oversampling_0.1-s0-382e1b1-202611031953": "1beb10245364daf6430f2808103410599e9c41f05bca936f9181c8b5b54da0bc",
+            "phase4_full_grid-rnn.random_oversampling_0.1-s1-382e1b1-202611031954": "58fa46fcb376ce7b19a61b9cb06d0f72ea7e804b740cc1d3b1610046ac22bd1d",
+            "phase4_full_grid-rnn.random_oversampling_0.1-s2-382e1b1-202611031955": "a7c08ab4621b86e9bc58e99b77e2e3075741a3918cc51acb15df02bec2abb7dd"
+          },
+          "validation_mean": 0.41411394501392335,
+          "bank": null
+        },
+        "smote": {
+          "strength": 0.1,
+          "run_ids": [
+            "phase4_full_grid-rnn.smote_0.1-s0-382e1b1-202611032007",
+            "phase4_full_grid-rnn.smote_0.1-s1-382e1b1-202611032008",
+            "phase4_full_grid-rnn.smote_0.1-s2-382e1b1-202611032009"
+          ],
+          "checkpoints": {
+            "phase4_full_grid-rnn.smote_0.1-s0-382e1b1-202611032007": "dae442530179a17567e0864ed630c5cd197850e923a53a10e80bd351b9d53088",
+            "phase4_full_grid-rnn.smote_0.1-s1-382e1b1-202611032008": "eeb156d2e7cb9e647b606ce5b809a9712974e82eef3a243b10fbbac11981e8e0",
+            "phase4_full_grid-rnn.smote_0.1-s2-382e1b1-202611032009": "dcc7c08d2fd0e64e790f24b71fef76e2aeac4fa24116bb945563f0c377d8b3f8"
+          },
+          "validation_mean": 0.3700161425731417,
+          "bank": null
+        },
+        "cvae": {
+          "strength": 0.1,
+          "run_ids": [
+            "phase4_full_grid-rnn.cvae_0.1-s0-382e1b1-202611032025",
+            "phase4_full_grid-rnn.cvae_0.1-s1-382e1b1-202611032027",
+            "phase4_full_grid-rnn.cvae_0.1-s2-382e1b1-202611032028"
+          ],
+          "checkpoints": {
+            "phase4_full_grid-rnn.cvae_0.1-s0-382e1b1-202611032025": "03a05216e18b65851276843fbf920375f3aae06376545609ead1d2de83487d70",
+            "phase4_full_grid-rnn.cvae_0.1-s1-382e1b1-202611032027": "da3779386fb1363bdf7c6076e5a48b88516f33da74c9278f9a1a8df2dcd9ac4b",
+            "phase4_full_grid-rnn.cvae_0.1-s2-382e1b1-202611032028": "a8aa780f2812c0d6319788f19c4562b9cf3cf55b3edb837ace1693752772cfaf"
+          },
+          "validation_mean": 0.3591768756147724,
+          "bank": "phase3_cvae-D"
+        },
+        "wgan_gp": {
+          "strength": 0.5,
+          "run_ids": [
+            "phase4_full_grid-rnn.wgan_gp_0.5-s0-382e1b1-202611032210",
+            "phase4_full_grid-rnn.wgan_gp_0.5-s1-382e1b1-202611032217",
+            "phase4_full_grid-rnn.wgan_gp_0.5-s2-382e1b1-202611032223"
+          ],
+          "checkpoints": {
+            "phase4_full_grid-rnn.wgan_gp_0.5-s0-382e1b1-202611032210": "dbcb3950e14ad91f5b8946e2d36b45ac7014f72e8e6f1fb025d920b94046093b",
+            "phase4_full_grid-rnn.wgan_gp_0.5-s1-382e1b1-202611032217": "f08e02964c0d301d4dec3ddb7cff597e91b0339add91a6cd08aa7db8a1e8cd82",
+            "phase4_full_grid-rnn.wgan_gp_0.5-s2-382e1b1-202611032223": "1fd4835cdc6a149a0eddfdd47cc3c704aaae00e64f642bf225acfd72facffec6"
+          },
+          "validation_mean": 0.257766625889338,
+          "bank": "phase3_wgan_gp-A"
+        }
+      }
+    },
+    "best_generative": {
+      "cnn": "cvae",
+      "rnn": "cvae"
+    },
+    "approved_by": [
+      "Akash Saha"
+    ],
+    "approved_on": "2026-11-04",
+    "git_sha": "2b89705996e2ee5837681b4a98970b9cd98784da"
   }
 }
