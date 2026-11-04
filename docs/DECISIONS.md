@@ -281,3 +281,13 @@ Nothing here retrains, re-selects or re-tunes a phase 1-4 result (docs/RULES.md 
   could not be told apart); `python -m ecgaug.figures final_eval` redraws it without reading the test set.
 - A22.4 Error analysis run on validation and on the final evaluation's saved test predictions (no new test access).
 - A22.5 Two lint findings fixed (unused import, unused variable); no behaviour change.
+
+## 2026-11-04 (Day 29) — A23: note model gemini-3.5-flash-lite — Akash Saha (free LLM only, A21)
+
+The first B-D run failed without writing results: B on a 60 s read timeout (not retried), C and D on HTTP 429. Google's
+reply: the free tier allows 20 `generateContent` requests per day for `gemini-3.5-flash` (quotaId
+GenerateRequestsPerDayPerProjectPerModel-FreeTier, value 20); B-D need about 250. Default changed to
+`gemini-3.5-flash-lite` (thinking `minimal`), which answered; on the two made-up probe beats its 6 notes (B, C, D) had zero
+unsupported claims and coverage 1.00. All three LLM variants use it, so they stay comparable. The client now retries
+timeouts and dropped connections, and stops at once with `LLMQuotaError` when a daily quota is used up. Prompts, fact
+checker, `max_tokens`, cases and retries are unchanged.
