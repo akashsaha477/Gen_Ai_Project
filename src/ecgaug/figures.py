@@ -816,7 +816,7 @@ def leakage_audit_figure(summary: dict) -> list[Path]:
         ax.scatter(intra["per_seed"], [i + 0.15] * len(intra["per_seed"]), s=22, color=intra_color, alpha=0.45, edgecolor=SURFACE, linewidth=0.6)
         ax.errorbar(intra["mean"], i + 0.15, xerr=intra["sd"], fmt="o", color=intra_color, capsize=3, label="intra-patient (random beat split)" if i == 0 else None)
         ax.errorbar(inter["point"], i - 0.15, xerr=[[inter["point"] - inter["ci_low"]], [inter["ci_high"] - inter["point"]]], fmt="o",
-                    color=inter_color, capsize=3, label="inter-patient (DS2, final evaluation)" if i == 0 else None)  # fmt: skip
+                    color=inter_color, capsize=3, label="inter-patient (unseen patients, final evaluation)" if i == 0 else None)  # fmt: skip
         ax.annotate(f"{intra['mean']:.3f}", (intra["mean"], i + 0.15), xytext=(0, 7), textcoords="offset points", ha="center", fontsize=7, color=INK_2)
         ax.annotate(f"{inter['point']:.3f}", (inter["point"], i - 0.15), xytext=(0, -11), textcoords="offset points", ha="center", fontsize=7, color=INK_2)
     ax.set_yticks(range(len(conditions)), [names[c] for c in reversed(conditions)])
