@@ -45,8 +45,8 @@ the one before it; the code refuses to skip ahead and says what is missing.
 | 4 comparison | `phase4_augmentation_policy` A–D, seeds 0–2 (DECISIONS A19) | `kaggle/phase4_augmentation_policy.ipynb`, all four letters in one session | built |
 | 4 comparison | phase 4a gate: the policy; writes the full grid | `python -m ecgaug.workflow phase4a-gate [--approve ...]` | approved 2026-11-04: policy D (0.5 x N, DTW-screened); full grid strengths 0.1, 0.25, 0.5 |
 | 4 comparison | the full grid (96 runs at 3 seeds, resumable) | `kaggle/phase4_full_grid.ipynb` | done 2026-11-04: 96 of 96 runs (Kaggle T4, one session) |
-| 4 comparison | phase 4 gate: strengths and checkpoints, on validation | `python -m ecgaug.workflow phase4-gate [--approve ...]` | report written (`results/phase4_gate/report.md`); waiting for approval |
-| 4 comparison | the single final evaluation on the test set | `ALLOW_TEST=1 python -m ecgaug.final_eval --confirm "run final eval"` | built |
+| 4 comparison | phase 4 gate: strengths and checkpoints, on validation | `python -m ecgaug.workflow phase4-gate [--approve ...]` | approved 2026-11-04 (Akash Saha): cVAE best generative for cnn and rnn |
+| 4 comparison | the single final evaluation on the test set | `ALLOW_TEST=1 python -m ecgaug.final_eval --confirm "run final eval"` | done 2026-11-04 (once; `results/final_eval/`, `figures/final_eval/`) |
 | 5 explanations | `phase5_explainability` A–D, `phase5_clinical_notes` A–D, error analysis, demo | `python -m ecgaug.experiments.phase5_*`, `python -m ecgaug.demo` | built |
 | 5 explanations | phase 5 gate, then `git tag v1.0` | `python -m ecgaug.workflow phase5-gate [--approve ...]` | built |
 | 4 comparison | RQ3 analysis; leakage audit (optional, after the final evaluation) | `python -m ecgaug.eval.rq3`; `kaggle/phase4_leakage_audit.ipynb` | built |

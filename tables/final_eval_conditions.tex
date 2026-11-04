@@ -1,0 +1,18 @@
+\begin{tabular}{llrrr}
+\toprule
+Architecture & Condition & Strength & Rare macro-F1 [95\% CI] & N recall \\
+\midrule
+cnn & none & -- & 0.088 [0.037, 0.194] & 0.962 \\
+cnn & class weighted & 0.5 & 0.113 [0.057, 0.207] & 0.933 \\
+cnn & random oversampling & 0.1 & 0.136 [0.061, 0.247] & 0.844 \\
+cnn & smote & 0.1 & 0.070 [0.025, 0.172] & 0.985 \\
+cnn & cvae & 0.25 & 0.113 [0.049, 0.217] & 0.938 \\
+cnn & wgan gp & 0.1 & 0.079 [0.033, 0.164] & 0.955 \\
+rnn & none & -- & 0.075 [0.014, 0.232] & 0.961 \\
+rnn & class weighted & 0.75 & 0.061 [0.022, 0.168] & 0.865 \\
+rnn & random oversampling & 0.1 & 0.090 [0.028, 0.196] & 0.883 \\
+rnn & smote & 0.1 & 0.086 [0.025, 0.206] & 0.894 \\
+rnn & cvae & 0.1 & 0.073 [0.035, 0.157] & 0.926 \\
+rnn & wgan gp & 0.5 & 0.069 [0.027, 0.156] & 0.857 \\
+\bottomrule
+\end{tabular}
