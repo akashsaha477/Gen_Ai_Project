@@ -21,13 +21,13 @@ from __future__ import annotations
 import argparse
 import json
 import math
-from pathlib import Path
 
 import numpy as np
 import scipy.signal as sps
 import torch
 
 from ecgaug import paths, runs, workflow
+from ecgaug.data import raw
 from ecgaug.data.beats import UNMAPPED, rr_intervals
 from ecgaug.data.contract import content_sha256, save_npz_deterministic
 from ecgaug.data.records import AAMI, CLASS_INDEX, CLASSES, FS, NON_BEAT_SYMBOLS, QRS_SYMBOLS, SYMBOL_TO_AAMI
@@ -45,15 +45,11 @@ MIN_F_BEATS = 50
 PACED = set(AAMI["Q"]) - {"Q"}  # '/' paced and 'f' fusion of paced and normal
 
 
-def raw_dir(db: str) -> Path:
-    return paths.raw_dir().parent / db  # next to data/raw/mitdb
-
-
 def record_names(db: str) -> list[str]:
-    folder = raw_dir(db)
-    if not folder.is_dir():
-        raise PreconditionError(f"{folder} is missing: python -c \"import wfdb; wfdb.dl_database('{db}', '{folder}')\"")
-    return sorted(p.stem for p in folder.glob("*.hea"))
+    names = raw.external_records(db)
+    if not names:
+        raise PreconditionError(f"{raw.external_dir(db)} is empty: download the database from PhysioNet ({db}) first")
+    return names
 
 
 def record_number(name: str) -> int:
@@ -68,25 +64,19 @@ def resample_to_fs(signal: np.ndarray, fs: int) -> np.ndarray:
 
 def build_record(db: str, name: str, spec: RepresentationSpec) -> tuple[dict | None, dict]:
     """Contract-format arrays of one external record (or None when it is left out) and its report."""
-    import wfdb
-
-    stem = str(raw_dir(db) / name)
-    ann = wfdb.rdann(stem, "atr")
-    samples, symbols = np.asarray(ann.sample, dtype=np.int64), np.asarray(ann.symbol, dtype=str)
+    samples, symbols, lead_signal, fs, sig_names = raw.read_external(db, name, DATABASES[db]["lead"])
     report: dict = {"record": name, "number": record_number(name)}
     unknown = sorted(set(symbols.tolist()) - QRS_SYMBOLS - NON_BEAT_SYMBOLS)
     if unknown:
         return None, {**report, "excluded": f"unknown annotation symbols {unknown}"}
     if DATABASES[db]["exclude_paced"] and np.isin(symbols, sorted(PACED)).any():
         return None, {**report, "excluded": "paced beats"}
-    rec = wfdb.rdrecord(stem, channel_names=[DATABASES[db]["lead"]])
-    if rec.sig_name != [DATABASES[db]["lead"]]:
-        return None, {**report, "excluded": f"lead {DATABASES[db]['lead']} not in {rec.sig_name}"}
-    fs = int(rec.fs)
+    if lead_signal is None:
+        return None, {**report, "excluded": f"lead {DATABASES[db]['lead']} not in {sig_names}"}
     is_qrs = np.isin(symbols, sorted(QRS_SYMBOLS))
     r_native, symbol = samples[is_qrs], symbols[is_qrs]
     rr_prev, rr_next, rr_ratio = rr_intervals(r_native, fs=fs)
-    signal = resample_to_fs(np.nan_to_num(rec.p_signal[:, 0]), fs)
+    signal = resample_to_fs(np.nan_to_num(lead_signal), fs)
     r = np.rint(r_native * FS / fs).astype(np.int64)
     aami = np.array([SYMBOL_TO_AAMI.get(s, UNMAPPED) for s in symbol], dtype=str)
     y = np.array([CLASS_INDEX.get(c, -1) for c in aami], dtype=np.int8)
