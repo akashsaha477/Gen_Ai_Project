@@ -29,6 +29,7 @@ EXPERIMENTS = (
 )  # fmt: skip
 RESULT_FOLDERS = (*EXPERIMENTS, "phase4_full_grid")  # every experiment's results, plus the full grid's ledger
 EXTRA_RESULT_FILES = ("results/phase2_ptbxl_data/ptbxl_preprocessing.json",)
+ACCESS_LOG = "docs/TEST_ACCESS_LOG.md"  # appended by every DS2 read; its new rows are merged back by ingest
 BANKS = "data/synthetic"  # synthetic banks of final generator runs: in the zip, never pushed (too big for git)
 
 
@@ -177,6 +178,9 @@ def bundle(out_dir: Path, manifest: dict, repo: Path = REPO) -> Path | None:
             shutil.copy2(repo / rel, staging / rel)
     if found and (repo / BANKS).is_dir():
         shutil.copytree(repo / BANKS, staging / BANKS)
+    if found and (repo / ACCESS_LOG).is_file():  # DS2 reads made here (leakage audit) must reach the team's log
+        (staging / ACCESS_LOG).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(repo / ACCESS_LOG, staging / ACCESS_LOG)
     if not found:
         return None
     (staging / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")

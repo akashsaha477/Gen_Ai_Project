@@ -247,6 +247,18 @@ def _find_run_dirs(root: Path) -> list[Path]:
     return sorted(p.parent for p in root.rglob("config.yaml") if RUN_ID_RE.match(p.parent.name))
 
 
+def merge_access_log(source: Path) -> list[str]:
+    """Append the rows of a bundled ``TEST_ACCESS_LOG.md`` that the local log lacks; return them."""
+    log = paths.docs_dir() / "TEST_ACCESS_LOG.md"
+    local = log.read_text().splitlines() if log.is_file() else []
+    known = {line for line in local if line.startswith("| 20")}
+    new = [line for line in source.read_text().splitlines() if line.startswith("| 20") and line not in known]
+    if new:
+        with log.open("a") as fh:
+            fh.write("".join(line + "\n" for line in new))
+    return new
+
+
 def ingest(sources: list[Path]) -> dict:
     """Bring run directories (or zips of them) into ``runs/`` and update the runs index.
 
@@ -256,7 +268,7 @@ def ingest(sources: list[Path]) -> dict:
     """
     report: dict = {
         "ingested": [], "skipped_identical": [], "conflicts": [], "refused": [], "incomplete": [],
-        "result_files": [], "result_conflicts": [], "bank_files": [], "bank_conflicts": [],
+        "result_files": [], "result_conflicts": [], "bank_files": [], "bank_conflicts": [], "access_log_rows": [],
     }  # fmt: skip
     with tempfile.TemporaryDirectory() as tmp:
         candidates: list[Path] = []
@@ -327,6 +339,9 @@ def ingest(sources: list[Path]) -> dict:
                     report["result_files"].append(f"figures/{relative}")
             # Synthetic banks made by final generator runs (data/synthetic/<generator>/), too big for git.
             _ingest_banks(root / "data" / "synthetic", report)
+            # DS2 reads made on Kaggle (leakage audit): rows missing from the local log are appended in order.
+            for src in root.rglob("TEST_ACCESS_LOG.md"):
+                report["access_log_rows"] += merge_access_log(src)
             # Reports that only exist where the full data was processed (PTB-XL on Kaggle).
             for folder, files in INGESTED_DATA_REPORTS.items():
                 for name in files:

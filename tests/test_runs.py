@@ -372,3 +372,18 @@ def test_kaggle_results_are_committed_and_pushed(tmp_path):
     (run_dir / "preds_test.npz").write_bytes(b"x")
     with pytest.raises(RuntimeError, match="test predictions"):
         kaggle_run.push_results("main", "bad", "Ann", "ann@x", repo=clone)
+
+
+def test_ingest_appends_new_test_access_rows_once(tmp_path):
+    header = "| date | kind | git SHA | command | purpose | run IDs | approved by |\n|---|---|---|---|---|---|---|\n"
+    old = "| 2026-11-04 09:31 +0530 | evaluation | ce45db3 | `final_eval` | load_test('v1') |  | A |\n"
+    new = "| 2026-11-05 10:00 +0000 | audit | c962a86 | `phase4_leakage_audit` | audit split |  |  |\n"
+    log = paths.docs_dir() / "TEST_ACCESS_LOG.md"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    log.write_text(header + old)
+    bundle = tmp_path / "bundle" / "docs"
+    bundle.mkdir(parents=True)
+    (bundle / "TEST_ACCESS_LOG.md").write_text(header + old + new)
+    assert runs.ingest([tmp_path / "bundle"])["access_log_rows"] == [new.rstrip("\n")]
+    assert runs.ingest([tmp_path / "bundle"])["access_log_rows"] == []
+    assert log.read_text() == header + old + new
