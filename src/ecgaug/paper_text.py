@@ -288,6 +288,91 @@ def concentration(errors: dict | None) -> str:
 
 
 # --------------------------------------------------------------------------------------------------
+# post-hoc analyses (PREREGISTRATION v4, P1-P4): reported apart, never replacing the primary results
+# --------------------------------------------------------------------------------------------------
+
+DATABASE = {"incartdb": "St Petersburg INCART", "svdb": "MIT-BIH Supraventricular Arrhythmia"}
+METRIC = {"rare_macro_f1": "rare-class macro-F1", "f1_S": "S F1"}
+
+
+def _against(diff: dict, other: str) -> str:
+    """Reference minus cnn, worded by whether the 95% interval excludes zero (P1 rule)."""
+    if diff["ci_low"] > 0:
+        return f"the {other} was weaker than this reference"
+    if diff["ci_high"] < 0:
+        return f"this reference was weaker than the {other}"
+    return f"this reference was not detectably different from the {other}"
+
+
+def posthoc_rr(summary: dict | None, final: dict | None) -> str:
+    if summary is None or final is None:
+        return _missing("P1 RR reference: python -m ecgaug.experiments.phase6_rr_reference --part test")
+    parts = []
+    for name, e in summary["references"].items():
+        d, tt = e["vs_cnn"]["none"], name.replace("_", "\\_")
+        parts.append(f"\\texttt{{{tt}}} reached {_ci(e['rare_macro_f1'])} (S Se {_n(e['se_S']['point'])}, S +P {_n(e['ppv_S']['point'])}); "
+                     f"minus the cnn without augmentation, {_ci(d, signed=True)}, so {_against(d, 'cnn without augmentation')}")  # fmt: skip
+    return (f"\\paragraph{{A fixed RR-interval reference (P1).}} Two linear discriminants with uniform priors and nothing to tune were fitted once on the "
+            f"training records: \\texttt{{rr\\_lda}} on the three RR features, \\texttt{{rr\\_morph\\_lda}} on those plus every tenth sample of the beat window. "
+            f"On the test records, {'; '.join(parts)} (Figure~\\ref{{fig:rr-reference}}). The cnn's low test score is therefore not explained by a "
+            f"weak network that a simple RR rule would beat; both references are cruder than published feature sets.")  # fmt: skip
+
+
+def posthoc_external(summaries: dict[str, dict]) -> str:
+    if not summaries:
+        return _missing("P2 external validation: python -m ecgaug.experiments.phase6_external_validation --part evaluate")
+    parts = []
+    for db, s in summaries.items():
+        metric = s["primary_metric"]
+        none, beats = s["conditions"]["cnn/none"][metric], s["beats"]
+        rejected = [k for k, v in s["confirmatory"].items() if v["reject_holm"]]
+        best_name, best = max(s["confirmatory"].items(), key=lambda kv: kv[1]["point"])
+        verdict = ("no confirmatory comparison was significant after Holm correction" if not rejected
+                   else f"Holm rejected {', '.join(r.replace('_', ' ') for r in rejected)}")  # fmt: skip
+        same = all(v["replicated"] for v in s["confirmatory"].values())
+        parts.append(f"On {DATABASE[db]} ({s['role']}; {s['records']} records; {beats['S']:,} S and {beats['F']:,} F beats; primary metric "
+                     f"{METRIC[metric]}), the cnn without augmentation reached {_ci(none)}; the largest confirmatory difference was "
+                     f"{best_name.replace('_', ' ')}, {_ci(best, signed=True)}, {_p(best)}; {verdict}, which "
+                     f"{'matches' if same else 'does not match'} the verdicts on the MIT-BIH test records")  # fmt: skip
+    return (f"\\paragraph{{External databases (P2).}} Every frozen checkpoint was applied unchanged to two databases no model or decision had seen, "
+            f"with beats cut exactly as in the frozen dataset. {'. '.join(parts)} (Figure~\\ref{{fig:external}}).")  # fmt: skip
+
+
+def posthoc_seeds(summary: dict | None) -> str:
+    if summary is None:
+        return _missing("P3 extra seeds: python -m ecgaug.experiments.phase6_extra_seeds --part test")
+    conf = summary["families"]["confirmatory"]
+    best_name, best = max(conf.items(), key=lambda kv: kv[1]["point"])
+    changed = summary["changed"]
+    return (f"\\paragraph{{Five seeds (P3).}} Seeds 3 and 4 were trained with the frozen configurations, strengths and generators. With five seeds, "
+            f"the largest confirmatory difference was {best_name.replace('_', ' ')}, {_ci(best, signed=True)}, {_p(best)}; "
+            f"{'no Holm verdict changed' if not changed else 'verdicts that changed: ' + ', '.join(c.replace('_', ' ') for c in changed)} "
+            f"(Figure~\\ref{{fig:seeds}}).")  # fmt: skip
+
+
+def posthoc_audit(summary: dict | None) -> str:
+    if summary is None:
+        return _missing("P4 audit checks: python -m ecgaug.experiments.phase6_audit_check")
+    parts = []
+    for c in summary["checks"]:
+        what = f"no augmentation on random split {c['split_seed']}" if c["condition"] == "none" else f"WGAN-GP at strength {c['strength']} on the audit's split"
+        parts.append(f"{what}: {_n(c['intra']['mean'])} $\\pm$ {_n(c['intra']['sd'])}")
+    base = summary["audit_split0"]["none"]
+    return (f"\\paragraph{{Checks of the audit (P4).}} Intra-patient rare-class macro-F1 of the cnn (mean $\\pm$ SD over seeds): "
+            f"{'; '.join(parts)}, against {_n(base['mean'])} $\\pm$ {_n(base['sd'])} without augmentation on the audit's split and "
+            f"{_n(summary['inter_patient']['none']['point'])} inter-patient (Figure~\\ref{{fig:audit-checks}}). Exploratory.")  # fmt: skip
+
+
+def posthoc(final: dict | None) -> str:
+    from ecgaug.names import PHASE6_AUDIT_CHECK, PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS, PHASE6_RR_REFERENCE
+
+    external = {db: s for db in DATABASE if (s := _load(paths.results_for(PHASE6_EXTERNAL_VALIDATION) / f"{db}_summary.json"))}
+    return "\n\n".join([posthoc_rr(_load(paths.results_for(PHASE6_RR_REFERENCE) / "summary.json"), final), posthoc_external(external),
+                        posthoc_seeds(_load(paths.results_for(PHASE6_EXTRA_SEEDS) / "summary.json")),
+                        posthoc_audit(_load(paths.results_for(PHASE6_AUDIT_CHECK) / "summary.json"))]) + "\n"  # fmt: skip
+
+
+# --------------------------------------------------------------------------------------------------
 # the hypothesis table and the abstract sentence
 # --------------------------------------------------------------------------------------------------
 
@@ -337,6 +422,7 @@ def build() -> dict[str, str]:
         verdicts.update(found)
     files["results_notes"] = notes(gate, note_results)
     files["results_concentration"] = concentration(_load(paths.results_for("error_analysis") / "test.json"))
+    files["results_posthoc"] = posthoc(summary)
     files["table_hypotheses"] = hypotheses_table(verdicts)
     files["abstract_results"] = abstract_sentence(summary, verdicts, audit) + "\n"
     return files
