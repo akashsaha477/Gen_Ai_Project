@@ -239,3 +239,5 @@ phase4_leakage_audit-cvae.generator-s2-e1708f2-202611041610,4,phase4_leakage_aud
 phase4_leakage_audit-wgangp.generator-s0-e1708f2-202611041631,4,phase4_leakage_audit,wgangp,generator,0,done,,nan,,1214.2,e1708f2,audit/phase4_leakage_audit/generators
 phase4_leakage_audit-wgangp.generator-s1-e1708f2-202611041651,4,phase4_leakage_audit,wgangp,generator,1,done,,nan,,1217.6,e1708f2,audit/phase4_leakage_audit/generators
 phase4_leakage_audit-wgangp.generator-s2-e1708f2-202611041711,4,phase4_leakage_audit,wgangp,generator,2,done,,nan,,1218.7,e1708f2,audit/phase4_leakage_audit/generators
+phase6_rr_reference-rrlda-s0-1baec70-202611050043,6,phase6_rr_reference,rrlda,,0,done,,nan,0.05702364394993046,0.0,1baec70,phase6_rr_reference
+phase6_rr_reference-rrmorphlda-s0-1baec70-202611050043,6,phase6_rr_reference,rrmorphlda,,0,done,,nan,0.043389754237599595,0.0,1baec70,phase6_rr_reference

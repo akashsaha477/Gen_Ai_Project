@@ -1,0 +1,9 @@
+experiment: phase6_rr_reference
+reference: rr_lda
+description: LDA on rr_prev, rr_next and rr_ratio
+features: rr_lda
+morph_step: 10
+priors: uniform
+dataset: data/processed/v1
+train_records: v1 split 'train'
+run_id: phase6_rr_reference-rrlda-s0-1baec70-202611050043
