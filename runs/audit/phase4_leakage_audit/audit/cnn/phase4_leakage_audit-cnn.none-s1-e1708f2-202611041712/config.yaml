@@ -1,0 +1,56 @@
+grid: configs/phase4_leakage_audit/audit.yaml
+grid_name: audit
+cell:
+  condition: none
+  strength: null
+  architecture: cnn
+  seed: 1
+cell_sha: 983136e3e8bb083ef2f37c4f1f158764bf304ac51104c70e1a559219be818bea
+policy:
+  kind: fraction_of_n_screened
+  pool_factor: 2.0
+condition_settings: {}
+bank: null
+classifier:
+  variant: A
+  config: configs/phase2_baseline_classifiers/A_shallow_cnn.yaml
+  model:
+    name: shallow_cnn
+    channels:
+    - 32
+    - 64
+    - 128
+    kernel: 7
+    side_hidden: 16
+  lr: 0.001
+  max_epochs: 40
+  patience: 5
+  min_epochs: 10
+  batch_size: 256
+  weight_decay: 0.01
+  run_ids:
+  - phase2_baseline_classifiers-A.lr1e-03-s0-a6ac8bf-202611010715
+  - phase2_baseline_classifiers-A.lr1e-03-s1-a6ac8bf-202611010715
+  - phase2_baseline_classifiers-A.lr1e-03-s2-a6ac8bf-202611010715
+  checkpoints:
+    phase2_baseline_classifiers-A.lr1e-03-s0-a6ac8bf-202611010715: 04e6f6f4c1fc4d0fcf3b6e16ff68e92e640fc99d25d84780b9781340976ef88c
+    phase2_baseline_classifiers-A.lr1e-03-s1-a6ac8bf-202611010715: 0235e139af9fe276d4455a2043c44fc5bc838d84f6842a7d6a64f273f8011416
+    phase2_baseline_classifiers-A.lr1e-03-s2-a6ac8bf-202611010715: f307abff674461fe3d4b7f3d7beec6e63eed913d8a1fb758b882ad10da1ce2dd
+class_weights: null
+n_added:
+  N: 0
+  S: 0
+  V: 0
+  F: 0
+run_id: phase4_leakage_audit-cnn.none-s1-e1708f2-202611041712
+split:
+  name: intra_patient_random
+  val: []
+  selection_metric: s_f1
+dataset:
+  source: intra-patient random split (seed 0) of the frozen DS1 and DS2 beats
+  representation: C_short_window_rr_features
+  content_sha256: 14754e024622a7ae5d9a1fbbfdc651ae621e74cf1ebebde05d686a03d709e237
+  frozen: false
+provisional: false
+provisional_reasons: []

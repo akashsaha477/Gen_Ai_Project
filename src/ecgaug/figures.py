@@ -804,6 +804,32 @@ def final_eval_figures(stats: dict) -> list[Path]:
     return written
 
 
+def leakage_audit_figure(summary: dict) -> list[Path]:
+    """RQ2: the cnn's rare-class macro-F1 on a random beat-level split (intra-patient) beside the final evaluation (inter-patient)."""
+    plt = _plt()
+    names = {"none": "none", "cvae": "cVAE", "wgan_gp": "WGAN-GP"}
+    conditions = [c for c in names if c in summary["conditions"]]
+    intra_color, inter_color = "#2a78d6", "#eb6834"  # first two hues, fixed order
+    fig, ax = plt.subplots(figsize=(8, 0.7 * len(conditions) + 1.4))
+    for i, condition in enumerate(reversed(conditions)):
+        intra, inter = summary["conditions"][condition]["intra"], summary["conditions"][condition]["inter"]
+        ax.scatter(intra["per_seed"], [i + 0.15] * len(intra["per_seed"]), s=22, color=intra_color, alpha=0.45, edgecolor=SURFACE, linewidth=0.6)
+        ax.errorbar(intra["mean"], i + 0.15, xerr=intra["sd"], fmt="o", color=intra_color, capsize=3, label="intra-patient (random beat split)" if i == 0 else None)
+        ax.errorbar(inter["point"], i - 0.15, xerr=[[inter["point"] - inter["ci_low"]], [inter["ci_high"] - inter["point"]]], fmt="o",
+                    color=inter_color, capsize=3, label="inter-patient (DS2, final evaluation)" if i == 0 else None)  # fmt: skip
+        ax.annotate(f"{intra['mean']:.3f}", (intra["mean"], i + 0.15), xytext=(0, 7), textcoords="offset points", ha="center", fontsize=7, color=INK_2)
+        ax.annotate(f"{inter['point']:.3f}", (inter["point"], i - 0.15), xytext=(0, -11), textcoords="offset points", ha="center", fontsize=7, color=INK_2)
+    ax.set_yticks(range(len(conditions)), [names[c] for c in reversed(conditions)])
+    ax.set_ylim(-0.6, len(conditions) - 0.4)
+    ax.set_xlim(0, 1)
+    ax.set_xlabel("test rare-class macro-F1 (cnn)")
+    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=2)
+    caption = ("Intra-patient: mean ± SD over seeds (faint dots: seeds), generative conditions at the grid's middle strength. "
+               "Inter-patient: the final evaluation with its 95% record-level interval, at the strengths chosen on validation. "
+               "Run after the final evaluation; never used for any decision. Exploratory (H2).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase4_leakage_audit") / "intra_vs_inter.png", "RQ2: the same pipeline, with and without patient overlap", caption)]
+
+
 def quality_vs_gain_figure(summary: dict, rows: list[dict]) -> list[Path]:
     """RQ3 (Fig 5): each quality metric against the downstream gain, one point per generator checkpoint."""
     plt = _plt()
@@ -918,7 +944,7 @@ def results_figures() -> list[Path]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Before-and-after figures for each phase.")
-    parser.add_argument("what", choices=["phase1_data", "phase2_ptbxl_data", "results", "final_eval", "all"])
+    parser.add_argument("what", choices=["phase1_data", "phase2_ptbxl_data", "results", "final_eval", "leakage_audit", "all"])
     parser.add_argument("--ptbxl-root", default=None, help="folder with PTB-XL recordings (default data/raw/ptbxl)")
     args = parser.parse_args(argv)
     written = []
@@ -930,6 +956,8 @@ def main(argv: list[str] | None = None) -> int:
         written += results_figures()
     if args.what == "final_eval":  # redraw from the saved summary; the test set is not read
         written += final_eval_figures(json.loads((paths.results_for("final_eval") / "summary.json").read_text()))
+    if args.what == "leakage_audit":  # from the audit's summary; nothing is re-run
+        written += leakage_audit_figure(json.loads((paths.results_for("phase4_leakage_audit") / "summary.json").read_text()))
     for path in written:
         print(path.relative_to(paths.repo_root()))
     return 0

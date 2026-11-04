@@ -1,0 +1,47 @@
+experiment: phase4_leakage_audit
+condition: wgan_gp
+generator_id: phase3_wgan_gp-A
+family: wgan_gp
+setting: default
+settings:
+  batch_size: 128
+  lr: 0.0001
+  adam_betas:
+  - 0.0
+  - 0.9
+  n_critic: 5
+  gradient_penalty: 10.0
+  pilot_steps: 5000
+  final_steps: 20000
+  log_every: 50
+  conditioning: concat
+  noise_dim: 64
+  embed_dim: 16
+  generator_channels:
+  - 128
+  - 64
+  - 32
+  critic_channels:
+  - 32
+  - 64
+  - 128
+  kernel: 7
+  auxiliary_weight: 1.0
+  classes:
+  - N
+  - S
+  - V
+  - F
+steps: 20000
+seed: 1
+dataset:
+  source: intra-patient random split (seed 0) of the frozen DS1 and DS2 beats
+  representation: C_short_window_rr_features
+  content_sha256: 14754e024622a7ae5d9a1fbbfdc651ae621e74cf1ebebde05d686a03d709e237
+  frozen: false
+bank:
+  file: seed1.npz
+  sha256: e61191384a5d539e0db384f7e8ae79f14a4d45df703242f18da319a3fd834d2b
+  content_sha256: cfba002c5207b7070f78db197d77f8ac3709a73ad4ad078c23d35519371db54f
+  run_id: phase4_leakage_audit-wgangp.generator-s1-e1708f2-202611041651
+  steps: 20000

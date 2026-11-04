@@ -1,0 +1,26 @@
+{
+  "name": "intra_patient_random",
+  "seed": 0,
+  "records": 44,
+  "records_in_train_and_test": 44,
+  "counts": {
+    "train": {
+      "N": 35464,
+      "S": 643,
+      "V": 3030,
+      "F": 387
+    },
+    "val": {
+      "N": 10360,
+      "S": 300,
+      "V": 758,
+      "F": 27
+    },
+    "test": {
+      "N": 44217,
+      "S": 1836,
+      "V": 3219,
+      "F": 388
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "cell_sha": "1cb945bbbc33e4e2be260c397e2cc059bed60d9d96f6afc6af18355bae14cca6",
+  "cell": {
+    "condition": "wgan_gp",
+    "strength": 0.25,
+    "architecture": "cnn",
+    "seed": 0
+  },
+  "condition": "wgan_gp",
+  "strength": 0.25,
+  "architecture": "cnn",
+  "seed": 0,
+  "run_id": "phase4_leakage_audit-cnn.wgan_gp_0.25-s0-e1708f2-202611041724",
+  "status": "done",
+  "bank": "audit/phase3_wgan_gp-A",
+  "selection_metric": "s_f1",
+  "selection_value": 0.8695652173913043,
+  "tie_break_value": 0.96973599484868,
+  "rare_macro_f1": 0.7762460233297985,
+  "n_recall": 0.9969111969111969,
+  "n_added": {
+    "N": 0,
+    "S": 8223,
+    "V": 5836,
+    "F": 8479
+  },
+  "wall_clock_s": 25.8,
+  "provisional": false,
+  "audit_test": {
+    "rare_macro_f1": 0.7157918788353571,
+    "macro_f1": 0.8450626511385648,
+    "n_recall": 0.9965397923875432,
+    "n_beats": 49660,
+    "f1": {
+      "N": 0.9931146395609597,
+      "S": 0.8760282021151586,
+      "V": 0.9555522073225855,
+      "F": 0.5555555555555556
+    }
+  }
+}

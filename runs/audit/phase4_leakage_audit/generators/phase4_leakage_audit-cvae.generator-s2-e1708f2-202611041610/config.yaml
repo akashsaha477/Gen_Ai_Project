@@ -1,0 +1,39 @@
+experiment: phase4_leakage_audit
+condition: cvae
+generator_id: phase3_cvae-D
+family: cvae
+setting: default
+settings:
+  batch_size: 128
+  lr: 0.001
+  pilot_steps: 5000
+  final_steps: 20000
+  log_every: 50
+  architecture: residual_film
+  channels:
+  - 32
+  - 64
+  - 128
+  kernel: 7
+  latent_dim: 16
+  beta: 1.0
+  kl_anneal_fraction: 0.3
+  spectral_weight: 0.0
+  classes:
+  - N
+  - S
+  - V
+  - F
+steps: 20000
+seed: 2
+dataset:
+  source: intra-patient random split (seed 0) of the frozen DS1 and DS2 beats
+  representation: C_short_window_rr_features
+  content_sha256: 14754e024622a7ae5d9a1fbbfdc651ae621e74cf1ebebde05d686a03d709e237
+  frozen: false
+bank:
+  file: seed2.npz
+  sha256: f305540e6f3aa1e3c1e2429b54688536599cdca12f71bddd2624d9dbc74e285e
+  content_sha256: 482dec3e5ecea17bb3bc89a97ba380d4cf82466cf4731e9229ef8490ed0b2d9b
+  run_id: phase4_leakage_audit-cvae.generator-s2-e1708f2-202611041610
+  steps: 20000
