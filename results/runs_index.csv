@@ -240,7 +240,11 @@ phase4_leakage_audit-wgangp.generator-s0-e1708f2-202611041631,4,phase4_leakage_a
 phase4_leakage_audit-wgangp.generator-s1-e1708f2-202611041651,4,phase4_leakage_audit,wgangp,generator,1,done,,nan,,1217.6,e1708f2,audit/phase4_leakage_audit/generators
 phase4_leakage_audit-wgangp.generator-s2-e1708f2-202611041711,4,phase4_leakage_audit,wgangp,generator,2,done,,nan,,1218.7,e1708f2,audit/phase4_leakage_audit/generators
 phase6_audit_check-cnn.none-s0-7e3a954-202611050253,6,phase6_audit_check,cnn,none,0,done,s_f1,0.875219683655536,0.797609841827768,1459.0,7e3a954,audit/phase6_audit_check/split1_none/cnn
+phase6_audit_check-cnn.none-s0-a79f796-202611050407,6,phase6_audit_check,cnn,none,0,done,s_f1,0.8352490421455939,0.7830091364574123,604.7,a79f796,audit/phase6_audit_check/split2_none/cnn
+phase6_audit_check-cnn.none-s1-1c9425c-202611050418,6,phase6_audit_check,cnn,none,1,done,s_f1,0.8912280701754386,0.7789473684210526,635.7,1c9425c,audit/phase6_audit_check/split2_none/cnn
 phase6_audit_check-cnn.none-s1-65010c7-202611050315,6,phase6_audit_check,cnn,none,1,done,s_f1,0.8717948717948718,0.7435897435897436,1252.6,65010c7,audit/phase6_audit_check/split1_none/cnn
+phase6_audit_check-cnn.none-s2-1c9425c-202611050425,6,phase6_audit_check,cnn,none,2,done,s_f1,0.8336314847942755,0.6913255463187065,386.5,1c9425c,audit/phase6_audit_check/split2_none/cnn
+phase6_audit_check-cnn.none-s2-a79f796-202611050356,6,phase6_audit_check,cnn,none,2,done,s_f1,0.8853615520282186,0.8122459934054136,2389.4,a79f796,audit/phase6_audit_check/split1_none/cnn
 phase6_audit_check-cnn.wgan_gp_0.1-s0-7e3a954-202611050130,6,phase6_audit_check,cnn,wgan_gp_0.1,0,done,s_f1,0.8581196581196581,0.5558890973525119,1489.5,7e3a954,audit/phase6_audit_check/split0_wgan_gp/cnn
 phase6_audit_check-cnn.wgan_gp_0.1-s1-7e3a954-202611050200,6,phase6_audit_check,cnn,wgan_gp_0.1,1,done,s_f1,0.8538205980066446,0.7519102990033223,1689.3,7e3a954,audit/phase6_audit_check/split0_wgan_gp/cnn
 phase6_audit_check-cnn.wgan_gp_0.1-s2-7e3a954-202611050228,6,phase6_audit_check,cnn,wgan_gp_0.1,2,done,s_f1,0.8698630136986302,0.803352559480894,1521.4,7e3a954,audit/phase6_audit_check/split0_wgan_gp/cnn

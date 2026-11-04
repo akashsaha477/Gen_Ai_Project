@@ -1,0 +1,284 @@
+{
+  "experiment": "phase6_audit_check",
+  "post_hoc": true,
+  "rule": "PREREGISTRATION \u00a710 v4, P4",
+  "architecture": "cnn",
+  "checks": [
+    {
+      "split_seed": 0,
+      "condition": "wgan_gp",
+      "strength": 0.1,
+      "split": {
+        "name": "intra_patient_random",
+        "seed": 0,
+        "records": 44,
+        "records_in_train_and_test": 44,
+        "counts": {
+          "train": {
+            "N": 35464,
+            "S": 643,
+            "V": 3030,
+            "F": 387
+          },
+          "val": {
+            "N": 10360,
+            "S": 300,
+            "V": 758,
+            "F": 27
+          },
+          "test": {
+            "N": 44217,
+            "S": 1836,
+            "V": 3219,
+            "F": 388
+          }
+        }
+      },
+      "intra": {
+        "mean": 0.7692533195100947,
+        "sd": 0.08229240600419842,
+        "per_seed": [
+          0.6753596240164924,
+          0.8035502444952403,
+          0.8288500900185514
+        ],
+        "run_ids": [
+          "phase6_audit_check-cnn.wgan_gp_0.1-s0-7e3a954-202611050130",
+          "phase6_audit_check-cnn.wgan_gp_0.1-s1-7e3a954-202611050200",
+          "phase6_audit_check-cnn.wgan_gp_0.1-s2-7e3a954-202611050228"
+        ]
+      }
+    },
+    {
+      "split_seed": 1,
+      "condition": "none",
+      "strength": null,
+      "split": {
+        "name": "intra_patient_random",
+        "seed": 1,
+        "records": 44,
+        "records_in_train_and_test": 44,
+        "counts": {
+          "train": {
+            "N": 35464,
+            "S": 643,
+            "V": 3030,
+            "F": 387
+          },
+          "val": {
+            "N": 10360,
+            "S": 300,
+            "V": 758,
+            "F": 27
+          },
+          "test": {
+            "N": 44217,
+            "S": 1836,
+            "V": 3219,
+            "F": 388
+          }
+        }
+      },
+      "intra": {
+        "mean": 0.8031136219364555,
+        "sd": 0.07350130340014097,
+        "per_seed": [
+          0.853905224093634,
+          0.7188314772436653,
+          0.8366041644720672
+        ],
+        "run_ids": [
+          "phase6_audit_check-cnn.none-s0-7e3a954-202611050253",
+          "phase6_audit_check-cnn.none-s1-65010c7-202611050315",
+          "phase6_audit_check-cnn.none-s2-a79f796-202611050356"
+        ]
+      }
+    },
+    {
+      "split_seed": 2,
+      "condition": "none",
+      "strength": null,
+      "split": {
+        "name": "intra_patient_random",
+        "seed": 2,
+        "records": 44,
+        "records_in_train_and_test": 44,
+        "counts": {
+          "train": {
+            "N": 35464,
+            "S": 643,
+            "V": 3030,
+            "F": 387
+          },
+          "val": {
+            "N": 10360,
+            "S": 300,
+            "V": 758,
+            "F": 27
+          },
+          "test": {
+            "N": 44217,
+            "S": 1836,
+            "V": 3219,
+            "F": 388
+          }
+        }
+      },
+      "intra": {
+        "mean": 0.7773370216279661,
+        "sd": 0.05932400819582722,
+        "per_seed": [
+          0.7557839940576304,
+          0.8444246195825302,
+          0.7318024512437376
+        ],
+        "run_ids": [
+          "phase6_audit_check-cnn.none-s0-a79f796-202611050407",
+          "phase6_audit_check-cnn.none-s1-1c9425c-202611050418",
+          "phase6_audit_check-cnn.none-s2-1c9425c-202611050425"
+        ]
+      }
+    }
+  ],
+  "audit_split0": {
+    "none": {
+      "mean": 0.8367282959410846,
+      "sd": 0.025880331951380176,
+      "per_seed": [
+        0.8508563208799244,
+        0.8524697820500619,
+        0.8068587848932677
+      ],
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "strength": null,
+      "run_ids": [
+        "phase4_leakage_audit-cnn.none-s0-e1708f2-202611041712",
+        "phase4_leakage_audit-cnn.none-s1-e1708f2-202611041712",
+        "phase4_leakage_audit-cnn.none-s2-e1708f2-202611041713"
+      ]
+    },
+    "cvae": {
+      "mean": 0.8198610729467233,
+      "sd": 0.03406405163837886,
+      "per_seed": [
+        0.8513259484319713,
+        0.8245695457035247,
+        0.7836877247046738
+      ],
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "strength": 0.25,
+      "run_ids": [
+        "phase4_leakage_audit-cnn.cvae_0.25-s0-e1708f2-202611041716",
+        "phase4_leakage_audit-cnn.cvae_0.25-s1-e1708f2-202611041719",
+        "phase4_leakage_audit-cnn.cvae_0.25-s2-e1708f2-202611041721"
+      ]
+    },
+    "wgan_gp": {
+      "mean": 0.7849427231358076,
+      "sd": 0.06014317258426544,
+      "per_seed": [
+        0.7157918788353571,
+        0.8139664106110058,
+        0.8250698799610594
+      ],
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "strength": 0.25,
+      "run_ids": [
+        "phase4_leakage_audit-cnn.wgan_gp_0.25-s0-e1708f2-202611041724",
+        "phase4_leakage_audit-cnn.wgan_gp_0.25-s1-e1708f2-202611041727",
+        "phase4_leakage_audit-cnn.wgan_gp_0.25-s2-e1708f2-202611041729"
+      ]
+    }
+  },
+  "inter_patient": {
+    "none": {
+      "point": 0.08826996255884435,
+      "mean": 0.09526121007056694,
+      "se": 0.0411695750444215,
+      "ci_low": 0.036754478248240664,
+      "ci_high": 0.19383827243929538,
+      "level": 0.95,
+      "n_replicates": 10000,
+      "frac_undefined": 0.0001,
+      "class_absent_frac": {
+        "N": 0.0,
+        "S": 0.0,
+        "V": 0.0,
+        "F": 0.0001
+      },
+      "dominant_record": {
+        "N": {
+          "record": 212,
+          "share_of_class": 0.06210281113598842,
+          "absent_frac": 0.3617
+        },
+        "S": {
+          "record": 232,
+          "share_of_class": 0.7521786492374728,
+          "absent_frac": 0.355
+        },
+        "V": {
+          "record": 233,
+          "share_of_class": 0.25784405094749924,
+          "absent_frac": 0.3573
+        },
+        "F": {
+          "record": 213,
+          "share_of_class": 0.9329896907216495,
+          "absent_frac": 0.3558
+        }
+      }
+    },
+    "wgan_gp": {
+      "point": 0.07901331896961451,
+      "mean": 0.08448579335977055,
+      "se": 0.034660389278483875,
+      "ci_low": 0.03272484687238697,
+      "ci_high": 0.16425049593959148,
+      "level": 0.95,
+      "n_replicates": 10000,
+      "frac_undefined": 0.0001,
+      "class_absent_frac": {
+        "N": 0.0,
+        "S": 0.0,
+        "V": 0.0,
+        "F": 0.0001
+      },
+      "dominant_record": {
+        "N": {
+          "record": 212,
+          "share_of_class": 0.06210281113598842,
+          "absent_frac": 0.3617
+        },
+        "S": {
+          "record": 232,
+          "share_of_class": 0.7521786492374728,
+          "absent_frac": 0.355
+        },
+        "V": {
+          "record": 233,
+          "share_of_class": 0.25784405094749924,
+          "absent_frac": 0.3573
+        },
+        "F": {
+          "record": 213,
+          "share_of_class": 0.9329896907216495,
+          "absent_frac": 0.3558
+        }
+      }
+    }
+  },
+  "git_sha": "1c9425c91cb5455999103da724afb0fd3dae6151"
+}

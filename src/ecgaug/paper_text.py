@@ -312,10 +312,12 @@ def posthoc_rr(summary: dict | None, final: dict | None) -> str:
         d, tt = e["vs_cnn"]["none"], name.replace("_", "\\_")
         parts.append(f"\\texttt{{{tt}}} reached {_ci(e['rare_macro_f1'])} (S Se {_n(e['se_S']['point'])}, S +P {_n(e['ppv_S']['point'])}); "
                      f"minus the cnn without augmentation, {_ci(d, signed=True)}, so {_against(d, 'cnn without augmentation')}")  # fmt: skip
+    weaker = [r for r, e in summary["references"].items() if e["vs_cnn"]["none"]["cnn_weaker"]]
+    reading = ("Neither reference beat the cnn, so its low test score is not explained by a weak network that a simple RR rule would beat."
+               if not weaker else f"The cnn without augmentation was weaker than {', '.join(weaker)} by the registered rule.")  # fmt: skip
     return (f"\\paragraph{{A fixed RR-interval reference (P1).}} Two linear discriminants with uniform priors and nothing to tune were fitted once on the "
             f"training records: \\texttt{{rr\\_lda}} on the three RR features, \\texttt{{rr\\_morph\\_lda}} on those plus every tenth sample of the beat window. "
-            f"On the test records, {'; '.join(parts)} (Figure~\\ref{{fig:rr-reference}}). The cnn's low test score is therefore not explained by a "
-            f"weak network that a simple RR rule would beat; both references are cruder than published feature sets.")  # fmt: skip
+            f"On the test records, {'; '.join(parts)} (Figure~\\ref{{fig:rr-reference}}). {reading} Both references are cruder than published feature sets.")  # fmt: skip
 
 
 def posthoc_external(summaries: dict[str, dict]) -> str:
@@ -368,7 +370,24 @@ def posthoc_audit(summary: dict | None) -> str:
     base = summary["audit_split0"]["none"]
     return (f"\\paragraph{{Checks of the audit (P4).}} Intra-patient rare-class macro-F1 of the cnn (mean $\\pm$ SD over seeds): "
             f"{'; '.join(parts)}, against {_n(base['mean'])} $\\pm$ {_n(base['sd'])} without augmentation on the audit's split and "
-            f"{_n(summary['inter_patient']['none']['point'])} inter-patient (Figure~\\ref{{fig:audit-checks}}). Exploratory.")  # fmt: skip
+            f"{_n(summary['inter_patient']['none']['point'])} inter-patient (Figure~\\ref{{fig:audit-checks}}). {_audit_reading(summary)} Exploratory.")  # fmt: skip
+
+
+def _audit_reading(summary: dict) -> str:
+    """What the checks say about the audit, from the numbers: the inflation on every split, and the gain at the chosen strength."""
+    inter = summary["inter_patient"]["none"]["point"]
+    nones = [summary["audit_split0"]["none"]["mean"], *(c["intra"]["mean"] for c in summary["checks"] if c["condition"] == "none")]
+    text = f"Without augmentation, every random split was {_n(min(nones) - inter)} or more above the inter-patient value."
+    base = summary["audit_split0"]["none"]["mean"]
+    for c in summary["checks"]:
+        if c["condition"] != "none":
+            gain = c["intra"]["mean"] - base
+            inter_gain = summary["inter_patient"][c["condition"]]["point"] - inter
+            reading = ("no larger than the inter-patient difference, so the audit's verdict does not depend on its strength" if gain <= inter_gain
+                       else "larger than the inter-patient difference, so at this strength the audit's verdict would differ")  # fmt: skip
+            text += (f" At the chosen strength, {SHORT[c['condition']]} {'lowered' if gain < 0 else 'raised'} the intra-patient mean by {_n(abs(gain))} "
+                     f"({_s(gain)} against {_s(inter_gain)} inter-patient), {reading}.")  # fmt: skip
+    return text
 
 
 def abstract_posthoc() -> str:

@@ -1,0 +1,41 @@
+{
+  "cell_sha": "21edeab17dfb0f961978342c8bd71b727f8b3488a104a05c11cf72a608867bd3",
+  "cell": {
+    "condition": "none",
+    "strength": null,
+    "architecture": "cnn",
+    "seed": 1
+  },
+  "condition": "none",
+  "strength": null,
+  "architecture": "cnn",
+  "seed": 1,
+  "run_id": "phase6_audit_check-cnn.none-s1-65010c7-202611050315",
+  "status": "done",
+  "bank": null,
+  "selection_metric": "s_f1",
+  "selection_value": 0.8717948717948718,
+  "tie_break_value": 0.9738219895287958,
+  "rare_macro_f1": 0.7435897435897436,
+  "n_recall": 0.9982625482625482,
+  "n_added": {
+    "N": 0,
+    "S": 0,
+    "V": 0,
+    "F": 0
+  },
+  "wall_clock_s": 1252.6,
+  "provisional": false,
+  "audit_test": {
+    "rare_macro_f1": 0.7188314772436653,
+    "macro_f1": 0.8476964522241739,
+    "n_recall": 0.9977384263970871,
+    "n_beats": 49660,
+    "f1": {
+      "N": 0.9931228544093647,
+      "S": 0.873087308730873,
+      "V": 0.96,
+      "F": 0.5645756457564576
+    }
+  }
+}

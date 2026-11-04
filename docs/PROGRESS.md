@@ -797,3 +797,48 @@ WGAN-GP 0.1); stated in the table caption. Figure: `figures/phase4_leakage_audit
 
 Paper: every placeholder filled except authors; audit figure, deviation entry and claims row added; claims table (13 rows)
 now survives `python -m ecgaug.paper`. `paper/main.pdf` 16 pages. Open: author names and team contributions.
+
+## 2026-11-05 (Day 30) — Post-hoc analyses for the review (PREREGISTRATION v4, P1-P4)
+
+Akash Saha: "can you fix all these" (the weaknesses of the publication review). Rules committed first as pre-registration
+v4 (commit 8786d6b, tag `prereg-v4`; DECISIONS A24), with a new test access kind `posthoc` (`ALLOW_TEST_POSTHOC=1`,
+`load_test_posthoc`, refuses before the final evaluation is logged). Nothing here retrains, re-selects or re-tunes a model
+of the main study; the 3-seed final evaluation stays the primary result. Not addressable here: blinded human ratings of
+the notes (need people) and diffusion generators (future work).
+
+- **P1 RR reference** (`phase6_rr_reference`, local CPU, fitted at 1baec70, one posthoc access at 9df5c94). Runs
+  `phase6_rr_reference-rrlda-s0-1baec70-202611050043`, `phase6_rr_reference-rrmorphlda-s0-1baec70-202611050043`.
+  Test rare-class macro-F1: rr_lda 0.022 [0.011, 0.038], rr_morph_lda 0.058 [0.015, 0.114]; minus cnn none
+  -0.066 [-0.161, -0.021] and -0.031 [-0.109, +0.014]. The "cnn is weaker" wording does not apply.
+- **P2 external validation** (`phase6_external_validation`, local CPU, about 3 h each; no MIT-BIH test read). INCART (primary,
+  lead II, 75 records, none paced, S 1,958, F 219) and SVDB (secondary, ECG1, 78 records, S 12,194, F 23 so S F1 is
+  primary); all 459 downloaded files checked against PhysioNet SHA256SUMS. INCART: generative augmentation lowered
+  rare-class macro-F1 in all 4 confirmatory comparisons (cnn cVAE -0.078, Holm p 0.001; cnn WGAN-GP -0.065, p 0.023;
+  rnn cVAE -0.073, p 0.009; rnn WGAN-GP -0.104, p 0.006); no augmentation was the best condition for both architectures.
+  SVDB: only rnn cVAE vs none rejected (+0.120 [+0.041, +0.195], Holm p 0.009; rnn none is weak there, 0.187, and random
+  oversampling reached 0.345). Neither database matches the null verdicts of the final evaluation. Class-mean beats show
+  INCART close to MIT-BIH and SVDB clearly different (128 Hz, annotation offset), so these results measure transfer too.
+- **P3 seeds 3 and 4** (`phase6_extra_seeds`, Kaggle T4 kernel phase6-extra-seeds at d33fcd6: 4 generator runs and 24
+  classifier runs `phase6_extra_seeds-*-s{3,4}-d33fcd6-*`; one posthoc access at 65010c7). Five seeds: no Holm verdict
+  changed in either family; cnn cVAE vs none +0.018 [-0.043, +0.038], Holm p 1.0 (3 seeds: +0.025).
+- **P4 audit checks** (`phase6_audit_check`, local CPU about 3.3 h, one audit access at 044a3a5). WGAN-GP at the gate
+  strength 0.1 on the audit split: 0.769 ± 0.082 (none 0.837 ± 0.026); none on random splits 1 and 2: 0.803 ± 0.074 and
+  0.777 ± 0.059, against 0.088 inter-patient. H2 verdict unchanged. Runs `phase6_audit_check-cnn.{wgan_gp_0.1,none}-s{0,1,2}-*`
+  (listed in `results/phase6_audit_check/summary.json`). Their run IDs carry four different git SHAs (7e3a954, 65010c7,
+  a79f796, 1c9425c) because commits landed while the job ran; the process loaded its code once at 044a3a5, and the later
+  commits changed only `figures.py`, `paper_text.py` and results, which it does not import.
+
+Figures (`python -m ecgaug.figures posthoc`): `figures/phase6_rr_reference/references_vs_cnn.png`,
+`figures/phase6_external_validation/{class_mean_beats,conditions_external_vs_ds2}.png`,
+`figures/phase6_extra_seeds/three_vs_five_seeds.png`, `figures/phase6_audit_check/audit_checks.png`.
+Paper: new section "Post-hoc analyses" (generated `results_posthoc.tex`) and one generated abstract sentence
+(`abstract_posthoc.tex`), a deviation entry, the external-database limitation rewritten, four claim rows; the report gets
+the same paragraphs and figures, and its missing `tab:test` label is fixed. `paper/main.pdf` 21 pages, `paper/report.pdf`
+10 pages, no unresolved references.
+
+Mistakes on the way: commit 9e63e4b went in with a failing test (wfdb read outside `raw.py`; fixed in de4add4, commits are
+now gated on the pytest exit code); the RR references were first fitted from a dirty tree (removed and refitted at
+1baec70); the INCART download missed 12 files (refetched and verified); the Kaggle CLI hung after the 308 MB bundle
+download (stopped; the zip was complete).
+
+Open: author names and team contributions; blinded note ratings need people.
