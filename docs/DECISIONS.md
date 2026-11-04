@@ -261,3 +261,7 @@ have no free quota, `gemini-3.8-flash` answered 503 (high demand) repeatedly, an
 thinking level spent 396 of the 400 output tokens thinking and cut the note off; at `minimal` it used 89 tokens and
 passed the fact checker. The 400-token limit is not pre-registered and is unchanged. Free-tier inputs may be used by Google; the inputs are only the beat JSON of docs/RULES.md §5
 (anonymised record id, class probabilities, segment masses) from the public MIT-BIH database.
+
+## the phase 4 gate — 2026-11-04 — status: APPROVED by Akash Saha
+Strengths chosen on validation and best generative condition per architecture: cnn: cvae; rnn: cvae — evidence: results/phase4_gate/report.md — rule: PLAN Phase 4, PAPER_TRACK A5
+Frozen artifacts (hashes): the grid checkpoints in results/manifest.json. Next: /final-eval.
