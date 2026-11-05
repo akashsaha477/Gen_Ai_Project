@@ -1,0 +1,29 @@
+{
+  "cell_sha": "0cfbe61d86b05d843c90591720f819fe24bc232acf3a35a4740e56033e56f28c",
+  "cell": {
+    "condition": "none",
+    "strength": null,
+    "architecture": "rnn",
+    "seed": 2
+  },
+  "condition": "none",
+  "strength": null,
+  "architecture": "rnn",
+  "seed": 2,
+  "run_id": "phase6_patient_template-rnn.none-s2-51dfa49-202611051127",
+  "status": "done",
+  "bank": null,
+  "selection_metric": "s_f1",
+  "selection_value": 0.18285714285714286,
+  "tie_break_value": 0.6857142857142857,
+  "rare_macro_f1": 0.09142857142857143,
+  "n_recall": 0.9854247104247105,
+  "n_added": {
+    "N": 0,
+    "S": 0,
+    "V": 0,
+    "F": 0
+  },
+  "wall_clock_s": 81.4,
+  "provisional": false
+}

@@ -276,6 +276,12 @@ phase6_extra_seeds-rnn.wgan_gp_0.5-s3-d33fcd6-202611042049,6,phase6_extra_seeds,
 phase6_extra_seeds-rnn.wgan_gp_0.5-s4-d33fcd6-202611042055,6,phase6_extra_seeds,rnn,wgan_gp_0.5,4,done,s_f1,0.1118508655126498,0.1053550905510017,88.4,d33fcd6,phase6_extra_seeds/extra_seeds/rnn
 phase6_extra_seeds-wgangp.generator-s3-d33fcd6-202611042002,6,phase6_extra_seeds,wgangp,generator,3,done,,nan,,1216.6,d33fcd6,phase6_extra_seeds/generators
 phase6_extra_seeds-wgangp.generator-s4-d33fcd6-202611042023,6,phase6_extra_seeds,wgangp,generator,4,done,,nan,,1217.6,d33fcd6,phase6_extra_seeds/generators
+phase6_patient_template-cnn.none-s0-51dfa49-202611051123,6,phase6_patient_template,cnn,none,0,done,s_f1,0.4910891089108911,0.3122112211221122,19.1,51dfa49,phase6_patient_template/full_grid/cnn
+phase6_patient_template-cnn.none-s1-51dfa49-202611051123,6,phase6_patient_template,cnn,none,1,done,s_f1,0.4487534626038781,0.27375944735132174,12.9,51dfa49,phase6_patient_template/full_grid/cnn
+phase6_patient_template-cnn.none-s2-51dfa49-202611051124,6,phase6_patient_template,cnn,none,2,done,s_f1,0.475,0.2583333333333333,21.8,51dfa49,phase6_patient_template/full_grid/cnn
+phase6_patient_template-rnn.none-s0-51dfa49-202611051125,6,phase6_patient_template,rnn,none,0,done,s_f1,0.16985138004246284,0.08492569002123142,67.4,51dfa49,phase6_patient_template/full_grid/rnn
+phase6_patient_template-rnn.none-s1-51dfa49-202611051126,6,phase6_patient_template,rnn,none,1,done,s_f1,0.19047619047619047,0.09523809523809523,55.7,51dfa49,phase6_patient_template/full_grid/rnn
+phase6_patient_template-rnn.none-s2-51dfa49-202611051127,6,phase6_patient_template,rnn,none,2,done,s_f1,0.18285714285714286,0.09142857142857143,81.4,51dfa49,phase6_patient_template/full_grid/rnn
 phase6_rr_baseline-cnn.class_weighted_0.5-s0-71a5cea-202611050524,6,phase6_rr_baseline,cnn,class_weighted_0.5,0,done,s_f1,0.375,0.1875,11.3,71a5cea,phase6_rr_baseline/full_grid/cnn
 phase6_rr_baseline-cnn.class_weighted_0.5-s1-71a5cea-202611050525,6,phase6_rr_baseline,cnn,class_weighted_0.5,1,done,s_f1,0.35376532399299476,0.20466043977427517,21.6,71a5cea,phase6_rr_baseline/full_grid/cnn
 phase6_rr_baseline-cnn.class_weighted_0.5-s2-71a5cea-202611050525,6,phase6_rr_baseline,cnn,class_weighted_0.5,2,done,s_f1,0.30223880597014924,0.1882815651472368,14.3,71a5cea,phase6_rr_baseline/full_grid/cnn
