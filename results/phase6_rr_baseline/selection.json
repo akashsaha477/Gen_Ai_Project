@@ -1,0 +1,857 @@
+{
+  "experiment": "phase6_rr_baseline",
+  "rule": "PREREGISTRATION \u00a710 v5 (the phase 4 gate rule)",
+  "chosen": {
+    "cnn": {
+      "none": {
+        "strength": null,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_rr_baseline-cnn.none-s0-71a5cea-202611050520",
+          "phase6_rr_baseline-cnn.none-s1-71a5cea-202611050520",
+          "phase6_rr_baseline-cnn.none-s2-71a5cea-202611050521"
+        ],
+        "mean": 0.35005406362901414,
+        "sd": 0.04174570501707975,
+        "values": [
+          0.3202979515828678,
+          0.332089552238806,
+          0.39777468706536856
+        ],
+        "tie_break_values": [
+          0.6235632183908046,
+          0.5998492840994725,
+          0.43040473840078974
+        ],
+        "tie_break_mean": 0.5512724136303556,
+        "tie_break_sd": 0.10534388381127432,
+        "n_recall": 0.964993564993565,
+        "provisional": false,
+        "bank": null,
+        "decision": {
+          "winner": "None",
+          "best_by_mean": "None",
+          "margins": {
+            "None": 0.04174570501707975
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "None"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "None"
+            }
+          ]
+        },
+        "all_strengths": {
+          "None": {
+            "mean": 0.35005406362901414,
+            "sd": 0.04174570501707975
+          }
+        }
+      },
+      "class_weighted": {
+        "strength": 0.5,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_rr_baseline-cnn.class_weighted_0.5-s0-71a5cea-202611050524",
+          "phase6_rr_baseline-cnn.class_weighted_0.5-s1-71a5cea-202611050525",
+          "phase6_rr_baseline-cnn.class_weighted_0.5-s2-71a5cea-202611050525"
+        ],
+        "mean": 0.343668043321048,
+        "sd": 0.03741676291301066,
+        "values": [
+          0.375,
+          0.35376532399299476,
+          0.30223880597014924
+        ],
+        "tie_break_values": [
+          0.2449438202247191,
+          0.5766312594840668,
+          0.6518415566365532
+        ],
+        "tie_break_mean": 0.4911388787817797,
+        "tie_break_sd": 0.2165020839227124,
+        "n_recall": 0.9761583011583012,
+        "provisional": false,
+        "bank": null,
+        "decision": {
+          "winner": "0.5",
+          "best_by_mean": "0.5",
+          "margins": {
+            "0.5": 0.03741676291301066,
+            "1.0": 0.02798085647138945,
+            "0.75": 0.029185955332542302
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.5"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.5"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.5": {
+            "mean": 0.343668043321048,
+            "sd": 0.03741676291301066
+          },
+          "1.0": {
+            "mean": 0.3032454634515847,
+            "sd": 0.012877985512359599
+          },
+          "0.75": {
+            "mean": 0.3144797479874321,
+            "sd": 0.01742486242292486
+          }
+        }
+      },
+      "random_oversampling": {
+        "strength": 0.1,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_rr_baseline-cnn.random_oversampling_0.1-s0-71a5cea-202611050536",
+          "phase6_rr_baseline-cnn.random_oversampling_0.1-s1-71a5cea-202611050536",
+          "phase6_rr_baseline-cnn.random_oversampling_0.1-s2-71a5cea-202611050536"
+        ],
+        "mean": 0.3819255914338095,
+        "sd": 0.05113555511919214,
+        "values": [
+          0.4280821917808219,
+          0.3907380607814761,
+          0.3269565217391304
+        ],
+        "tie_break_values": [
+          0.6252739225712198,
+          0.6332335329341318,
+          0.6414565826330533
+        ],
+        "tie_break_mean": 0.6333213460461349,
+        "tie_break_sd": 0.008091687402896541,
+        "n_recall": 0.9677927927927928,
+        "provisional": false,
+        "bank": null,
+        "decision": {
+          "winner": "0.1",
+          "best_by_mean": "0.1",
+          "margins": {
+            "0.5": 0.044223241265859664,
+            "0.25": 0.042148358466916204,
+            "0.1": 0.05113555511919214
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.5",
+                "0.25",
+                "0.1"
+              ]
+            },
+            {
+              "step": "tie-break metric",
+              "tied": [
+                "0.5",
+                "0.25",
+                "0.1"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.1"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.5": {
+            "mean": 0.362735817330257,
+            "sd": 0.03600757057576822
+          },
+          "0.25": {
+            "mean": 0.349052323929762,
+            "sd": 0.030628797651285563
+          },
+          "0.1": {
+            "mean": 0.3819255914338095,
+            "sd": 0.05113555511919214
+          }
+        }
+      },
+      "smote": {
+        "strength": 0.25,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_rr_baseline-cnn.smote_0.25-s0-71a5cea-202611050554",
+          "phase6_rr_baseline-cnn.smote_0.25-s1-71a5cea-202611050554",
+          "phase6_rr_baseline-cnn.smote_0.25-s2-71a5cea-202611050555"
+        ],
+        "mean": 0.3708356996598643,
+        "sd": 0.04216604655858985,
+        "values": [
+          0.35213675213675216,
+          0.41911764705882354,
+          0.3412526997840173
+        ],
+        "tie_break_values": [
+          0.5540613232920926,
+          0.5440414507772021,
+          0.5604863221884498
+        ],
+        "tie_break_mean": 0.5528630320859148,
+        "tie_break_sd": 0.008287664043276632,
+        "n_recall": 0.9676319176319176,
+        "provisional": false,
+        "bank": null,
+        "decision": {
+          "winner": "0.25",
+          "best_by_mean": "0.5",
+          "margins": {
+            "0.5": 0.02,
+            "0.1": 0.03405339072595782,
+            "0.25": 0.030901682446035677
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.5",
+                "0.1",
+                "0.25"
+              ]
+            },
+            {
+              "step": "tie-break metric",
+              "tied": [
+                "0.5",
+                "0.25"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.25"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.5": {
+            "mean": 0.38029650522171177,
+            "sd": 0.01148270323617623
+          },
+          "0.1": {
+            "mean": 0.35945394827875,
+            "sd": 0.0467698018625203
+          },
+          "0.25": {
+            "mean": 0.3708356996598643,
+            "sd": 0.04216604655858985
+          }
+        }
+      },
+      "cvae": {
+        "strength": 0.1,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_rr_baseline-cnn.cvae_0.1-s0-71a5cea-202611050606",
+          "phase6_rr_baseline-cnn.cvae_0.1-s1-71a5cea-202611050607",
+          "phase6_rr_baseline-cnn.cvae_0.1-s2-71a5cea-202611050608"
+        ],
+        "mean": 0.35139982309793627,
+        "sd": 0.01717680208000484,
+        "values": [
+          0.35334476843910806,
+          0.36752136752136755,
+          0.3333333333333333
+        ],
+        "tie_break_values": [
+          0.5017006802721088,
+          0.5278491859468724,
+          0.6349422161794698
+        ],
+        "tie_break_mean": 0.554830694132817,
+        "tie_break_sd": 0.07059977380083657,
+        "n_recall": 0.9821428571428571,
+        "provisional": false,
+        "bank": "phase6_rr_baseline/phase3_cvae-D",
+        "decision": {
+          "winner": "0.1",
+          "best_by_mean": "0.25",
+          "margins": {
+            "0.25": 0.02,
+            "0.5": 0.02,
+            "0.1": 0.02
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.25",
+                "0.1"
+              ]
+            },
+            {
+              "step": "tie-break metric",
+              "tied": [
+                "0.25",
+                "0.1"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.1"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.25": {
+            "mean": 0.3669065020589381,
+            "sd": 0.011289981753357246
+          },
+          "0.5": {
+            "mean": 0.34404018851322665,
+            "sd": 0.017800343030951977
+          },
+          "0.1": {
+            "mean": 0.35139982309793627,
+            "sd": 0.01717680208000484
+          }
+        }
+      },
+      "wgan_gp": {
+        "strength": 0.1,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_rr_baseline-cnn.wgan_gp_0.1-s0-71a5cea-202611050706",
+          "phase6_rr_baseline-cnn.wgan_gp_0.1-s1-71a5cea-202611050707",
+          "phase6_rr_baseline-cnn.wgan_gp_0.1-s2-71a5cea-202611050708"
+        ],
+        "mean": 0.355200511917666,
+        "sd": 0.012432547877312034,
+        "values": [
+          0.3543859649122807,
+          0.3431952662721893,
+          0.3680203045685279
+        ],
+        "tie_break_values": [
+          0.5012244897959184,
+          0.6113328012769353,
+          0.6241457858769932
+        ],
+        "tie_break_mean": 0.5789010256499489,
+        "tie_break_sd": 0.06757422815173109,
+        "n_recall": 0.9789253539253538,
+        "provisional": false,
+        "bank": "phase6_rr_baseline/phase3_wgan_gp-A",
+        "decision": {
+          "winner": "0.1",
+          "best_by_mean": "0.1",
+          "margins": {
+            "0.25": 0.028393552300297498,
+            "0.5": 0.05520013572530241,
+            "0.1": 0.02
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.25",
+                "0.5",
+                "0.1"
+              ]
+            },
+            {
+              "step": "tie-break metric",
+              "tied": [
+                "0.25",
+                "0.1"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.1"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.25": {
+            "mean": 0.3382473465942049,
+            "sd": 0.0381814009399577
+          },
+          "0.5": {
+            "mean": 0.33099063341137064,
+            "sd": 0.07706842233666107
+          },
+          "0.1": {
+            "mean": 0.355200511917666,
+            "sd": 0.012432547877312034
+          }
+        }
+      }
+    },
+    "rnn": {
+      "none": {
+        "strength": null,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_rr_baseline-rnn.none-s0-71a5cea-202611050522",
+          "phase6_rr_baseline-rnn.none-s1-71a5cea-202611050523",
+          "phase6_rr_baseline-rnn.none-s2-71a5cea-202611050524"
+        ],
+        "mean": 0.30561526975846537,
+        "sd": 0.019741106815436872,
+        "values": [
+          0.29389312977099236,
+          0.3284072249589491,
+          0.29454545454545455
+        ],
+        "tie_break_values": [
+          0.7706167706167706,
+          0.5557432432432432,
+          0.7881519639407598
+        ],
+        "tie_break_mean": 0.7048373259335912,
+        "tie_break_sd": 0.12941659426512764,
+        "n_recall": 0.9715250965250964,
+        "provisional": false,
+        "bank": null,
+        "decision": {
+          "winner": "None",
+          "best_by_mean": "None",
+          "margins": {
+            "None": 0.02
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "None"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "None"
+            }
+          ]
+        },
+        "all_strengths": {
+          "None": {
+            "mean": 0.30561526975846537,
+            "sd": 0.019741106815436872
+          }
+        }
+      },
+      "class_weighted": {
+        "strength": 0.5,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_rr_baseline-rnn.class_weighted_0.5-s0-71a5cea-202611050527",
+          "phase6_rr_baseline-rnn.class_weighted_0.5-s1-71a5cea-202611050528",
+          "phase6_rr_baseline-rnn.class_weighted_0.5-s2-71a5cea-202611050529"
+        ],
+        "mean": 0.383821904239082,
+        "sd": 0.04189596729794338,
+        "values": [
+          0.3419354838709677,
+          0.38380281690140844,
+          0.42572741194486985
+        ],
+        "tie_break_values": [
+          0.8061292471685543,
+          0.8005540166204986,
+          0.5426214482126489
+        ],
+        "tie_break_mean": 0.7164349040005673,
+        "tie_break_sd": 0.15055267801875855,
+        "n_recall": 0.9732625482625482,
+        "provisional": false,
+        "bank": null,
+        "decision": {
+          "winner": "0.5",
+          "best_by_mean": "1.0",
+          "margins": {
+            "0.5": 0.07610197018427631,
+            "0.75": 0.07011644726733693,
+            "1.0": 0.09913499713031024
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.5",
+                "0.75",
+                "1.0"
+              ]
+            },
+            {
+              "step": "tie-break metric",
+              "tied": [
+                "0.5",
+                "1.0"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.5"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.5": {
+            "mean": 0.383821904239082,
+            "sd": 0.04189596729794338
+          },
+          "0.75": {
+            "mean": 0.41288681013933254,
+            "sd": 0.002210135461880678
+          },
+          "1.0": {
+            "mean": 0.44511951091862295,
+            "sd": 0.09913499713031024
+          }
+        }
+      },
+      "random_oversampling": {
+        "strength": 0.1,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_rr_baseline-rnn.random_oversampling_0.1-s0-71a5cea-202611050537",
+          "phase6_rr_baseline-rnn.random_oversampling_0.1-s1-71a5cea-202611050538",
+          "phase6_rr_baseline-rnn.random_oversampling_0.1-s2-71a5cea-202611050540"
+        ],
+        "mean": 0.4200745198828832,
+        "sd": 0.08248362497975908,
+        "values": [
+          0.5150684931506849,
+          0.3785488958990536,
+          0.3666061705989111
+        ],
+        "tie_break_values": [
+          0.7739628040057225,
+          0.6523809523809524,
+          0.7960618846694796
+        ],
+        "tie_break_mean": 0.7408018803520514,
+        "tie_break_sd": 0.07736787265395456,
+        "n_recall": 0.9016087516087516,
+        "provisional": false,
+        "bank": null,
+        "decision": {
+          "winner": "0.1",
+          "best_by_mean": "0.1",
+          "margins": {
+            "0.1": 0.08248362497975908,
+            "0.25": 0.07597392658779836,
+            "0.5": 0.09081140301794827
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.1",
+                "0.25",
+                "0.5"
+              ]
+            },
+            {
+              "step": "tie-break metric",
+              "tied": [
+                "0.1",
+                "0.25",
+                "0.5"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.1"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.1": {
+            "mean": 0.4200745198828832,
+            "sd": 0.08248362497975908
+          },
+          "0.25": {
+            "mean": 0.3923095867647815,
+            "sd": 0.06885148257325192
+          },
+          "0.5": {
+            "mean": 0.41558662846910205,
+            "sd": 0.09843715480637844
+          }
+        }
+      },
+      "smote": {
+        "strength": 0.1,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_rr_baseline-rnn.smote_0.1-s0-71a5cea-202611050552",
+          "phase6_rr_baseline-rnn.smote_0.1-s1-71a5cea-202611050553",
+          "phase6_rr_baseline-rnn.smote_0.1-s2-71a5cea-202611050553"
+        ],
+        "mean": 0.40418008932006183,
+        "sd": 0.07592348084968566,
+        "values": [
+          0.4775641025641026,
+          0.4090267983074753,
+          0.3259493670886076
+        ],
+        "tie_break_values": [
+          0.6592885375494071,
+          0.7549090909090909,
+          0.8361891706648389
+        ],
+        "tie_break_mean": 0.7501289330411122,
+        "tie_break_sd": 0.08854713959859037,
+        "n_recall": 0.9485521235521235,
+        "provisional": false,
+        "bank": null,
+        "decision": {
+          "winner": "0.1",
+          "best_by_mean": "0.1",
+          "margins": {
+            "0.25": 0.08656682087419114,
+            "0.5": 0.06459919514907128,
+            "0.1": 0.07592348084968566
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.25",
+                "0.5",
+                "0.1"
+              ]
+            },
+            {
+              "step": "tie-break metric",
+              "tied": [
+                "0.5",
+                "0.1"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.1"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.25": {
+            "mean": 0.38492191801913944,
+            "sd": 0.09603777386110116
+          },
+          "0.5": {
+            "mean": 0.37204196314541144,
+            "sd": 0.05081079691840114
+          },
+          "0.1": {
+            "mean": 0.40418008932006183,
+            "sd": 0.07592348084968566
+          }
+        }
+      },
+      "cvae": {
+        "strength": 0.1,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_rr_baseline-rnn.cvae_0.1-s0-71a5cea-202611050610",
+          "phase6_rr_baseline-rnn.cvae_0.1-s1-71a5cea-202611050611",
+          "phase6_rr_baseline-rnn.cvae_0.1-s2-71a5cea-202611050613"
+        ],
+        "mean": 0.32588916384621114,
+        "sd": 0.019040867561632594,
+        "values": [
+          0.30570902394106814,
+          0.3435374149659864,
+          0.32842105263157895
+        ],
+        "tie_break_values": [
+          0.27961579509071505,
+          0.6298076923076923,
+          0.8216145833333334
+        ],
+        "tie_break_mean": 0.5770126902439136,
+        "tie_break_sd": 0.27482932120918696,
+        "n_recall": 0.9831081081081082,
+        "provisional": false,
+        "bank": "phase6_rr_baseline/phase3_cvae-D",
+        "decision": {
+          "winner": "0.1",
+          "best_by_mean": "0.25",
+          "margins": {
+            "0.1": 0.06836556518326363,
+            "0.5": 0.07640089186308816,
+            "0.25": 0.09479001196410149
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.1",
+                "0.5",
+                "0.25"
+              ]
+            },
+            {
+              "step": "tie-break metric",
+              "tied": [
+                "0.1",
+                "0.5",
+                "0.25"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.1"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.1": {
+            "mean": 0.32588916384621114,
+            "sd": 0.019040867561632594
+          },
+          "0.5": {
+            "mean": 0.3480159227090702,
+            "sd": 0.05185601398869831
+          },
+          "0.25": {
+            "mean": 0.35399373594862316,
+            "sd": 0.09479001196410149
+          }
+        }
+      },
+      "wgan_gp": {
+        "strength": 0.5,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_rr_baseline-rnn.wgan_gp_0.5-s0-71a5cea-202611050752",
+          "phase6_rr_baseline-rnn.wgan_gp_0.5-s1-71a5cea-202611050759",
+          "phase6_rr_baseline-rnn.wgan_gp_0.5-s2-71a5cea-202611050806"
+        ],
+        "mean": 0.2933976778625044,
+        "sd": 0.04840308153189696,
+        "values": [
+          0.2505854800936768,
+          0.28368794326241137,
+          0.3459196102314251
+        ],
+        "tie_break_values": [
+          0.7977207977207977,
+          0.840499306518724,
+          0.6779141104294478
+        ],
+        "tie_break_mean": 0.7720447382229899,
+        "tie_break_sd": 0.08427889130943952,
+        "n_recall": 0.9603603603603603,
+        "provisional": false,
+        "bank": "phase6_rr_baseline/phase3_wgan_gp-A",
+        "decision": {
+          "winner": "0.5",
+          "best_by_mean": "0.25",
+          "margins": {
+            "0.5": 0.058067878041917376,
+            "0.25": 0.06633926905535299,
+            "0.1": 0.04763408539751134
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.5",
+                "0.25",
+                "0.1"
+              ]
+            },
+            {
+              "step": "tie-break metric",
+              "tied": [
+                "0.5"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.5"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.5": {
+            "mean": 0.2933976778625044,
+            "sd": 0.04840308153189696
+          },
+          "0.25": {
+            "mean": 0.3275934401220443,
+            "sd": 0.06633926905535299
+          },
+          "0.1": {
+            "mean": 0.3226765196096781,
+            "sd": 0.011709550141499514
+          }
+        }
+      }
+    }
+  },
+  "best_generative": {
+    "cnn": "cvae",
+    "rnn": "cvae"
+  },
+  "git_sha": "4b80f13aa826e26eafff95edb8bff356f7c2620d"
+}
