@@ -453,7 +453,15 @@ def posthoc_rr_baseline() -> str:
             ext.append(f"on {DATABASE[db]} the cnn without augmentation reached {_n(e['conditions']['cnn/none'][metric]['point'])} ({METRIC[metric]}) and "
                        + ", ".join(f"generative augmentation {v} it in {verbs.count(v)}" for v in dict.fromkeys(verbs)) + " of the 4 confirmatory comparisons")
     if ext:
-        text += " Externally, " + "; ".join(ext) + " (Figure~\\ref{fig:v2-external})."
+        from ecgaug.names import PHASE6_EXTERNAL_VALIDATION
+
+        higher = []
+        for db in DATABASE:
+            e2, e1 = _load(folder / f"{db}_summary.json"), _load(paths.results_for(PHASE6_EXTERNAL_VALIDATION) / f"{db}_summary.json")
+            if e2 and e1:
+                m = e2["primary_metric"]
+                higher.append(f"{sum(e2['conditions'][k][m]['point'] > e1['conditions'][k][m]['point'] for k in e2['conditions'])} of the {len(e2['conditions'])} conditions on {DATABASE[db]}")
+        text += " Externally, " + "; ".join(ext) + (f"; the v2 point estimate was above v1's in {' and in '.join(higher)}" if higher else "") + " (Figure~\\ref{fig:v2-external})."
     return text + " These results are post hoc and do not replace the primary results of Table~\\ref{tab:test}.\n"
 
 
@@ -537,22 +545,35 @@ def posthoc_relative_cnn() -> str:
     diffs = summary["versus_v1"]
     up = [k for k, x in diffs.items() if x["ci_low"] > 0]
     down = [k for k, x in diffs.items() if x["ci_high"] < 0]
-    text += (f" On the test records (Figure~\\ref{{fig:p7-results}}) the cnn without augmentation reached {_ci(c['rare_macro_f1'])} "
-             f"(v1: {_ci(summary['versus_v1']['cnn/none'], signed=True)} difference), S F1 {_n(c['f1_S']['point'])}, S Se {_n(c['se_S']['point'])} "
-             f"and S +P {_n(c['ppv_S']['point'])}. Against v1 the paired difference had a 95\\% CI above zero in {len(up)} of the {len(diffs)} "
+    final = _load(paths.results_for(FINAL_EVAL) / "summary.json")
+    old_c = final["conditions"]["cnn/none"] if final else None
+    text += (f" On the test records (Figure~\\ref{{fig:p7-results}}) the cnn without augmentation reached {_ci(c['rare_macro_f1'])}, "
+             f"{_s(summary['versus_v1']['cnn/none']['point'])} against v1 (95\\% CI {_s(summary['versus_v1']['cnn/none']['ci_low'])} to "
+             f"{_s(summary['versus_v1']['cnn/none']['ci_high'])}); S F1 {_n(c['f1_S']['point'])}"
+             + (f" (v1 {_n(old_c['f1_S']['point'])})" if old_c else "") + f", S Se {_n(c['se_S']['point'])}, S +P {_n(c['ppv_S']['point'])}, F F1 "
+             f"{_n(c['f1_F']['point'])}" + (f" (v1 {_n(old_c['f1_F']['point'])})" if old_c else "") + ". Against v1 the paired difference had a 95\\% CI above zero in {len(up)} of the {len(diffs)} "
              f"conditions and below zero in {len(down)}. Against no augmentation: {_family_sentence(conf)}. By the registered criterion, "
              f"generative augmentation {'improved' if improved else 'did not detectably improve'} the primary metric for this cnn. "
              f"{'In the secondary family Holm rejected ' + _family_sentence(secondary) + '.' if secondary else 'No secondary comparison was rejected.'}")  # fmt: skip
-    ext = []
+    from ecgaug.names import PHASE6_EXTERNAL_VALIDATION
+
+    ext, lower = [], []
     for db in DATABASE:
         e = _load(folder / f"{db}_summary.json")
         if e:
             metric = e["primary_metric"]
             verbs = [_changed(x) for x in e["confirmatory"].values()]
-            ext.append(f"on {DATABASE[db]} the cnn without augmentation reached {_n(e['conditions']['cnn/none'][metric]['point'])} ({METRIC[metric]}) and "
+            e1 = _load(paths.results_for(PHASE6_EXTERNAL_VALIDATION) / f"{db}_summary.json")
+            point = e["conditions"]["cnn/none"][metric]["point"]
+            versus = ""
+            if e1:
+                versus = f" (v1 {_n(e1['conditions']['cnn/none'][metric]['point'])})"
+                lower.append(point < e1["conditions"]["cnn/none"][metric]["point"])
+            ext.append(f"on {DATABASE[db]} the cnn without augmentation reached {_n(point)}{versus} ({METRIC[metric]}) and "
                        + ", ".join(f"generative augmentation {v} it in {verbs.count(v)}" for v in dict.fromkeys(verbs)) + f" of the {len(verbs)} confirmatory comparisons")
     if ext:
-        text += " Externally, " + "; ".join(ext) + " (Figure~\\ref{fig:p7-external})."
+        text += " Externally, " + "; ".join(ext) + " (Figure~\\ref{fig:p7-external})"
+        text += (": the gain on MIT-BIH did not carry over to every database." if any(lower) else ".")
     return text + " These results are post hoc and do not replace the primary results of Table~\\ref{tab:test}.\n"
 
 
@@ -582,8 +603,14 @@ def posthoc_mechanism() -> str:
                  f"{_n(real['top_share'], 2)} of the real training S beats (effective number of records {_n(real['effective_records'], 2)}); "
                  f"the share of synthetic S beats attributed to it was {', '.join(parts)} (means over the three bank seeds)"
                  + (f", and a real training S beat's nearest other S beat came from the same patient in {_n(own, 2)} of cases" if own is not None else "")
-                 + (f"; the validation patients' S beats were attributed to record {val['top_record']} in {_n(val['top_share'], 2)} of cases" if val else "")
-                 + " (Figure~\\ref{fig:p8})." )  # fmt: skip
+                 + " (Figure~\\ref{fig:p8}).")  # fmt: skip
+        if val:
+            top_val = list(val["shares"].items())[:2]
+            syn_share = {r: float(np.mean([e["shares"].get(r, 0.0) for c in ("cvae", "wgan_gp") for e in s.get(f"{c}_bank", {}).values()] or [0.0]))
+                         for r, _ in top_val}  # fmt: skip
+            text += (" The validation patients' S beats were nearest to " + " and ".join(
+                f"record {r} ({_n(v, 2)} of them; {_n(real['shares'].get(r, 0.0), 2)} of the real and {_n(syn_share[r], 2)} of the synthetic training S beats)"
+                for r, v in top_val) + ": the new patients resembled training patients that are rare in the real data and equally rare in the synthetic data.")  # fmt: skip
     if gap is not None:
         rows = []
         for arch, conds in gap["networks"].items():
@@ -629,7 +656,9 @@ def posthoc_table() -> str:
         rows.append(("P6", "Patient-relative beats?", f"validation S F1 v3 $-$ v2: {per}; {'adopted' if v6['adopted'] else 'not adopted'}"))
     v7 = _load(paths.results_for(PHASE6_RELATIVE_CNN) / "summary.json")
     if v7:
-        rows.append(("P7", "A stronger cnn?", f"test cnn none {_n(v7['conditions']['cnn/none']['rare_macro_f1']['point'])}; generative vs none {verdicts(v7['families']['confirmatory'])}"))
+        fin = _load(paths.results_for(FINAL_EVAL) / "summary.json")
+        base = f" (v1 {_n(fin['conditions']['cnn/none']['rare_macro_f1']['point'])})" if fin else ""
+        rows.append(("P7", "A stronger cnn?", f"test cnn none {_n(v7['conditions']['cnn/none']['rare_macro_f1']['point'])}{base}; generative vs none {verdicts(v7['families']['confirmatory'])}"))
     m = _load(paths.results_for(PHASE6_AUGMENTATION_MECHANISM) / "attribution.json")
     if m:
         s_cls = m["classes"]["S"]
@@ -685,10 +714,13 @@ def discussion() -> str:
         why.append(f"the frozen cnn without augmentation reached S PR-AUC {_n(g['train']['pr_auc']['S'])} on the training patients and "
                    f"{_n(g['val']['pr_auc']['S'])} on the validation patients")
     if mech_gap is not None:
-        changes = [conds[c]["gap"]["S"] - conds["none"]["gap"]["S"] for conds in mech_gap["networks"].values() for c in ("cvae", "wgan_gp") if c in conds]
-        if changes:
-            why.append(f"generative augmentation widened the training-versus-validation gap in S PR-AUC in {sum(d > 0 for d in changes)} of "
-                       f"{len(changes)} cases (mean change {_s(float(np.mean(changes)))})")
+        cases = [(arch, c, conds[c], conds["none"]) for arch, conds in mech_gap["networks"].items() for c in ("cvae", "wgan_gp") if c in conds]
+        if cases:
+            narrowed = sum(g["gap"]["S"] < n["gap"]["S"] for *_, g, n in cases)
+            detail = ", ".join(f"{arch} {SHORT[c]}: validation {_n(n['val']['pr_auc']['S'])} to {_n(g['val']['pr_auc']['S'])}, training "
+                               f"{_n(n['train']['pr_auc']['S'])} to {_n(g['train']['pr_auc']['S'])}" for arch, c, g, n in cases)
+            why.append(f"generative augmentation narrowed the training-versus-validation gap in S PR-AUC in {narrowed} of {len(cases)} cases "
+                       f"({detail}), but none gave a detectably better test result")
     if attribution is not None:
         s = attribution["classes"]["S"]
         real = s["real_training"]
@@ -787,6 +819,16 @@ def abstract_posthoc() -> str:
                           for arch, v in v6["per_architecture"].items())
         text += (f" Giving each beat relative to the patient's own median beat {moves}; "
                  + ("by the pre-registered rule the full grid was rerun." if v6["adopted"] else "by the pre-registered rule the full grid was not rerun."))  # fmt: skip
+    from ecgaug.names import PHASE6_RELATIVE_CNN
+
+    p7 = _load(paths.results_for(PHASE6_RELATIVE_CNN) / "summary.json")
+    final = _load(paths.results_for(FINAL_EVAL) / "summary.json")
+    if p7 is not None and final is not None:
+        helped = any(c["reject_holm"] and c["point"] > 0 for c in p7["families"]["confirmatory"].values())
+        text += (f" Repeating the comparison for the cnn alone with patient-relative beats (a choice made on validation) raised its test rare-class "
+                 f"macro-F1 without augmentation from {_n(final['conditions']['cnn/none']['rare_macro_f1']['point'])} to "
+                 f"{_n(p7['conditions']['cnn/none']['rare_macro_f1']['point'])}, and generative augmentation "
+                 + ("improved" if helped else "still did not improve") + " on it.")  # fmt: skip
     return text
 
 

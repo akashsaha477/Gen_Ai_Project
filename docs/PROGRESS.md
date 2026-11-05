@@ -900,3 +900,30 @@ that commit: it failed first at e33c82e (about 20 tests from Kaggle's matplotlib
   Conclusion (every number from result files; claims conditional on them), deviation entries; figures
   `figures/phase6_patient_template/input_v2_vs_v3.png` (before/after input) and, when their results land, the diagnostic,
   P7 and P8 figures. main.pdf 25 pages, report.pdf 12, no unresolved references.
+
+### Results that landed later the same evening
+
+- **v6 diagnostic** (CPU kernel at 7d82942 after a dataset fix: Kaggle drops the top folder of a one-folder dataset, so the
+  v1 checkpoints were missing on the first try; datasets now hold `runs/` next to a README). Seed-mean S PR-AUC training ->
+  validation: cnn v1 0.942 -> 0.255, v2 0.959 -> 0.232, v3 0.923 -> 0.401; V: cnn v3 validation 0.905 (v1 0.717); rnn v3
+  0.767 -> 0.249. LDA validation S F1: RR 0.193, RR + raw 0.060, RR + relative 0.261. `results/phase6_patient_template/diagnostic.json`.
+- **v5 external** (CPU): v2 point above v1 in 12 of 12 conditions on INCART and 10 of 12 on SVDB; generative vs none lowered
+  in 3 of 4 (INCART, Holm) and 1 of 4 (SVDB).
+- **P7** (`phase6_relative_cnn`, T4 grid at 91bc56d, 48 runs `phase6_relative_cnn-cnn.*-91bc56d-*`; selection at 5cbc350
+  before the test read: class-weighted 0.5, random oversampling 0.25, SMOTE 0.1, cVAE 0.1, WGAN-GP 0.1; one posthoc access on
+  Kaggle at 5cbc350, DS2 rebuilt and hash-checked, recomputed v1 scores equal to the final evaluation). Test rare-class
+  macro-F1, cnn: none 0.371 [0.123, 0.412] (v1 0.088; +0.283 [+0.029, +0.307]), class-weighted 0.366, random oversampling
+  0.361, SMOTE 0.335, cVAE 0.304, WGAN-GP 0.312; the P7 - v1 CI is above zero in 5 of 6 conditions. cnn none S F1 0.312
+  (v1 0.148), S Se 0.291, S +P 0.350, F F1 0.429 (v1 0.029), V F1 0.931. Confirmatory: cVAE vs none -0.067 [-0.080, +0.007],
+  WGAN-GP vs none -0.059 [-0.073, +0.019], Holm p 0.352 both; no secondary rejection. External: INCART cnn none 0.200 (v1
+  0.256), SVDB S F1 0.368 (v1 0.314); no confirmatory rejection on either; SMOTE collapses on SVDB (0.047).
+- **P8** (`phase6_augmentation_mechanism`, CPU, suite passed at 91bc56d; gap rerun at 5cbc350). Attribution: record 209
+  holds 0.60 of real training S beats; synthetic S beats nearest to it 0.65 (cVAE) and 0.57 (WGAN-GP); a real training S
+  beat's nearest other S beat comes from the same patient in 0.98 of cases; validation S beats are nearest to records 114
+  (0.29) and 108 (0.26), which hold 0.02 and 0.01 of the real training S beats. Quality-screened added V beats come from
+  3.70 effective records against 6.74 for the real V beats; F beats 0.96-1.00 from record 208. Gap (S PR-AUC training minus
+  validation): augmentation narrowed it in 4 of 4 generative cases (cnn cVAE 0.687 -> 0.574 via validation 0.255 -> 0.375;
+  rnn cVAE 0.704 -> 0.219 mostly via training 0.884 -> 0.492), none with a detectably better test result.
+- Reading: the patient-relative cnn is the first baseline that is clearly better on the test records (0.088 -> 0.371), and on
+  it generative augmentation is still not better than none (both point estimates negative). The gain does not carry over
+  evenly to other databases (INCART lower, SVDB higher than v1). The primary results stay the v1 final evaluation.
