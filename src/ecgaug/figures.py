@@ -1353,6 +1353,42 @@ def patient_transfer_results_figure(summary: dict, v2: dict | None) -> list[Path
     return [_save(fig, paths.figures_for("phase6_patient_transfer") / "results.png", "Does augmentation help when it adds patients?", caption)]
 
 
+def patient_adaptation_figure(adoption: dict, summary: dict | None) -> list[Path]:
+    """P10 before and after: validation S F1 without and with per-patient normalization, and (if read) the test families."""
+    plt = _plt()
+    keys = list(adoption["pairs"])
+    panels = 2 if summary else 1
+    fig, axes = plt.subplots(1, panels, figsize=(6.5 * panels, 3.6), squeeze=False)
+    ax = axes[0][0]
+    for i, key in enumerate(keys):
+        e = adoption["pairs"][key]
+        for j, (name, color) in enumerate((("plain", INK_2), ("adapted", "#1f9e6e"))):
+            values = e["per_seed"][name]["f1_S"]
+            ax.scatter([i + (j - 0.5) * 0.25] * len(values), values, color=color, s=18, zorder=3, label=("without adaptation" if j == 0 else "with adaptation") if i == 0 else None)
+            ax.hlines(np.mean(values), i + (j - 0.5) * 0.25 - 0.1, i + (j - 0.5) * 0.25 + 0.1, color=color, linewidth=2)
+        ax.annotate("adopted" if e["adopted"] else "not adopted", (i, max(max(e["per_seed"]["plain"]["f1_S"]), max(e["per_seed"]["adapted"]["f1_S"]))),
+                    xytext=(0, 6), textcoords="offset points", ha="center", fontsize=7, color=INK_2)  # fmt: skip
+    ax.set_xticks(range(len(keys)), keys)
+    ax.set_ylabel("validation S F1 (no augmentation; dots = seeds)")
+    ax.set_title("validation: the adoption rule", loc="left")
+    ax.legend(fontsize=7, loc="lower right")
+    if summary:
+        ax = axes[0][1]
+        rows = [(family, name) for family, items in summary["families"].items() for name in items]
+        for i, (family, name) in enumerate(reversed(rows)):
+            r = summary["families"][family][name]
+            _interval(ax, r, i, INK if family == "adaptation" else INK_2)
+            ax.annotate(f"Holm p {r['p_holm']:.3f}", (r["ci_high"], i), xytext=(6, 0), textcoords="offset points", va="center", fontsize=7, color=INK_2)
+        ax.axvline(0, color=GRID, linewidth=1.2)
+        ax.set_yticks(range(len(rows)), [name for _, name in reversed(rows)], fontsize=7)
+        ax.set_xlabel("difference in test rare-class macro-F1 (95% CI)")
+        ax.set_title("test: the two families", loc="left")
+    caption = ("Adaptive batch normalization: each patient classified by a copy of the frozen network whose batch-norm layers use that patient's "
+               "statistics (no labels, no retraining). Left: validation S F1 per seed without and with it. Right: the pre-registered test families "
+               "(black: adaptation vs none; grey: generative vs none under adaptation). Post hoc (PREREGISTRATION v9, P10).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_patient_adaptation") / "adaptation.png", "Normalizing each patient inside the network", caption)]
+
+
 def posthoc_figures() -> list[Path]:
     """Every post-hoc figure whose summary exists (PREREGISTRATION v4, P1-P4); nothing is re-run."""
     final, written = _summary("final_eval"), []
@@ -1394,6 +1430,8 @@ def posthoc_figures() -> list[Path]:
     written += patient_transfer_example_figure()
     if (s := _summary("phase6_patient_transfer")) is not None:
         written += patient_transfer_results_figure(s, _summary("phase6_rr_baseline"))
+    if (a := _summary("phase6_patient_adaptation", "adoption.json")) is not None:
+        written += patient_adaptation_figure(a, _summary("phase6_patient_adaptation"))
     return written
 
 
