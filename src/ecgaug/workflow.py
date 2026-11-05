@@ -788,23 +788,9 @@ def approve_phase4a_gate(approvers: list[str]) -> dict:
     return entry
 
 
-def evaluate_phase4_gate() -> dict:
-    """Strength per condition and architecture on validation; best generative condition per architecture."""
-    from ecgaug.grid import runner as grid_runner
-
-    if not manifest().get(PHASE4A_GATE):
-        raise GateError("Approve the phase 4a gate first: python -m ecgaug.workflow phase4a-gate")
-    grid = grid_runner.load_grid(paths.repo_root() / FULL_GRID_FILE)
-    expected = grid_runner.cells(grid)
-    rows = {(r["condition"], r["strength"], r["architecture"], r["seed"]): r for r in grid_runner.read_ledger(grid).values() if r["status"] == "done"}
-    missing = [c for c in expected if (c.condition, c.strength, c.architecture, c.seed) not in rows]
-    provisional = sorted({r["run_id"] for r in rows.values() if r.get("provisional")})
-    checks = [
-        {"check": f"every cell of the grid is done ({len(expected) - len(missing)} of {len(expected)})", "passed": not missing},
-        {"check": "no provisional (preview) cells", "passed": not provisional},
-        {"check": "every cell's run folder is present", "passed": all(runs.find_run_dir(r["run_id"]) for r in rows.values())},
-    ]
-    summary = grid_runner.summarize(grid)
+def choose_strengths(grid: dict, summary: dict) -> tuple[dict, dict]:
+    """The phase 4 gate rule: per architecture and condition the strength with the best validation selection metric
+    (``select_winner``: ties to V F1, then the lower strength), and the best generative condition per architecture."""
     chosen: dict = {}
     best_generative: dict = {}
     for arch in grid["architectures"]:
@@ -826,6 +812,26 @@ def evaluate_phase4_gate() -> dict:
                 Candidate(name=c, mean=chosen[arch][c]["mean"], sd=chosen[arch][c]["sd"], complexity=0.0,
                           tie_mean=chosen[arch][c]["tie_break_mean"], tie_sd=chosen[arch][c]["tie_break_sd"]) for c in generative
             ])["winner"]  # fmt: skip
+    return chosen, best_generative
+
+
+def evaluate_phase4_gate() -> dict:
+    """Strength per condition and architecture on validation; best generative condition per architecture."""
+    from ecgaug.grid import runner as grid_runner
+
+    if not manifest().get(PHASE4A_GATE):
+        raise GateError("Approve the phase 4a gate first: python -m ecgaug.workflow phase4a-gate")
+    grid = grid_runner.load_grid(paths.repo_root() / FULL_GRID_FILE)
+    expected = grid_runner.cells(grid)
+    rows = {(r["condition"], r["strength"], r["architecture"], r["seed"]): r for r in grid_runner.read_ledger(grid).values() if r["status"] == "done"}
+    missing = [c for c in expected if (c.condition, c.strength, c.architecture, c.seed) not in rows]
+    provisional = sorted({r["run_id"] for r in rows.values() if r.get("provisional")})
+    checks = [
+        {"check": f"every cell of the grid is done ({len(expected) - len(missing)} of {len(expected)})", "passed": not missing},
+        {"check": "no provisional (preview) cells", "passed": not provisional},
+        {"check": "every cell's run folder is present", "passed": all(runs.find_run_dir(r["run_id"]) for r in rows.values())},
+    ]
+    chosen, best_generative = choose_strengths(grid, grid_runner.summarize(grid))
     return {"grid": grid, "checks": checks, "missing": [c.tag + f" {c.architecture} s{c.seed}" for c in missing],
             "chosen": chosen, "best_generative": best_generative, "passed": all(c["passed"] for c in checks)}  # fmt: skip
 

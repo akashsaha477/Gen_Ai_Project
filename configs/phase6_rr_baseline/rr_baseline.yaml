@@ -1,0 +1,3 @@
+# PREREGISTRATION §10 v5 (P5, post hoc): dataset v2 = v1 with rr_ratio = rr_prev / median RR within ±half_window_s.
+experiment: phase6_rr_baseline
+half_window_s: 150

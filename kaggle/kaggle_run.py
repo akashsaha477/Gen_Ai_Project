@@ -27,7 +27,7 @@ EXPERIMENTS = (
     "phase1_input_representation", "phase2_baseline_classifiers", "phase2_quality_metrics", "phase2_ptbxl_pretraining",
     "phase3_cvae", "phase3_wgan_gp", "phase4_augmentation_policy", "phase4_leakage_audit", "phase5_explainability", "phase5_clinical_notes",
 )  # fmt: skip
-POST_HOC = ("phase6_rr_reference", "phase6_external_validation", "phase6_extra_seeds", "phase6_audit_check")
+POST_HOC = ("phase6_rr_reference", "phase6_external_validation", "phase6_extra_seeds", "phase6_audit_check", "phase6_rr_baseline")
 RESULT_FOLDERS = (*EXPERIMENTS, "phase4_full_grid", *POST_HOC)  # every experiment's results, the full grid's ledger, post-hoc analyses
 EXTRA_RESULT_FILES = ("results/phase2_ptbxl_data/ptbxl_preprocessing.json",)
 ACCESS_LOG = "docs/TEST_ACCESS_LOG.md"  # appended by every DS2 read; its new rows are merged back by ingest
