@@ -658,12 +658,18 @@ def posthoc_patient_transfer() -> str:
              f"By the registered criterion, generative augmentation with patient transfer {'improved' if improved else 'did not detectably improve'} "
              f"the primary metric. Secondary family: {_family_sentence(sec)}"
              + (f"; Holm rejected {len(secondary)}." if secondary else "; none rejected."))  # fmt: skip
+    vs = summary.get("versus_v2", {})
+    pairs = [(arch, g) for arch in selection["chosen"] for g in ("cvae", "wgan_gp") if f"{arch}/transfer_{g} vs v2 {g}" in vs]
+    if pairs:
+        higher = sum(vs[f"{a}/transfer_{g} vs v2 {g}"]["point"] > 0 for a, g in pairs)
+        text += (f" Against plain generative augmentation of the same generator and architecture (v5), patient transfer was higher in {higher} of "
+                 f"{len(pairs)} pairs (" + ", ".join(f"{a} {SHORT[g]} {_ci(vs[f'{a}/transfer_{g} vs v2 {g}'], signed=True)}" for a, g in pairs) + ").")
     ext = []
     for db in DATABASE:
         e = _load(folder / f"{db}_summary.json")
         if e:
             verbs = [_changed(c) for c in e["confirmatory"].values()]
-            ext.append(f"on {DATABASE[db]} " + ", ".join(f"{v} in {verbs.count(v)}" for v in dict.fromkeys(verbs)) + f" of {len(verbs)}")
+            ext.append(f"on {DATABASE[db]} " + ", ".join(f"{v} it in {verbs.count(v)}" for v in dict.fromkeys(verbs)) + f" of {len(verbs)}")
     if ext:
         text += " Against no augmentation on the external databases, generative transfer " + "; ".join(ext) + "."
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"

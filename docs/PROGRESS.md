@@ -927,3 +927,28 @@ that commit: it failed first at e33c82e (about 20 tests from Kaggle's matplotlib
 - Reading: the patient-relative cnn is the first baseline that is clearly better on the test records (0.088 -> 0.371), and on
   it generative augmentation is still not better than none (both point estimates negative). The gain does not carry over
   evenly to other databases (INCART lower, SVDB higher than v1). The primary results stay the v1 final evaluation.
+
+## 2026-11-05 (Day 30, night) — P9 patient-transfer augmentation (pre-registration v8)
+
+Asked for a way that generative augmentation could help. From P8: the generators add beats of the same few patients.
+P9 (`phase6_patient_transfer`, `prereg-v8` at 9cac590, A28) writes each rare-class training beat as its patient's template
+plus a deviation and puts the deviation on the template of another training patient (RR scaled by the ratio of median RR);
+deviations from real beats (`transfer_real`) or from the frozen cVAE and WGAN-GP banks. Dataset v2, unscreened
+`fraction_of_n`, cnn and rnn, strengths 0.1/0.25/0.5, seeds 0-2: 60 runs on a T4 (kernel phase6-patient-transfer-grid at
+9cac590; suite passed at 9cac590 in ecgaug-final-tests). Selection (e3a2b8c, before any DS2 read), validation S F1 seed
+means: cnn none 0.350, transfer_real 0.428 (0.1), transfer_cvae 0.385 (0.1), transfer_wgan_gp 0.326 (0.1); rnn none
+0.306, transfer_real 0.528 (0.25), transfer_cvae 0.461 (0.25), transfer_wgan_gp 0.504 (0.25). The none cells reproduce
+v5's values exactly. Test read and external databases running on Kaggle CPU.
+
+Also: the paper and report were reframed at the user's request (b8424d7) to state that the results are bounded by model
+size (73k and 135k parameters), runs (3 seeds, settings fixed in phase 2) and patients, with the CI widths of the
+differences (0.06-0.17) and the P7 jump (0.088 to 0.371) as the evidence; the report gained a conclusion. Unrelated to the
+project: a nanopore MD script was pushed to Kaggle on request and deleted again on request.
+- **P9 test** (one posthoc access on Kaggle at e3a2b8c; suite passed there; recomputed v2 none scores identical to v5's).
+  Rare-class macro-F1: cnn none 0.096, transfer_real 0.116, transfer_cvae 0.095, transfer_wgan_gp 0.089; rnn none 0.075,
+  transfer_real 0.105, transfer_cvae 0.107, transfer_wgan_gp 0.109. Confirmatory (Holm): cnn -0.001, -0.007; rnn +0.032
+  (p 0.937), +0.035 (p 0.564); none rejected; no secondary rejection. Transfer above plain generative (v5) in 4 of 4 pairs
+  (rnn WGAN-GP +0.054 [+0.003, +0.154]). External: INCART all 4 lowered (Holm p 0.001); SVDB rnn cVAE +0.119 (p 0.005),
+  rnn WGAN-GP +0.185 (p 0.001), cnn not detectably changed. Reading: adding patients moves the generative conditions above
+  plain generation and, for the rnn, above none on validation and in point estimate on test, but not detectably on the test
+  patients at this scale; transfer helps on SVDB and hurts on INCART.
