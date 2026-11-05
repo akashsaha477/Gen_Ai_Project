@@ -1042,18 +1042,27 @@ VERSION_LABELS = {"v1": "v1 (frozen)", "v2": "v2 (baseline RR ratio)", "v3": "v3
 
 
 def patient_template_input_figure() -> list[Path]:
-    """P6 before and after: validation beats as the models see them in v2 (z-scored window) and v3 (minus the patient's template)."""
-    from ecgaug.data.loaders import load_trainval
+    """P6 before and after: validation beats as the models see them in v2 (z-scored window) and v3 (minus the patient's template).
 
-    path = paths.processed_dir() / "v3" / "trainval.npz"
-    if not path.is_file():
+    The templates of the three shown records are computed here from their own signals (validation records only)."""
+    from ecgaug.data.loaders import load_trainval
+    from ecgaug.experiments import phase6_patient_template as pt
+    from ecgaug.experiments.phase6_external_validation import frozen_spec
+
+    record_json = paths.results_for("phase6_patient_template") / "data.json"
+    if not record_json.is_file() or not (paths.processed_dir() / "v1" / "trainval.npz").is_file():
         return []
     plt = _plt()
+    half = json.loads(record_json.read_text())["half_window_s"]
     v1 = load_trainval("v1")
-    with np.load(path) as f:
-        x3 = f["X"]
     y, record, split = np.asarray(v1["y"]), np.asarray(v1["record"]), np.asarray(v1["split"])
     records = [r for r in (118, 201, 223) if ((record == r) & (y == 1) & (split == "val")).any()]
+    x3 = np.array(v1["X"], copy=True)
+    spec = frozen_spec()
+    for r in records:
+        idx = np.where(record == r)[0]
+        order = idx[np.argsort(np.asarray(v1["r_idx"])[idx])]
+        x3[order] = v1["X"][order] - pt.record_templates(r, np.asarray(v1["r_idx"])[order], spec, half)
     t = (np.arange(v1["X"].shape[1]) - v1["X"].shape[1] // 2) / 360 * 1000
     fig, axes = plt.subplots(2, len(records), figsize=(4.2 * len(records), 5.2), sharex=True, squeeze=False)
     for j, r in enumerate(records):
@@ -1067,10 +1076,11 @@ def patient_template_input_figure() -> list[Path]:
             ax.axvline(0, color=GRID, linewidth=1)
             if row == 1:
                 ax.set_xlabel("ms from R")
-            ax.legend(loc="upper right", fontsize=7)
-    caption = ("Median validation beat per class and record. In v1 and v2 the S beats of records 118 and 201 look like their V beats or unlike any training "
-               "patient's N beat; minus the patient's own template (median of the beats within ±150 s, no labels), N beats sit near zero and the S "
-               "and V deviations differ in shape. Post hoc (PREREGISTRATION v6, P6).")  # fmt: skip
+            ax.legend(loc="best", fontsize=7, framealpha=0.85)
+    caption = ("Median validation beat per class and record (validation records only). Top: the z-scored beat of v1 and v2, where the shape of "
+               "a patient's normal beat differs between patients (record 118 has right bundle branch block). Bottom: minus the patient's own template "
+               "(median of the beats within ±150 s, no labels), N beats sit at zero and only the deviation from the patient's usual beat remains. "
+               "Post hoc (PREREGISTRATION v6, P6).")  # fmt: skip
     return [_save(fig, paths.figures_for("phase6_patient_template") / "input_v2_vs_v3.png", "Before and after: the beat the models see", caption)]
 
 
@@ -1091,7 +1101,7 @@ def patient_template_diagnostic_figure(diag: dict, adoption: dict | None) -> lis
         ax.set_ylabel(f"{cls} PR-AUC (mean of 3 seeds)")
         ax.set_title(f"{cls}: training vs validation patients", loc="left")
     handles = [plt.Line2D([], [], color=VERSION_COLORS[v], linewidth=3, label=VERSION_LABELS[v]) for v in next(iter(diag["networks"].values()))]
-    axes[0].legend(handles=handles + axes[0].get_legend_handles_labels()[0], fontsize=7, loc="lower left")
+    axes[1].legend(handles=handles + axes[0].get_legend_handles_labels()[0], fontsize=7, loc="lower center")
     ax = axes[2]
     names = list(diag["linear"])
     ax.barh(range(len(names)), [diag["linear"][n]["f1"]["S"] for n in names], color=INK_2, height=0.5)
@@ -1162,6 +1172,105 @@ def patient_template_external_figure(versions: dict[str, dict[str, dict]]) -> li
     return [_save(fig, paths.figures_for("phase6_patient_template") / "external_by_version.png", "Before and after: external databases by input version", caption)]
 
 
+def relative_cnn_results_figure(summary: dict, final: dict, v2: dict | None) -> list[Path]:
+    """P7: each cnn condition with v1, v2 and P7 (v3 inputs) on the test records, and the P7 comparisons."""
+    plt = _plt()
+    keys = list(summary["conditions"])
+    rows = [(family, name) for family, items in summary["families"].items() for name in items]
+    fig, axes = plt.subplots(1, 2, figsize=(13, 0.55 * max(len(keys), len(rows)) + 2.0))
+    ax = axes[0]
+    versions = [("v1", final, "v1 (final evaluation)"), *([("v2", v2, "v2 (P5)")] if v2 else []), ("v3", summary, "v3 cnn (P7)")]
+    offsets = np.linspace(0.22, -0.22, len(versions))
+    for i, key in enumerate(reversed(keys)):
+        for (version, s, label), off in zip(versions, offsets):
+            _interval(ax, s["conditions"][key]["rare_macro_f1"], i + off, VERSION_COLORS[version], label if i == 0 else None)
+    ax.set_yticks(range(len(keys)), list(reversed(keys)), fontsize=8)
+    ax.set_xlim(left=0)
+    ax.set_xlabel("test rare-class macro-F1 (95% record-level CI)")
+    ax.set_title("each cnn condition, by input version", loc="left")
+    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.06), ncol=len(versions), fontsize=7)
+    ax = axes[1]
+    for i, (family, name) in enumerate(reversed(rows)):
+        r = summary["families"][family][name]
+        _interval(ax, r, i, INK if family == "confirmatory" else INK_2)
+        ax.annotate(f"Holm p {r['p_holm']:.3f}", (r["ci_high"], i), xytext=(6, 0), textcoords="offset points", va="center", fontsize=7, color=INK_2)
+    ax.axvline(0, color=GRID, linewidth=1.2)
+    ax.set_yticks(range(len(rows)), [f"{family[:4]}. {name}" for family, name in reversed(rows)], fontsize=8)
+    ax.set_xlabel("difference in test rare-class macro-F1 (95% CI)")
+    ax.set_title("pre-registered comparisons, P7", loc="left")
+    caption = ("The cnn alone with patient-relative beats and the v2 RR ratio, the full comparison selected on validation by the phase 4 gate rule; "
+               "3 seeds. Black: confirmatory family; grey: secondary; Holm within each family. Post hoc (PREREGISTRATION v7, P7); the final "
+               "evaluation (v1) stays the primary result.")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_relative_cnn") / "results_by_version.png", "Before and after: the cnn with v1, v2 and v3 inputs", caption)]
+
+
+def relative_cnn_external_figure(versions: dict[str, dict[str, dict]]) -> list[Path]:
+    """P7: each cnn condition on INCART and SVDB with v1, v2 and v3 inputs."""
+    plt = _plt()
+    p7 = versions["v3"]
+    dbs = list(p7)
+    keys = list(next(iter(p7.values()))["conditions"])
+    present = [v for v in ("v1", "v2", "v3") if all(db in versions.get(v, {}) for db in dbs)]
+    offsets = np.linspace(0.22, -0.22, len(present))
+    fig, axes = plt.subplots(1, len(dbs), figsize=(6.2 * len(dbs), 0.55 * len(keys) + 2.0), sharey=True, squeeze=False)
+    for ax, db in zip(axes[0], dbs):
+        metric = p7[db]["primary_metric"]
+        for i, key in enumerate(reversed(keys)):
+            for version, off in zip(present, offsets):
+                _interval(ax, versions[version][db]["conditions"][key][metric], i + off, VERSION_COLORS[version], VERSION_LABELS[version] if i == 0 else None)
+        ax.set_yticks(range(len(keys)), list(reversed(keys)), fontsize=8)
+        ax.set_xlim(left=0)
+        ax.set_xlabel(f"{'rare-class macro-F1' if metric == 'rare_macro_f1' else 'S F1'} (95% record-level CI)")
+        reject = sum(v["reject_holm"] for v in p7[db]["confirmatory"].values())
+        ax.set_title(f"{ {'incartdb': 'INCART', 'svdb': 'SVDB'}.get(db, db)}: P7 Holm rejects {reject} of {len(p7[db]['confirmatory'])} vs none", loc="left", fontsize=9)
+    axes[0][0].legend(loc="lower left", bbox_to_anchor=(0, 1.06), ncol=len(present), fontsize=8)
+    caption = "The P7 cnn checkpoints applied unchanged to the external databases, with templates and v2 ratios from their own signals and annotations. Post hoc (PREREGISTRATION v7, P7)."
+    return [_save(fig, paths.figures_for("phase6_relative_cnn") / "external_by_version.png", "Before and after: the cnn on the external databases", caption)]
+
+
+def mechanism_figure(attribution: dict | None, gap: dict | None) -> list[Path]:
+    """P8: which training patients the synthetic S beats resemble, and the training-versus-validation gap of every condition."""
+    plt = _plt()
+    panels = [x for x in (attribution, gap) if x is not None]
+    fig, axes = plt.subplots(1, len(panels), figsize=(7 * len(panels), 4.2), squeeze=False)
+    k = 0
+    if attribution is not None:
+        ax = axes[0][k]
+        k += 1
+        s = attribution["classes"]["S"]
+        records = list(s["real_training"]["shares"])[:6]
+        series = [("real training S beats", s["real_training"]["shares"], INK)]
+        for condition, color in (("cvae", "#2a78d6"), ("wgan_gp", "#eb6834")):
+            seeds = s.get(f"{condition}_bank", {})
+            if seeds:
+                series.append((f"synthetic ({'cVAE' if condition == 'cvae' else 'WGAN-GP'}), nearest real", {r: float(np.mean([e["shares"].get(r, 0.0) for e in seeds.values()])) for r in records}, color))
+        if "validation_nearest" in s:
+            series.append(("validation S beats, nearest real", s["validation_nearest"]["shares"], "#1f9e6e"))
+        width = 0.8 / len(series)
+        for j, (label, shares, color) in enumerate(series):
+            ax.bar(np.arange(len(records)) + (j - (len(series) - 1) / 2) * width, [shares.get(r, 0.0) for r in records], width=width * 0.9, color=color, label=label)
+        ax.set_xticks(range(len(records)), [f"record {r}" for r in records], fontsize=8)
+        ax.set_ylabel("share of S beats")
+        ax.set_title("S beats by training patient", loc="left")
+        ax.legend(fontsize=7, loc="upper right")
+    if gap is not None:
+        ax = axes[0][k]
+        conds = list(next(iter(gap["networks"].values())))
+        archs = list(gap["networks"])
+        width = 0.8 / len(archs)
+        for j, arch in enumerate(archs):
+            ax.bar(np.arange(len(conds)) + (j - (len(archs) - 1) / 2) * width, [gap["networks"][arch][c]["gap"]["S"] for c in conds], width=width * 0.9,
+                   color=("#2a78d6", "#eb6834")[j % 2], label=arch)  # fmt: skip
+        ax.set_xticks(range(len(conds)), [c.replace("_", " ") for c in conds], fontsize=8, rotation=20)
+        ax.set_ylabel("S PR-AUC, training minus validation patients")
+        ax.set_title("gap between training and new patients", loc="left")
+        ax.legend(fontsize=8)
+    caption = ("DS1 only, descriptive. Left: each S beat attributed to the training patient of its nearest real training S beat (Euclidean distance "
+               "between z-scored windows; synthetic shares are means over the three bank seeds). Right: seed-mean S PR-AUC of the frozen networks "
+               "on the real training beats minus on the validation beats, per condition. Post hoc (PREREGISTRATION v7, P8).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_augmentation_mechanism") / "mechanism.png", "Synthetic beats copy the training patients", caption)]
+
+
 def posthoc_figures() -> list[Path]:
     """Every post-hoc figure whose summary exists (PREREGISTRATION v4, P1-P4); nothing is re-run."""
     final, written = _summary("final_eval"), []
@@ -1192,6 +1301,14 @@ def posthoc_figures() -> list[Path]:
     v3_ext = {db: s for db in ("incartdb", "svdb") if (s := _summary("phase6_patient_template", f"{db}_summary.json")) is not None}
     if v3_ext:
         written += patient_template_external_figure({"v1": external, "v2": v2_ext, "v3": v3_ext})
+    if (s := _summary("phase6_relative_cnn")) is not None:
+        written += relative_cnn_results_figure(s, final, _summary("phase6_rr_baseline"))
+    p7_ext = {db: s for db in ("incartdb", "svdb") if (s := _summary("phase6_relative_cnn", f"{db}_summary.json")) is not None}
+    if p7_ext:
+        written += relative_cnn_external_figure({"v1": external, "v2": v2_ext, "v3": p7_ext})
+    mech = (_summary("phase6_augmentation_mechanism", "attribution.json"), _summary("phase6_augmentation_mechanism", "gap.json"))
+    if any(m is not None for m in mech):
+        written += mechanism_figure(*mech)
     return written
 
 
