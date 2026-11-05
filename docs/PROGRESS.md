@@ -869,3 +869,34 @@ banks' ratios were remapped by exact match on their copied real RR triple.
   generative augmentation is not detectably better than none. The primary results stay the v1 final evaluation.
 - Paper: subsection "A follow-up with a patient-baseline RR ratio" (generated `results_rr_baseline.tex`), an abstract sentence,
   a deviation entry and a limitation sentence; the report gets the same paragraph and figures.
+
+## 2026-11-05 (Day 30, evening) — options 2 and 3: diagnosis, v6 and v7, all on Kaggle
+
+The laptop crashed under local load (two external evaluations, the test suite and three trainings at once); everything
+heavy now runs on Kaggle (CPU sessions, one T4 session per training grid). Kaggle tooling added: `kaggle_run.py --data-dir`
+(copies an attached `data/` folder, refuses guarded test arrays) and `--tests` (full suite first; stops on failure),
+`MPLBACKEND=Agg`, private datasets `ecgaug-v5-external` (INCART, SVDB raw and arrays, v5 checkpoints), `ecgaug-v1-checkpoints`,
+`ecgaug-v6-runs`, the repo bundle `ecgaug-repo`. Kernel folders and logs live in `~/ecgaug_kaggle/` (the scratchpad was
+wiped once, losing the first external runs). Commits are pushed to GitHub only after the full suite passes on Kaggle at
+that commit: it failed first at e33c82e (about 20 tests from Kaggle's matplotlib backend, and one real catch:
+`test_test_lock` flagged the new module for naming the test file), passed at 51dfa49 (2 skipped, as locally).
+
+- **Diagnosis (exploratory, validation only, disclosed in v6):** frozen v1 cnn without augmentation, seed 0: S PR-AUC 0.92 on
+  training records, 0.20 on validation records (V 0.995, 0.61); record 118's 96 validation S beats all called V or N, 83 of
+  128 of record 201 called V. LDA on v2 RR 0.194 validation S F1, + raw samples 0.073, + patient-relative samples 0.275.
+- **v6 (`prereg-v6`, e33c82e; A26):** dataset v3 = v2 with each beat minus the patient's median beat within ±150 s (no labels;
+  hash 69a5ab1b7cba). Grid kernel phase6-patient-template-grid at 51dfa49 (T4, about 30 min incl. build): the 6 cells without
+  augmentation `phase6_patient_template-{cnn,rnn}.none-s{0,1,2}-51dfa49-*`. Adoption rule (validation S F1 seed means): cnn
+  0.472 vs 0.350 (+0.122), rnn 0.181 vs 0.306 (-0.125); mean -0.0015 against margin 0.026: **not adopted**, so the other 90
+  cells were not run and DS2 was not read. Diagnostic part running (CPU kernel phase6-patient-template-diagnostic at 7d82942).
+- **v7 (`prereg-v7`, 91bc56d; A27):** P7 `phase6_relative_cnn`, the cnn alone with v3 inputs (chosen on validation after v6's
+  result, disclosed), 48 runs on a T4 (kernel phase6-relative-cnn-grid), then selection, one posthoc DS2 read and the external
+  databases on CPU. P8 `phase6_augmentation_mechanism` (DS1 only, descriptive, CPU kernel with the full suite): synthetic
+  beats attributed to the training patient of their nearest real beat, and the training-versus-validation gap of every
+  frozen condition.
+- **v5 external:** SVDB kernel at 41443e0 still running; the first INCART kernel stopped at the failing tests without
+  evaluating, rerun at 51dfa49.
+- Paper: v6, P7 and P8 subsections, a generated table of all post-hoc analyses (P1-P8), a generated Discussion and
+  Conclusion (every number from result files; claims conditional on them), deviation entries; figures
+  `figures/phase6_patient_template/input_v2_vs_v3.png` (before/after input) and, when their results land, the diagnostic,
+  P7 and P8 figures. main.pdf 25 pages, report.pdf 12, no unresolved references.

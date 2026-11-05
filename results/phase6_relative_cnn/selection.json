@@ -1,0 +1,435 @@
+{
+  "experiment": "phase6_relative_cnn",
+  "rule": "PREREGISTRATION \u00a710 v7 (the phase 4 gate rule)",
+  "chosen": {
+    "cnn": {
+      "none": {
+        "strength": null,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_relative_cnn-cnn.none-s0-91bc56d-202611051153",
+          "phase6_relative_cnn-cnn.none-s1-91bc56d-202611051153",
+          "phase6_relative_cnn-cnn.none-s2-91bc56d-202611051154"
+        ],
+        "mean": 0.471614190504923,
+        "sd": 0.021369944232749887,
+        "values": [
+          0.4910891089108911,
+          0.4487534626038781,
+          0.475
+        ],
+        "tie_break_values": [
+          0.6807432432432432,
+          0.7322580645161291,
+          0.8312412831241283
+        ],
+        "tie_break_mean": 0.7480808636278334,
+        "tie_break_sd": 0.07648650685443893,
+        "n_recall": 0.9772200772200773,
+        "provisional": false,
+        "bank": null,
+        "decision": {
+          "winner": "None",
+          "best_by_mean": "None",
+          "margins": {
+            "None": 0.021369944232749887
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "None"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "None"
+            }
+          ]
+        },
+        "all_strengths": {
+          "None": {
+            "mean": 0.471614190504923,
+            "sd": 0.021369944232749887
+          }
+        }
+      },
+      "class_weighted": {
+        "strength": 0.5,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_relative_cnn-cnn.class_weighted_0.5-s0-91bc56d-202611051154",
+          "phase6_relative_cnn-cnn.class_weighted_0.5-s1-91bc56d-202611051154",
+          "phase6_relative_cnn-cnn.class_weighted_0.5-s2-91bc56d-202611051154"
+        ],
+        "mean": 0.5350301876448541,
+        "sd": 0.01545882964158018,
+        "values": [
+          0.5347043701799485,
+          0.5506493506493506,
+          0.5197368421052632
+        ],
+        "tie_break_values": [
+          0.8111682586333578,
+          0.8288419519300801,
+          0.7723387723387724
+        ],
+        "tie_break_mean": 0.8041163276340701,
+        "tie_break_sd": 0.02890414544829049,
+        "n_recall": 0.9755469755469756,
+        "provisional": false,
+        "bank": null,
+        "decision": {
+          "winner": "0.5",
+          "best_by_mean": "0.5",
+          "margins": {
+            "0.5": 0.02,
+            "1.0": 0.02705764340592972,
+            "0.75": 0.024665534046493666
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.5",
+                "1.0"
+              ]
+            },
+            {
+              "step": "tie-break metric",
+              "tied": [
+                "0.5"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.5"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.5": {
+            "mean": 0.5350301876448541,
+            "sd": 0.01545882964158018
+          },
+          "1.0": {
+            "mean": 0.520022124880407,
+            "sd": 0.03500366722898482
+          },
+          "0.75": {
+            "mean": 0.49310361722805124,
+            "sd": 0.031269821325202334
+          }
+        }
+      },
+      "random_oversampling": {
+        "strength": 0.25,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_relative_cnn-cnn.random_oversampling_0.25-s0-91bc56d-202611051157",
+          "phase6_relative_cnn-cnn.random_oversampling_0.25-s1-91bc56d-202611051157",
+          "phase6_relative_cnn-cnn.random_oversampling_0.25-s2-91bc56d-202611051158"
+        ],
+        "mean": 0.5401049068245837,
+        "sd": 0.011603211637709393,
+        "values": [
+          0.527363184079602,
+          0.550063371356147,
+          0.5428881650380022
+        ],
+        "tie_break_values": [
+          0.8059701492537313,
+          0.8591749644381224,
+          0.7889485801995395
+        ],
+        "tie_break_mean": 0.8180312312971311,
+        "tie_break_sd": 0.036633844131478806,
+        "n_recall": 0.9721685971685972,
+        "provisional": false,
+        "bank": null,
+        "decision": {
+          "winner": "0.25",
+          "best_by_mean": "0.5",
+          "margins": {
+            "0.1": 0.02,
+            "0.25": 0.02,
+            "0.5": 0.02
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.25",
+                "0.5"
+              ]
+            },
+            {
+              "step": "tie-break metric",
+              "tied": [
+                "0.25",
+                "0.5"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.25"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.1": {
+            "mean": 0.5322650362619332,
+            "sd": 0.011492110783351685
+          },
+          "0.25": {
+            "mean": 0.5401049068245837,
+            "sd": 0.011603211637709393
+          },
+          "0.5": {
+            "mean": 0.5562330215923158,
+            "sd": 0.019029806639322022
+          }
+        }
+      },
+      "smote": {
+        "strength": 0.1,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_relative_cnn-cnn.smote_0.1-s0-91bc56d-202611051159",
+          "phase6_relative_cnn-cnn.smote_0.1-s1-91bc56d-202611051159",
+          "phase6_relative_cnn-cnn.smote_0.1-s2-91bc56d-202611051200"
+        ],
+        "mean": 0.4084473380178734,
+        "sd": 0.05121018725365531,
+        "values": [
+          0.45385779122541603,
+          0.4185430463576159,
+          0.35294117647058826
+        ],
+        "tie_break_values": [
+          0.8014285714285714,
+          0.7900302114803626,
+          0.7201283079390537
+        ],
+        "tie_break_mean": 0.7705290302826625,
+        "tie_break_sd": 0.04401880577600212,
+        "n_recall": 0.9846203346203346,
+        "provisional": false,
+        "bank": null,
+        "decision": {
+          "winner": "0.1",
+          "best_by_mean": "0.5",
+          "margins": {
+            "0.1": 0.07411186707966884,
+            "0.25": 0.07188564045022974,
+            "0.5": 0.09144755002467024
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.1",
+                "0.25",
+                "0.5"
+              ]
+            },
+            {
+              "step": "tie-break metric",
+              "tied": [
+                "0.1",
+                "0.25",
+                "0.5"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.1"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.1": {
+            "mean": 0.4084473380178734,
+            "sd": 0.05121018725365531
+          },
+          "0.25": {
+            "mean": 0.4199212663231419,
+            "sd": 0.04441211771988416
+          },
+          "0.5": {
+            "mean": 0.4336964142941347,
+            "sd": 0.09144755002467024
+          }
+        }
+      },
+      "cvae": {
+        "strength": 0.1,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_relative_cnn-cnn.cvae_0.1-s0-91bc56d-202611051204",
+          "phase6_relative_cnn-cnn.cvae_0.1-s1-91bc56d-202611051205",
+          "phase6_relative_cnn-cnn.cvae_0.1-s2-91bc56d-202611051206"
+        ],
+        "mean": 0.42998118544747504,
+        "sd": 0.04856100001748392,
+        "values": [
+          0.46307884856070086,
+          0.45263157894736844,
+          0.37423312883435583
+        ],
+        "tie_break_values": [
+          0.8318085855031668,
+          0.7955223880597015,
+          0.7546607009694258
+        ],
+        "tie_break_mean": 0.7939972248440981,
+        "tie_break_sd": 0.03859654925163039,
+        "n_recall": 0.9793758043758044,
+        "provisional": false,
+        "bank": "phase6_patient_template/phase3_cvae-D",
+        "decision": {
+          "winner": "0.1",
+          "best_by_mean": "0.5",
+          "margins": {
+            "0.1": 0.04135128792489516,
+            "0.5": 0.03258354344446115,
+            "0.25": 0.030860497489088163
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.1",
+                "0.5",
+                "0.25"
+              ]
+            },
+            {
+              "step": "tie-break metric",
+              "tied": [
+                "0.1",
+                "0.5",
+                "0.25"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.1"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.1": {
+            "mean": 0.42998118544747504,
+            "sd": 0.04856100001748392
+          },
+          "0.5": {
+            "mean": 0.45346676029962546,
+            "sd": 0.03258354344446115
+          },
+          "0.25": {
+            "mean": 0.43031893817221006,
+            "sd": 0.02903538026530644
+          }
+        }
+      },
+      "wgan_gp": {
+        "strength": 0.1,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_relative_cnn-cnn.wgan_gp_0.1-s0-91bc56d-202611051230",
+          "phase6_relative_cnn-cnn.wgan_gp_0.1-s1-91bc56d-202611051231",
+          "phase6_relative_cnn-cnn.wgan_gp_0.1-s2-91bc56d-202611051231"
+        ],
+        "mean": 0.5225681976991727,
+        "sd": 0.03660907462958001,
+        "values": [
+          0.49557522123893805,
+          0.5642384105960265,
+          0.5078909612625538
+        ],
+        "tie_break_values": [
+          0.7336999214454045,
+          0.8050784167289021,
+          0.8090909090909091
+        ],
+        "tie_break_mean": 0.7826230824217385,
+        "tie_break_sd": 0.042416173609556206,
+        "n_recall": 0.980984555984556,
+        "provisional": false,
+        "bank": "phase6_patient_template/phase3_wgan_gp-A",
+        "decision": {
+          "winner": "0.1",
+          "best_by_mean": "0.1",
+          "margins": {
+            "0.1": 0.03660907462958001,
+            "0.5": 0.0324892165454377,
+            "0.25": 0.0520091834457117
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.1",
+                "0.25"
+              ]
+            },
+            {
+              "step": "tie-break metric",
+              "tied": [
+                "0.1",
+                "0.25"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.1"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.1": {
+            "mean": 0.5225681976991727,
+            "sd": 0.03660907462958001
+          },
+          "0.5": {
+            "mean": 0.46471549355482233,
+            "sd": 0.027764618460164855
+          },
+          "0.25": {
+            "mean": 0.4906400103618814,
+            "sd": 0.06379409047980247
+          }
+        }
+      }
+    }
+  },
+  "best_generative": {
+    "cnn": "wgan_gp"
+  },
+  "git_sha": "91bc56dfcc7c063e38570c6163779ade039bf032"
+}
