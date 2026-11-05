@@ -956,6 +956,87 @@ def audit_check_figure(summary: dict) -> list[Path]:
     return [_save(fig, paths.figures_for("phase6_audit_check") / "audit_checks.png", "Does the intra-patient inflation depend on the split or the strength?", caption)]
 
 
+def rr_baseline_feature_figure() -> list[Path]:
+    """P5 before and after: the RR ratio of training beats per class with v1 (ten preceding intervals) and v2 (patient baseline)."""
+    from ecgaug.data.loaders import load_trainval
+
+    path = paths.processed_dir() / "v2" / "trainval.npz"
+    if not path.is_file():
+        return []
+    plt = _plt()
+    v1 = load_trainval("v1")
+    with np.load(path) as f:
+        v2 = {k: f[k] for k in ("rr_ratio", "y", "split", "record")}
+    train = np.asarray(v1["split"]) == "train"
+    fig, axes = plt.subplots(1, 2, figsize=(11, 3.4), sharey=True)
+    bins = np.linspace(0.2, 1.8, 65)
+    for ax, (label, ratio) in zip(axes, (("v1: rr_prev / mean of the 10 preceding RR", v1["rr_ratio"]), ("v2: rr_prev / median RR within ±150 s", v2["rr_ratio"]))):
+        for i, cls in enumerate(CLASS_COLORS):
+            mask = train & (np.asarray(v1["y"]) == i)
+            below = float(np.mean(np.asarray(ratio)[mask] < 0.9))
+            ax.hist(np.clip(np.asarray(ratio)[mask], bins[0], bins[-1]), bins=bins, density=True, histtype="step", linewidth=1.6,
+                    color=CLASS_COLORS[cls], label=f"{cls} (n={int(mask.sum()):,}; {below:.0%} below 0.9)")  # fmt: skip
+        ax.axvline(0.9, color=GRID, linewidth=1.2)
+        ax.set_title(label, loc="left")
+        ax.set_xlabel("RR ratio (training beats)")
+        ax.legend(loc="upper right", fontsize=7)
+    axes[0].set_ylabel("density")
+    caption = ("Training records only; values outside 0.2-1.8 are drawn at the edges. With v1 the S beats of record 209, which come in runs, look as regular as N beats because the ten "
+               "preceding intervals are short too; against the patient's baseline they are premature. Post hoc (PREREGISTRATION v5, P5).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_rr_baseline") / "rr_ratio_v1_vs_v2.png", "Before and after: the RR ratio the models see", caption)]
+
+
+def rr_baseline_results_figure(summary: dict, final: dict) -> list[Path]:
+    """P5: each condition with v1 and v2 features in the final evaluation's records, and the v2 comparisons."""
+    plt = _plt()
+    keys = list(final["conditions"])
+    rows = [(family, name) for family, items in summary["families"].items() for name in items]
+    fig, axes = plt.subplots(1, 2, figsize=(13, 0.42 * max(len(keys), len(rows)) + 1.8))
+    ax = axes[0]
+    for i, key in enumerate(reversed(keys)):
+        _interval(ax, final["conditions"][key]["rare_macro_f1"], i + 0.15, "#2a78d6", "v1 features (final evaluation)" if i == 0 else None)
+        _interval(ax, summary["conditions"][key]["rare_macro_f1"], i - 0.15, "#eb6834", "v2 features (post hoc)" if i == 0 else None)
+    ax.set_yticks(range(len(keys)), list(reversed(keys)), fontsize=7)
+    ax.set_xlim(left=0)
+    ax.set_xlabel("test rare-class macro-F1 (95% record-level CI)")
+    ax.set_title("each condition, v1 and v2", loc="left")
+    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.06), ncol=2, fontsize=7)
+    ax = axes[1]
+    for i, (family, name) in enumerate(reversed(rows)):
+        r = summary["families"][family][name]
+        _interval(ax, r, i, INK if family == "confirmatory" else INK_2)
+        ax.annotate(f"Holm p {r['p_holm']:.3f}", (r["ci_high"], i), xytext=(6, 0), textcoords="offset points", va="center", fontsize=7, color=INK_2)
+    ax.axvline(0, color=GRID, linewidth=1.2)
+    ax.set_yticks(range(len(rows)), [f"{family[:4]}. {name}" for family, name in reversed(rows)], fontsize=7)
+    ax.set_xlabel("difference in test rare-class macro-F1, v2 (95% CI)")
+    ax.set_title("pre-registered comparisons with v2 features", loc="left")
+    caption = ("The full grid rerun with one change to the input (the RR ratio against the patient's baseline), selected on validation by the "
+               "phase 4 gate rule; 3 seeds. Black: confirmatory family; grey: secondary; p-values Holm-adjusted within each family. "
+               "Post hoc (PREREGISTRATION v5, P5); the final evaluation (blue, left) stays the primary result.")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_rr_baseline") / "v1_vs_v2_results.png", "After the fix: every condition with v1 and v2 features", caption)]
+
+
+def rr_baseline_external_figure(v2: dict[str, dict], v1: dict[str, dict]) -> list[Path]:
+    """P5: each condition on INCART and SVDB with v1 and v2 features."""
+    plt = _plt()
+    dbs = [db for db in v2 if db in v1]
+    keys = list(next(iter(v2.values()))["conditions"])
+    fig, axes = plt.subplots(1, len(dbs), figsize=(6.2 * len(dbs), 0.42 * len(keys) + 1.8), sharey=True, squeeze=False)
+    for ax, db in zip(axes[0], dbs):
+        metric = v2[db]["primary_metric"]
+        for i, key in enumerate(reversed(keys)):
+            _interval(ax, v1[db]["conditions"][key][metric], i + 0.15, "#2a78d6", "v1 features" if i == 0 else None)
+            _interval(ax, v2[db]["conditions"][key][metric], i - 0.15, "#eb6834", "v2 features" if i == 0 else None)
+        ax.set_yticks(range(len(keys)), list(reversed(keys)), fontsize=7)
+        ax.set_xlim(left=0)
+        ax.set_xlabel(f"{'rare-class macro-F1' if metric == 'rare_macro_f1' else 'S F1'} (95% record-level CI)")
+        reject = sum(v["reject_holm"] for v in v2[db]["confirmatory"].values())
+        ax.set_title(f"{ {'incartdb': 'INCART', 'svdb': 'SVDB'}.get(db, db)}: v2 Holm rejects {reject} of 4 vs none", loc="left", fontsize=9)
+    axes[0][0].legend(loc="lower left", bbox_to_anchor=(0, 1.06), ncol=2, fontsize=8)
+    caption = "The v2 checkpoints applied unchanged to the external databases, with the v2 ratio from their annotations. Post hoc (PREREGISTRATION v5, P5)."
+    return [_save(fig, paths.figures_for("phase6_rr_baseline") / "external_v1_vs_v2.png", "After the fix: external databases", caption)]
+
+
 def posthoc_figures() -> list[Path]:
     """Every post-hoc figure whose summary exists (PREREGISTRATION v4, P1-P4); nothing is re-run."""
     final, written = _summary("final_eval"), []
@@ -972,6 +1053,12 @@ def posthoc_figures() -> list[Path]:
         written += extra_seeds_figure(s, final)
     if (s := _summary("phase6_audit_check")) is not None:
         written += audit_check_figure(s)
+    written += rr_baseline_feature_figure()
+    if (s := _summary("phase6_rr_baseline")) is not None:
+        written += rr_baseline_results_figure(s, final)
+    v2_ext = {db: s for db in ("incartdb", "svdb") if (s := _summary("phase6_rr_baseline", f"{db}_summary.json")) is not None}
+    if v2_ext and external:
+        written += rr_baseline_external_figure(v2_ext, external)
     return written
 
 

@@ -1,0 +1,29 @@
+{
+  "cell_sha": "04b78ce9a23b0280a2d00092939b044cceca6ceb61c793a48bc7139f5b82ed68",
+  "cell": {
+    "condition": "class_weighted",
+    "strength": 0.5,
+    "architecture": "cnn",
+    "seed": 0
+  },
+  "condition": "class_weighted",
+  "strength": 0.5,
+  "architecture": "cnn",
+  "seed": 0,
+  "run_id": "phase6_rr_baseline-cnn.class_weighted_0.5-s0-71a5cea-202611050524",
+  "status": "done",
+  "bank": null,
+  "selection_metric": "s_f1",
+  "selection_value": 0.375,
+  "tie_break_value": 0.2449438202247191,
+  "rare_macro_f1": 0.1875,
+  "n_recall": 0.983011583011583,
+  "n_added": {
+    "N": 0,
+    "S": 0,
+    "V": 0,
+    "F": 0
+  },
+  "wall_clock_s": 11.3,
+  "provisional": false
+}

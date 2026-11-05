@@ -1,0 +1,63 @@
+grid: configs/phase6_rr_baseline/rr_baseline.yaml
+grid_name: full_grid
+cell:
+  condition: random_oversampling
+  strength: 0.25
+  architecture: rnn
+  seed: 2
+cell_sha: 85b2be32495455e57458536bc034a8fe2669edabcd1751ae9491c30236161afb
+policy:
+  kind: fraction_of_n_screened
+  pool_factor: 2.0
+condition_settings:
+  strengths:
+  - 0.1
+  - 0.25
+  - 0.5
+bank: null
+classifier:
+  variant: C
+  config: configs/phase2_baseline_classifiers/C_bilstm.yaml
+  model:
+    name: bilstm
+    hidden: 64
+    layers: 2
+    side_hidden: 16
+  lr: 0.001
+  max_epochs: 40
+  patience: 5
+  min_epochs: 10
+  batch_size: 256
+  weight_decay: 0.01
+  run_ids:
+  - phase2_baseline_classifiers-C.lr1e-03-s0-1b5a746-202611010730
+  - phase2_baseline_classifiers-C.lr1e-03-s1-1b5a746-202611010731
+  - phase2_baseline_classifiers-C.lr1e-03-s2-1b5a746-202611010733
+  checkpoints:
+    phase2_baseline_classifiers-C.lr1e-03-s0-1b5a746-202611010730: f38e920a12b35bff0a3ce635b07e167bb122027ae08bf2930eb08d5654e11670
+    phase2_baseline_classifiers-C.lr1e-03-s1-1b5a746-202611010731: a8031fa32ae25c6068ba90a9b1da49097168aaca2e3a1d68b9b0bba702c85f56
+    phase2_baseline_classifiers-C.lr1e-03-s2-1b5a746-202611010733: 04ffc1496509f8f20e9a85189fac835d55d714c933c7ac4785e7468c17af4b07
+class_weights: null
+n_added:
+  N: 0
+  S: 8223
+  V: 5836
+  F: 8479
+run_id: phase6_rr_baseline-rnn.random_oversampling_0.25-s2-71a5cea-202611050544
+split:
+  name: V1
+  val:
+  - 115
+  - 118
+  - 201
+  - 205
+  - 223
+  selection_metric: s_f1
+dataset:
+  source: data/processed/v2 (v1 with the baseline RR ratio, PREREGISTRATION v5)
+  representation: C_short_window_rr_features
+  content_sha256: 41f01f585724eea9b06d22999ded5b86d0251ef22fbdf24787db43aaaf06f7df
+  frozen: false
+  version: v2
+provisional: false
+provisional_reasons: []

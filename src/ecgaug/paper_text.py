@@ -390,6 +390,56 @@ def _audit_reading(summary: dict) -> str:
     return text
 
 
+def _family_sentence(items: dict) -> str:
+    return "; ".join(f"{name.replace('_', ' ')} {_ci(c, signed=True)}, {_p(c)} ({_changed(c)})" for name, c in items.items())
+
+
+def posthoc_rr_baseline() -> str:
+    """P5: the full grid with the patient-baseline RR ratio, from results/phase6_rr_baseline/."""
+    from ecgaug.names import PHASE6_RR_BASELINE
+
+    folder = paths.results_for(PHASE6_RR_BASELINE)
+    data, selection, summary = (_load(folder / n) for n in ("data.json", "selection.json", "summary.json"))
+    if data is None:
+        return _missing("P5: python -m ecgaug.experiments.phase6_rr_baseline --part data")
+    d = data["diagnostic"]["train"]
+    text = (f"\\paragraph{{A patient-baseline RR ratio (P5).}} The v1 ratio divides the previous RR interval by the mean of the ten intervals "
+            f"before it, so an early beat inside a run of early beats looks regular. On the training records, {_n(d['S']['below_0.9_v1'], 2)} of "
+            f"S beats had a ratio below 0.9 with v1 and {_n(d['S']['below_0.9_v2'], 2)} with a ratio to the median RR within "
+            f"{data['half_window_s']:g}~s (N beats: {_n(d['N']['below_0.9_v1'], 2)} and {_n(d['N']['below_0.9_v2'], 2)}; "
+            f"Figure~\\ref{{fig:rr-ratio}}). Version 5 of the pre-registration changed only this field (dataset v2), remapped the ratio of "
+            f"the frozen synthetic beats, reran the full grid with the frozen classifiers and selected on validation with the phase 4 gate rule.")  # fmt: skip
+    if selection is None or summary is None:
+        return text + " " + _missing("P5 results: --part grid on Kaggle, then --part select and --part test") + "\n"
+    strengths = "; ".join(f"{arch}: " + ", ".join(f"{SHORT[c]} {v['strength']}" for c, v in conds.items() if v["strength"] is not None)
+                          for arch, conds in selection["chosen"].items())  # fmt: skip
+    nones = "; ".join(f"the {arch} without augmentation reached {_ci(summary['conditions'][f'{arch}/none']['rare_macro_f1'])} "
+                      f"(v2 minus v1 {_ci(summary['versus_v1'][f'{arch}/none'], signed=True)})" for arch in selection["chosen"])  # fmt: skip
+    best_key = max(summary["conditions"], key=lambda k: summary["conditions"][k]["rare_macro_f1"]["point"])
+    conf = summary["families"]["confirmatory"]
+    improved = [k for k, c in conf.items() if c["reject_holm"] and c["point"] > 0]
+    secondary = {k: c for k, c in summary["families"]["secondary"].items() if c["reject_holm"]}
+    text += (f" The rule chose the strengths {strengths}. On the test records with v2 features, {nones}. The highest score was "
+             f"{best_key.replace('_', ' ')}'s, {_ci(summary['conditions'][best_key]['rare_macro_f1'])}. Against no augmentation: {_family_sentence(conf)}. "
+             f"By the registered criterion, generative augmentation {'improved' if improved else 'did not detectably improve'} the primary metric with v2 "
+             f"features. {'In the secondary family Holm rejected ' + _family_sentence(secondary) + '.' if secondary else 'No secondary comparison was rejected.'}")  # fmt: skip
+    refs = summary.get("references", {})
+    if "rr_lda" in refs:
+        r = refs["rr_lda"]
+        text += f" The RR-only reference refitted on v2 reached {_ci(r['rare_macro_f1'])} (S Se {_n(r['se_S']['point'])}, S +P {_n(r['ppv_S']['point'])})."
+    ext = []
+    for db in DATABASE:
+        e = _load(folder / f"{db}_summary.json")
+        if e:
+            metric = e["primary_metric"]
+            verbs = [_changed(c) for c in e["confirmatory"].values()]
+            ext.append(f"on {DATABASE[db]} the cnn without augmentation reached {_n(e['conditions']['cnn/none'][metric]['point'])} ({METRIC[metric]}) and "
+                       + ", ".join(f"generative augmentation {v} it in {verbs.count(v)}" for v in dict.fromkeys(verbs)) + " of the 4 confirmatory comparisons")
+    if ext:
+        text += " Externally, " + "; ".join(ext) + " (Figure~\\ref{fig:v2-external})."
+    return text + " Post hoc (Figure~\\ref{fig:v2-results}).\n"
+
+
 def abstract_posthoc() -> str:
     """One abstract sentence for the post-hoc analyses (P2 primary database, P3), from their summaries."""
     from ecgaug.names import PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS
@@ -470,6 +520,7 @@ def build() -> dict[str, str]:
     files["results_concentration"] = concentration(_load(paths.results_for("error_analysis") / "test.json"))
     files["results_posthoc"] = posthoc(summary)
     files["abstract_posthoc"] = abstract_posthoc() + "\n"
+    files["results_rr_baseline"] = posthoc_rr_baseline()
     files["table_hypotheses"] = hypotheses_table(verdicts)
     files["abstract_results"] = abstract_sentence(summary, verdicts, audit) + "\n"
     return files

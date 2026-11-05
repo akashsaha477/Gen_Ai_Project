@@ -1,0 +1,29 @@
+{
+  "cell_sha": "6df379bf7a72de3700f59759ed92ba22c5c225e14ef682e5c91d8289db0d9442",
+  "cell": {
+    "condition": "smote",
+    "strength": 0.5,
+    "architecture": "rnn",
+    "seed": 2
+  },
+  "condition": "smote",
+  "strength": 0.5,
+  "architecture": "rnn",
+  "seed": 2,
+  "run_id": "phase6_rr_baseline-rnn.smote_0.5-s2-71a5cea-202611050605",
+  "status": "done",
+  "bank": null,
+  "selection_metric": "s_f1",
+  "selection_value": 0.3275862068965517,
+  "tie_break_value": 0.6795827123695977,
+  "rare_macro_f1": 0.17140409710578114,
+  "n_recall": 0.7668918918918919,
+  "n_added": {
+    "N": 0,
+    "S": 17089,
+    "V": 14702,
+    "F": 17345
+  },
+  "wall_clock_s": 139.0,
+  "provisional": false
+}

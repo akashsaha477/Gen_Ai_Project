@@ -1,0 +1,4 @@
+experiment: phase6_rr_baseline
+reference: rr_lda
+dataset: data/processed/v2
+run_id: phase6_rr_baseline-rrlda-s0-71a5cea-202611051048

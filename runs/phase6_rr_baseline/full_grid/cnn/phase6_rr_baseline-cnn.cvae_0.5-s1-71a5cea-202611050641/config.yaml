@@ -1,0 +1,67 @@
+grid: configs/phase6_rr_baseline/rr_baseline.yaml
+grid_name: full_grid
+cell:
+  condition: cvae
+  strength: 0.5
+  architecture: cnn
+  seed: 1
+cell_sha: 093ddaf3b3f411f856ffe77a588f81f842f222678a224e7a801f373c3b1375a8
+policy:
+  kind: fraction_of_n_screened
+  pool_factor: 2.0
+condition_settings:
+  bank: phase6_rr_baseline/phase3_cvae-D
+  strengths:
+  - 0.1
+  - 0.25
+  - 0.5
+bank: phase6_rr_baseline/phase3_cvae-D
+classifier:
+  variant: A
+  config: configs/phase2_baseline_classifiers/A_shallow_cnn.yaml
+  model:
+    name: shallow_cnn
+    channels:
+    - 32
+    - 64
+    - 128
+    kernel: 7
+    side_hidden: 16
+  lr: 0.001
+  max_epochs: 40
+  patience: 5
+  min_epochs: 10
+  batch_size: 256
+  weight_decay: 0.01
+  run_ids:
+  - phase2_baseline_classifiers-A.lr1e-03-s0-a6ac8bf-202611010715
+  - phase2_baseline_classifiers-A.lr1e-03-s1-a6ac8bf-202611010715
+  - phase2_baseline_classifiers-A.lr1e-03-s2-a6ac8bf-202611010715
+  checkpoints:
+    phase2_baseline_classifiers-A.lr1e-03-s0-a6ac8bf-202611010715: 04e6f6f4c1fc4d0fcf3b6e16ff68e92e640fc99d25d84780b9781340976ef88c
+    phase2_baseline_classifiers-A.lr1e-03-s1-a6ac8bf-202611010715: 0235e139af9fe276d4455a2043c44fc5bc838d84f6842a7d6a64f273f8011416
+    phase2_baseline_classifiers-A.lr1e-03-s2-a6ac8bf-202611010715: f307abff674461fe3d4b7f3d7beec6e63eed913d8a1fb758b882ad10da1ce2dd
+class_weights: null
+n_added:
+  N: 0
+  S: 17089
+  V: 14702
+  F: 17345
+run_id: phase6_rr_baseline-cnn.cvae_0.5-s1-71a5cea-202611050641
+split:
+  name: V1
+  val:
+  - 115
+  - 118
+  - 201
+  - 205
+  - 223
+  selection_metric: s_f1
+dataset:
+  source: data/processed/v2 (v1 with the baseline RR ratio, PREREGISTRATION v5)
+  representation: C_short_window_rr_features
+  content_sha256: 41f01f585724eea9b06d22999ded5b86d0251ef22fbdf24787db43aaaf06f7df
+  frozen: false
+  version: v2
+provisional: false
+provisional_reasons: []
