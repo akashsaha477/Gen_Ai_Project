@@ -332,3 +332,12 @@ validation). v6 gives every beat relative to the patient's local median beat, ru
 continues to the full grid, one DS2 read and the external databases only if a pre-registered validation rule adopts it.
 Everything runs on Kaggle (the laptop crashed under local load): CPU sessions where no training is needed, one T4 session
 for the grid. Pushed to GitHub only after the full test suite passes in a Kaggle session at the same commit.
+
+## 2026-11-05 (Day 30) — A27: cnn-only follow-up with patient-relative beats, and a mechanism analysis (pre-registration v7) — Akash Saha ("think deeply once what can be made better and then do it")
+
+v6 was not adopted: its rule averaged a clear validation gain for the cnn (+0.122 S F1) with a clear loss for the rnn
+(-0.125). Two things would make the study better. (1) The reviewer's main objection is that the baselines are weak;
+the cnn with patient-relative beats is the only baseline that is clearly stronger on validation, so P7 repeats the
+comparison for it, disclosed as chosen after v6's result (validation only). (2) The null result needs a mechanism: P8
+checks, on DS1 only, whether synthetic beats add patient diversity (nearest-patient attribution) and whether augmentation
+widens the gap between training and validation patients. Everything runs on Kaggle; only P7's training uses a GPU.
