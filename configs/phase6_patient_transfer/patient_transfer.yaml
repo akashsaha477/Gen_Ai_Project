@@ -1,0 +1,3 @@
+experiment: phase6_patient_transfer
+half_window_s: 150
+bank_size_per_class: 18000

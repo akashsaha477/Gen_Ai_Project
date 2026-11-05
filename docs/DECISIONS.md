@@ -341,3 +341,11 @@ the cnn with patient-relative beats is the only baseline that is clearly stronge
 comparison for it, disclosed as chosen after v6's result (validation only). (2) The null result needs a mechanism: P8
 checks, on DS1 only, whether synthetic beats add patient diversity (nearest-patient attribution) and whether augmentation
 widens the gap between training and validation patients. Everything runs on Kaggle; only P7's training uses a GPU.
+
+## 2026-11-05 (Day 30) — A28: patient-transfer augmentation (pre-registration v8) — Akash Saha ("do whatever think of a way how generative augmentation will help improve")
+
+P8 explained why class-conditional generators did not help: they add beats of the same few patients. P9 tests the
+direct remedy: keep the arrhythmia-specific deviation (from real beats or from the frozen generators) and place it on
+other training patients' normal beats, so the classifier sees each rare class in many patients. Run on dataset v2 (raw
+beats), where the networks fit patient shapes; on v3 the transfer would cancel out. Unscreened, because P8 showed the
+quality screen narrows patient diversity. GPU for the 60 runs only; test and external parts on CPU.

@@ -147,7 +147,7 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 - Every access is appended to `docs/TEST_ACCESS_LOG.md`. No decision of any kind uses test data.
 - After `/final-eval` nothing is retrained, re-selected or re-tuned. A bug found later is documented
   and any re-run is disclosed.
-- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v7): the analyses listed in §10 v4 to v7 only, after `/final-eval`, logged;
+- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v8): the analyses listed in §10 v4 to v8 only, after `/final-eval`, logged;
   they add evidence beside the primary results and replace none of them.
 
 ## 9. Generators and RQ3 (rules fixed now, thresholds in v2)
@@ -287,6 +287,22 @@ augmentation does not carry over to new patients.
 | P8 `phase6_augmentation_mechanism`, attribution | for each frozen bank (cVAE-D, WGAN-GP-A; seeds 0-2) and each class S, V, F, every synthetic beat is attributed to the training record of its nearest real training beat of the same class (Euclidean distance between the z-scored windows); likewise the beats the policy adds at the strength the phase 4 gate chose for each architecture. References: the records of the real training beats themselves, each real training beat's nearest other real training beat (same record or not), and each validation beat's nearest real training beat. Reported per class: share per record and the effective number of records, exp(entropy) |
 | P8 gap | for every condition of the final evaluation (v1, the gate's strengths, seeds 0-2) and both architectures: seed means of S and V PR-AUC on the real training beats and on the validation beats, and their difference |
 | reporting | own sections, labelled post hoc, beside v1, v5 and v6; descriptive only for P8. Compute: one Kaggle T4 session for the 48 P7 runs (v6's cells took about a minute each; estimated well under 2 GPU-hours); CPU sessions for everything else |
+
+**v8, committed 2026-11-05, after v7's results, before any of the work below (DECISIONS A28).** One analysis, post hoc.
+P8 found that the networks fit the shapes of the training patients, that the generators reproduce the same patients
+(record 209: 0.60 of real and 0.57-0.65 of synthetic S beats), and that validation patients resemble training patients
+with few S beats; it also found that the quality screen narrows the patients behind the added beats. P9 asks whether
+augmentation helps when it adds patients rather than beats.
+
+| item | rule |
+|---|---|
+| P9 `phase6_patient_transfer`, transfer | a rare-class training beat x of patient p is written as its template t_p (v6's definition, ±150 s, no labels) plus the deviation d = x - t_p; the transferred beat is zscore(t_q + d), where q is a training record other than p drawn uniformly among the training records and t_q is the template of a random N beat of q; rr_prev and rr_next are multiplied by m_q / m_p, the patients' median RR at the two beats (rr_prev / v2 rr_ratio), and rr_ratio is unchanged. Training records only |
+| conditions | `none`; `transfer_real` (deviations of real training beats of the class, drawn with replacement); `transfer_cvae` and `transfer_wgan_gp` (deviations of the frozen bank beats, each minus the template of the real beat whose v1 RR values it carries, v5's matching). Banks of 18,000 beats per rare class per seed (bank seed = classifier seed), built and hashed by code |
+| data and grid | dataset v2 (v5, hash-checked); the phase 2 gate's cnn and rnn with their settings; strengths 0.1, 0.25, 0.5 under the `fraction_of_n` policy, unscreened (the screen would keep beats that look like the existing patients, which P8 found narrows them); seeds 0-2; 60 runs |
+| selection | the phase 4 gate rule by `workflow.choose_strengths` (strength per condition and architecture), written before any DS2 read |
+| test | one `posthoc` access on Kaggle (DS2 rebuilt and hash-checked, v2 ratios). Confirmatory family (Holm, 4 tests): per architecture, transfer_cvae vs none and transfer_wgan_gp vs none, in rare-class macro-F1, record-level bootstrap 10,000, seed 0, with the wording rules of §7. Secondary family (Holm, 4 tests): per architecture, transfer_real vs none, and the generative transfer condition with the better validation seed mean vs transfer_real. Descriptive: every P9 condition minus v5's none, cVAE and WGAN-GP of the same architecture; the recomputed v5 none score is reported beside v5's |
+| external | INCART and SVDB as in P5, the P9 checkpoints, the confirmatory family within each database |
+| reporting | its own section, labelled post hoc; the primary results stay the v1 final evaluation. Compute: one Kaggle T4 session (estimated under 2 GPU-hours); CPU sessions for the test and external parts |
 
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 
