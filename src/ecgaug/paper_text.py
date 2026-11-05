@@ -675,6 +675,47 @@ def posthoc_patient_transfer() -> str:
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
 
 
+def posthoc_patient_adaptation() -> str:
+    """P10: adaptive batch normalization per patient on the frozen checkpoints, from results/phase6_patient_adaptation/."""
+    from ecgaug.names import PHASE6_PATIENT_ADAPTATION
+
+    folder = paths.results_for(PHASE6_PATIENT_ADAPTATION)
+    adoption, summary = _load(folder / "adoption.json"), _load(folder / "summary.json")
+    label = {"v1/cnn": "the final evaluation's cnn", "v1/rnn": "the final evaluation's rnn", "p7/cnn": "the P7 cnn"}
+    text = ("\\paragraph{Per-patient normalization inside the network (P10).} The same idea as the patient-relative input can be applied "
+            "inside a trained network: with adaptive batch normalization each patient is classified by a copy of the network whose "
+            "batch-normalization layers use the statistics of that patient's beats (no labels) instead of the training statistics. "
+            "Nothing is retrained (pre-registration version 9).")  # fmt: skip
+    if adoption is None:
+        return text + " " + _missing("P10: --part validation on Kaggle") + "\n"
+    parts = [f"{label.get(k, k)} {_n(e['plain_mean'])} to {_n(e['adapted_mean'])} ({'adopted' if e['adopted'] else 'not adopted'}, margin {_n(e['margin'])})"
+             for k, e in adoption["pairs"].items()]
+    text += " Validation S F1 without and with adaptation (seed means): " + "; ".join(parts) + "."
+    if not any(e["adopted"] for e in adoption["pairs"].values()):
+        return text + " No model met the adoption rule, so the test records were not read. Post hoc.\n"
+    if summary is None:
+        return text + " " + _missing("P10 results: --part test") + "\n"
+    fam = summary["families"]
+    final = _load(paths.results_for(FINAL_EVAL) / "summary.json")
+    if final is not None and "v1/cnn/none" in summary["conditions"]:
+        a, b = summary["conditions"]["v1/cnn/none"], final["conditions"]["cnn/none"]
+        text += (f" On the test records the final evaluation's cnn without augmentation reached rare-class macro-F1 {_n(a['rare_macro_f1']['point'])} "
+                 f"with adaptation ({_n(b['rare_macro_f1']['point'])} without): S F1 {_n(a['f1_S']['point'])} ({_n(b['f1_S']['point'])}) and F F1 "
+                 f"{_n(a['f1_F']['point'])} ({_n(b['f1_F']['point'])}). The validation records, on which adoption was decided by S F1, hold too few F "
+                 "beats to show the second.")
+    text += (" Adaptation against none without it (Figure~\\ref{fig:p10}): " + _family_sentence(fam["adaptation"]) + ". "
+             "Under adaptation, generative augmentation against none: " + _family_sentence(fam["augmentation_under_adaptation"]) + ".")
+    ext = []
+    for db in DATABASE:
+        e = _load(folder / f"{db}_summary.json")
+        if e:
+            verbs = [_changed(c) for c in e["families"]["adaptation"].values()]
+            ext.append(f"on {DATABASE[db]} adaptation " + ", ".join(f"{v} the score in {verbs.count(v)}" for v in dict.fromkeys(verbs)) + f" of {len(verbs)} models")
+    if ext:
+        text += " Externally, " + "; ".join(ext) + "."
+    return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
+
+
 def posthoc_table() -> str:
     """One row per post-hoc analysis (P1-P8): what it asked and what it found, from the summaries."""
     from ecgaug.names import (PHASE6_AUDIT_CHECK, PHASE6_AUGMENTATION_MECHANISM, PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS,
@@ -721,10 +762,19 @@ def posthoc_table() -> str:
         rows.append(("P8", "Do synthetic beats add patients?", f"synthetic S beats nearest to record {top}: {_n(float(np.mean(syn)), 2)} (real {_n(s_cls['real_training']['top_share'], 2)})"))
     if p9:
         rows.append(("P9", "Augmentation that adds patients?", f"generative transfer vs none {verdicts(p9['families']['confirmatory'])}"))
+    from ecgaug.names import PHASE6_PATIENT_ADAPTATION
+
+    p10a = _load(paths.results_for(PHASE6_PATIENT_ADAPTATION) / "adoption.json")
+    p10 = _load(paths.results_for(PHASE6_PATIENT_ADAPTATION) / "summary.json")
+    if p10a:
+        found = "; ".join(f"{k} {_s(e['difference'])}" for k, e in p10a["pairs"].items()) + " validation S F1"
+        if p10:
+            found += "; test: adaptation " + verdicts(p10["families"]["adaptation"]) + ", generative vs none " + verdicts(p10["families"]["augmentation_under_adaptation"])
+        rows.append(("P10", "Per-patient normalization in the network?", found))
     if not rows:
         return _missing("post-hoc table: no summaries yet") + "\n"
     body = "\n".join(f"{a} & {b} & {c} \\\\" for a, b, c in rows)
-    return ("\\begin{table}[htbp]\\centering\\small\n\\caption{The post-hoc analyses (pre-registration versions 4 to 8), each reported apart from the primary "
+    return ("\\begin{table}[htbp]\\centering\\small\n\\caption{The post-hoc analyses (pre-registration versions 4 to 9), each reported apart from the primary "
             "results. Numbers are test rare-class macro-F1 unless stated.}\\label{tab:posthoc}\n"
             "\\begin{tabular}{@{}lp{0.3\\linewidth}p{0.55\\linewidth}@{}}\n\\toprule\n & question & finding \\\\\n\\midrule\n" + body + "\n\\bottomrule\n\\end{tabular}\n\\end{table}\n")
 
@@ -762,6 +812,51 @@ def outlook(heading: bool = True) -> str:
              "training settings, and more training patients (several databases); generators conditioned on the patient, or trained on many more "
              "patients, are the natural next test of augmentation. The answer of this study holds for its budget and should be revisited at that scale.")
     return text + "\n"
+
+
+def patient_variation_paragraph() -> str | None:
+    """Rebalancing versus patient-level methods, side by side, from the result files (None until at least two patient-level results exist)."""
+    from ecgaug.names import PHASE6_PATIENT_ADAPTATION, PHASE6_PATIENT_TEMPLATE, PHASE6_PATIENT_TRANSFER, PHASE6_RELATIVE_CNN
+
+    final = _load(paths.results_for(FINAL_EVAL) / "summary.json")
+    v6 = _load(paths.results_for(PHASE6_PATIENT_TEMPLATE) / "adoption.json")
+    p9 = _load(paths.results_for(PHASE6_PATIENT_TRANSFER) / "selection.json")
+    p10 = _load(paths.results_for(PHASE6_PATIENT_ADAPTATION) / "adoption.json")
+    p7 = _load(paths.results_for(PHASE6_RELATIVE_CNN) / "summary.json")
+    p10t = _load(paths.results_for(PHASE6_PATIENT_ADAPTATION) / "summary.json")
+    gains = []
+    if v6 and "cnn" in v6["per_architecture"]:
+        gains.append(f"patient-relative input {_s(v6['per_architecture']['cnn']['difference'])}")
+    if p10 and "v1/cnn" in p10["pairs"]:
+        gains.append(f"per-patient batch normalization {_s(p10['pairs']['v1/cnn']['difference'])}")
+    if p9 and "cnn" in p9["chosen"]:
+        gains.append(f"transfer of real rare beats onto other patients {_s(p9['chosen']['cnn']['transfer_real']['mean'] - p9['chosen']['cnn']['none']['mean'])}")
+    if final is None or len(gains) < 2:
+        return None
+    rebal = final["families"]["confirmatory"]
+    base = final["conditions"]["cnn/none"]["rare_macro_f1"]["point"]
+    others = {c: final["conditions"][f"cnn/{c}"]["rare_macro_f1"]["point"] - base for c in ("class_weighted", "random_oversampling", "smote") if f"cnn/{c}" in final["conditions"]}
+    text = ("\\paragraph{Patient variation, not class imbalance.} Generative augmentation, which adds beats of the rare classes, was not detectably "
+            f"better than no augmentation in any of the {len(rebal)} confirmatory comparisons of the final evaluation")
+    if others:
+        text += (", and the simpler rebalancing methods moved the cnn's test rare-class macro-F1 by " + ", ".join(f"{_s(v)} ({SHORT[c]})" for c, v in others.items())
+                 + " (point estimates, not tested against none)")
+    text += ". The methods that act on the patient changed the cnn's validation S F1 without augmentation by " + ", ".join(gains) + "."
+    test = {}
+    if p7 is not None:
+        test["patient-relative input"] = p7["conditions"]["cnn/none"]["rare_macro_f1"]["point"]
+    if p10t is not None and "v1/cnn/none" in p10t["conditions"]:
+        test["per-patient batch normalization"] = p10t["conditions"]["v1/cnn/none"]["rare_macro_f1"]["point"]
+    if test:
+        text += (f" On the test records the cnn without augmentation reached {_n(base)}; with " + " and with ".join(f"{k} {_n(v)}" for k, v in test.items()) + ".")
+        carried = [k for k, v in test.items() if v > base + 0.05]
+        lost = [k for k in test if k not in carried]
+        if carried and lost:
+            text += (f" Only {' and '.join(carried)} carried the validation gain over to the test patients; {' and '.join(lost)} did not, so where the "
+                     "patient is normalized matters as much as whether it is.")
+    return text + (" The evidence points to how much patients differ as the main obstacle here; normalizing the input for the patient raised the "
+                   "test score where rebalancing the classes did not, and augmentation that adds patients rather than beats is the form of "
+                   "augmentation it points to.")
 
 
 def discussion() -> str:
@@ -832,6 +927,8 @@ def discussion() -> str:
         paras.append("\\paragraph{Augmentation that adds patients.} Moving the deviations of rare beats onto other patients' templates improved the "
                      "primary metric over no augmentation in the registered comparison (Section~\\ref{sec:patient-transfer}), where class-conditional "
                      "generation alone did not: what new patients need is the arrhythmia seen against many patients' normal beats.")
+    if (pv := patient_variation_paragraph()) is not None:
+        paras.append(pv)
     dom = final["conditions"]["cnn/none"]["rare_macro_f1"]["dominant_record"]
     train_f = ""
     if attribution is not None and "F" in attribution["classes"]:
@@ -1012,6 +1109,7 @@ def build() -> dict[str, str]:
     files["results_relative_cnn"] = posthoc_relative_cnn()
     files["results_mechanism"] = posthoc_mechanism()
     files["results_patient_transfer"] = posthoc_patient_transfer()
+    files["results_patient_adaptation"] = posthoc_patient_adaptation()
     files["table_posthoc"] = posthoc_table()
     files["outlook"] = outlook(heading=False)
     files["discussion"] = discussion()

@@ -952,3 +952,19 @@ project: a nanopore MD script was pushed to Kaggle on request and deleted again 
   rnn WGAN-GP +0.185 (p 0.001), cnn not detectably changed. Reading: adding patients moves the generative conditions above
   plain generation and, for the rnn, above none on validation and in point estimate on test, but not detectably on the test
   patients at this scale; transfer helps on SVDB and hurts on INCART.
+
+## 2026-11-05/06 (Day 30-31) — P10 per-patient batch normalization (pre-registration v9)
+
+Asked again for a way to make the results better. P1-P9 show methods acting on class counts did not beat none while
+patient-level methods helped; P10 (`phase6_patient_adaptation`, `prereg-v9` at 2a7556e, A29) applies adaptive batch
+normalization to the frozen checkpoints (each record classified by a copy whose batch-norm statistics come from its own
+beats; no labels, no retraining; CPU only). Validation (kernel at 2a7556e, suite passed there), S F1 seed means without ->
+with: v1 cnn 0.349 -> 0.510 (+0.162, margin 0.059, **adopted**), v1 rnn 0.315 -> 0.248 (not adopted), P7 cnn 0.472 -> 0.441
+(not adopted); `adoption.json` committed at a4fa3a5 before the test read. Test (one posthoc access at a4fa3a5; plain score
+reproduced exactly): v1 cnn none 0.080 with adaptation vs 0.088 (-0.008 [-0.046, +0.079], Holm p 0.822); S F1 0.160 (0.148),
+**F F1 0.000 (0.029)**: adaptation erased the fusion-beat signal, which the validation records (few F beats, adoption on S
+F1) could not show. Under adaptation, cVAE -0.010 and WGAN-GP +0.004 vs none (Holm p 1.0). External: adaptation -0.050
+(INCART), +0.046 (SVDB), neither rejected; under adaptation generative vs none: INCART cVAE -0.110 (Holm p < 0.001), SVDB
+cVAE +0.112 (p 0.023), WGAN-GP +0.048 (p 0.013). Reading: normalizing the patient at the input (P7) carries over to new
+patients; normalizing inside the network did not. The discussion gained a generated paragraph "Patient variation, not
+class imbalance" that states both.
