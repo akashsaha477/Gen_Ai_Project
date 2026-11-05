@@ -1271,6 +1271,88 @@ def mechanism_figure(attribution: dict | None, gap: dict | None) -> list[Path]:
     return [_save(fig, paths.figures_for("phase6_augmentation_mechanism") / "mechanism.png", "Synthetic beats copy the training patients", caption)]
 
 
+def patient_transfer_example_figure() -> list[Path]:
+    """P9 before and after: one real training S beat of record 209, its deviation from the patient's template, and the beat moved
+    onto the templates of three other training patients (training records only)."""
+    from ecgaug.data.loaders import load_trainval
+    from ecgaug.data.representation import zscore_per_beat
+    from ecgaug.experiments import phase6_patient_template as pt
+    from ecgaug.experiments.phase6_external_validation import frozen_spec
+
+    if not (paths.results_for("phase6_patient_transfer") / "data.json").is_file() or not (paths.processed_dir() / "v1" / "trainval.npz").is_file():
+        return []
+    plt = _plt()
+    half = json.loads((paths.results_for("phase6_patient_transfer") / "data.json").read_text())["half_window_s"]
+    v1 = load_trainval("v1")
+    y, record, split, r_idx = (np.asarray(v1[k]) for k in ("y", "record", "split", "r_idx"))
+    spec = frozen_spec()
+    source = np.flatnonzero((record == 209) & (y == 1) & (split == "train"))[len(np.flatnonzero((record == 209) & (y == 1) & (split == "train"))) // 2]
+    t_p = pt.record_templates(209, r_idx[[source]], spec, half)[0]
+    deviation = v1["X"][source] - t_p
+    targets = []
+    for q in (118, 124, 207):
+        n = np.flatnonzero((record == q) & (y == 0) & (split == "train"))
+        if n.size:
+            i = n[n.size // 2]
+            targets.append((q, pt.record_templates(q, r_idx[[i]], spec, half)[0]))
+    ms = (np.arange(v1["X"].shape[1]) - v1["X"].shape[1] // 2) / 360 * 1000
+    fig, axes = plt.subplots(1, 2 + len(targets), figsize=(3.6 * (2 + len(targets)), 3.2), sharex=True)
+    axes[0].plot(ms, v1["X"][source], color=CLASS_COLORS["S"], linewidth=1.6, label="S beat")
+    axes[0].plot(ms, t_p, color=CLASS_COLORS["N"], linewidth=1.2, label="patient's template")
+    axes[0].set_title("record 209: a real S beat", loc="left", fontsize=9)
+    axes[0].legend(fontsize=7)
+    axes[1].plot(ms, deviation, color=INK, linewidth=1.4)
+    axes[1].set_title("its deviation", loc="left", fontsize=9)
+    for ax, (q, t_q) in zip(axes[2:], targets):
+        ax.plot(ms, t_q, color=CLASS_COLORS["N"], linewidth=1.2, label=f"template of {q}")
+        ax.plot(ms, zscore_per_beat((t_q + deviation)[None, :])[0], color=CLASS_COLORS["S"], linewidth=1.6, label="transferred S beat")
+        ax.set_title(f"moved onto record {q}", loc="left", fontsize=9)
+        ax.legend(fontsize=7)
+    for ax in axes:
+        ax.axvline(0, color=GRID, linewidth=1)
+        ax.set_xlabel("ms from R")
+    caption = ("Training records only. The deviation of a rare-class beat from its own patient's template is placed on the template of another training "
+               "patient (a random N beat's template), so the classifier sees the same arrhythmia against many patients' normal beats; RR intervals "
+               "are scaled by the ratio of the two patients' median RR. Post hoc (PREREGISTRATION v8, P9).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_patient_transfer") / "transfer_example.png", "Patient transfer: one arrhythmia, many patients", caption)]
+
+
+def patient_transfer_results_figure(summary: dict, v2: dict | None) -> list[Path]:
+    """P9: each condition on the test records beside v5's (v2) no augmentation and plain generative augmentation, and the P9 families."""
+    plt = _plt()
+    archs = sorted({k.split("/")[0] for k in summary["conditions"]})
+    rows, colors = [], []
+    for arch in archs:
+        for c in ("none", "transfer_real", "transfer_cvae", "transfer_wgan_gp"):
+            rows.append((f"{arch}/{c}", summary["conditions"][f"{arch}/{c}"]["rare_macro_f1"]))
+            colors.append("#1f9e6e" if c != "none" else INK)
+        if v2:
+            for c in ("cvae", "wgan_gp"):
+                rows.append((f"{arch}/{c} (v5, plain)", v2["conditions"][f"{arch}/{c}"]["rare_macro_f1"]))
+                colors.append("#eb6834")
+    fam = [(family, name) for family, items in summary["families"].items() for name in items]
+    fig, axes = plt.subplots(1, 2, figsize=(13, 0.42 * max(len(rows), len(fam)) + 2.0))
+    ax = axes[0]
+    for i, ((label, e), color) in enumerate(zip(reversed(rows), reversed(colors))):
+        _interval(ax, e, i, color)
+    ax.set_yticks(range(len(rows)), [label for label, _ in reversed(rows)], fontsize=8)
+    ax.set_xlim(left=0)
+    ax.set_xlabel("test rare-class macro-F1 (95% record-level CI)")
+    ax.set_title("each condition (green: patient transfer; orange: plain generative, v5)", loc="left", fontsize=9)
+    ax = axes[1]
+    for i, (family, name) in enumerate(reversed(fam)):
+        r = summary["families"][family][name]
+        _interval(ax, r, i, INK if family == "confirmatory" else INK_2)
+        ax.annotate(f"Holm p {r['p_holm']:.3f}", (r["ci_high"], i), xytext=(6, 0), textcoords="offset points", va="center", fontsize=7, color=INK_2)
+    ax.axvline(0, color=GRID, linewidth=1.2)
+    ax.set_yticks(range(len(fam)), [f"{family[:4]}. {name}" for family, name in reversed(fam)], fontsize=8)
+    ax.set_xlabel("difference in test rare-class macro-F1 (95% CI)")
+    ax.set_title("pre-registered comparisons, P9", loc="left")
+    caption = ("Dataset v2 inputs, strengths chosen on validation by the phase 4 gate rule, 3 seeds. Black: confirmatory family; grey: secondary; Holm within "
+               "each family. Post hoc (PREREGISTRATION v8, P9); the final evaluation (v1) stays the primary result.")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_patient_transfer") / "results.png", "Does augmentation help when it adds patients?", caption)]
+
+
 def posthoc_figures() -> list[Path]:
     """Every post-hoc figure whose summary exists (PREREGISTRATION v4, P1-P4); nothing is re-run."""
     final, written = _summary("final_eval"), []
@@ -1309,6 +1391,9 @@ def posthoc_figures() -> list[Path]:
     mech = (_summary("phase6_augmentation_mechanism", "attribution.json"), _summary("phase6_augmentation_mechanism", "gap.json"))
     if any(m is not None for m in mech):
         written += mechanism_figure(*mech)
+    written += patient_transfer_example_figure()
+    if (s := _summary("phase6_patient_transfer")) is not None:
+        written += patient_transfer_results_figure(s, _summary("phase6_rr_baseline"))
     return written
 
 
