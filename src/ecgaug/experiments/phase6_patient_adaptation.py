@@ -161,7 +161,7 @@ def _families(cms: dict, plain_none: dict, adopted: list[str], stat) -> dict:
     return families
 
 
-def _score(cfg: dict, inputs: dict, adopted: list[str], stat) -> tuple[dict, dict, dict, np.ndarray]:
+def _score(cfg: dict, inputs: dict, adopted: list[str], stat, groups: np.ndarray | None = None) -> tuple[dict, dict, dict, np.ndarray]:
     from ecgaug import final_eval
 
     cms, plain_none, unique = {}, {}, None
@@ -169,7 +169,7 @@ def _score(cfg: dict, inputs: dict, adopted: list[str], stat) -> tuple[dict, dic
     for key in adopted:
         version, arch = key.split("/")
         arrays = inputs[vs[version]["input"]]
-        y, records = arrays["y"], arrays["record"]
+        y, records = arrays["y"], (arrays["record"] if groups is None else groups)  # adaptation stays per record; the bootstrap unit is the patient
         for condition, chosen in vs[version]["chosen"][arch].items():
             unique, cms[(key, condition)] = final_eval.per_record_cms(predict(chosen["run_ids"], arrays, True), y, records)
         _, plain_none[key] = final_eval.per_record_cms(predict(vs[version]["chosen"][arch]["none"]["run_ids"], arrays, False), y, records)
@@ -218,10 +218,10 @@ def external_report(cfg: dict, db: str) -> dict:
         inputs["v3"] = pt.relative(v2, pt.external_templates(db, v2, spec, cfg["half_window_s"]))
     metric = data["primary_metric"]
     stat = final_eval.STATISTICS[metric]
-    cms, plain_none, conditions, unique = _score(cfg, inputs, adopted, stat)
+    cms, plain_none, conditions, unique = _score(cfg, inputs, adopted, stat, ext.clusters(db, arrays))
     plain_conditions = {f"{key}/none": ref.condition_summary(cm, unique) for key, cm in plain_none.items()}
     summary = {"experiment": EXPERIMENT, "post_hoc": True, "rule": "PREREGISTRATION §10 v9 (P2 rules)", "database": db, "primary_metric": metric,
-               "adopted": adopted, "records": len(unique), "conditions": conditions, "plain_none": plain_conditions,
+               "adopted": adopted, "records": int(len(np.unique(arrays["record"]))), "patients": len(unique), "clustered_by": "patient", "conditions": conditions, "plain_none": plain_conditions,
                "families": _families(cms, plain_none, adopted, stat), "git_sha": runs.git_sha()}  # fmt: skip
     (paths.results_for(EXPERIMENT) / f"{db}_summary.json").write_text(json.dumps(summary, indent=2, default=float) + "\n")
     return summary

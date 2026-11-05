@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 
 import numpy as np
 import scipy.signal as sps
@@ -55,6 +56,22 @@ def record_names(db: str) -> list[str]:
 def record_number(name: str) -> int:
     """INCART's I01 -> 1, SVDB's 800 -> 800."""
     return int("".join(ch for ch in name if ch.isdigit()))
+
+
+def patient_of_record(db: str) -> dict[int, int]:
+    """Record number -> patient number. INCART's headers name the patient (``# patient N``; 75 records from 32 patients);
+    SVDB's name none, so each SVDB record is taken as its own patient (an assumption, reported as such)."""
+    out = {}
+    for name in record_names(db):
+        found = re.search(r"#\s*patient\s+(\d+)", (raw.external_dir(db) / f"{name}.hea").read_text())
+        out[record_number(name)] = int(found.group(1)) if found else record_number(name)
+    return out
+
+
+def clusters(db: str, arrays: dict) -> np.ndarray:
+    """The patient of every beat: the unit the bootstrap resamples, so that records of one patient are never treated as independent."""
+    mapping = patient_of_record(db)
+    return np.array([mapping[int(r)] for r in np.asarray(arrays["record"])], dtype=np.int64)
 
 
 def resample_to_fs(signal: np.ndarray, fs: int) -> np.ndarray:
@@ -141,10 +158,12 @@ def evaluate_database(db: str, device: torch.device) -> dict:
     if bad:
         raise PreconditionError(f"Checkpoints missing or changed since the phase 4 gate: {bad[:3]}")
     gate = info["gate"]
-    rr = bool(json.loads((paths.processed_dir() / "v1" / "contract.json").read_text())["representation"]["rr_features"])
+    from ecgaug.experiments import phase1_input_representation as phase1
+
+    rr = bool(phase1.load_config(workflow.variant_configs()[workflow.phase1_winner()])["representation"]["rr_features"])  # the approved representation
     x = torch.from_numpy(arrays["X"])
     side = torch.from_numpy(np.stack([arrays[f] for f in SIDE_FIELDS], axis=1)) if rr else None
-    y, records = arrays["y"], arrays["record"]
+    y, records = arrays["y"], clusters(db, arrays)  # bootstrap over patients, not records
     cms = {}
     for c in info["checkpoints"]:
         probs = predict_proba(load_run_classifier(c["run_id"], rr), x, side, device)
@@ -167,7 +186,7 @@ def evaluate_database(db: str, device: torch.device) -> dict:
         value.update(p_holm=adjusted[key]["p_adjusted"], reject_holm=adjusted[key]["reject"], ds2_reject_holm=ds2[key]["reject_holm"],
                      replicated=adjusted[key]["reject"] == ds2[key]["reject_holm"])  # fmt: skip
     summary = {"experiment": EXPERIMENT, "post_hoc": True, "rule": "PREREGISTRATION §10 v4, P2", "database": db, "role": data["role"],
-               "primary_metric": primary, "beats": data["beats"], "records": len(unique), "n_boot": ref.N_BOOT, "conditions": conditions,
+               "primary_metric": primary, "beats": data["beats"], "records": int(len(np.unique(arrays["record"]))), "patients": len(unique), "clustered_by": "patient", "n_boot": ref.N_BOOT, "conditions": conditions,
                "references": references, "confirmatory": family, "run_ids": [c["run_id"] for c in info["checkpoints"]], "git_sha": runs.git_sha()}  # fmt: skip
     (paths.results_for(EXPERIMENT) / f"{db}_summary.json").write_text(json.dumps(summary, indent=2, default=float) + "\n")
     return summary
@@ -176,6 +195,7 @@ def evaluate_database(db: str, device: torch.device) -> dict:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--part", choices=["data", "evaluate"], required=True)
+    parser.add_argument("--config", default=None, help="ignored: the Kaggle runner passes one; this experiment has no settings file")
     parser.add_argument("--database", choices=[*DATABASES, "all"], default="all")
     parser.add_argument("--device", default="cpu")
     args = parser.parse_args(argv)
