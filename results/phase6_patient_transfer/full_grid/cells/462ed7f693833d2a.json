@@ -1,0 +1,29 @@
+{
+  "cell_sha": "462ed7f693833d2a2891f910997e8f88d614e7a770be16bf708a196b719de8cc",
+  "cell": {
+    "condition": "transfer_cvae",
+    "strength": 0.5,
+    "architecture": "cnn",
+    "seed": 0
+  },
+  "condition": "transfer_cvae",
+  "strength": 0.5,
+  "architecture": "cnn",
+  "seed": 0,
+  "run_id": "phase6_patient_transfer-cnn.transfer_cvae_0.5-s0-9cac590-202611051526",
+  "status": "done",
+  "bank": "phase6_patient_transfer/transfer_cvae",
+  "selection_metric": "s_f1",
+  "selection_value": 0.3084455324357405,
+  "tie_break_value": 0.37622080679405523,
+  "rare_macro_f1": 0.15422276621787026,
+  "n_recall": 0.8551158301158301,
+  "n_added": {
+    "N": 0,
+    "S": 17089,
+    "V": 14702,
+    "F": 17345
+  },
+  "wall_clock_s": 22.4,
+  "provisional": false
+}

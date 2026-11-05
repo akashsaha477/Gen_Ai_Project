@@ -1,0 +1,66 @@
+grid: configs/phase6_patient_transfer/patient_transfer.yaml
+grid_name: full_grid
+cell:
+  condition: transfer_real
+  strength: 0.1
+  architecture: cnn
+  seed: 0
+cell_sha: ba2c4afdbd51f6b85a0f7153b1050d34f26de40e76ba9b09b163481a928351ce
+policy:
+  kind: fraction_of_n
+condition_settings:
+  bank: phase6_patient_transfer/transfer_real
+  strengths:
+  - 0.1
+  - 0.25
+  - 0.5
+bank: phase6_patient_transfer/transfer_real
+classifier:
+  variant: A
+  config: configs/phase2_baseline_classifiers/A_shallow_cnn.yaml
+  model:
+    name: shallow_cnn
+    channels:
+    - 32
+    - 64
+    - 128
+    kernel: 7
+    side_hidden: 16
+  lr: 0.001
+  max_epochs: 40
+  patience: 5
+  min_epochs: 10
+  batch_size: 256
+  weight_decay: 0.01
+  run_ids:
+  - phase2_baseline_classifiers-A.lr1e-03-s0-a6ac8bf-202611010715
+  - phase2_baseline_classifiers-A.lr1e-03-s1-a6ac8bf-202611010715
+  - phase2_baseline_classifiers-A.lr1e-03-s2-a6ac8bf-202611010715
+  checkpoints:
+    phase2_baseline_classifiers-A.lr1e-03-s0-a6ac8bf-202611010715: 04e6f6f4c1fc4d0fcf3b6e16ff68e92e640fc99d25d84780b9781340976ef88c
+    phase2_baseline_classifiers-A.lr1e-03-s1-a6ac8bf-202611010715: 0235e139af9fe276d4455a2043c44fc5bc838d84f6842a7d6a64f273f8011416
+    phase2_baseline_classifiers-A.lr1e-03-s2-a6ac8bf-202611010715: f307abff674461fe3d4b7f3d7beec6e63eed913d8a1fb758b882ad10da1ce2dd
+class_weights: null
+n_added:
+  N: 0
+  S: 2903
+  V: 516
+  F: 3159
+run_id: phase6_patient_transfer-cnn.transfer_real_0.1-s0-9cac590-202611051504
+split:
+  name: V1
+  val:
+  - 115
+  - 118
+  - 201
+  - 205
+  - 223
+  selection_metric: s_f1
+dataset:
+  source: data/processed/v2 (v5), with patient-transfer banks
+  representation: C_short_window_rr_features
+  content_sha256: 41f01f585724eea9b06d22999ded5b86d0251ef22fbdf24787db43aaaf06f7df
+  frozen: false
+  version: v2
+provisional: false
+provisional_reasons: []

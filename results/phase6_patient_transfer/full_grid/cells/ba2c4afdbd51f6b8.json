@@ -1,0 +1,29 @@
+{
+  "cell_sha": "ba2c4afdbd51f6b85a0f7153b1050d34f26de40e76ba9b09b163481a928351ce",
+  "cell": {
+    "condition": "transfer_real",
+    "strength": 0.1,
+    "architecture": "cnn",
+    "seed": 0
+  },
+  "condition": "transfer_real",
+  "strength": 0.1,
+  "architecture": "cnn",
+  "seed": 0,
+  "run_id": "phase6_patient_transfer-cnn.transfer_real_0.1-s0-9cac590-202611051504",
+  "status": "done",
+  "bank": "phase6_patient_transfer/transfer_real",
+  "selection_metric": "s_f1",
+  "selection_value": 0.43761996161228406,
+  "tie_break_value": 0.4192355117139334,
+  "rare_macro_f1": 0.21880998080614203,
+  "n_recall": 0.9172779922779922,
+  "n_added": {
+    "N": 0,
+    "S": 2903,
+    "V": 516,
+    "F": 3159
+  },
+  "wall_clock_s": 12.0,
+  "provisional": false
+}
