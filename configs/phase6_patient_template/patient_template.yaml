@@ -1,0 +1,3 @@
+experiment: phase6_patient_template
+half_window_s: 150
+adoption_margin: 0.02

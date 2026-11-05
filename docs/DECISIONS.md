@@ -322,3 +322,13 @@ defines a v2 dataset that changes only `rr_ratio`, reruns the unchanged full gri
 2026-11-04 stays the primary result; the v2 study is reported beside it. Compute above 2 GPU-hours approved with the same
 answer.
 
+
+## 2026-11-05 (Day 30) — A26: follow-up study with patient-relative beats (pre-registration v6) — Akash Saha ("do 2 and 3")
+
+The v5 results were weak in absolute terms (test S Se 0.136 for the cnn) and the feature fix did not move them. Asked to
+(2) find out why on validation and (3) build a stronger baseline and rerun the comparison. An exploratory look on DS1
+(disclosed in v6) showed the networks fit the training patients' beat shapes (S PR-AUC 0.92 on training records, 0.20 on
+validation). v6 gives every beat relative to the patient's local median beat, runs the no-augmentation cells first, and
+continues to the full grid, one DS2 read and the external databases only if a pre-registered validation rule adopts it.
+Everything runs on Kaggle (the laptop crashed under local load): CPU sessions where no training is needed, one T4 session
+for the grid. Pushed to GitHub only after the full test suite passes in a Kaggle session at the same commit.
