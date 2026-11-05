@@ -416,17 +416,32 @@ def posthoc_rr_baseline() -> str:
     nones = "; ".join(f"the {arch} without augmentation reached {_ci(summary['conditions'][f'{arch}/none']['rare_macro_f1'])} "
                       f"(v2 minus v1 {_ci(summary['versus_v1'][f'{arch}/none'], signed=True)})" for arch in selection["chosen"])  # fmt: skip
     best_key = max(summary["conditions"], key=lambda k: summary["conditions"][k]["rare_macro_f1"]["point"])
+    best_arch, best_cond = best_key.split("/")
+    best_name = "no augmentation" if best_cond == "none" else SHORT[best_cond]
+    diffs = summary["versus_v1"]
+    up = [k for k, c in diffs.items() if c["ci_low"] > 0]
+    down = [k for k, c in diffs.items() if c["ci_high"] < 0]
+    span = f"{_s(min(c['point'] for c in diffs.values()))} to {_s(max(c['point'] for c in diffs.values()))}"
     conf = summary["families"]["confirmatory"]
     improved = [k for k, c in conf.items() if c["reject_holm"] and c["point"] > 0]
     secondary = {k: c for k, c in summary["families"]["secondary"].items() if c["reject_holm"]}
-    text += (f" The rule chose the strengths {strengths}. On the test records with v2 features, {nones}. The highest score was "
-             f"{best_key.replace('_', ' ')}'s, {_ci(summary['conditions'][best_key]['rare_macro_f1'])}. Against no augmentation: {_family_sentence(conf)}. "
+    text += (f" The rule chose the strengths {strengths}. On the test records with v2 features (Figure~\\ref{{fig:v2-results}}), {nones}. "
+             f"Across the {len(diffs)} conditions the paired difference v2 minus v1 ranged from {span}; "
+             + (f"its 95\\% CI was above zero in {len(up)} and below zero in {len(down)}." if up or down else
+                "no 95\\% CI excluded zero, so the new ratio did not detectably change the networks' primary metric.")
+             + f" The highest score was the {best_arch} with {best_name}, {_ci(summary['conditions'][best_key]['rare_macro_f1'])}. "
+             f"Against no augmentation: {_family_sentence(conf)}. "
              f"By the registered criterion, generative augmentation {'improved' if improved else 'did not detectably improve'} the primary metric with v2 "
              f"features. {'In the secondary family Holm rejected ' + _family_sentence(secondary) + '.' if secondary else 'No secondary comparison was rejected.'}")  # fmt: skip
     refs = summary.get("references", {})
     if "rr_lda" in refs:
+        from ecgaug.names import PHASE6_RR_REFERENCE
+
         r = refs["rr_lda"]
-        text += f" The RR-only reference refitted on v2 reached {_ci(r['rare_macro_f1'])} (S Se {_n(r['se_S']['point'])}, S +P {_n(r['ppv_S']['point'])})."
+        old = _load(paths.results_for(PHASE6_RR_REFERENCE) / "summary.json")
+        before = f" (v1: {_n(old['references']['rr_lda']['rare_macro_f1']['point'])}, S Se {_n(old['references']['rr_lda']['se_S']['point'])})" if old else ""
+        text += (f" The RR-only reference refitted on v2 reached {_ci(r['rare_macro_f1'])} (S Se {_n(r['se_S']['point'])}, "
+                 f"S +P {_n(r['ppv_S']['point'])}){before}.")  # fmt: skip
     ext = []
     for db in DATABASE:
         e = _load(folder / f"{db}_summary.json")
@@ -437,11 +452,11 @@ def posthoc_rr_baseline() -> str:
                        + ", ".join(f"generative augmentation {v} it in {verbs.count(v)}" for v in dict.fromkeys(verbs)) + " of the 4 confirmatory comparisons")
     if ext:
         text += " Externally, " + "; ".join(ext) + " (Figure~\\ref{fig:v2-external})."
-    return text + " Post hoc (Figure~\\ref{fig:v2-results}).\n"
+    return text + " These results are post hoc and do not replace the primary results of Table~\\ref{tab:test}.\n"
 
 
 def abstract_posthoc() -> str:
-    """One abstract sentence for the post-hoc analyses (P2 primary database, P3), from their summaries."""
+    """Abstract sentences for the post-hoc analyses (P2 primary database, P3, P5), from their summaries."""
     from ecgaug.names import PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS
 
     incart = _load(paths.results_for(PHASE6_EXTERNAL_VALIDATION) / "incartdb_summary.json")
@@ -456,6 +471,17 @@ def abstract_posthoc() -> str:
     changed = "no pre-registered verdict" if not seeds["changed"] else f"{len(seeds['changed'])} pre-registered verdicts"
     text = (f"In analyses added after the final evaluation, the frozen models were applied to the St Petersburg INCART database, where generative "
             f"augmentation {counts} of the {len(conf)} confirmatory comparisons with no augmentation{bound}; two more seeds changed {changed}.")  # fmt: skip
+    from ecgaug.names import PHASE6_RR_BASELINE
+
+    v5 = _load(paths.results_for(PHASE6_RR_BASELINE) / "summary.json")
+    if v5 is not None:
+        diffs = v5["versus_v1"].values()
+        moved = sum(c["ci_low"] > 0 or c["ci_high"] < 0 for c in diffs)
+        improved = any(c["reject_holm"] and c["point"] > 0 for c in v5["families"]["confirmatory"].values())
+        text += (f" Rerunning the full grid with an RR feature measured against each patient's baseline "
+                 f"{'changed' if moved else 'did not detectably change'} the networks' scores (v2 minus v1 from "
+                 f"{_s(min(c['point'] for c in diffs))} to {_s(max(c['point'] for c in diffs))}) and "
+                 f"{'did' if improved else 'did not'} make generative augmentation detectably better than none.")  # fmt: skip
     return text
 
 

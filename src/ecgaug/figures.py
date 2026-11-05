@@ -1013,7 +1013,7 @@ def rr_baseline_results_figure(summary: dict, final: dict) -> list[Path]:
     caption = ("The full grid rerun with one change to the input (the RR ratio against the patient's baseline), selected on validation by the "
                "phase 4 gate rule; 3 seeds. Black: confirmatory family; grey: secondary; p-values Holm-adjusted within each family. "
                "Post hoc (PREREGISTRATION v5, P5); the final evaluation (blue, left) stays the primary result.")  # fmt: skip
-    return [_save(fig, paths.figures_for("phase6_rr_baseline") / "v1_vs_v2_results.png", "After the fix: every condition with v1 and v2 features", caption)]
+    return [_save(fig, paths.figures_for("phase6_rr_baseline") / "v1_vs_v2_results.png", "Before and after: every condition with v1 and v2 RR features", caption)]
 
 
 def rr_baseline_external_figure(v2: dict[str, dict], v1: dict[str, dict]) -> list[Path]:
@@ -1034,7 +1034,7 @@ def rr_baseline_external_figure(v2: dict[str, dict], v1: dict[str, dict]) -> lis
         ax.set_title(f"{ {'incartdb': 'INCART', 'svdb': 'SVDB'}.get(db, db)}: v2 Holm rejects {reject} of 4 vs none", loc="left", fontsize=9)
     axes[0][0].legend(loc="lower left", bbox_to_anchor=(0, 1.06), ncol=2, fontsize=8)
     caption = "The v2 checkpoints applied unchanged to the external databases, with the v2 ratio from their annotations. Post hoc (PREREGISTRATION v5, P5)."
-    return [_save(fig, paths.figures_for("phase6_rr_baseline") / "external_v1_vs_v2.png", "After the fix: external databases", caption)]
+    return [_save(fig, paths.figures_for("phase6_rr_baseline") / "external_v1_vs_v2.png", "Before and after: external databases with v1 and v2 RR features", caption)]
 
 
 def posthoc_figures() -> list[Path]:
