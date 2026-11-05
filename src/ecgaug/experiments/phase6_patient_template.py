@@ -401,20 +401,20 @@ def _predict(run_ids: list[str], arrays: dict) -> list[np.ndarray]:
     return [predict_proba(load_run_classifier(run_id, True), x, side, torch.device("cpu")) for run_id in run_ids]
 
 
-def test_arrays(spec: RepresentationSpec) -> dict:
+def test_arrays(spec: RepresentationSpec, experiment: str = EXPERIMENT) -> dict:
     """The frozen DS2 beats, read under the posthoc access: from data/processed/v1 when present, else rebuilt from the raw
-    DS2 records, and checked against the frozen hash either way."""
+    DS2 records, and checked against the frozen hash either way. The access is logged under ``experiment``."""
     from ecgaug.data.loaders import load_test_posthoc
 
     require_test_access("posthoc")
     if not logged_accesses("evaluation"):
         raise PreconditionError("Post-hoc analyses run only after the final evaluation")
-    purpose = f"{EXPERIMENT}: DS2 predictions with v3 beats (and the v1, v2 checkpoints for the paired differences)"
+    purpose = f"{experiment}: DS2 predictions with v3 beats (and the v1, v2 checkpoints for the paired differences)"
     if test_arrays_present("v1"):
-        arrays = load_test_posthoc("v1", purpose, run_ids=f"results/{EXPERIMENT}/selection.json")
+        arrays = load_test_posthoc("v1", purpose, run_ids=f"results/{experiment}/selection.json")
     else:
         arrays, _ = build_arrays(sorted(DS2), spec, {r: "test" for r in DS2}, access="posthoc")
-        log_test_access("posthoc", f"{purpose} (rebuilt from the raw DS2 records)", run_ids=f"results/{EXPERIMENT}/selection.json")
+        log_test_access("posthoc", f"{purpose} (rebuilt from the raw DS2 records)", run_ids=f"results/{experiment}/selection.json")
     if content_sha256(arrays) != frozen_test_sha256(workflow.manifest()[PHASE1_GATE]["files"]):
         raise PreconditionError("The DS2 beats do not match the frozen test set (results/manifest.json)")
     return arrays

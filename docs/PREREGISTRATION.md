@@ -147,7 +147,7 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 - Every access is appended to `docs/TEST_ACCESS_LOG.md`. No decision of any kind uses test data.
 - After `/final-eval` nothing is retrained, re-selected or re-tuned. A bug found later is documented
   and any re-run is disclosed.
-- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v6): the analyses listed in §10 v4, v5 and v6 only, after `/final-eval`, logged;
+- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v7): the analyses listed in §10 v4 to v7 only, after `/final-eval`, logged;
   they add evidence beside the primary results and replace none of them.
 
 ## 9. Generators and RQ3 (rules fixed now, thresholds in v2)
@@ -268,6 +268,25 @@ the same inputs was stopped before it gave a number. These looks are disclosed h
 | external | INCART and SVDB as in P2 and P5, with templates from each record's signal resampled to 360 Hz and all its QRS annotations; the 36 v3 checkpoints |
 | diagnostic (validation only) | descriptive, no decision: per architecture, the seed means of per-class PR-AUC and F1 on the training and validation beats of the no-augmentation networks of v1 (the final evaluation's), v2 (v5) and v3, per-record validation S recall, and LDAs with uniform priors on three fixed feature sets (v2 RR; v2 RR plus every 10th raw sample; v2 RR plus every 10th sample of the v3 beat) |
 | reporting | its own section and verdicts, labelled post hoc, beside v1 and v5. Compute: one Kaggle T4 session (the v5 grid took about 2.8 GPU-hours); CPU sessions for the rest |
+
+**v7, committed 2026-11-05, after v6's adoption result, before any of the work below (DECISIONS A27).** Two analyses,
+both post hoc. P7: v6's adoption rule averaged over the two architectures and did not adopt v3 (mean difference
+-0.0015 against a margin of 0.026), but per architecture v3 raised the cnn's validation S F1 (seed means 0.472 against
+0.350; seed SDs 0.021 and 0.042) and lowered the rnn's (0.181 against 0.306). P7 takes the cnn with v3 inputs, a choice
+made on validation after seeing v6's result and reported as such, and repeats the comparison for the cnn alone, so that
+the study's question is also answered on a baseline that is stronger on validation. P8 describes, on DS1 only, why
+augmentation does not carry over to new patients.
+
+| item | rule |
+|---|---|
+| P7 `phase6_relative_cnn`, data | dataset v3 and its banks exactly as v6 builds them (hash-checked against `results/phase6_patient_template/data.json`) |
+| P7 grid | the phase 4a gate's full grid restricted to the cnn of the phase 2 gate, settings unchanged: none; class-weighted gamma 0.5, 0.75, 1.0; random oversampling, SMOTE, cVAE, WGAN-GP at 0.1, 0.25, 0.5; seeds 0-2; 48 runs, all run in this experiment (v6's 3 cnn cells are not reused) |
+| P7 selection | the phase 4 gate rule by `workflow.choose_strengths` on the 48 cells, written before any DS2 read |
+| P7 test | one `posthoc` access, as in v6: frozen DS2 beats (rebuilt and hash-checked if absent), v2 ratios, templates; the analysis of §7 for the cnn alone, with the families `final_eval.comparisons` gives for one architecture (confirmatory: cVAE vs none, WGAN-GP vs none; secondary: cVAE vs WGAN-GP and the best generative condition vs SMOTE, class-weighted and random oversampling), Holm within each family, the wording rules of §7; per condition the paired differences P7 minus v1 and P7 minus v2 (descriptive); refused unless the recomputed v1 scores equal the final evaluation's |
+| P7 external | INCART and SVDB as in v6, with the 18 selected checkpoints |
+| P8 `phase6_augmentation_mechanism`, attribution | for each frozen bank (cVAE-D, WGAN-GP-A; seeds 0-2) and each class S, V, F, every synthetic beat is attributed to the training record of its nearest real training beat of the same class (Euclidean distance between the z-scored windows); likewise the beats the policy adds at the strength the phase 4 gate chose for each architecture. References: the records of the real training beats themselves, each real training beat's nearest other real training beat (same record or not), and each validation beat's nearest real training beat. Reported per class: share per record and the effective number of records, exp(entropy) |
+| P8 gap | for every condition of the final evaluation (v1, the gate's strengths, seeds 0-2) and both architectures: seed means of S and V PR-AUC on the real training beats and on the validation beats, and their difference |
+| reporting | own sections, labelled post hoc, beside v1, v5 and v6; descriptive only for P8. Compute: one Kaggle T4 session for the 48 P7 runs (v6's cells took about a minute each; estimated well under 2 GPU-hours); CPU sessions for everything else |
 
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 

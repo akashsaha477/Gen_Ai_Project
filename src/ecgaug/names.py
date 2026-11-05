@@ -58,8 +58,10 @@ PHASE6_EXTRA_SEEDS = "phase6_extra_seeds"  # seeds 3 and 4 of the final evaluati
 PHASE6_AUDIT_CHECK = "phase6_audit_check"  # the leakage audit at the chosen WGAN-GP strength and on more splits
 PHASE6_RR_BASELINE = "phase6_rr_baseline"  # the full grid again with a patient-baseline RR ratio (v5)
 PHASE6_PATIENT_TEMPLATE = "phase6_patient_template"  # the full grid again with patient-relative beats (v6)
+PHASE6_RELATIVE_CNN = "phase6_relative_cnn"  # the cnn alone with patient-relative beats, full comparison (v7)
+PHASE6_AUGMENTATION_MECHANISM = "phase6_augmentation_mechanism"  # why augmentation does not carry over to new patients (v7)
 POST_HOC: tuple[str, ...] = (PHASE6_RR_REFERENCE, PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS, PHASE6_AUDIT_CHECK, PHASE6_RR_BASELINE,
-                             PHASE6_PATIENT_TEMPLATE)
+                             PHASE6_PATIENT_TEMPLATE, PHASE6_RELATIVE_CNN, PHASE6_AUGMENTATION_MECHANISM)
 
 # Result folders that travel back from Kaggle: every experiment's, plus the full grid's ledger.
 RESULT_FOLDERS: tuple[str, ...] = (*EXPERIMENTS, PHASE4_FULL_GRID, *POST_HOC)
