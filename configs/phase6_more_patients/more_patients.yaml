@@ -1,0 +1,6 @@
+experiment: phase6_more_patients
+patient_template_config: configs/phase6_patient_template/patient_template.yaml
+relative_cnn_config: configs/phase6_relative_cnn/relative_cnn.yaml
+n_cap_per_record: 600
+validation_every: 5
+cap_seed: 0

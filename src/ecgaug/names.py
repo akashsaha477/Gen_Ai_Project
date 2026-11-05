@@ -62,9 +62,10 @@ PHASE6_RELATIVE_CNN = "phase6_relative_cnn"  # the cnn alone with patient-relati
 PHASE6_AUGMENTATION_MECHANISM = "phase6_augmentation_mechanism"  # why augmentation does not carry over to new patients (v7)
 PHASE6_PATIENT_TRANSFER = "phase6_patient_transfer"  # rare-class beats moved onto other patients' templates (v8)
 PHASE6_PATIENT_ADAPTATION = "phase6_patient_adaptation"  # per-patient batch-normalization statistics at test time (v9)
+PHASE6_MORE_PATIENTS = "phase6_more_patients"  # the P7 cnn trained on DS1 plus the INCART and SVDB patients (v10)
 POST_HOC: tuple[str, ...] = (PHASE6_RR_REFERENCE, PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS, PHASE6_AUDIT_CHECK, PHASE6_RR_BASELINE,
                              PHASE6_PATIENT_TEMPLATE, PHASE6_RELATIVE_CNN, PHASE6_AUGMENTATION_MECHANISM,
-                             PHASE6_PATIENT_TRANSFER, PHASE6_PATIENT_ADAPTATION)
+                             PHASE6_PATIENT_TRANSFER, PHASE6_PATIENT_ADAPTATION, PHASE6_MORE_PATIENTS)
 
 # Result folders that travel back from Kaggle: every experiment's, plus the full grid's ledger.
 RESULT_FOLDERS: tuple[str, ...] = (*EXPERIMENTS, PHASE4_FULL_GRID, *POST_HOC)
