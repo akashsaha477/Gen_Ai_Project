@@ -387,3 +387,29 @@ def test_ingest_appends_new_test_access_rows_once(tmp_path):
     assert runs.ingest([tmp_path / "bundle"])["access_log_rows"] == [new.rstrip("\n")]
     assert runs.ingest([tmp_path / "bundle"])["access_log_rows"] == []
     assert log.read_text() == header + old + new
+
+
+def test_kaggle_data_dir_copies_missing_files_and_refuses_test_arrays(tmp_path):
+    import importlib.util
+
+    from conftest import REPO
+
+    spec = importlib.util.spec_from_file_location("kaggle_run", REPO / "kaggle" / "kaggle_run.py")
+    kaggle_run = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(kaggle_run)
+
+    source = tmp_path / "input" / "ecgaug-data" / "data"
+    (source / "raw" / "svdb").mkdir(parents=True)
+    (source / "raw" / "svdb" / "800.hea").write_text("new")
+    (source / "processed" / "external").mkdir(parents=True)
+    (source / "processed" / "external" / "svdb.npz").write_bytes(b"x")
+    repo = tmp_path / "repo"
+    (repo / "data" / "raw" / "svdb").mkdir(parents=True)
+    (repo / "data" / "raw" / "svdb" / "800.hea").write_text("kept")
+    copied = kaggle_run.setup_data_dir(str(tmp_path / "input"), repo=repo)
+    assert copied == ["data/processed/external/svdb.npz"]
+    assert (repo / "data" / "raw" / "svdb" / "800.hea").read_text() == "kept"  # nothing is overwritten
+    (source / "processed" / "v1").mkdir(parents=True)
+    (source / "processed" / "v1" / "test.npz").write_bytes(b"x")
+    with pytest.raises(RuntimeError, match="guarded test arrays"):
+        kaggle_run.setup_data_dir(str(tmp_path / "input"), repo=repo)

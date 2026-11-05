@@ -16,6 +16,7 @@ to GitHub, so you only `git pull`. No logic lives in the notebooks.
 | `phase4_leakage_audit.ipynb` | the leakage audit, only after the final evaluation (`CONFIRM_AUDIT = True`) | `mitdb-raw`, audit banks for `PART = "classifiers"` |
 | `phase6_extra_seeds.ipynb` | post hoc (PREREGISTRATION v4, P3): generators and the 12 conditions for seeds 3 and 4; validation only | `mitdb-raw` |
 | `phase6_rr_baseline.ipynb` | post hoc (PREREGISTRATION v5, P5): dataset v2 (baseline RR ratio), remapped banks, the full grid unchanged on v2; validation only | `mitdb-raw`, banks |
+| `phase6_rr_baseline_external.ipynb` | post hoc (v5, P5 with the P2 rules): the v5 checkpoints and v2 references on INCART and SVDB; CPU only; optional full test suite first (`--tests`) | `ecgaug-v5-external` (external databases and v5 checkpoints) |
 | `phase5_explainability.ipynb`, `phase5_clinical_notes.ipynb` | saliency methods and note generators on the phase 4 models | `mitdb-raw`, artifacts (checkpoints) |
 
 Other files in this folder: `kaggle_run.py` (the script every notebook calls), `make_raw_dataset.py`

@@ -39,7 +39,7 @@ def sh(cmd: list[str], check: bool = True) -> int:
     return subprocess.run([str(c) for c in cmd], cwd=REPO, check=check).returncode
 
 
-def setup_env(mode: str) -> list[str]:
+def setup_env(mode: str, dev: bool = False) -> list[str]:
     """Install the project and return the command prefix that runs a module in it.
 
     'locked' installs exactly uv.lock (reference environment). 'kaggle' keeps Kaggle's preinstalled
@@ -48,8 +48,9 @@ def setup_env(mode: str) -> list[str]:
     """
     if mode == "locked":
         sh([sys.executable, "-m", "pip", "install", "--quiet", "uv"])
-        sh(["uv", "sync", "--frozen", "--no-dev"])
-        return ["uv", "run", "--frozen", "--no-dev", "python", "-m"]
+        groups = [] if dev else ["--no-dev"]  # dev: the test suite's tools too (--tests)
+        sh(["uv", "sync", "--frozen", *groups])
+        return ["uv", "run", "--frozen", *groups, "python", "-m"]
     if mode == "kaggle":
         sh([sys.executable, "-m", "pip", "install", "--quiet", "--no-deps", "-e", "."])
         sh([sys.executable, "-m", "pip", "install", "--quiet", "wfdb", "pyyaml"])
@@ -156,6 +157,31 @@ def setup_artifacts(artifacts_dir: str, repo: Path = REPO) -> list[str]:
     return copied
 
 
+GUARDED_DATA = ("test.npz",)  # DS2 arrays never travel in a dataset: they are rebuilt where the guarded loaders run
+
+
+def setup_data_dir(data_dir: str, repo: Path = REPO) -> list[str]:
+    """Copy the files under every ``data/`` folder of an attached dataset into the repository's ``data/``
+    where they are missing (external databases, processed arrays). Refuses guarded test arrays; nothing is
+    overwritten, and every loader checks its files against the recorded SHA-256 before using them."""
+    copied = []
+    for data_root in sorted(p for p in Path(data_dir).rglob("data") if p.is_dir() and p.parent.name != "data"):
+        for path in sorted(p for p in data_root.rglob("*") if p.is_file()):
+            if path.name in GUARDED_DATA:
+                raise RuntimeError(f"{path}: guarded test arrays must not come from a dataset")
+            target = repo / "data" / path.relative_to(data_root)
+            if not target.exists():
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(path, target)
+                copied.append(str(target.relative_to(repo)))
+    return copied
+
+
+def run_tests(run: list[str], repo: Path = REPO) -> int:
+    """The full test suite at this commit (``python -m pytest``); its exit code goes into the bundle manifest."""
+    return sh([*run, "pytest", "-q", "-p", "no:warnings"], check=False)
+
+
 def git_sha() -> str:
     out = subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO, capture_output=True, text=True)
     return out.stdout.strip() or "0" * 40
@@ -226,6 +252,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--raw-dir", default="/kaggle/input", help="folder searched for the raw MIT-BIH files (the attached mitdb-raw dataset)")
     parser.add_argument("--no-download", action="store_true", help="refuse instead of downloading when no raw files are attached")
     parser.add_argument("--artifacts-dir", default=None, help="attached dataset holding banks and run checkpoints (phase 4 and 5 runs need them)")
+    parser.add_argument("--data-dir", default=None, help="attached dataset holding a data/ folder (external databases, processed arrays)")
+    parser.add_argument("--tests", action="store_true", help="run the full test suite first and stop if it fails")
     parser.add_argument("--out", default="/kaggle/working", help="where the bundle zip is written")
     parser.add_argument("--push-to", default=None, metavar="BRANCH", help="commit the outputs and push them to this branch")
     parser.add_argument("--git-name", default="", help="author name for the results commit")
@@ -233,7 +261,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("extra", nargs="*", help="arguments after -- are passed to the CLI")
     args = parser.parse_args(argv)
 
-    run = setup_env(args.env)
+    run = setup_env(args.env, dev=args.tests)
     if "--smoke" not in args.extra:  # smoke runs make their own fake records
         try:
             setup_data(args.raw_dir, mirror=None if args.no_download else RAW_MIRROR)
@@ -243,16 +271,23 @@ def main(argv: list[str] | None = None) -> int:
     if args.artifacts_dir:
         copied = setup_artifacts(args.artifacts_dir)
         print(f"artifacts copied from {args.artifacts_dir}: {len(copied)} files", flush=True)
+    if args.data_dir:
+        copied = setup_data_dir(args.data_dir)
+        print(f"data copied from {args.data_dir}: {len(copied)} files", flush=True)
 
     results = {}
-    for config in args.config:
+    tests = run_tests(run) if args.tests else None
+    if tests:
+        print(f"!! the test suite failed (exit code {tests}); nothing else runs", flush=True)
+        results["tests"] = tests
+    for config in ([] if tests else args.config):
         code = sh([*run, args.cli, "--config", config, *args.extra], check=False)
         results[config] = code
         if code != 0:
             print(f"!! {config} exited with code {code}; stopping here", flush=True)
             break
 
-    manifest = {"git_sha": git_sha(), "cli": args.cli, "env": args.env, "extra": args.extra, "exit_codes": results}
+    manifest = {"git_sha": git_sha(), "cli": args.cli, "env": args.env, "extra": args.extra, "exit_codes": results, "tests_exit_code": tests}
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
     archive = bundle(out_dir, manifest)
