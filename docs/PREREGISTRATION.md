@@ -147,7 +147,7 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 - Every access is appended to `docs/TEST_ACCESS_LOG.md`. No decision of any kind uses test data.
 - After `/final-eval` nothing is retrained, re-selected or re-tuned. A bug found later is documented
   and any re-run is disclosed.
-- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v8): the analyses listed in §10 v4 to v8 only, after `/final-eval`, logged;
+- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v9): the analyses listed in §10 v4 to v9 only, after `/final-eval`, logged;
   they add evidence beside the primary results and replace none of them.
 
 ## 9. Generators and RQ3 (rules fixed now, thresholds in v2)
@@ -303,6 +303,21 @@ augmentation helps when it adds patients rather than beats.
 | test | one `posthoc` access on Kaggle (DS2 rebuilt and hash-checked, v2 ratios). Confirmatory family (Holm, 4 tests): per architecture, transfer_cvae vs none and transfer_wgan_gp vs none, in rare-class macro-F1, record-level bootstrap 10,000, seed 0, with the wording rules of §7. Secondary family (Holm, 4 tests): per architecture, transfer_real vs none, and the generative transfer condition with the better validation seed mean vs transfer_real. Descriptive: every P9 condition minus v5's none, cVAE and WGAN-GP of the same architecture; the recomputed v5 none score is reported beside v5's |
 | external | INCART and SVDB as in P5, the P9 checkpoints, the confirmatory family within each database |
 | reporting | its own section, labelled post hoc; the primary results stay the v1 final evaluation. Compute: one Kaggle T4 session (estimated under 2 GPU-hours); CPU sessions for the test and external parts |
+
+**v9, committed 2026-11-05, after v8's results, before any of the work below (DECISIONS A29).** One analysis, post hoc.
+P6 to P9 point to patient variation rather than class imbalance as the bottleneck: patient-relative inputs raised the
+cnn's test rare-class macro-F1 from 0.088 to 0.371, while no rebalancing method was detectably better than none. P10
+applies the same idea inside the network without retraining: adaptive batch normalization (Li et al., 2016), in which
+each batch-normalization layer of a frozen checkpoint normalizes with the statistics of the patient being classified.
+
+| item | rule |
+|---|---|
+| P10 `phase6_patient_adaptation`, models | the frozen checkpoints of the final evaluation (v1 inputs; cnn and rnn; the 12 chosen conditions) and of P7 (cnn, v3 inputs; the 6 chosen conditions); nothing is retrained, re-selected or re-tuned |
+| adaptation | each record separately: the running statistics of every BatchNorm1d layer of a copy of the checkpoint are reset and recomputed in one forward pass over all of that record's beats in the array being scored (training-mode statistics, cumulative average), then the record's beats are classified in evaluation mode. No labels; records are adapted independently. The cnn has three feature-level layers and one on the RR inputs, the rnn only the one on the RR inputs |
+| adoption (validation) | per (version, architecture) = v1/cnn, v1/rnn, P7/cnn, on the no-augmentation checkpoints (seeds 0-2): adaptation is adopted if the seed-mean validation S F1 with adaptation exceeds that without by more than max(0.02, root mean of the two seed variances). Written to `results/phase6_patient_adaptation/adoption.json` before any DS2 read. If no pair is adopted, DS2 is not read and the outcome is reported |
+| test | one `posthoc` access on Kaggle (DS2 rebuilt and hash-checked; v2 ratios and templates for P7). For every adopted pair, every chosen condition with adaptation. Family "adaptation" (Holm): no augmentation with adaptation vs without, per adopted pair. Family "augmentation under adaptation" (Holm): cVAE vs none and WGAN-GP vs none, both with adaptation, per adopted pair. Rare-class macro-F1, record-level bootstrap 10,000, seed 0, the wording rules of §7. The recomputed scores without adaptation are reported against the earlier summaries |
+| external | INCART and SVDB, each record adapted on its own beats; the adopted pairs; the same two families within each database (P2 primary-metric rule) |
+| reporting | its own section, labelled post hoc. CPU only; no GPU |
 
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 

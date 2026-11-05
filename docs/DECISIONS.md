@@ -349,3 +349,11 @@ direct remedy: keep the arrhythmia-specific deviation (from real beats or from t
 other training patients' normal beats, so the classifier sees each rare class in many patients. Run on dataset v2 (raw
 beats), where the networks fit patient shapes; on v3 the transfer would cancel out. Unscreened, because P8 showed the
 quality screen narrows patient diversity. GPU for the 60 runs only; test and external parts on CPU.
+
+## 2026-11-05 (Day 30) — A29: patient-adaptive normalization at test time (pre-registration v9) — Akash Saha ("think of a solution to make this better")
+
+Across P1 to P9, every method aimed at class imbalance failed to beat no augmentation, while patient-level methods helped
+(patient-relative input: test 0.088 to 0.371; patient transfer above plain generation in 4 of 4 pairs). P10 tests the
+cheapest remaining patient-level lever, adaptive batch normalization on the frozen checkpoints: no training, CPU only,
+adopted per model only if it clearly improves validation, one DS2 read. If it helps, the study's conclusion becomes that
+inter-patient arrhythmia detection is limited by patient variation, which normalization addresses and rebalancing does not.
