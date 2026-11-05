@@ -64,6 +64,11 @@ def load_test_posthoc(version: str = "v1", purpose: str = "", run_ids: str = "")
     log_test_access("posthoc", f"{purpose} (data/processed/{version})", run_ids=run_ids)
     return arrays
 
+def test_arrays_present(version: str = "v1") -> bool:
+    """Whether the guarded test arrays of a dataset version are on disk (reads nothing)."""
+    return (paths.processed_dir() / version / TEST_FILE).is_file()
+
+
 def frozen_test_sha256(files: dict) -> str:
     """The content hash of the frozen test arrays, from the ``files`` block of a manifest entry."""
     return files[TEST_FILE]["content_sha256"]

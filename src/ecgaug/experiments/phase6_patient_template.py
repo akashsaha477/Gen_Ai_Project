@@ -35,7 +35,7 @@ from ecgaug.data import raw
 from ecgaug.data.access import LockedTestDataError, log_test_access, logged_accesses, require_test_access
 from ecgaug.data.beats import extract_beats
 from ecgaug.data.contract import build_arrays, content_sha256, save_npz_deterministic, sha256_file
-from ecgaug.data.loaders import frozen_test_sha256
+from ecgaug.data.loaders import frozen_test_sha256, test_arrays_present
 from ecgaug.data.records import CLASSES, DS2, FS, QRS_SYMBOLS
 from ecgaug.data.representation import RepresentationSpec, transform_record
 from ecgaug.eval import metrics as M
@@ -410,7 +410,7 @@ def test_arrays(spec: RepresentationSpec) -> dict:
     if not logged_accesses("evaluation"):
         raise PreconditionError("Post-hoc analyses run only after the final evaluation")
     purpose = f"{EXPERIMENT}: DS2 predictions with v3 beats (and the v1, v2 checkpoints for the paired differences)"
-    if (paths.processed_dir() / "v1" / "test.npz").is_file():
+    if test_arrays_present("v1"):
         arrays = load_test_posthoc("v1", purpose, run_ids=f"results/{EXPERIMENT}/selection.json")
     else:
         arrays, _ = build_arrays(sorted(DS2), spec, {r: "test" for r in DS2}, access="posthoc")
