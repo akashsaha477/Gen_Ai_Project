@@ -147,7 +147,7 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 - Every access is appended to `docs/TEST_ACCESS_LOG.md`. No decision of any kind uses test data.
 - After `/final-eval` nothing is retrained, re-selected or re-tuned. A bug found later is documented
   and any re-run is disclosed.
-- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 and v5): the analyses listed in §10 v4 and v5 only, after `/final-eval`, logged;
+- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v6): the analyses listed in §10 v4, v5 and v6 only, after `/final-eval`, logged;
   they add evidence beside the primary results and replace none of them.
 
 ## 9. Generators and RQ3 (rules fixed now, thresholds in v2)
@@ -245,6 +245,29 @@ themselves short during a run; with the baseline ratio defined below, 87% (recor
 | references | `rr_lda` and `rr_morph_lda` of P1 refitted on the v2 training beats, same rules, scored on DS2 in the same access |
 | external | INCART and SVDB as in P2, with the baseline ratio computed from the annotations at the native rate with the same window; the 36 v2 checkpoints and the two v2 references; the P2 report and primary-metric rules |
 | reporting | the paper keeps every v1 result and verdict; the v2 study gets its own section and verdicts, labelled post hoc. Compute: the full grid on a Kaggle T4 (the v1 grid took 1.2 GPU-hours) |
+
+**v6, committed 2026-11-05, after v5's DS2 read, before any of the work below (DECISIONS A26).** A second follow-up
+with one more change to the input: each beat is given relative to the patient's own usual beat. It is post hoc. The
+primary results stay the final evaluation of 2026-11-04; v5 and v6 are reported beside them, labelled post hoc. The
+motivation is an exploratory look at DS1 made before this version (validation data, no test data, no selection):
+the frozen v1 cnn without augmentation (seed 0) reaches S PR-AUC 0.92 on the training records and 0.20 on the
+validation records (V: 0.995 and 0.61); all 96 validation S beats of record 118 (right bundle branch block) and 83 of
+128 of record 201 are called V or N, which points to the networks learning the training patients' beat shapes. An
+LDA with uniform priors on the v2 RR features reached validation S F1 0.194, with every 10th sample of the raw beat
+added 0.073, and with every 10th sample of the beat minus the patient's local median beat 0.275. A quick cnn check of
+the same inputs was stopped before it gave a number. These looks are disclosed here; no rule below depends on them.
+
+| item | rule |
+|---|---|
+| P6 `phase6_patient_template`, dataset v3 | dataset v2 (v5) with one more change: `X` is replaced by `X` minus the beat's template, the element-wise median of the z-scored windows (the frozen representation) of every QRS-type annotation of the same record whose R peak lies within 150 s of the beat's R peak and whose window fits in the record (the beat itself included). Annotation times and the signal only; no labels. Everything else equals v2. Saved as `data/processed/v3/trainval.npz`, hashed in `results/phase6_patient_template/data.json` |
+| banks | the frozen phase 3 banks, matched to a real training beat of their class exactly as in v5; each synthetic beat takes that beat's v2 ratio and has that beat's template subtracted from its waveform. Saved and hashed under `data/synthetic/phase6_patient_template/` |
+| grid | the phase 4a gate's full grid unchanged (as in v5), the phase 2 gate's cnn and rnn with their settings unchanged, on v3: 96 runs. SMOTE and random oversampling act on the v3 beats |
+| adoption (validation) | the 6 cells without augmentation (cnn, rnn; seeds 0-2) run first. v3 is adopted if the mean over the two architectures of (v3 minus v2 seed-mean validation selection value, S F1) is larger than max(0.02, pooled seed SD), the pooled SD being the root mean of the four seed variances (v2, v3; cnn, rnn), the v2 values being the v5 grid's cells. Applied by code (`adoption`), written to `results/phase6_patient_template/adoption.json`. If v3 is not adopted, the other 90 cells are not run, nothing is selected, DS2 is not read, and the outcome is reported |
+| selection | as in v5: the phase 4 gate rule by `workflow.choose_strengths`, written before any DS2 read |
+| test | one `posthoc` access, on Kaggle: the frozen DS2 beats (rebuilt from the raw records if absent, checked against the frozen hash), their v2 ratios and templates; DS2 predictions of the 36 selected v3 checkpoints; the analysis of §7 with its wording rules; per architecture and condition the paired differences v3 minus v1 and v3 minus v2 in rare-class macro-F1 (record-level bootstrap, descriptive). The v1 and v2 predictions are recomputed from their checkpoints, and the run refuses unless the recomputed v1 scores equal the final evaluation's |
+| external | INCART and SVDB as in P2 and P5, with templates from each record's signal resampled to 360 Hz and all its QRS annotations; the 36 v3 checkpoints |
+| diagnostic (validation only) | descriptive, no decision: per architecture, the seed means of per-class PR-AUC and F1 on the training and validation beats of the no-augmentation networks of v1 (the final evaluation's), v2 (v5) and v3, per-record validation S recall, and LDAs with uniform priors on three fixed feature sets (v2 RR; v2 RR plus every 10th raw sample; v2 RR plus every 10th sample of the v3 beat) |
+| reporting | its own section and verdicts, labelled post hoc, beside v1 and v5. Compute: one Kaggle T4 session (the v5 grid took about 2.8 GPU-hours); CPU sessions for the rest |
 
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 
