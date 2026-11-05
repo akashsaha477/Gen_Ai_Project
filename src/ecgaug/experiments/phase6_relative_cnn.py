@@ -128,7 +128,7 @@ def external_report(cfg: dict, db: str) -> dict:
     arrays, data = ext.load_database(db)
     arrays = v5.substitute(arrays, v5.external_ratios(db, arrays, half))
     arrays = pt.relative(arrays, pt.external_templates(db, arrays, spec, half))
-    y, records = arrays["y"], arrays["record"]
+    y, records = arrays["y"], ext.clusters(db, arrays)  # bootstrap over patients, not records
     cms = {}
     for arch, conds in selection["chosen"].items():
         for condition, chosen in conds.items():
@@ -142,7 +142,7 @@ def external_report(cfg: dict, db: str) -> dict:
     for key, value in family.items():
         value.update(p_holm=adjusted[key]["p_adjusted"], reject_holm=adjusted[key]["reject"])
     summary = {"experiment": EXPERIMENT, "post_hoc": True, "rule": "PREREGISTRATION §10 v7 (P2 rules)", "database": db, "role": data["role"],
-               "primary_metric": metric, "beats": data["beats"], "records": len(unique), "conditions": conditions, "confirmatory": family,
+               "primary_metric": metric, "beats": data["beats"], "records": int(len(np.unique(arrays["record"]))), "patients": len(unique), "clustered_by": "patient", "conditions": conditions, "confirmatory": family,
                "git_sha": runs.git_sha()}  # fmt: skip
     (paths.results_for(EXPERIMENT) / f"{db}_summary.json").write_text(json.dumps(summary, indent=2, default=float) + "\n")
     return summary

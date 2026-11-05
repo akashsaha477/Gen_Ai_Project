@@ -316,7 +316,7 @@ def external_report(cfg: dict, db: str) -> dict:
     selection = load_selection()
     arrays, data = ext.load_database(db)
     arrays = v5.substitute(arrays, v5.external_ratios(db, arrays, cfg["half_window_s"]))
-    y, records = arrays["y"], arrays["record"]
+    y, records = arrays["y"], ext.clusters(db, arrays)  # bootstrap over patients, not records
     cms, unique = {}, None
     for arch, conds in selection["chosen"].items():
         for condition, chosen in conds.items():
@@ -324,7 +324,7 @@ def external_report(cfg: dict, db: str) -> dict:
     metric = data["primary_metric"]
     conditions = {f"{a}/{c}": ref.condition_summary(cm, unique) | {"strength": selection["chosen"][a][c]["strength"]} for (a, c), cm in cms.items()}
     summary = {"experiment": EXPERIMENT, "post_hoc": True, "rule": "PREREGISTRATION §10 v8 (P2 rules)", "database": db, "role": data["role"],
-               "primary_metric": metric, "beats": data["beats"], "records": len(unique), "conditions": conditions,
+               "primary_metric": metric, "beats": data["beats"], "records": int(len(np.unique(arrays["record"]))), "patients": len(unique), "clustered_by": "patient", "conditions": conditions,
                "confirmatory": _family(cms, families(selection)["confirmatory"], final_eval.STATISTICS[metric]), "git_sha": runs.git_sha()}  # fmt: skip
     (paths.results_for(EXPERIMENT) / f"{db}_summary.json").write_text(json.dumps(summary, indent=2, default=float) + "\n")
     return summary

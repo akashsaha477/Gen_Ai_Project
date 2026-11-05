@@ -357,3 +357,14 @@ Across P1 to P9, every method aimed at class imbalance failed to beat no augment
 cheapest remaining patient-level lever, adaptive batch normalization on the frozen checkpoints: no training, CPU only,
 adopted per model only if it clearly improves validation, one DS2 read. If it helps, the study's conclusion becomes that
 inter-patient arrhythmia detection is limited by patient variation, which normalization addresses and rebalancing does not.
+
+## 2026-11-06 (Day 31) — A30: bug fix, external bootstraps clustered by patient — Akash Saha ("do what you think would be most beneficial")
+
+Bug: INCART's 75 records come from 32 patients (each header names the patient, "# patient N"), but every external
+analysis (P2, P5, P7, P9, P10) resampled records as if they were independent patients, so its INCART intervals were too
+narrow and its Holm p-values too small. The pre-registered intent is patient-level resampling (records stand for
+patients only in MIT-BIH, where the one exception, 201/202, is disclosed). Fix: `phase6_external_validation.clusters`
+maps each beat to its patient from the headers and every external analysis bootstraps over patients; SVDB's headers name
+no patient, so its records stay the unit (an assumption, reported). The INCART parts of P2, P5, P7, P9 and P10 are re-run
+with nothing else changed; the corrected numbers replace the old ones in the paper, and the old summaries stay in git
+history. No MIT-BIH result is affected.

@@ -30,3 +30,19 @@ def test_configs_refuse_unknown_keys(tmp_path):
     bad.write_text("experiment: phase6_augmentation_mechanism\nextra: 1\n")
     with pytest.raises(ValueError):
         mech.load_config(bad)
+
+
+def test_external_beats_are_clustered_by_patient_when_the_header_names_one(tmp_root):
+    from ecgaug.data import raw
+    from ecgaug.experiments import phase6_external_validation as ext
+
+    incart = raw.external_dir("incartdb")
+    incart.mkdir(parents=True)
+    for name, patient in (("I01", 1), ("I02", 1), ("I03", 2)):
+        (incart / f"{name}.hea").write_text(f"{name} 12 257 462600\n#<age>: 65 <sex>: F\n# patient {patient}\n")
+    svdb = raw.external_dir("svdb")
+    svdb.mkdir(parents=True)
+    (svdb / "800.hea").write_text("800 2 128 230400\n")
+    assert ext.patient_of_record("incartdb") == {1: 1, 2: 1, 3: 2}
+    assert ext.patient_of_record("svdb") == {800: 800}  # no patient named: the record is its own patient
+    assert ext.clusters("incartdb", {"record": np.array([1, 2, 3, 3])}).tolist() == [1, 1, 2, 2]

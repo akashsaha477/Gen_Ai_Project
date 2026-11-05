@@ -15,6 +15,7 @@ to GitHub, so you only `git pull`. No logic lives in the notebooks.
 | `phase4_full_grid.ipynb` | the full grid; resumable across sessions | `mitdb-raw`, banks |
 | `phase4_leakage_audit.ipynb` | the leakage audit, only after the final evaluation (`CONFIRM_AUDIT = True`) | `mitdb-raw`, audit banks for `PART = "classifiers"` |
 | `phase6_extra_seeds.ipynb` | post hoc (PREREGISTRATION v4, P3): generators and the 12 conditions for seeds 3 and 4; validation only | `mitdb-raw` |
+| `phase6_external_validation.ipynb` | post hoc (v4, P2): the frozen checkpoints and P1 references on INCART or SVDB, clustered by patient; CPU only | `ecgaug-v5-external`, `ecgaug-v1-checkpoints`, `ecgaug-p1-references` |
 | `phase6_rr_baseline.ipynb` | post hoc (PREREGISTRATION v5, P5): dataset v2 (baseline RR ratio), remapped banks, the full grid unchanged on v2; validation only | `mitdb-raw`, banks |
 | `phase6_rr_baseline_external.ipynb` | post hoc (v5, P5 with the P2 rules): the v5 checkpoints and v2 references on INCART and SVDB; CPU only; optional full test suite first (`--tests`) | `ecgaug-v5-external` (external databases and v5 checkpoints) |
 | `phase6_patient_template.ipynb` | post hoc (v6, P6): dataset v3 (patient-relative beats); `PART` = data (CPU, optional tests), grid (GPU), diagnostic, test, external (CPU) | `ecgaug-banks`, `ecgaug-v1-checkpoints`, `ecgaug-v5-external`, v3 runs |
