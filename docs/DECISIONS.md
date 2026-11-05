@@ -368,3 +368,10 @@ maps each beat to its patient from the headers and every external analysis boots
 no patient, so its records stay the unit (an assumption, reported). The INCART parts of P2, P5, P7, P9 and P10 are re-run
 with nothing else changed; the corrected numbers replace the old ones in the paper, and the old summaries stay in git
 history. No MIT-BIH result is affected.
+
+## 2026-11-06 (Day 31) — A31: training on more patients (pre-registration v10) — Akash Saha ("do what you think would be most beneficial")
+
+Asked whether a better dataset is needed. The evidence says more patients, not more beats. P11 adds the INCART and SVDB
+patients to the training data (rare beats all kept, N beats capped per record), keeps DS2 as the test set, and trains
+the best configuration (the P7 cnn with patient-relative beats) with fixed strengths. It costs the external test: both
+external databases become training and validation data. One T4 session under 2 GPU-hours; the test on CPU.

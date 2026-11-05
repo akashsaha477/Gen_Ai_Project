@@ -147,7 +147,7 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 - Every access is appended to `docs/TEST_ACCESS_LOG.md`. No decision of any kind uses test data.
 - After `/final-eval` nothing is retrained, re-selected or re-tuned. A bug found later is documented
   and any re-run is disclosed.
-- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v9): the analyses listed in §10 v4 to v9 only, after `/final-eval`, logged;
+- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v10): the analyses listed in §10 v4 to v10 only, after `/final-eval`, logged;
   they add evidence beside the primary results and replace none of them.
 
 ## 9. Generators and RQ3 (rules fixed now, thresholds in v2)
@@ -318,6 +318,19 @@ each batch-normalization layer of a frozen checkpoint normalizes with the statis
 | test | one `posthoc` access on Kaggle (DS2 rebuilt and hash-checked; v2 ratios and templates for P7). For every adopted pair, every chosen condition with adaptation. Family "adaptation" (Holm): no augmentation with adaptation vs without, per adopted pair. Family "augmentation under adaptation" (Holm): cVAE vs none and WGAN-GP vs none, both with adaptation, per adopted pair. Rare-class macro-F1, record-level bootstrap 10,000, seed 0, the wording rules of §7. The recomputed scores without adaptation are reported against the earlier summaries |
 | external | INCART and SVDB, each record adapted on its own beats; the adopted pairs; the same two families within each database (P2 primary-metric rule) |
 | reporting | its own section, labelled post hoc. CPU only; no GPU |
+
+**v10, committed 2026-11-06, after v9's results and the A30 fix, before any of the work below (DECISIONS A31).** One
+analysis, post hoc. Every analysis so far points to the few training patients as the limit (record 209 holds 0.60 of
+the training S beats, record 208 0.96 of the F beats; the networks fit the training patients; the generators copy them).
+P11 tests the remedy directly: train on more patients.
+
+| item | rule |
+|---|---|
+| P11 `phase6_more_patients`, data | dataset v3 for DS1 exactly as v6 builds it (hash-checked), plus every record of INCART and SVDB in v3 form (v2 ratio from the annotations at the native rate, template from the signal resampled to 360 Hz; P2's beat set). In INCART and SVDB every S, V and F beat is kept and at most 600 N beats per record (random, seed 0), so that the added data are patients rather than normal beats |
+| splits | DS1 keeps its approved split. INCART patients (from the headers) and SVDB records (no patient named) are sorted; every 5th goes to validation (positions 5, 10, ...), the rest to training. DS2 stays the only test set; no external database is left for testing |
+| model and conditions | the phase 2 gate's cnn with its settings unchanged; none, class-weighted loss, random oversampling, cVAE and WGAN-GP at the strengths P7 chose on validation (no new search; SMOTE left out to keep the run under 2 GPU-hours), the cVAE and WGAN-GP banks being v6's (generators trained on DS1 only), the full grid's screened policy; seeds 0-2: 15 runs; early stopping on the enlarged validation set as before |
+| test | one `posthoc` access on Kaggle (DS2 rebuilt and hash-checked, v2 ratios, templates). Confirmatory (1 test): P11 none vs P7 none, the same cnn trained on DS1 only, in rare-class macro-F1, record-level bootstrap 10,000, seed 0. Secondary family (Holm, 4 tests): each P11 condition vs P11 none. Descriptive: each P11 condition minus the same P7 condition; the recomputed P7 none score is checked against P7's summary |
+| reporting | its own section, labelled post hoc. Compute: one Kaggle T4 session, estimated under 2 GPU-hours; CPU for the test |
 
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 
