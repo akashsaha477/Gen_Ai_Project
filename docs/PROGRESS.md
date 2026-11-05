@@ -842,3 +842,30 @@ now gated on the pytest exit code); the RR references were first fitted from a d
 download (stopped; the zip was complete).
 
 Open: author names and team contributions; blinded note ratings need people.
+
+## 2026-11-05 (Day 30) — P5 follow-up: patient-baseline RR ratio (pre-registration v5)
+
+Asked for better results; agreed a pre-registered follow-up (A25, `prereg-v5` at 9339a95). The v1 `rr_ratio` (previous RR over
+the mean of the ten before it) hides early beats inside runs: only 0.51 of training S beats fall below 0.9 (record 209 holds
+383 of 643). v2 divides by the median RR whose interval midpoints lie within ±150 s: 0.87 of training S beats below 0.9,
+N unchanged at 0.04 (`figures/phase6_rr_baseline/rr_ratio_v1_vs_v2.png`). Only this field changes (dataset v2); the frozen
+banks' ratios were remapped by exact match on their copied real RR triple.
+
+- **Data** (`phase6_rr_baseline --part data`, 220f4c6; hashes in `results/phase6_rr_baseline/data.json` at 71a5cea). DS2 v2
+  ratios: one construction access at 10:45 (annotation times only, no labels, no model).
+- **Grid** (Kaggle T4 kernel phase6-rr-baseline at 71a5cea, 96 cells, run IDs `phase6_rr_baseline-*-71a5cea-*`, timestamps
+  05:20 to 08:06 UTC, about 2.8 GPU-hours; approved above 2). Ingested and committed at 4b80f13.
+- **Selection** on validation by `workflow.choose_strengths` (the phase 4 gate rule), committed at 4ba1c4f before the test read:
+  cnn class-weighted 0.5, random oversampling 0.1, SMOTE 0.25, cVAE 0.1, WGAN-GP 0.1; rnn 0.5, 0.1, 0.1, 0.1, 0.5.
+- **References refitted on v2** (local): `phase6_rr_baseline-rrlda-s0-71a5cea-202611051048` (validation S F1 0.193, v1 0.114),
+  `phase6_rr_baseline-rrmorphlda-s0-71a5cea-202611051048`.
+- **Test** (one posthoc access at 13:54, 4ba1c4f; `results/phase6_rr_baseline/summary.json`). Rare-class macro-F1 with v2:
+  cnn none 0.096 [0.037, 0.226] (v2 − v1 +0.008 [−0.018, +0.065]), rnn none 0.075 [0.018, 0.201] (−0.001 [−0.050, +0.014]);
+  across the 12 conditions v2 − v1 ranged −0.042 to +0.046 and no CI excluded zero. Best condition rnn class-weighted 0.107.
+  Confirmatory (generative vs none): cnn cVAE −0.022 (Holm p 0.421), cnn WGAN-GP −0.019 (0.421), rnn cVAE −0.013 (0.168),
+  rnn WGAN-GP −0.019 (0.457); no secondary rejection. S Se stays low (cnn none 0.136, S +P 0.267); record 232 holds 0.75 of
+  DS2 S beats. RR-only LDA rose from 0.022 to 0.074 [0.017, 0.141] (S Se 0.068 → 0.088), still below the networks.
+- **Reading:** the better RR feature helps the linear RR model, but not the networks, and it does not change the study's answer:
+  generative augmentation is not detectably better than none. The primary results stay the v1 final evaluation.
+- Paper: subsection "A follow-up with a patient-baseline RR ratio" (generated `results_rr_baseline.tex`), an abstract sentence,
+  a deviation entry and a limitation sentence; the report gets the same paragraph and figures.
