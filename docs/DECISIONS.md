@@ -307,3 +307,18 @@ check. They break the "nothing retrained after /final-eval" line only in P3 (new
 reads (new access kind `posthoc`, logged); every result is labelled post hoc and none replaces the primary results.
 Not addressable here: blinded readability ratings of the notes (need people) and diffusion generators (out of scope;
 stated as future work).
+
+## 2026-11-05 (Day 30) — A25: follow-up study with a patient-baseline RR ratio (pre-registration v5) — Akash Saha ("Yes, run v5")
+
+**Context.** After v4, the publication review found the absolute scores low (test rare-class macro-F1 0.088 for the
+cnn without augmentation; an RR-only discriminant reached S Se 0.068, far below published inter-patient results). A
+DS1-only diagnostic showed why S beats are hard for our models: v1's `rr_ratio` divides by the ten preceding RR
+intervals, so S beats inside runs (record 209 holds 383 of 643 training S beats) do not look premature; only 51% of
+training S beats have a ratio below 0.9, against 87% with a ratio to the median RR of a ±150 s window.
+
+**Decision.** Akash Saha asked for better results and approved the follow-up ("Yes, run v5"). Pre-registration v5
+defines a v2 dataset that changes only `rr_ratio`, reruns the unchanged full grid with the unchanged classifiers, banks
+(RR values remapped) and selection rule, and evaluates once on DS2 as a post-hoc study. The final evaluation of
+2026-11-04 stays the primary result; the v2 study is reported beside it. Compute above 2 GPU-hours approved with the same
+answer.
+

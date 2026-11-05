@@ -147,7 +147,7 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 - Every access is appended to `docs/TEST_ACCESS_LOG.md`. No decision of any kind uses test data.
 - After `/final-eval` nothing is retrained, re-selected or re-tuned. A bug found later is documented
   and any re-run is disclosed.
-- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4): the analyses listed in §10 v4 only, after `/final-eval`, logged;
+- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 and v5): the analyses listed in §10 v4 and v5 only, after `/final-eval`, logged;
   they add evidence beside the primary results and replace none of them.
 
 ## 9. Generators and RQ3 (rules fixed now, thresholds in v2)
@@ -224,6 +224,27 @@ and labelled post hoc in the paper.
 | P2 report | per database: per-condition statistics as in §7 with record-level bootstrap; the 4 confirmatory comparisons replicated with Holm within the database. Primary metric rare-class macro-F1; if a database holds fewer than 50 usable F beats, S F1 is reported as its primary metric instead (stated before any model is run on it). "Replicated" means the same Holm verdict as on DS2 |
 | P3 `phase6_extra_seeds` | seeds 3 and 4 added for the 12 conditions at the strengths of the phase 4 gate: generator banks for seeds 3 and 4 from the frozen variants (phase3_cvae-D, phase3_wgan_gp-A) at the full budget, then the grid cells; classifier seed s with bank seed s. Seeds 0-2 are the existing checkpoints. 5-seed DS2 statistics with the same families and Holm, as a sensitivity analysis. "Changed" means any Holm verdict differs from the 3-seed result |
 | P4 `phase6_audit_check` | the leakage audit repeated on its frozen split (split seed 0, the existing audit banks) with WGAN-GP at the validation-chosen strength (cnn 0.1), and with `none` on two more random splits (split seeds 1 and 2); seeds 0-2; access kind `audit`. Reported beside the audit |
+
+**v5, committed 2026-11-05, after v4's analyses, before any of the work below (DECISIONS A25).** A follow-up study
+with one change to the input: the RR ratio is measured against the patient's baseline rhythm instead of the previous
+ten beats. It is post hoc. The primary results stay the final evaluation of 2026-11-04 (3 seeds, v1 features) and are
+not rewritten; the v2 study is reported beside them, labelled post hoc, with its own verdicts. The motivation is a
+diagnostic on DS1 only (no validation-based selection, no test data): with v1's `rr_ratio`, 51% of training S beats
+have a ratio below 0.9 (record 209, where S beats come in runs: 53%), because the ten preceding intervals are
+themselves short during a run; with the baseline ratio defined below, 87% (record 209: 98%), and N beats are unchanged
+(4%). The definition follows the average RR interval of de Chazal et al. (2004), with a median for robustness to runs.
+
+| item | rule |
+|---|---|
+| P5 `phase6_rr_baseline`, dataset v2 | identical to the frozen v1 dataset except one field: `rr_ratio` = `rr_prev` divided by the median of the RR intervals (between consecutive QRS-type annotations of the beat's own record) whose midpoints lie within 150 s before or after the beat. Annotation times only; no labels. X, y, record, split, r_idx, rr_prev, rr_next and the beat set are checked equal to v1. Saved as `data/processed/v2/trainval.npz` with a contract and hashes |
+| DS2 under v2 | the baseline ratios of DS2 beats are computed from DS2 annotations under a logged `construction` access (`ALLOW_TEST_BUILD=1`), saved apart and keyed by (record, r_idx); no model sees them; `test.npz` of v1 is not changed |
+| banks | the frozen phase 3 banks (phase3_cvae-D, phase3_wgan_gp-A, seeds 0-2), waveforms unchanged. Each synthetic beat carries the v1 (rr_prev, rr_next, rr_ratio) of a real training beat of its class (§5); its `rr_ratio` becomes that beat's v2 value (exact match on the three float32 values within the class; the first in dataset order on ties; refused if none). Saved and hashed under `data/synthetic/phase6_rr_baseline/` |
+| conditions and grid | the phase 4a gate's full grid unchanged (policy D, DTW-screened, pool factor 2; strengths 0.1, 0.25, 0.5; class weights gamma 0.5, 0.75, 1.0; SMOTE k 5; seeds 0-2), the phase 2 gate's cnn and rnn with their settings unchanged (no re-tuning): 96 runs. SMOTE and random oversampling act on the v2 features |
+| selection | the phase 4 gate rule exactly as implemented (`workflow.evaluate_phase4_gate`: per architecture and condition the strength with the best validation S F1 seed mean, ties within max(0.02, pooled SD) to V F1 then the lower strength; the best generative condition per architecture likewise), applied by code with no human choice, and written to `results/phase6_rr_baseline/` before any DS2 read |
+| test | one `posthoc` access: DS2 predictions of the 36 selected checkpoints with the v2 ratio; the analysis of §7 (confirmatory family of 4 and secondary family, Holm within each, record-level bootstrap 10,000, seed 0) with the wording rules of §7. Also, per architecture and condition, the paired difference v2 minus v1 in rare-class macro-F1 (record-level bootstrap, 95% CI, descriptive, no test) |
+| references | `rr_lda` and `rr_morph_lda` of P1 refitted on the v2 training beats, same rules, scored on DS2 in the same access |
+| external | INCART and SVDB as in P2, with the baseline ratio computed from the annotations at the native rate with the same window; the 36 v2 checkpoints and the two v2 references; the P2 report and primary-metric rules |
+| reporting | the paper keeps every v1 result and verdict; the v2 study gets its own section and verdicts, labelled post hoc. Compute: the full grid on a Kaggle T4 (the v1 grid took 1.2 GPU-hours) |
 
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 
