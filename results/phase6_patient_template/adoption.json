@@ -1,0 +1,43 @@
+{
+  "rule": "PREREGISTRATION \u00a710 v6 (adoption)",
+  "per_architecture": {
+    "cnn": {
+      "v3_mean": 0.471614190504923,
+      "v3_sd": 0.021369944232749887,
+      "v2_mean": 0.35005406362901414,
+      "v2_sd": 0.04174570501707975,
+      "difference": 0.12156012687590884,
+      "v3_run_ids": [
+        "phase6_patient_template-cnn.none-s0-51dfa49-202611051123",
+        "phase6_patient_template-cnn.none-s2-51dfa49-202611051124",
+        "phase6_patient_template-cnn.none-s1-51dfa49-202611051123"
+      ],
+      "v2_run_ids": [
+        "phase6_rr_baseline-cnn.none-s0-71a5cea-202611050520",
+        "phase6_rr_baseline-cnn.none-s1-71a5cea-202611050520",
+        "phase6_rr_baseline-cnn.none-s2-71a5cea-202611050521"
+      ]
+    },
+    "rnn": {
+      "v3_mean": 0.18106157112526536,
+      "v3_sd": 0.010428986515478775,
+      "v2_mean": 0.30561526975846537,
+      "v2_sd": 0.019741106815436872,
+      "difference": -0.12455369863320001,
+      "v3_run_ids": [
+        "phase6_patient_template-rnn.none-s2-51dfa49-202611051127",
+        "phase6_patient_template-rnn.none-s0-51dfa49-202611051125",
+        "phase6_patient_template-rnn.none-s1-51dfa49-202611051126"
+      ],
+      "v2_run_ids": [
+        "phase6_rr_baseline-rnn.none-s0-71a5cea-202611050522",
+        "phase6_rr_baseline-rnn.none-s1-71a5cea-202611050523",
+        "phase6_rr_baseline-rnn.none-s2-71a5cea-202611050524"
+      ]
+    }
+  },
+  "mean_difference": -0.0014967858786455873,
+  "margin": 0.025970432523941548,
+  "adopted": false,
+  "git_sha": "51dfa49d848b8264fe54bfe616913afbd1335220"
+}

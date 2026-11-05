@@ -455,6 +455,63 @@ def posthoc_rr_baseline() -> str:
     return text + " These results are post hoc and do not replace the primary results of Table~\\ref{tab:test}.\n"
 
 
+def posthoc_patient_template() -> str:
+    """P6: patient-relative beats, from results/phase6_patient_template/ (adoption, diagnostic, test, external)."""
+    from ecgaug.names import PHASE6_PATIENT_TEMPLATE
+
+    folder = paths.results_for(PHASE6_PATIENT_TEMPLATE)
+    adoption, diag, summary = (_load(folder / n) for n in ("adoption.json", "diagnostic.json", "summary.json"))
+    text = ("\\paragraph{Patient-relative beats (P6).} A second follow-up asked whether the networks fit the shapes of the training patients' beats, "
+            "so that a beat whose shape is normal for its own patient but unlike the training patients' beats is called abnormal. Version 6 of the pre-registration gives every beat minus the "
+            "patient's template, the median of the z-scored beats of the same record within 150~s (no labels), with the v2 RR ratio (dataset v3, "
+            "Figure~\\ref{fig:v3-input}); synthetic beats take the template of the real beat whose RR values they carry.")  # fmt: skip
+    if diag is not None:
+        parts = []
+        for arch, versions in diag["networks"].items():
+            g = {v: versions[v] for v in versions}
+            parts.append(f"the {arch} without augmentation reached S PR-AUC " + ", ".join(
+                f"{_n(x['train']['pr_auc']['S'])} on the training and {_n(x['val']['pr_auc']['S'])} on the validation records with {v}" for v, x in g.items()))
+        lin = diag["linear"]
+        text += (f" On DS1 (Figure~\\ref{{fig:v3-diagnostic}}), {'; '.join(parts)}. A linear discriminant with uniform priors reached validation S F1 "
+                 f"{_n(lin['rr']['f1']['S'])} on the RR features, {_n(lin['rr_raw']['f1']['S'])} with samples of the raw beat added and "
+                 f"{_n(lin['rr_relative']['f1']['S'])} with samples of the relative beat.")  # fmt: skip
+    if adoption is None:
+        return text + " " + _missing("P6: --part grid on Kaggle") + "\n"
+    per = "; ".join(f"{arch} {_n(v['v3_mean'])} against {_n(v['v2_mean'])}" for arch, v in adoption["per_architecture"].items())
+    text += (f" By the pre-registered adoption rule, the cells without augmentation were run first: validation S F1 (seed means) {per}, a mean "
+             f"difference of {_s(adoption['mean_difference'])} against a margin of {_n(adoption['margin'])}, so v3 was "
+             f"{'adopted and the full grid was run' if adoption['adopted'] else 'not adopted; the other 90 cells were not run and the test records were not read'}.")  # fmt: skip
+    if not adoption["adopted"]:
+        return text + " Post hoc.\n"
+    if summary is None:
+        return text + " " + _missing("P6 results: --part select, then --part test") + "\n"
+    nones = "; ".join(f"the {arch} without augmentation reached {_ci(summary['conditions'][f'{arch}/none']['rare_macro_f1'])} "
+                      f"(v3 minus v1 {_ci(summary['versus_v1'][f'{arch}/none'], signed=True)})" for arch in ("cnn", "rnn"))  # fmt: skip
+    diffs = summary["versus_v1"]
+    up = [k for k, c in diffs.items() if c["ci_low"] > 0]
+    down = [k for k, c in diffs.items() if c["ci_high"] < 0]
+    s_se = "; ".join(f"{arch} {_n(summary['conditions'][f'{arch}/none']['se_S']['point'])}" for arch in ("cnn", "rnn"))
+    conf = summary["families"]["confirmatory"]
+    improved = [k for k, c in conf.items() if c["reject_holm"] and c["point"] > 0]
+    secondary = {k: c for k, c in summary["families"]["secondary"].items() if c["reject_holm"]}
+    text += (f" On the test records (Figure~\\ref{{fig:v3-results}}), {nones}. Against v1, the paired difference had a 95\\% CI above zero in "
+             f"{len(up)} of the {len(diffs)} conditions and below zero in {len(down)}. S sensitivity without augmentation: {s_se}. "
+             f"Against no augmentation: {_family_sentence(conf)}. By the registered criterion, generative augmentation "
+             f"{'improved' if improved else 'did not detectably improve'} the primary metric with v3 inputs. "
+             f"{'In the secondary family Holm rejected ' + _family_sentence(secondary) + '.' if secondary else 'No secondary comparison was rejected.'}")  # fmt: skip
+    ext = []
+    for db in DATABASE:
+        e = _load(folder / f"{db}_summary.json")
+        if e:
+            metric = e["primary_metric"]
+            verbs = [_changed(c) for c in e["confirmatory"].values()]
+            ext.append(f"on {DATABASE[db]} the cnn without augmentation reached {_n(e['conditions']['cnn/none'][metric]['point'])} ({METRIC[metric]}) and "
+                       + ", ".join(f"generative augmentation {v} it in {verbs.count(v)}" for v in dict.fromkeys(verbs)) + " of the 4 confirmatory comparisons")
+    if ext:
+        text += " Externally, " + "; ".join(ext) + " (Figure~\\ref{fig:v3-external})."
+    return text + " These results are post hoc and do not replace the primary results of Table~\\ref{tab:test}.\n"
+
+
 def abstract_posthoc() -> str:
     """Abstract sentences for the post-hoc analyses (P2 primary database, P3, P5), from their summaries."""
     from ecgaug.names import PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS
@@ -547,6 +604,7 @@ def build() -> dict[str, str]:
     files["results_posthoc"] = posthoc(summary)
     files["abstract_posthoc"] = abstract_posthoc() + "\n"
     files["results_rr_baseline"] = posthoc_rr_baseline()
+    files["results_patient_template"] = posthoc_patient_template()
     files["table_hypotheses"] = hypotheses_table(verdicts)
     files["abstract_results"] = abstract_sentence(summary, verdicts, audit) + "\n"
     return files

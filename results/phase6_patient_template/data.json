@@ -1,0 +1,45 @@
+{
+  "experiment": "phase6_patient_template",
+  "rule": "PREREGISTRATION \u00a710 v6",
+  "half_window_s": 150,
+  "v1_sha256": "2f6f9843889f6865199328fa66802f79e3ba40e4cf76dacc636c825a8a31d896",
+  "v2_sha256": "41f01f585724eea9b06d22999ded5b86d0251ef22fbdf24787db43aaaf06f7df",
+  "trainval_sha256": "69a5ab1b7cbac0b197a018d38030369b8a27c116607c4677ce53b02a42aaa302",
+  "banks": {
+    "cvae": {
+      "generator_id": "phase3_cvae-D",
+      "seeds": {
+        "0": {
+          "sha256": "e64d4b9d897a833ba04281c18d2cd630cbc66b5eae049727a828765154af5f28",
+          "frozen_sha256": "d4a236a8da1d345f2740d51e9b7182ace27db808838743ed5f57e85bb101668d"
+        },
+        "1": {
+          "sha256": "261d4876f02d690d7f850a92fbd7938d64a3356d71312a9ee798ae95ed2ba545",
+          "frozen_sha256": "66774136332bb95dd7193665549b942f09ed20c124d93a84515d05328808d3bb"
+        },
+        "2": {
+          "sha256": "ad5542cb109e66f3e1648a8f8d329a835e5a6e3800b233ad2c08674efdfc5973",
+          "frozen_sha256": "82b4d51ca70cf8a538d1d54d8c4a52eb03b30f5e0286aa53dc5be46d40492c5b"
+        }
+      }
+    },
+    "wgan_gp": {
+      "generator_id": "phase3_wgan_gp-A",
+      "seeds": {
+        "0": {
+          "sha256": "f06d0fef31287e764bb79a541ede0c2be7f237a402eda6f454788e52dae414a9",
+          "frozen_sha256": "f951e694e1fc1ecb6849d63d8bd65ade8ba0e3a45244fe11c7faa25b64c44840"
+        },
+        "1": {
+          "sha256": "7e3d6c2fcfd1e8611d949fd616aa18fbe1a1d2ef06815ef30519d5ec318afd9c",
+          "frozen_sha256": "f393be937eeafbfdbd52fcff9d9d11201132b6f3980553496a9e1c97fc40d75b"
+        },
+        "2": {
+          "sha256": "869b7744a140e857f1bfce016ca5c1917d37a4c09cdad1cfd83ceaabe4c0d739",
+          "frozen_sha256": "b35c8cd088f2b492b1fa354e41eca7491e7ac093d3d521cd51e258298ce3c145"
+        }
+      }
+    }
+  },
+  "git_sha": "51dfa49d848b8264fe54bfe616913afbd1335220"
+}
