@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -260,6 +261,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--git-email", default="", help="author email for the results commit")
     parser.add_argument("extra", nargs="*", help="arguments after -- are passed to the CLI")
     args = parser.parse_args(argv)
+    os.environ["MPLBACKEND"] = "Agg"  # Kaggle sets its notebook backend, which the project environment does not have
 
     run = setup_env(args.env, dev=args.tests)
     if "--smoke" not in args.extra:  # smoke runs make their own fake records
