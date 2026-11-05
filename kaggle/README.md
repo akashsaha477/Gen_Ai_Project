@@ -20,6 +20,7 @@ to GitHub, so you only `git pull`. No logic lives in the notebooks.
 | `phase6_patient_template.ipynb` | post hoc (v6, P6): dataset v3 (patient-relative beats); `PART` = data (CPU, optional tests), grid (GPU), diagnostic, test, external (CPU) | `ecgaug-banks`, `ecgaug-v1-checkpoints`, `ecgaug-v5-external`, v3 runs |
 | `phase6_relative_cnn.ipynb` | post hoc (v7, P7): the cnn alone with patient-relative beats; `PART` = grid (GPU), test, external (CPU) | `ecgaug-banks`, `ecgaug-v1-checkpoints`, `ecgaug-v5-external`, P7 runs |
 | `phase6_augmentation_mechanism.ipynb` | post hoc (v7, P8): synthetic-beat attribution and train-versus-validation gap; DS1 only; CPU | `ecgaug-banks`, `ecgaug-v1-checkpoints` |
+| `phase6_patient_transfer.ipynb` | post hoc (v8, P9): patient-transfer augmentation on dataset v2; `PART` = grid (GPU), test, external (CPU) | `ecgaug-banks`, `ecgaug-v5-external`, P9 runs |
 | `phase5_explainability.ipynb`, `phase5_clinical_notes.ipynb` | saliency methods and note generators on the phase 4 models | `mitdb-raw`, artifacts (checkpoints) |
 
 Other files in this folder: `kaggle_run.py` (the script every notebook calls), `make_raw_dataset.py`
