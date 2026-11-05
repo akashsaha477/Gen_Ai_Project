@@ -1,0 +1,14 @@
+{
+  "rr_lda": {
+    "run_id": "phase6_rr_baseline-rrlda-s0-71a5cea-202611051048",
+    "sha256": "9540aae799e50215b1a6a5a4fe1c3794cfdaafa82392ec8d135b12dce06d780e",
+    "validation_rare_macro_f1": 0.09950671920649792,
+    "validation_f1_S": 0.19257221458046767
+  },
+  "rr_morph_lda": {
+    "run_id": "phase6_rr_baseline-rrmorphlda-s0-71a5cea-202611051048",
+    "sha256": "3522f3b9122053f9a61c89b6098f2cfa62bc9816ed21b1b2fe3343b62528d408",
+    "validation_rare_macro_f1": 0.04176211397511059,
+    "validation_f1_S": 0.06000937646507267
+  }
+}

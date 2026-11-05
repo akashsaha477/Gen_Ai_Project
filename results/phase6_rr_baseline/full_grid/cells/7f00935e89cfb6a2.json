@@ -1,0 +1,29 @@
+{
+  "cell_sha": "7f00935e89cfb6a27bb415f3f1e2a419ab8a22f09138dbbb63b3f64fbab513b3",
+  "cell": {
+    "condition": "cvae",
+    "strength": 0.5,
+    "architecture": "cnn",
+    "seed": 0
+  },
+  "condition": "cvae",
+  "strength": 0.5,
+  "architecture": "cnn",
+  "seed": 0,
+  "run_id": "phase6_rr_baseline-cnn.cvae_0.5-s0-71a5cea-202611050636",
+  "status": "done",
+  "bank": "phase6_rr_baseline/phase3_cvae-D",
+  "selection_metric": "s_f1",
+  "selection_value": 0.3531409168081494,
+  "tie_break_value": 0.5442622950819672,
+  "rare_macro_f1": 0.24323712507074136,
+  "n_recall": 0.9859073359073359,
+  "n_added": {
+    "N": 0,
+    "S": 17089,
+    "V": 14702,
+    "F": 17345
+  },
+  "wall_clock_s": 30.5,
+  "provisional": false
+}
