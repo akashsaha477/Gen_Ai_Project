@@ -1,0 +1,29 @@
+{
+  "cell_sha": "405e2e39698a5624e74b45680b7a8cc5e829177e149fd39f216f5b2022b0dece",
+  "cell": {
+    "condition": "transfer_wgan_gp",
+    "strength": 0.25,
+    "architecture": "cnn",
+    "seed": 0
+  },
+  "condition": "transfer_wgan_gp",
+  "strength": 0.25,
+  "architecture": "cnn",
+  "seed": 0,
+  "run_id": "phase6_patient_transfer-cnn.transfer_wgan_gp_0.25-s0-9cac590-202611051535",
+  "status": "done",
+  "bank": "phase6_patient_transfer/transfer_wgan_gp",
+  "selection_metric": "s_f1",
+  "selection_value": 0.2617801047120419,
+  "tie_break_value": 0.3795986622073579,
+  "rare_macro_f1": 0.13089005235602094,
+  "n_recall": 0.9562741312741313,
+  "n_added": {
+    "N": 0,
+    "S": 8223,
+    "V": 5836,
+    "F": 8479
+  },
+  "wall_clock_s": 15.8,
+  "provisional": false
+}

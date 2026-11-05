@@ -1,0 +1,29 @@
+{
+  "cell_sha": "405f0ac8963460b1d1a0f9cc730200799d33152842383ef45bf18f4a74b2cda9",
+  "cell": {
+    "condition": "none",
+    "strength": null,
+    "architecture": "cnn",
+    "seed": 1
+  },
+  "condition": "none",
+  "strength": null,
+  "architecture": "cnn",
+  "seed": 1,
+  "run_id": "phase6_patient_transfer-cnn.none-s1-9cac590-202611051500",
+  "status": "done",
+  "bank": null,
+  "selection_metric": "s_f1",
+  "selection_value": 0.332089552238806,
+  "tie_break_value": 0.5998492840994725,
+  "rare_macro_f1": 0.18565261925665788,
+  "n_recall": 0.9590733590733591,
+  "n_added": {
+    "N": 0,
+    "S": 0,
+    "V": 0,
+    "F": 0
+  },
+  "wall_clock_s": 19.7,
+  "provisional": false
+}

@@ -1,0 +1,52 @@
+{
+  "experiment": "phase6_patient_transfer",
+  "rule": "PREREGISTRATION \u00a710 v8",
+  "half_window_s": 150,
+  "trainval_sha256": "41f01f585724eea9b06d22999ded5b86d0251ef22fbdf24787db43aaaf06f7df",
+  "bank_size_per_class": 18000,
+  "banks": {
+    "transfer_real": {
+      "seeds": {
+        "0": {
+          "sha256": "836c95621a94fbb3c2156f758ff4d86787e49a955af4cca0db88acf14e8b1b28"
+        },
+        "1": {
+          "sha256": "08e6fbd005b460fe90324ef0e3d71815eebe501bddbab0fb292fe66a691fb3df"
+        },
+        "2": {
+          "sha256": "2735273100a27c9ab54da9ce30028b43151ee2ee426ffe3eae43176c39aa6c37"
+        }
+      },
+      "deviations_from": "real training beats"
+    },
+    "transfer_cvae": {
+      "seeds": {
+        "0": {
+          "sha256": "386f76634bd59ba2d6338663e31185ac084c8920b77517b3591f313e1e6613eb"
+        },
+        "1": {
+          "sha256": "35951122fcd9c0fa9556dee1a64aa384ca4efb9f1f1dae7b055111a5b4820fb5"
+        },
+        "2": {
+          "sha256": "509a261d7240a23e17a668f45acaf27aa6c8ba99b5ef6ec9f74560af7ee2fb6c"
+        }
+      },
+      "deviations_from": "cvae"
+    },
+    "transfer_wgan_gp": {
+      "seeds": {
+        "0": {
+          "sha256": "4e925eb819947c857be353034298bfd102cadd2f3798ab49178a875ea7dbb99f"
+        },
+        "1": {
+          "sha256": "e22f905b755471442bf2d8552ed846378d13d6bca30291f703d2b128698503aa"
+        },
+        "2": {
+          "sha256": "e1a9c2cbdee8b97228266e2cf44c5dd0703a8b81181215f5b1cb45ae5a1ebe2c"
+        }
+      },
+      "deviations_from": "wgan_gp"
+    }
+  },
+  "git_sha": "9cac5904aefeb3a193e06114a97005226710af5e"
+}
