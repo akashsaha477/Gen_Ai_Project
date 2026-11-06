@@ -806,6 +806,48 @@ def posthoc_relative_generators() -> str:
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
 
 
+def posthoc_record_rr() -> str:
+    """P13: rr_prev and rr_next over the recording's mean RR interval, P11's and P12's conditions, from results/phase6_record_rr/."""
+    from ecgaug.names import PHASE6_MORE_PATIENTS, PHASE6_RECORD_RR, PHASE6_RELATIVE_GENERATORS
+
+    folder = paths.results_for(PHASE6_RECORD_RR)
+    check, selection, summary = (_load(folder / f) for f in ("design_check.json", "selection.json", "summary.json"))
+    if check is None:
+        return _missing("P13: --part check (training-side annotations)") + "\n"
+    names = {"v1": "v1's ratio", "v2": "v2's", "record": "the recording's mean"}
+    heavy = sorted(check["s_heavy_records"], key=lambda h: -h["s_beats"])
+    text = "\\paragraph{The design check.} On the annotations of the training-side databases only (DS1, INCART, SVDB),"
+    if heavy:
+        h = heavy[0]
+        text += (f" the S beats of SVDB record {h['record']} ({int(h['s_beats']):,} of {int(h['n_and_s_beats']):,} N and S beats, median ratio of the "
+                 f"following to the preceding RR interval {_n(h['median_post_pre_of_s'], 2)}) are found by the rule ``ratio below {check['threshold']}'' "
+                 "in " + ", ".join(f"{_n(100 * h['rule_s_sensitivity'][r], 1)}\\% with {names[r]}" for r in ("v1", "v2", "record"))
+                 + " (Figure~\\ref{fig:p13-check}).")  # fmt: skip
+    dbs = {"mitdb_ds1": "DS1", "incartdb": "INCART", "svdb": "SVDB"}
+    text += (" Over whole databases the recording-mean ratio is not better everywhere: the rule's S F1 with v2's ratio and with the recording's "
+             "mean is " + "; ".join(f"{dbs.get(db, db)} {_n(e['rule']['v2']['f1'])} and {_n(e['rule']['record']['f1'])}" for db, e in check["databases"].items())
+             + ", so the new features are added beside v2's ratio, not in its place.")  # fmt: skip
+    if selection is None:
+        return text + " " + _missing("P13 results: --part grid on Kaggle, then --part select and --part test") + "\n"
+    before_sel = {**(_load(paths.results_for(PHASE6_MORE_PATIENTS) / "selection.json") or {"chosen": {"cnn": {}}})["chosen"]["cnn"],
+                  **{f: v for f, v in (_load(paths.results_for(PHASE6_RELATIVE_GENERATORS) / "selection.json") or {"chosen": {"cnn": {}}})["chosen"]["cnn"].items()}}  # fmt: skip
+    chosen = selection["chosen"]["cnn"]
+    text += (" Validation S F1, before and with the recording-mean RR: " + ", ".join(
+        f"{SHORT[c]} {_n(before_sel[c]['mean'])} and {_n(v['mean'])}" for c, v in chosen.items() if c in before_sel) + ".")
+    if summary is None:
+        return text + " " + _missing("P13 results: --part test on Kaggle") + "\n"
+    scores = "; ".join(f"{SHORT[k.split('/')[1]]} {_n(summary['before'][k]['rare_macro_f1']['point'])} ({_n(summary['before'][k]['f1_S']['point'])}, "
+                       f"{_n(summary['before'][k]['f1_F']['point'])}) to {_n(v['rare_macro_f1']['point'])} ({_n(v['f1_S']['point'])}, {_n(v['f1_F']['point'])})"
+                       for k, v in summary["conditions"].items())  # fmt: skip
+    conf, sec = summary["families"]["confirmatory"], summary["families"]["secondary"]
+    rule = "; ".join(f"{SHORT[k.split('/')[1]]} {_n(v['rare_macro_f1']['point'])} (S F1 {_n(v['f1_S']['point'])})" for k, v in summary["sveb_rule"].items())
+    text += (f" On the test records (Figure~\\ref{{fig:p13}}), rare-class macro-F1 (S F1, F F1) before and with the recording-mean RR: {scores}. "
+             f"Against the same condition before: {_family_sentence(conf)}. With the new features, each generator against none, random oversampling "
+             f"and class weighting: {_family_sentence(sec)}. With Huang et al.'s SVEB stage on top (a beat the cnn calls N becomes S when its RR "
+             f"interval is below {summary['rule_threshold']} of the recording's mean; descriptive, not tested): {rule}.")  # fmt: skip
+    return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
+
+
 def posthoc_table() -> str:
     """One row per post-hoc analysis (P1-P8): what it asked and what it found, from the summaries."""
     from ecgaug.names import (PHASE6_AUDIT_CHECK, PHASE6_AUGMENTATION_MECHANISM, PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS,
@@ -875,10 +917,18 @@ def posthoc_table() -> str:
     if p12:
         rows.append(("P12", "Generators trained on what the cnn sees?", ", ".join(f"{SHORT[k.split('/')[1]]} {_n(v['rare_macro_f1']['point'])}" for k, v in p12["conditions"].items())
                      + "; vs the same generator in P11: " + verdicts(p12["families"]["confirmatory"]) + "; vs P11 none and oversampling: " + verdicts(p12["families"]["secondary"])))
+    from ecgaug.names import PHASE6_RECORD_RR
+
+    p13 = _load(paths.results_for(PHASE6_RECORD_RR) / "summary.json")
+    if p13:
+        best_key, best = max(p13["conditions"].items(), key=lambda kv: kv[1]["rare_macro_f1"]["point"])
+        rows.append(("P13", "RR intervals over the recording's mean?", f"none {_n(p13['before']['cnn/none']['rare_macro_f1']['point'])} to "
+                     f"{_n(p13['conditions']['cnn/none']['rare_macro_f1']['point'])}; best {SHORT[best_key.split('/')[1]]} {_n(best['rare_macro_f1']['point'])}; "
+                     "vs before: " + verdicts(p13["families"]["confirmatory"]) + "; generative vs the others: " + verdicts(p13["families"]["secondary"])))
     if not rows:
         return _missing("post-hoc table: no summaries yet") + "\n"
     body = "\n".join(f"{a} & {b} & {c} \\\\" for a, b, c in rows)
-    return ("\\begin{table}[htbp]\\centering\\small\n\\caption{The post-hoc analyses (pre-registration versions 4 to 11), each reported apart from the primary "
+    return ("\\begin{table}[htbp]\\centering\\small\n\\caption{The post-hoc analyses (pre-registration versions 4 to 12), each reported apart from the primary "
             "results. Numbers are test rare-class macro-F1 unless stated.}\\label{tab:posthoc}\n"
             "\\begin{tabular}{@{}lp{0.3\\linewidth}p{0.55\\linewidth}@{}}\n\\toprule\n & question & finding \\\\\n\\midrule\n" + body + "\n\\bottomrule\n\\end{tabular}\n\\end{table}\n")
 
@@ -981,9 +1031,32 @@ def patient_variation_paragraph() -> str | None:
         text += (" Retraining the generators on those patients' beats, in the form the cnn sees them (Section~\\ref{sec:relative-generators}), took the "
                  f"test score of the {moves}; with {len(p12['records'])} test records {verdict} (Holm-adjusted $p$ "
                  + " and ".join(f"{c['p_holm']:.3f}" for c in conf.values()) + ").")  # fmt: skip
+    if (rr := _record_rr_sentence(with_section=True)) is not None:
+        text += " " + rr
     return text + (" The evidence points to how much patients differ as the main obstacle here; on DS1's patients, normalizing the input for the "
                    "patient raised the test score where rebalancing the classes did not, and augmentation that adds patients rather than beats is "
                    "the form of augmentation it points to.")
+
+
+def _record_rr_sentence(with_section: bool = False) -> str | None:
+    """One sentence on P13 (RR over the recording's mean) from its summary, or None before its test."""
+    from ecgaug.names import PHASE6_RECORD_RR
+
+    s = _load(paths.results_for(PHASE6_RECORD_RR) / "summary.json")
+    if s is None:
+        return None
+    conf = s["families"]["confirmatory"]
+    up = sum(c["reject_holm"] and c["point"] > 0 for c in conf.values())
+    down = sum(c["reject_holm"] and c["point"] < 0 for c in conf.values())
+    verdict = (f"raised the test score detectably in {up} of {len(conf)} conditions" if up and not down else
+               f"changed it detectably in {up + down} of {len(conf)} conditions ({up} up, {down} down)" if up or down else
+               f"did not detectably change the test score in any of the {len(conf)} conditions")
+    best_key, best = max(s["conditions"].items(), key=lambda kv: kv[1]["rare_macro_f1"]["point"])
+    before = s["before"][best_key]
+    where = " (Section~\\ref{sec:record-rr})" if with_section else ""
+    return (f"Dividing the RR intervals by the recording's mean RR interval, as published methods do{where}, {verdict}; the best condition, "
+            f"{SHORT[best_key.split('/')[1]]}, went from {_n(before['rare_macro_f1']['point'])} to {_n(best['rare_macro_f1']['point'])} (S F1 "
+            f"{_n(before['f1_S']['point'])} to {_n(best['f1_S']['point'])}).")
 
 
 def _best_test_score() -> float:
@@ -1142,6 +1215,8 @@ def conclusion() -> str:
             text += (" Generators retrained on those patients' beats, in the form the classifier sees them, " + ("improved" if better else "did not detectably improve")
                      + f" on the same generators trained on DS1 alone (the {SHORT[key.split('/')[1]]} went from "
                      f"{_n(p11['conditions'][key]['rare_macro_f1']['point'])} to {_n(p12['conditions'][key]['rare_macro_f1']['point'])}).")  # fmt: skip
+        if (rr := _record_rr_sentence()) is not None:
+            text += " " + rr
     p7 = _load(paths.results_for(PHASE6_RELATIVE_CNN) / "summary.json")
     if p7 is not None and final is not None:
         text += (f" Changing the input alone raised the test score from {_n(final['conditions']['cnn/none']['rare_macro_f1']['point'])} to "
@@ -1219,6 +1294,8 @@ def abstract_posthoc() -> str:
                      f"{'raised' if c['point'] > 0 else 'lowered'} the {SHORT[family]}'s score from {_n(p11['conditions'][key]['rare_macro_f1']['point'])} "
                      f"to {_n(p12['conditions'][key]['rare_macro_f1']['point'])} ({_p(c)})")  # fmt: skip
         text += "."
+    if (rr := _record_rr_sentence()) is not None:
+        text += " " + rr
     sizes = _model_sizes()
     if sizes:
         text += (" These answers hold for small models (" + " and ".join(f"{_n(v / 1000, 0)}" for v in sizes.values())
@@ -1295,6 +1372,7 @@ def build() -> dict[str, str]:
     files["results_patient_adaptation"] = posthoc_patient_adaptation()
     files["results_more_patients"] = posthoc_more_patients()
     files["results_relative_generators"] = posthoc_relative_generators()
+    files["results_record_rr"] = posthoc_record_rr()
     files["table_posthoc"] = posthoc_table()
     files["outlook"] = outlook(heading=False)
     files["discussion"] = discussion()
