@@ -1,0 +1,29 @@
+{
+  "cell_sha": "d0d9e3eaa1e183609aa7bcc74a289794abfc6d69b280bf3fddc2488c87d0c7d7",
+  "cell": {
+    "condition": "random_oversampling",
+    "strength": 0.25,
+    "architecture": "cnn",
+    "seed": 2
+  },
+  "condition": "random_oversampling",
+  "strength": 0.25,
+  "architecture": "cnn",
+  "seed": 2,
+  "run_id": "phase6_more_patients-cnn.random_oversampling_0.25-s2-b06953b-202611052040",
+  "status": "done",
+  "bank": null,
+  "selection_metric": "s_f1",
+  "selection_value": 0.7661844670154919,
+  "tie_break_value": 0.8557752341311134,
+  "rare_macro_f1": 0.43797028228823376,
+  "n_recall": 0.9637165021156558,
+  "n_added": {
+    "N": 0,
+    "S": 17016,
+    "V": 0,
+    "F": 26695
+  },
+  "wall_clock_s": 50.2,
+  "provisional": false
+}

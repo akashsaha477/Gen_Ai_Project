@@ -1,0 +1,84 @@
+{
+  "experiment": "phase6_more_patients",
+  "rule": "PREREGISTRATION \u00a710 v10",
+  "trainval_sha256": "bd7023488e6fda02264fa808644546385c5424dfdbfdb674286715a24236be10",
+  "v3_sha256": "69a5ab1b7cbac0b197a018d38030369b8a27c116607c4677ce53b02a42aaa302",
+  "n_cap_per_record": 600,
+  "validation_every": 5,
+  "ds1": {
+    "train": {
+      "N": 35464,
+      "S": 643,
+      "V": 3030,
+      "F": 387
+    },
+    "val": {
+      "N": 10360,
+      "S": 300,
+      "V": 758,
+      "F": 27
+    }
+  },
+  "external": {
+    "incartdb": {
+      "validation_units": [
+        5,
+        10,
+        15,
+        20,
+        25,
+        30
+      ],
+      "units": 32,
+      "beats": {
+        "train": {
+          "N": 36000,
+          "S": 253,
+          "V": 17939,
+          "F": 211
+        },
+        "val": {
+          "N": 9000,
+          "S": 1705,
+          "V": 2061,
+          "F": 8
+        }
+      }
+    },
+    "svdb": {
+      "validation_units": [
+        804,
+        809,
+        821,
+        826,
+        841,
+        846,
+        851,
+        856,
+        861,
+        866,
+        871,
+        876,
+        881,
+        886,
+        891
+      ],
+      "units": 78,
+      "beats": {
+        "train": {
+          "N": 37800,
+          "S": 9404,
+          "V": 7988,
+          "F": 23
+        },
+        "val": {
+          "N": 9000,
+          "S": 2790,
+          "V": 1949,
+          "F": 0
+        }
+      }
+    }
+  },
+  "git_sha": "b06953bdfeb72766371948ec8edd3eb4e0b34b90"
+}
