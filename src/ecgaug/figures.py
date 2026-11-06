@@ -1420,6 +1420,68 @@ def more_patients_figure(summary: dict, p7: dict) -> list[Path]:
     return [_save(fig, paths.figures_for("phase6_more_patients") / "results.png", "Before and after: more training patients", caption)]
 
 
+def relative_generators_mechanism_figure(mechs: dict[str, dict]) -> list[Path]:
+    """P12 before and after: over how many training patients the synthetic beats spread (the patient of each one's nearest real
+    training beat), for the bank P11 used and the P12 bank, beside the real beats themselves."""
+    plt = _plt()
+    names = {"cvae": "cVAE", "wgan_gp": "WGAN-GP"}
+    colors = {"cvae": "#2a78d6", "wgan_gp": "#eb6834"}
+    fig, axes = plt.subplots(1, len(mechs), figsize=(6.2 * len(mechs), 4.0), squeeze=False)
+    for ax, (family, m) in zip(axes[0], mechs.items()):
+        classes = list(m["classes"])
+        series = [("real training beats", "real", INK), ("bank used in P11 (phase 3 generator)", "p11", "#b8b6b0"), (f"P12 bank ({names[family]})", "p12", colors[family])]
+        width = 0.8 / len(series)
+        for j, (label, key, color) in enumerate(series):
+            values = [m["classes"][c][key]["effective_records"] for c in classes]
+            x = np.arange(len(classes)) + (j - (len(series) - 1) / 2) * width
+            ax.bar(x, values, width=width * 0.9, color=color, label=label)
+            for xi, v in zip(x, values):
+                ax.annotate(f"{v:.1f}", (xi, v), xytext=(0, 2), textcoords="offset points", ha="center", fontsize=7, color=INK_2)
+        ax.set_xticks(range(len(classes)), [f"{c} beats" for c in classes])
+        ax.set_ylabel("effective number of training patients")
+        ax.set_title(names[family], loc="left")
+        ax.legend(fontsize=7, loc="upper right")
+    caption = ("For each synthetic beat (5,000 per class from the seed-0 banks), the patient of its nearest real training beat (Euclidean, patient-relative "
+               "form); bars give exp of the entropy of those patient shares (P8's measure, by patient). Real: the training beats' own spread. "
+               "Post hoc (PREREGISTRATION v11, P12).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_relative_generators") / "mechanism.png", "Before and after: how many patients the synthetic beats resemble", caption)]
+
+
+def relative_generators_results_figure(summary: dict, p11: dict) -> list[Path]:
+    """P12 before and after: each generator with the phase 3 banks (P11) and with generators trained on P11's patient-relative beats (P12)."""
+    plt = _plt()
+    names = {"cvae": "cVAE", "wgan_gp": "WGAN-GP"}
+    rows = [("P11: no augmentation", p11["conditions"]["cnn/none"], INK_2), ("P11: random oversampling", p11["conditions"]["cnn/random_oversampling"], INK_2),
+            ("P11: class-weighted loss", p11["conditions"]["cnn/class_weighted"], INK_2)]  # fmt: skip
+    for key in summary["conditions"]:
+        family = key.split("/")[1]
+        rows += [(f"{names[family]}, phase 3 generator (P11)", p11["conditions"][key], "#b8b6b0"),
+                 (f"{names[family]}, P12 generator (strength {summary['conditions'][key]['strength']})", summary["conditions"][key], "#2a78d6" if family == "cvae" else "#eb6834")]  # fmt: skip
+    comparisons = [(family, name) for family, items in summary["families"].items() for name in items]
+    fig, axes = plt.subplots(1, 2, figsize=(13, 0.5 * max(len(rows), len(comparisons)) + 2.2))
+    ax = axes[0]
+    for i, (label, entry, color) in enumerate(reversed(rows)):
+        _interval(ax, entry["rare_macro_f1"], i, color)
+    ax.set_yticks(range(len(rows)), [label for label, _, _ in reversed(rows)], fontsize=8)
+    ax.set_xlim(left=0)
+    ax.set_xlabel("test rare-class macro-F1 (95% record-level CI)")
+    ax.set_title("each condition (the P7 cnn on P11's patients)", loc="left")
+    ax = axes[1]
+    for i, (family, name) in enumerate(reversed(comparisons)):
+        r = summary["families"][family][name]
+        _interval(ax, r, i, INK if family == "confirmatory" else INK_2)
+        ax.annotate(f"Holm p {r['p_holm']:.3f}", (r["ci_high"], i), xytext=(6, 0), textcoords="offset points", va="center", fontsize=7, color=INK_2)
+    ax.axvline(0, color=GRID, linewidth=1.2)
+    ax.set_yticks(range(len(comparisons)), [name for _, name in reversed(comparisons)], fontsize=7)
+    ax.locator_params(axis="x", nbins=6)
+    ax.set_xlabel("difference in test rare-class macro-F1 (95% CI)")
+    ax.set_title("pre-registered comparisons, P12", loc="left")
+    caption = ("The cVAE and WGAN-GP retrained on P11's training beats in the form the cnn sees them (settings and step budget unchanged), against the "
+               "same generators trained in phase 3 on DS1's ordinary beats; grey rows: P11's other conditions for reference. Black: confirmatory "
+               "(P12 vs the same generator in P11); grey: secondary. Post hoc (PREREGISTRATION v11, P12).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_relative_generators") / "results.png", "Before and after: generators trained on what the cnn sees", caption)]
+
+
 def posthoc_figures() -> list[Path]:
     """Every post-hoc figure whose summary exists (PREREGISTRATION v4, P1-P4); nothing is re-run."""
     final, written = _summary("final_eval"), []
@@ -1465,6 +1527,11 @@ def posthoc_figures() -> list[Path]:
         written += patient_adaptation_figure(a, _summary("phase6_patient_adaptation"))
     if (s := _summary("phase6_more_patients")) is not None and (p7 := _summary("phase6_relative_cnn")) is not None:
         written += more_patients_figure(s, p7)
+    mechs = {f: m for f in ("cvae", "wgan_gp") if (m := _summary("phase6_relative_generators", f"{f}_mechanism.json")) is not None}
+    if mechs:
+        written += relative_generators_mechanism_figure(mechs)
+    if (s := _summary("phase6_relative_generators")) is not None and (p11 := _summary("phase6_more_patients")) is not None:
+        written += relative_generators_results_figure(s, p11)
     return written
 
 
