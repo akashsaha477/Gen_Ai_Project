@@ -7,7 +7,7 @@ classes on MIT-BIH when training and test patients are kept apart? A 30-day proj
 New to the project? Read `PROJECT_GUIDE.md` first: it explains the whole project and what is done.
 `CODE_GUIDE.md` then explains what each code file and function does.
 
-Then `docs/RULES.md` (rules and data protocol), then `docs/PLAN.md`, `docs/PAPER_TRACK.md` and
+Then `docs/PLAN.md` (phases, rules and the data protocol), `docs/PAPER_TRACK.md` and
 `docs/PREREGISTRATION.md`. Live state is in `docs/PROGRESS.md` and `docs/DECISIONS.md`.
 
 ## Where we are and what to do next
@@ -60,7 +60,7 @@ the one before it; the code refuses to skip ahead and says what is missing.
 | 6 paper | P12 the cVAE and WGAN-GP trained on patient-relative beats of P11's patients (PREREGISTRATION v11) | `kaggle/phase6_relative_generators.ipynb` (`PART` = train with `FAMILY` on GPU; test on CPU), `--part select` locally | done 2026-11-06: synthetic S beats over 31.6 / 29.2 effective patients (real 32.0; P11's banks 10.9 / 14.3); test rare-class macro-F1 cVAE 0.368 (P11 0.245; F F1 0.175 to 0.475), WGAN-GP 0.243 (P11 0.217); no Holm rejection |
 | 6 paper | P13 RR intervals over the mean RR of their recording, P11's and P12's conditions (PREREGISTRATION v12) | `kaggle/phase6_record_rr.ipynb` (`PART` = grid on GPU; test on CPU), `--part check` and `--part select` locally | done 2026-11-06: as inputs to the cnn, no detectable change (none 0.147 to 0.216, S F1 0.294 to 0.399; Holm p 1.000); with Huang et al.'s rule on top (descriptive) S F1 0.531-0.578 and rare-class macro-F1 up to 0.523 (cVAE), the study's highest |
 | 6 paper | P14 the P13 cnn trained on P13's data plus 400 Icentia11k patients drawn at random (PREREGISTRATION v13) | `kaggle/phase6_icentia.ipynb` (`PART` = grid on GPU, which downloads and builds; test on CPU), `--part check` and `--part select` locally | running 2026-11-06 |
-| 6 paper | `paper/main.tex` and the course report `paper/report.tex`: tables, numbers and results sentences | `python -m ecgaug.paper` | drafted 2026-11-04 with every result in (`paper/main.pdf`, `paper/report.pdf`); claims table filled; open: author names and team contributions |
+| 6 paper | the paper and the course report (kept out of this repository): tables, numbers and results sentences | `python -m ecgaug.paper` | drafted 2026-11-04 with every result in (`paper/main.pdf`, `paper/report.pdf`); claims table filled; open: author names and team contributions |
 
 "Built" means the code, configs, notebook, tests and brief exist. A dress rehearsal runs every stage in
 order on fake records (`ECGAUG_REHEARSAL=1 uv run pytest tests/test_rehearsal.py`, about 8 minutes). Every
@@ -104,7 +104,7 @@ for pretraining.
 |---|---|
 | `src/ecgaug/` | the package: `data` (MIT-BIH pipeline, PTB-XL preprocessing, R-peak detector), `eval` (metrics, bootstrap, selection rules), `models` (probe and the four baselines), `train`, `generators` (cVAE, WGAN-GP, banks), `quality` (diagnostics, metric families, sanity harness), `augment` (policies, SMOTE, oversampling, class weights), `grid` (the grid runner), `experiments` (one runner per experiment), `explain` (saliency and its scores), `report` (notes and fact checker, error analysis), `final_eval`, `demo`, `paper`, `workflow` (status and gates) |
 | `configs/` | one folder per experiment (`<experiment>/<letter>_<name>.yaml` plus a shared settings file), `validation_split/`, `phase4_full_grid/` |
-| `paper/` | the LaTeX draft (`main.tex`), `generated/` tables and numbers, `claims_vs_evidence.md` |
+| `paper/` | the LaTeX draft, its `generated/` tables and numbers and `claims_vs_evidence.md`; written locally by `python -m ecgaug.paper` and kept out of this repository |
 | `scripts/reproduce.sh` | the whole pipeline in order |
 | `scripts/phase3_bank_figure.py` | real training beats next to each frozen bank, per class (`figures/phase3_gate/banks.png`) |
 | `scripts/phase4a_policy_figure.py` | the policy pilot against no augmentation, per bank (`figures/phase4a_gate/policies.png`) |
@@ -219,8 +219,8 @@ uv run python -m ecgaug.paper
 
 What each variant is, how to run it and what to check: `docs/briefs/<experiment>_<variant>.md`.
 `scripts/reproduce.sh` lists the whole order. The paper's results sentences and hypothesis verdicts are
-written by `python -m ecgaug.paper` from the result files (`src/ecgaug/paper_text.py`); compile
-`paper/main.tex` and `paper/report.tex` with pdflatex and bibtex (or `tectonic -X compile main.tex` from `paper/`). The LLM note variants need `GEMINI_API_KEY` (free
+written by `python -m ecgaug.paper` from the result files (`src/ecgaug/paper_text.py`) into `paper/generated/`; the
+draft itself (`paper/main.tex`, `paper/report.tex`) is kept out of this repository. The LLM note variants need `GEMINI_API_KEY` (free
 tier from aistudio.google.com; or `ECGAUG_LLM_PROVIDER=otherllm` with `LLM_API_KEY`, and optionally
 `ECGAUG_LLM_MODEL`) in the environment; without it the template note is used.
 

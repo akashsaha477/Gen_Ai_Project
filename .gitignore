@@ -24,3 +24,7 @@ __pycache__/
 .env
 .env.*
 kaggle.json
+
+# Kept local, never committed: assistant settings and instructions, the paper draft
+/KICKOFF_PROMPT.md
+/paper/
