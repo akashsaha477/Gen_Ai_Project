@@ -1494,9 +1494,9 @@ def record_rr_check_figure(check: dict) -> list[Path]:
     return [_save(fig, paths.figures_for("phase6_record_rr") / "check.png", "Before and after: what the RR reference sees in an S-dominant recording", caption)]
 
 
-def record_rr_results_figure(summary: dict) -> list[Path]:
-    """P13 before and after: each condition with v2's local RR features (P11, P12) and with RR over the recording's mean, plus
-    Huang's SVEB stage on top; the pre-registered comparisons."""
+def _before_after_rule(summary: dict, labels: tuple[str, str], after_color: str, left_title: str, comparisons_title: str) -> object:
+    """Three panels from a P13-style summary: rare-class macro-F1 and S F1 per condition (before, after, after with Huang's
+    SVEB stage) and the pre-registered comparisons with their Holm-adjusted p."""
     plt = _plt()
     names = {"none": "no augmentation", "class_weighted": "class-weighted loss", "random_oversampling": "random oversampling", "cvae": "cVAE", "wgan_gp": "WGAN-GP"}
     keys = list(summary["conditions"])
@@ -1504,9 +1504,9 @@ def record_rr_results_figure(summary: dict) -> list[Path]:
     rows = []
     for k in keys:
         c = k.split("/")[1]
-        rows += [(f"{names[c]}: before", summary["before"][k], "#b8b6b0"), (f"{names[c]}: recording-mean RR", summary["conditions"][k], "#2a78d6"),
+        rows += [(f"{names[c]}: {labels[0]}", summary["before"][k], "#b8b6b0"), (f"{names[c]}: {labels[1]}", summary["conditions"][k], after_color),
                  (f"{names[c]}: + SVEB rule", summary["sveb_rule"][k], "#eb6834")]  # fmt: skip
-    for ax, metric, xlabel, title in ((axes[0], "rare_macro_f1", "test rare-class macro-F1 (95% record-level CI)", "each condition (the P7 cnn on P11's patients)"),
+    for ax, metric, xlabel, title in ((axes[0], "rare_macro_f1", "test rare-class macro-F1 (95% record-level CI)", left_title),
                                       (axes[1], "f1_S", "test S F1 (95% record-level CI)", "S beats only")):  # fmt: skip
         for i, (label, entry, color) in enumerate(reversed(rows)):
             _interval(ax, entry[metric], i, color)
@@ -1530,11 +1530,60 @@ def record_rr_results_figure(summary: dict) -> list[Path]:
     ax.set_yticks(range(len(comparisons)), [pretty(name) for _, name in reversed(comparisons)], fontsize=7)
     ax.locator_params(axis="x", nbins=6)
     ax.set_xlabel("difference in test rare-class macro-F1 (95% CI)")
-    ax.set_title("pre-registered comparisons, P13", loc="left")
+    ax.set_title(comparisons_title, loc="left")
+    return fig
+
+
+def record_rr_results_figure(summary: dict) -> list[Path]:
+    """P13 before and after: each condition with v2's local RR features (P11, P12) and with RR over the recording's mean, plus
+    Huang's SVEB stage on top; the pre-registered comparisons."""
+    fig = _before_after_rule(summary, ("before", "recording-mean RR"), "#2a78d6", "each condition (the P7 cnn on P11's patients)", "pre-registered comparisons, P13")
     caption = ("The same cnn, data and strengths with v2's local RR features (grey; P11 and P12) and with rr_prev and rr_next over the recording's mean "
                "RR interval (blue); orange: Huang et al.'s SVEB stage on top (descriptive). Right, black: confirmatory (each condition vs before); grey: "
                "secondary (generators vs the other conditions). Post hoc (PREREGISTRATION v12, P13).")  # fmt: skip
     return [_save(fig, paths.figures_for("phase6_record_rr") / "results.png", "Before and after: RR intervals over the recording's mean", caption)]
+
+
+def icentia_check_figure(check: dict) -> list[Path]:
+    """P14's design check: validation S F1 against the share of an unseen S-dominant patient's S beats found, per rule or
+    interval model (training-side annotations only)."""
+    plt = _plt()
+    fig, ax = plt.subplots(figsize=(10.5, 5.2))
+    points = [(name, e["validation"]["f1"], e["held_out_s_sensitivity"]) for name, e in check["rules"].items()]
+    points += [(name, e["without_held_out"]["validation"]["f1"], e["without_held_out"]["held_out_s_sensitivity"]) for name, e in check["models"].items()]
+    local = []
+    for name, x, y in points:
+        color = "#eb6834" if "irregularity" in name else "#2a78d6" if ("recording mean" in name and "local" not in name and "v2" not in name) else INK_2
+        marker = "s" if "<" in name else "o"
+        ax.scatter(x, 100 * y, s=46, color=color, marker=marker, zorder=3)
+        if color == INK_2:
+            local.append((x, 100 * y))
+            continue
+        ax.annotate(name.replace("logistic regression", "logreg").replace("gradient boosting", "GBM"), (x, 100 * y), xytext=(5, 3),
+                    textcoords="offset points", fontsize=7, color=INK_2)  # fmt: skip
+    if local:
+        x0, y0 = min(x for x, _ in local), max(y for _, y in local)
+        ax.annotate(f"{len(local)} rules and models with a local reference\n(+/-150 s mean, local averages, v2 ratio, de Chazal's intervals)",
+                    (x0, y0), xytext=(x0 - 0.33, y0 + 22), textcoords="data", fontsize=7, color=INK_2,
+                    arrowprops={"arrowstyle": "-", "color": INK_2, "linewidth": 0.8})  # fmt: skip
+    ax.set_xlim(0, 1)
+    ax.set_ylim(-4, 104)
+    ax.set_xlabel("validation S F1 (P11's validation patients)")
+    ax.set_ylabel(f"S beats of the unseen patient found (%; SVDB {check['held_out'][1]})")
+    ax.set_title("no rule or interval model is good at both", loc="left")
+    caption = ("Training-side annotations only (DS1, INCART, SVDB; P11's split), SVDB 865 left out of training. Squares: rules; dots: models of the "
+               "RR intervals. Blue: the recording mean alone; grey: a local reference among the inputs; orange: an irregularity veto. "
+               "Post hoc (PREREGISTRATION v13, P14).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_icentia") / "check.png", "Why more patients: local references miss an unseen S-dominant patient", caption)]
+
+
+def icentia_results_figure(summary: dict) -> list[Path]:
+    """P14 before and after: each condition trained without (P13) and with the Icentia11k patients, plus Huang's SVEB stage."""
+    fig = _before_after_rule(summary, ("P13", "with Icentia11k patients"), "#1a9a6c", "each condition (the P7 cnn)", "pre-registered comparisons, P14")
+    caption = ("The same cnn, features and strengths trained on P11's 106 patients (grey; P13) and with the Icentia11k patients added (green); orange: "
+               "Huang et al.'s SVEB stage on top (descriptive). Right, black: confirmatory (each condition vs P13); grey: secondary (the cVAE vs the "
+               "other conditions). Post hoc (PREREGISTRATION v13, P14).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_icentia") / "results.png", "Before and after: many more training patients", caption)]
 
 
 def relative_generators_results_figure(summary: dict, p11: dict) -> list[Path]:
@@ -1632,6 +1681,10 @@ def posthoc_figures() -> list[Path]:
         written += record_rr_check_figure(c)
     if (s := _summary("phase6_record_rr")) is not None:
         written += record_rr_results_figure(s)
+    if (c := _summary("phase6_icentia", "design_check.json")) is not None:
+        written += icentia_check_figure(c)
+    if (s := _summary("phase6_icentia")) is not None:
+        written += icentia_results_figure(s)
     return written
 
 
