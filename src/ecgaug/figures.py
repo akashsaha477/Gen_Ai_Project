@@ -1449,6 +1449,93 @@ def relative_generators_mechanism_figure(mechs: dict[str, dict]) -> list[Path]:
     return [_save(fig, paths.figures_for("phase6_relative_generators") / "mechanism.png", "Before and after: how many patients the synthetic beats resemble", caption)]
 
 
+def record_rr_check_figure(check: dict) -> list[Path]:
+    """P13's design check (training-side annotations only): the S beats each RR ratio finds in the most S-dominant training
+    recording, and the rule's S F1 per database."""
+    plt = _plt()
+    labels = {"v1": "v1: mean of 10 preceding", "v2": "v2: median within ±150 s", "record": "P13: mean of the recording"}
+    colors = {"v1": "#b8b6b0", "v2": INK_2, "record": "#2a78d6"}
+    heavy = sorted(check["s_heavy_records"], key=lambda h: -h["s_beats"])
+    fig, axes = plt.subplots(1, 2, figsize=(12.4, 3.8), gridspec_kw={"width_ratios": [1, 1.6]})
+    ax = axes[0]
+    if heavy:
+        h = heavy[0]
+        values = [100 * h["rule_s_sensitivity"][r] for r in labels]
+        ax.bar(range(len(labels)), values, color=[colors[r] for r in labels], width=0.6)
+        for i, v in enumerate(values):
+            ax.annotate(f"{v:.1f}%", (i, v), xytext=(0, 2), textcoords="offset points", ha="center", fontsize=8, color=INK_2)
+        ax.set_xticks(range(len(labels)), [labels[r].split(":")[0] for r in labels])
+        ax.set_ylim(0, 105)
+        ax.set_ylabel("S beats found by the rule (%)")
+        ax.set_title(f"SVDB {h['record']}: S {h['s_beats']:,} of {h['n_and_s_beats']:,} beats", loc="left")
+    ax.set_axisbelow(True)
+    ax.grid(axis="x", visible=False)
+    ax = axes[1]
+    dbs = {"mitdb_ds1": "DS1", "incartdb": "INCART", "svdb": "SVDB"}
+    names = list(check["databases"])
+    width = 0.8 / len(labels)
+    for j, r in enumerate(labels):
+        x = np.arange(len(names)) + (j - (len(labels) - 1) / 2) * width
+        values = [check["databases"][db]["rule"][r]["f1"] for db in names]
+        ax.bar(x, values, width=width * 0.9, color=colors[r], label=labels[r])
+        for xi, v in zip(x, values):
+            ax.annotate(f"{v:.2f}", (xi, v), xytext=(0, 2), textcoords="offset points", ha="center", fontsize=7, color=INK_2)
+    ax.set_xticks(range(len(names)), [f"{dbs.get(db, db)} ({check['databases'][db]['records']} records)" for db in names])
+    ax.set_ylim(0, 1)
+    ax.set_ylabel(f"S F1 of the rule ratio < {check['threshold']}")
+    ax.set_title("every recording of each database", loc="left")
+    ax.legend(fontsize=7, loc="upper left")
+    ax.set_axisbelow(True)
+    ax.grid(axis="x", visible=False)
+    caption = (f"The rule 'RR interval below {check['threshold']} of the reference' (Huang et al.'s SVEB stage) with three references, on the annotations of "
+               "the training-side databases only. Left: the recording where S beats are most dominant; the local references are set by the S beats "
+               "themselves. Right: pooled over each database the recording mean is not better everywhere, so P13 adds it beside v2's ratio. "
+               "Post hoc (PREREGISTRATION v12, P13).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_record_rr") / "check.png", "Before and after: what the RR reference sees in an S-dominant recording", caption)]
+
+
+def record_rr_results_figure(summary: dict) -> list[Path]:
+    """P13 before and after: each condition with v2's local RR features (P11, P12) and with RR over the recording's mean, plus
+    Huang's SVEB stage on top; the pre-registered comparisons."""
+    plt = _plt()
+    names = {"none": "no augmentation", "class_weighted": "class-weighted loss", "random_oversampling": "random oversampling", "cvae": "cVAE", "wgan_gp": "WGAN-GP"}
+    keys = list(summary["conditions"])
+    fig, axes = plt.subplots(1, 2, figsize=(13, 0.62 * len(keys) * 3 / 2 + 2.6))
+    ax = axes[0]
+    rows = []
+    for k in keys:
+        c = k.split("/")[1]
+        rows += [(f"{names[c]}: before", summary["before"][k], "#b8b6b0"), (f"{names[c]}: recording-mean RR", summary["conditions"][k], "#2a78d6"),
+                 (f"{names[c]}: + SVEB rule", summary["sveb_rule"][k], "#eb6834")]  # fmt: skip
+    for i, (label, entry, color) in enumerate(reversed(rows)):
+        _interval(ax, entry["rare_macro_f1"], i, color)
+    ax.set_yticks(range(len(rows)), [label for label, _, _ in reversed(rows)], fontsize=7)
+    ax.set_xlim(left=0)
+    ax.set_xlabel("test rare-class macro-F1 (95% record-level CI)")
+    ax.set_title("each condition (the P7 cnn on P11's patients)", loc="left")
+    ax = axes[1]
+    comparisons = [(family, name) for family, items in summary["families"].items() for name in items]
+    for i, (family, name) in enumerate(reversed(comparisons)):
+        r = summary["families"][family][name]
+        _interval(ax, r, i, INK if family == "confirmatory" else INK_2)
+        ax.annotate(f"Holm p {r['p_holm']:.3f}", (r["ci_high"], i), xytext=(6, 0), textcoords="offset points", va="center", fontsize=7, color=INK_2)
+    ax.axvline(0, color=GRID, linewidth=1.2)
+
+    def pretty(name: str) -> str:
+        for key, label in (("random_oversampling", "random oversampling"), ("class_weighted", "class weighting"), ("wgan_gp", "WGAN-GP"), ("cvae", "cVAE")):
+            name = name.replace(key, label)
+        return name.removeprefix("cnn: ")
+
+    ax.set_yticks(range(len(comparisons)), [pretty(name) for _, name in reversed(comparisons)], fontsize=7)
+    ax.locator_params(axis="x", nbins=6)
+    ax.set_xlabel("difference in test rare-class macro-F1 (95% CI)")
+    ax.set_title("pre-registered comparisons, P13", loc="left")
+    caption = ("The same cnn, data and strengths with v2's local RR features (grey; P11 and P12) and with rr_prev and rr_next over the recording's mean "
+               "RR interval (blue); orange: Huang et al.'s SVEB stage on top (descriptive). Right, black: confirmatory (each condition vs before); grey: "
+               "secondary (generators vs the other conditions). Post hoc (PREREGISTRATION v12, P13).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_record_rr") / "results.png", "Before and after: RR intervals over the recording's mean", caption)]
+
+
 def relative_generators_results_figure(summary: dict, p11: dict) -> list[Path]:
     """P12 before and after: each generator with the phase 3 banks (P11) and with generators trained on P11's patient-relative beats (P12)."""
     plt = _plt()
@@ -1540,6 +1627,10 @@ def posthoc_figures() -> list[Path]:
         written += relative_generators_mechanism_figure(mechs)
     if (s := _summary("phase6_relative_generators")) is not None and (p11 := _summary("phase6_more_patients")) is not None:
         written += relative_generators_results_figure(s, p11)
+    if (c := _summary("phase6_record_rr", "design_check.json")) is not None:
+        written += record_rr_check_figure(c)
+    if (s := _summary("phase6_record_rr")) is not None:
+        written += record_rr_results_figure(s)
     return written
 
 
