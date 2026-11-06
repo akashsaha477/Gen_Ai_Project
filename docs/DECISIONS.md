@@ -145,7 +145,7 @@ Choices made where the plan left the detail open (each one needs the team's agre
 | A14.11 | Augmentation policy: the N-recall limit (0.01) applies to the mean over the two banks; complexity A 1, B 2, C 2, D 3; D's DTW screen (keep the closest half of twice as many bank beats) applies to generator banks only; strengths per policy B and D {0.1, 0.25, 0.5}, C {1, 2, 4}. | PREREGISTRATION v3 items. | `configs/phase4_augmentation_policy/` |
 | A14.12 | Phase 4 gate: per condition the strength with the best seed-mean validation metric (ties to the lower strength); best generative per architecture by the same rule. | PLAN Phase 4, A5. | `workflow.py` |
 | A14.13 | Explainability: selection on the mean faithfulness gain over the three models of an architecture (none, cVAE, WGAN-GP), ties by stability, then the cheaper method; integrated gradients averages the zero and per-beat-mean baselines; SmoothGrad (not gradient x input) for C; occlusion window 50 ms, stride 25 ms. | PLAN Phase 5 lists options without fixing them. | `explain/`, `configs/phase5_explainability/` |
-| A14.14 | Notes: low-confidence rule "top probability below 0.6" (proposed; to pre-register before phase 5 runs); LLM provider through the standard library, model from `ECGAUG_LLM_MODEL` (default `llm-model`), key from `LLM_API_KEY` only; note variant chosen by the hard gate, then coverage, ratings, latency, tokens. | PLAN Phase 5. | `report/notes.py` |
+| A14.14 | Notes: low-confidence rule "top probability below 0.6" (proposed; to pre-register before phase 5 runs); LLM provider through the standard library (a paid API at first; Gemini's free tier since A21), model from `ECGAUG_LLM_MODEL`, key from the environment only; note variant chosen by the hard gate, then coverage, ratings, latency, tokens. | PLAN Phase 5. | `report/notes.py` |
 | A14.15 | The paper's `refs.bib` stays empty until each entry is verified from its DOI or arXiv page. | No invented references (rule 5, /paper). | `paper/` |
 
 ## 2026-10-26 (Day 20) — A15: early-stopping fix and Kaggle pushes — decided by Akash Saha, PENDING TEAM CONFIRMATION
@@ -252,8 +252,8 @@ Full grid: configs/phase4_full_grid/full_grid.yaml
 ## 2026-11-04 (Day 29) — A21: Gemini as the default LLM for the note variants — Akash Saha
 
 The note variants B-D (phase5_clinical_notes) call Gemini by default (`ECGAUG_LLM_PROVIDER=gemini`, key `GEMINI_API_KEY`,
-free tier), not the paid API first planned, which is billed separately. The other provider stayed available with
-`ECGAUG_LLM_PROVIDER=otherllm`. Nothing pre-registered changes: PREREGISTRATION does not name a provider or model;
+free tier), not the paid API first planned (A14.14), which is billed separately. (That provider was removed from the code on
+2026-11-07; Gemini is the only one built.) Nothing pre-registered changes: PREREGISTRATION does not name a provider or model;
 prompts, the fact checker, `max_tokens` 400, 50 cases and 2 retries are unchanged. The model used is recorded in each
 variant's result (`model`). Model `gemini-3.5-flash` with thinking level `minimal` (`ECGAUG_LLM_THINKING`), chosen
 from a one-request probe on a made-up beat (no project data): `gemini-2.5-flash` is closed to new keys, the Pro models
@@ -453,3 +453,14 @@ stopped with exit code 1 right after building P13's data: the Icentia11k beats t
 source (`p13.spec`), the same representation P11 used for INCART and SVDB. Downloads retry on any error and a patient
 whose files never arrive is reported instead of stopping the run; a segment that fails to build is left out and reported
 in `data.json`, as INCART's and SVDB's exclusions are. Nothing about the sample, the beats or the comparisons changes.
+
+## 2026-11-07 (Day 32) — A35: repository cleanup and a history rewrite — Akash Saha
+
+Four local-only paths (a settings folder, two local instruction files and the paper draft) are no longer tracked and are
+erased from every commit by a history rewrite, at the team's request; they stay on the members' machines. The project rules
+and the data protocol they held now live in `docs/RULES.md` (same section and rule numbers, so every "rule 7" or "§4" cited in
+the code, briefs and pre-registration still points to the same text). The note generator keeps one LLM provider, Gemini
+(the variants ran on it, A21); the other provider and its test were removed. A temporary path in one `TEST_ACCESS_LOG.md`
+row is shortened to `<local scratch>/rebuild_v1.py`; its date, kind, commit and purpose are unchanged. The rewrite changes
+every commit SHA: run IDs keep the SHA7 they were created with, and `docs/COMMIT_MAP.csv` maps each old SHA to the
+rewritten one. No result, rule or pre-registered choice changes. The paper is generated and compiled locally.

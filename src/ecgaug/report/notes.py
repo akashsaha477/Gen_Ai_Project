@@ -16,9 +16,8 @@ input's probabilities or segment masses (as a decimal or a percentage), every cl
 must be in the input, no diagnosis outside the four beat classes may appear, the disclaimer must be
 present word for word, and a low-confidence case must say that clinician review is required.
 
-**LLM provider** from the environment: ``ECGAUG_LLM_PROVIDER`` (``gemini``, the default, or
-``otherllm``), ``ECGAUG_LLM_MODEL`` (default per provider in ``DEFAULT_MODELS``) and the provider's key
-(``GEMINI_API_KEY`` or ``LLM_API_KEY``). Gemini's thinking level is ``ECGAUG_LLM_THINKING`` (default
+**LLM provider** from the environment: ``ECGAUG_LLM_PROVIDER`` (``gemini``, the only one built),
+``ECGAUG_LLM_MODEL`` (default in ``DEFAULT_MODELS``) and the key ``GEMINI_API_KEY``. Gemini's thinking level is ``ECGAUG_LLM_THINKING`` (default
 ``minimal``): thinking tokens count against the 400-token limit, and at the model's default level they used it all. The key is read from the environment only and is never
 printed or written. The request uses the standard library (no new dependency); rate-limit replies (429,
 503) are retried with a wait. Without a key, B, C and D cannot run and the template is used.
@@ -37,11 +36,10 @@ CLASS_NAMES = {"N": "normal beat", "S": "supraventricular ectopic beat", "V": "v
 SEGMENT_NAMES = {"P": "P wave", "QRS": "QRS complex", "ST": "ST segment", "T": "T wave"}
 DISCLAIMER = "This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician."
 REVIEW_REQUIRED = "Clinician review is required."
-DEFAULT_MODELS = {"gemini": "gemini-3.5-flash-lite", "otherllm": "llm-model"}  # A23: flash allows 20 free requests a day
+DEFAULT_MODELS = {"gemini": "gemini-3.5-flash-lite"}  # A23: flash allows 20 free requests a day
 GEMINI_THINKING = "minimal"
-API_KEYS = {"gemini": "GEMINI_API_KEY", "otherllm": "LLM_API_KEY"}
-API_URLS = {"gemini": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
-            "otherllm": "https://api.example.invalid/v1/messages"}  # fmt: skip
+API_KEYS = {"gemini": "GEMINI_API_KEY"}
+API_URLS = {"gemini": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"}
 
 # Terms that would be claims beyond the input (diagnoses, causes, advice).
 UNSUPPORTED_TERMS = (
@@ -145,7 +143,7 @@ class LLMQuotaError(RuntimeError):
 
 
 class LLMClient:
-    """Gemini or another provider text generation over HTTPS (standard library only)."""
+    """Gemini text generation over HTTPS (standard library only)."""
 
     def __init__(self, model: str, api_key: str, provider: str = "gemini", max_tokens: int = 400, timeout_s: float = 60.0,
                  max_waits: int = 6, thinking: str | None = GEMINI_THINKING) -> None:  # fmt: skip
@@ -155,23 +153,16 @@ class LLMClient:
         self.max_tokens, self.timeout_s, self.max_waits, self.thinking = max_tokens, timeout_s, max_waits, thinking
 
     def _request(self, system: str, messages: list[dict]) -> urllib.request.Request:
-        if self.provider == "otherllm":
-            body = {"model": self.model, "max_tokens": self.max_tokens, "system": system, "messages": messages}
-            headers = {"x-api-key": self._key, "api-version": "2023-06-01"}
-        else:
-            contents = [{"role": "model" if m["role"] == "assistant" else "user", "parts": [{"text": m["content"]}]} for m in messages]
-            body = {"systemInstruction": {"parts": [{"text": system}]}, "contents": contents,
-                    "generationConfig": {"maxOutputTokens": self.max_tokens}}  # fmt: skip
-            if self.thinking:
-                body["generationConfig"]["thinkingConfig"] = {"thinkingLevel": self.thinking}
-            headers = {"x-goog-api-key": self._key}  # in a header, never in the URL
+        contents = [{"role": "model" if m["role"] == "assistant" else "user", "parts": [{"text": m["content"]}]} for m in messages]
+        body = {"systemInstruction": {"parts": [{"text": system}]}, "contents": contents,
+                "generationConfig": {"maxOutputTokens": self.max_tokens}}  # fmt: skip
+        if self.thinking:
+            body["generationConfig"]["thinkingConfig"] = {"thinkingLevel": self.thinking}
+        headers = {"x-goog-api-key": self._key}  # in a header, never in the URL
         url = API_URLS[self.provider].format(model=self.model)
         return urllib.request.Request(url, data=json.dumps(body).encode(), method="POST", headers={**headers, "content-type": "application/json"})
 
     def _parse(self, data: dict) -> tuple[str, dict]:
-        if self.provider == "otherllm":
-            text = "".join(block.get("text", "") for block in data.get("content", []) if block.get("type") == "text")
-            return text, data.get("usage", {})
         parts = (data.get("candidates") or [{}])[0].get("content", {}).get("parts", [])
         text = "".join(part.get("text", "") for part in parts if not part.get("thought"))
         meta = data.get("usageMetadata", {})

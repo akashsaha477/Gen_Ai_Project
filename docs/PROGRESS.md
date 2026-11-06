@@ -565,7 +565,7 @@ the general tie margin in the policy pilot; per-bank N recall and V F1 in the ga
 Run-time estimates from the measured pilots and baselines: final runs about 2 GPU-hours in total (cVAE D about 0.8,
 WGAN-GP A about 1.2); policy pilot under 1 hour; full grid at 3 seeds about 2 GPU-hours. These are estimates, not runs.
 
-Report for the team: phases 1 to 3 summary with architecture diagrams, (shared with the team separately)
+Report for the team: phases 1 to 3 summary with architecture diagrams (shared with the team separately)
 
 Next: the team approves the phase 3a gate; then the final runs (`MODE = "final"`), one notebook per family.
 
@@ -659,7 +659,7 @@ cnn and rnn, seeds 0-2: 96 runs. Started on Kaggle in one session.
 
 ## 2026-11-04 (Day 29) — Note LLM switched to Gemini (A21)
 
-`src/ecgaug/report/notes.py`: `LLMClient` now speaks Gemini (default) or another provider, with the key in a header and waits on
+`src/ecgaug/report/notes.py`: `LLMClient` now speaks Gemini (the default; the other provider was removed on 2026-11-07), with the key in a header and waits on
 rate-limit replies (429/503); usage maps to the same input/output token fields (Gemini thinking tokens count as output).
 Tests updated (`tests/test_phase5.py`, all pass). Notebook, kaggle/README.md and README.md name `GEMINI_API_KEY`.
 Model probe (one made-up beat, no project data): default set to `gemini-3.5-flash` with thinking level `minimal`;
@@ -1096,3 +1096,11 @@ First P14 grid session failed fast (exit code 1, before any download): the froze
 is not in the Kaggle session. Fixed (P13's data source spec); downloads and segment builds made robust (reported
 exclusions). The kernel log was fetched with one API request (`ListKernelSessionOutput`, page size 1); the CLI pages
 through every output file of the working folder and got rate-limited.
+
+## 2026-11-07 (Day 32) — repository cleanup (A35)
+
+Asked to stop committing four local-only paths and to remove them from GitHub, history included, and to reword every
+mention. Done: untracked and ignored locally (`.git/info/exclude`); rules moved to `docs/RULES.md` with the same numbering;
+54 files reworded; the note generator is Gemini-only; the related tests pass. Next: P14's test, then the history rewrite
+(git filter-repo, once, at the end), a commit map, the full suite on Kaggle at the rewritten head, and the force-push of
+`main`, `finish-project` and every tag. GitHub keeps its own refs for the 10 pull requests, which only GitHub Support can purge.

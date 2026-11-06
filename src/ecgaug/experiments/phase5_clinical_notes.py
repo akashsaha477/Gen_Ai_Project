@@ -12,8 +12,7 @@ saliency, and saved in ``results/phase5_clinical_notes/cases.json``. Each note i
 (``ecgaug.report.notes.check_note``). The hard gate is zero unsupported claims over the 50 notes; then
 coverage of the required parts, the team's blinded readability ratings, latency and cost.
 
-The LLM variants need ``GEMINI_API_KEY`` (or ``ECGAUG_LLM_PROVIDER=otherllm`` with ``LLM_API_KEY``;
-see ``ecgaug.report.notes``); without it they are recorded as not run. The test set is never read.
+The LLM variants need ``GEMINI_API_KEY`` (see ``ecgaug.report.notes``); without it they are recorded as not run. The test set is never read.
 """
 
 from __future__ import annotations
@@ -101,7 +100,7 @@ def run_variant(cfg: dict, cases: list[dict], client, reasons: list[str]) -> dic
     out.mkdir(parents=True, exist_ok=True)
     if variant != "A" and client is None:
         result = {"experiment": EXPERIMENT, "variant": cfg["variant"], "generator": variant, "not_run": True,
-                  "reason": "no LLM configured (set LLM_API_KEY)", "provisional": bool(reasons), "provisional_reasons": reasons}  # fmt: skip
+                  "reason": "no LLM configured (set GEMINI_API_KEY)", "provisional": bool(reasons), "provisional_reasons": reasons}  # fmt: skip
         (out / f"{cfg['variant']}.json").write_text(json.dumps(result, indent=2) + "\n")
         return result
     notes, started = [], time.perf_counter()
