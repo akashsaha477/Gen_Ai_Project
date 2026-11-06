@@ -430,3 +430,19 @@ was detectable (none +0.070, class weighting -0.027, random oversampling -0.009,
 0.345). Huang et al.'s rule on top (descriptive, threshold not tuned): S F1 0.531-0.578 and rare-class macro-F1 up to 0.523
 (cVAE), the highest of the study. Reported as descriptive: DS2 has been read many times, and the idea came partly from
 published analyses of DS2.
+
+## 2026-11-06 (Day 31) — A34: many more training patients from Icentia11k (pre-registration v13) — Akash Saha ("make it better ... you have to find the solution")
+
+P13 showed the published remedy works as a rule (S F1 0.53-0.58 on DS2) but not when the cnn has to learn it. A design check
+on training-side annotations (`phase6_icentia --part check`), with SVDB 865 held out as an unseen S-dominant patient, shows
+why: every reference that is local gives better validation S F1 (up to 0.738) but finds 2-8% of the unseen patient's S
+beats, the recording mean finds 94-98% at validation S F1 0.627-0.650, and vetoing irregular rhythm (atrial fibrillation)
+removes too many real S beats (validation S F1 0.248-0.288). Two refinements of the rule were tried this way and dropped
+before any test read: an irregularity veto and a +/-150 s window. Whether to trust the local or the recording reference
+cannot be learned from one S-dominant training recording; it can only be learned from many patients. The paper's own
+conclusion asks for more training patients, so P14 adds them: 400 Icentia11k patients drawn at random (seed 0), processed
+like INCART and SVDB in P11 and in P13's form. Icentia11k (Tan et al., PhysioNet) is open access under CC BY-NC-SA 4.0
+(non-commercial; nothing derived is published). WGAN-GP is left out because its saved bank is too small at 0.25 of the
+larger N count; the other four conditions keep P13's strengths. The N cap is applied before the templates are computed
+(P11 applied it after; the kept beats' templates are the same either way, since templates use all QRS annotations).
+Downloads try PhysioNet's AWS mirror first, in parallel, and every file's SHA-256 is recorded.

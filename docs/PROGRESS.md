@@ -1082,3 +1082,13 @@ regenerated (38 and 24 pages, no unresolved references); the discussion, conclus
 
 Full test suite on Kaggle CPU at e5ba5b1 (kernel `phase6-record-rr-suite`, `tests_exit_code` 0; its recomputed P13
 selection is identical to the committed one). Pushed `main` (d3b4c86..e5ba5b1) and the tag `prereg-v12` (3a8561d).
+
+**P14, many more training patients** (`phase6_icentia`, pre-registration v13, A34). Asked to "make it better ... find the
+solution". Training-side design check with SVDB 865 held out (`--part check`): local RR references reach validation S F1
+up to 0.738 but find 2-8% of an unseen S-dominant patient's S beats; the recording mean finds 94-98% at 0.627-0.650; an
+irregularity veto loses too much recall (0.248-0.288). So the choice of reference has to be learned from many patients;
+P11 has one S-dominant training patient. P14 adds the first segment of 400 Icentia11k patients drawn at random (11,000
+patients, technician-labelled N/S/V, one chest lead at 250 Hz), built like INCART and SVDB in P13's form, and retrains the
+cnn in four of P13's conditions (WGAN-GP's bank too small at the larger N count). A real segment builds locally in 0.7 s
+(patient 2: S 494, N capped at 600). 7 tests for P14 pass, one of them building a synthetic Icentia-format record end to
+end. Compute: one T4 session including download and build.

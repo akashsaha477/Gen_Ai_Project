@@ -1,0 +1,9 @@
+# P14 (PREREGISTRATION §10 v13): the P13 cnn trained on P13's data plus Icentia11k patients drawn at random. Nothing here is tuned.
+experiment: phase6_icentia
+record_rr_config: configs/phase6_record_rr/record_rr.yaml
+patients: 400  # drawn at random from the 11,000 with patient_seed; the first segment (about 70 minutes) of each
+patient_seed: 0
+n_cap_per_record: 600  # P11's cap: every S and V beat, at most 600 N beats per record
+cap_seed: 0
+validation_every: 5  # P11's rule: every 5th patient in sorted order to validation
+rule_threshold: 0.8  # Huang et al. (2014), descriptive as in P13
