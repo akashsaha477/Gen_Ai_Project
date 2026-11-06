@@ -446,3 +446,10 @@ like INCART and SVDB in P11 and in P13's form. Icentia11k (Tan et al., PhysioNet
 larger N count; the other four conditions keep P13's strengths. The N cap is applied before the templates are computed
 (P11 applied it after; the kept beats' templates are the same either way, since templates use all QRS annotations).
 Downloads try PhysioNet's AWS mirror first, in parallel, and every file's SHA-256 is recorded.
+
+A34 fix (before any P14 result): the first grid session (kernel `phase6-icentia-grid`, f7ab36a; the full suite passed)
+stopped with exit code 1 right after building P13's data: the Icentia11k beats took the frozen representation from
+`data/processed/v1/contract.json`, which exists locally but not in the Kaggle session. They now take it from P13's data
+source (`p13.spec`), the same representation P11 used for INCART and SVDB. Downloads retry on any error and a patient
+whose files never arrive is reported instead of stopping the run; a segment that fails to build is left out and reported
+in `data.json`, as INCART's and SVDB's exclusions are. Nothing about the sample, the beats or the comparisons changes.

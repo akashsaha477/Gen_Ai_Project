@@ -1092,3 +1092,7 @@ patients, technician-labelled N/S/V, one chest lead at 250 Hz), built like INCAR
 cnn in four of P13's conditions (WGAN-GP's bank too small at the larger N count). A real segment builds locally in 0.7 s
 (patient 2: S 494, N capped at 600). 7 tests for P14 pass, one of them building a synthetic Icentia-format record end to
 end. Compute: one T4 session including download and build.
+First P14 grid session failed fast (exit code 1, before any download): the frozen spec was read from a contract file that
+is not in the Kaggle session. Fixed (P13's data source spec); downloads and segment builds made robust (reported
+exclusions). The kernel log was fetched with one API request (`ListKernelSessionOutput`, page size 1); the CLI pages
+through every output file of the working folder and got rate-limited.
