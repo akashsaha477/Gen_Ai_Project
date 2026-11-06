@@ -1056,3 +1056,26 @@ compensatory pauses, where local ratios fail. The same pattern is in P11's train
 kept) and retrains the P7 cnn on P11's data in all five conditions at P11's and P12's strengths (15 runs; under 1 T4-hour).
 P12's banks are on Kaggle as `ecgaug-p12-banks`; Kaggle's bank copy now keeps nested bank folders apart (it used to flatten
 them). P13's 9 tests and the two existing bank-copy tests pass locally.
+
+**P13 grid** (kernel `phase6-record-rr-grid` at 3a8561d on a T4, the full test suite first: `tests_exit_code` 0). P13's
+data hash ef3cecfa...; recording means for 175 records. The bank check passed: every P12 synthetic beat's stored RR
+features were reproduced by the recomputed draws before being replaced. 15 runs of 37-52 s. Validation S F1, before ->
+with the recording-mean RR: none 0.753 -> 0.760, class weighting 0.767 -> 0.770, random oversampling 0.783 -> 0.776,
+cVAE 0.768 -> 0.769, WGAN-GP 0.740 -> 0.715 (seed values 0.658, 0.745, 0.743). Unchanged on validation, as expected:
+no validation patient is S-dominant (the one such training-side recording, SVDB 865, is a training patient). Runs and
+selection committed at a26d941 before the DS2 read; the test kernel `phase6-record-rr-test` runs on CPU at b971794.
+
+**P13 test** (one posthoc DS2 access at b971794, kernel `phase6-record-rr-test` on CPU, logged; all five earlier scores
+recomputed exactly). Rare-class macro-F1 (S F1), before -> with `rr_prev`, `rr_next` over the recording's mean: none 0.147
+(0.294) -> 0.216 (0.399); class weighting 0.407 (0.293) -> 0.380 (0.360); random oversampling 0.383 (0.330) -> 0.374
+(0.323); cVAE 0.368 (0.260) -> 0.356 (0.239); WGAN-GP 0.243 (0.279) -> 0.264 (0.345). Confirmatory, each vs before: +0.070,
+-0.027, -0.009, -0.011, +0.021, Holm p 1.000 for all five. Secondary: none rejected (WGAN-GP vs class weighting -0.116,
+Holm p 0.511). Descriptive, Huang et al.'s SVEB stage on top (N calls with `rr_prev` below 0.8 of the recording's mean
+become S): S F1 0.531-0.578, S sensitivity 0.920-0.955, S +P 0.369-0.419, N recall 0.917-0.946; rare-class macro-F1 none
+0.300, class weighting 0.489, random oversampling 0.501, **cVAE 0.523** (the highest test score of the study), WGAN-GP
+0.356. Reading: the published remedy works on our pipeline as published (Huang: Se 91.1%, +P 42.2%), and with it S F1
+reaches the published range (0.51-0.61 for de Chazal, Huang, Mondejar-Guerra); the cnn given the same feature as an input
+did not learn to use it from the one S-dominant training patient. The rule numbers are descriptive and DS2 has been read
+many times, so they are reported as such. Figures `figures/phase6_record_rr/{check,results}.png`; paper and report
+regenerated (38 and 24 pages, no unresolved references); the discussion, conclusion and abstract report P13, and the
+"highest test score" scan now includes the rule results.

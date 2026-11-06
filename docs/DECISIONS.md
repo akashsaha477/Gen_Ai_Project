@@ -422,3 +422,11 @@ selection), so the run costs 15 cnn runs. The design check, the comparisons and 
 v12 before any run. Kaggle's artifact copy flattened nested bank folders (P12's `phase6_relative_generators/phase3_cvae-D`
 would have collided with phase 3's `phase3_cvae-D`); it now keeps the path below `synthetic/` (`kaggle_run.bank_name`,
 tested), which leaves the existing flat datasets where they were.
+
+Outcome (grid at 3a8561d, runs and selection committed at a26d941, one DS2 read at b971794): the bank check passed; all
+five earlier scores reproduced exactly. With `rr_prev` and `rr_next` over the recording's mean, no confirmatory difference
+was detectable (none +0.070, class weighting -0.027, random oversampling -0.009, cVAE -0.011, WGAN-GP +0.021; Holm p
+1.000), although S F1 rose in three conditions (none 0.294 -> 0.399, class weighting 0.293 -> 0.360, WGAN-GP 0.279 ->
+0.345). Huang et al.'s rule on top (descriptive, threshold not tuned): S F1 0.531-0.578 and rare-class macro-F1 up to 0.523
+(cVAE), the highest of the study. Reported as descriptive: DS2 has been read many times, and the idea came partly from
+published analyses of DS2.

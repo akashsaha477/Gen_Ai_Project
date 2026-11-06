@@ -1014,10 +1014,10 @@ def patient_variation_paragraph() -> str | None:
     if p11 is not None:
         c = p11["conditions"]
         best_key, best = max(c.items(), key=lambda kv: kv[1]["rare_macro_f1"]["point"])
-        top = " the highest test score of the study;" if best["rare_macro_f1"]["point"] >= _best_test_score() else ""
+        top = ", the highest test score of the study" if best["rare_macro_f1"]["point"] >= _best_test_score() else ""
         text += (f" Adding the INCART and SVDB patients (Section~\\ref{{sec:more-patients}}) changed which method is best rather than lifting the cnn "
                  f"without augmentation: it reached {_n(c['cnn/none']['rare_macro_f1']['point'])} (F F1 {_n(c['cnn/none']['f1_F']['point'])}), while "
-                 f"{SHORT[best_key.split('/')[1]]} reached {_n(best['rare_macro_f1']['point'])} (F F1 {_n(best['f1_F']['point'])}),{top} with F beats "
+                 f"{SHORT[best_key.split('/')[1]]} reached {_n(best['rare_macro_f1']['point'])} (F F1 {_n(best['f1_F']['point'])}){top}; with F beats "
                  "rarer in the enlarged training set, rebalancing decided whether F was detected at all.")  # fmt: skip
     from ecgaug.names import PHASE6_RELATIVE_GENERATORS
 
@@ -1033,13 +1033,22 @@ def patient_variation_paragraph() -> str | None:
                  + " and ".join(f"{c['p_holm']:.3f}" for c in conf.values()) + ").")  # fmt: skip
     if (rr := _record_rr_sentence(with_section=True)) is not None:
         text += " " + rr
+        from ecgaug.names import PHASE6_RECORD_RR
+
+        s13 = _load(paths.results_for(PHASE6_RECORD_RR) / "summary.json")
+        check = _load(paths.results_for(PHASE6_RECORD_RR) / "design_check.json")
+        if s13 and check and not any(c["reject_holm"] for c in s13["families"]["confirmatory"].values()) and len(check["s_heavy_records"]) == 1:
+            h = check["s_heavy_records"][0]
+            text += (" The cnn had the same information among its inputs but did not learn to use it from the one S-dominant recording among the "
+                     f"training-side databases (SVDB {h['record']}), where a fixed rule from the literature did; learning it would take more such patients, "
+                     "which is where augmentation that adds patients rather than beats could help.")
     return text + (" The evidence points to how much patients differ as the main obstacle here; on DS1's patients, normalizing the input for the "
                    "patient raised the test score where rebalancing the classes did not, and augmentation that adds patients rather than beats is "
                    "the form of augmentation it points to.")
 
 
 def _record_rr_sentence(with_section: bool = False) -> str | None:
-    """One sentence on P13 (RR over the recording's mean) from its summary, or None before its test."""
+    """One or two sentences on P13 (RR over the recording's mean) from its summary, or None before its test."""
     from ecgaug.names import PHASE6_RECORD_RR
 
     s = _load(paths.results_for(PHASE6_RECORD_RR) / "summary.json")
@@ -1048,25 +1057,35 @@ def _record_rr_sentence(with_section: bool = False) -> str | None:
     conf = s["families"]["confirmatory"]
     up = sum(c["reject_holm"] and c["point"] > 0 for c in conf.values())
     down = sum(c["reject_holm"] and c["point"] < 0 for c in conf.values())
-    verdict = (f"raised the test score detectably in {up} of {len(conf)} conditions" if up and not down else
-               f"changed it detectably in {up + down} of {len(conf)} conditions ({up} up, {down} down)" if up or down else
-               f"did not detectably change the test score in any of the {len(conf)} conditions")
-    best_key, best = max(s["conditions"].items(), key=lambda kv: kv[1]["rare_macro_f1"]["point"])
-    before = s["before"][best_key]
+    verdict = (f"raised the cnn's test score detectably in {up} of {len(conf)} conditions" if up and not down else
+               f"changed the cnn's test score detectably in {up + down} of {len(conf)} conditions ({up} up, {down} down)" if up or down else
+               f"did not detectably change the cnn's test score in any of the {len(conf)} conditions")
+    none_before, none_after = s["before"]["cnn/none"], s["conditions"]["cnn/none"]
     where = " (Section~\\ref{sec:record-rr})" if with_section else ""
-    return (f"Dividing the RR intervals by the recording's mean RR interval, as published methods do{where}, {verdict}; the best condition, "
-            f"{SHORT[best_key.split('/')[1]]}, went from {_n(before['rare_macro_f1']['point'])} to {_n(best['rare_macro_f1']['point'])} (S F1 "
-            f"{_n(before['f1_S']['point'])} to {_n(best['f1_S']['point'])}).")
+    text = (f"Dividing the RR intervals by the recording's mean RR interval, as published methods do{where}, {verdict} (without augmentation "
+            f"{_n(none_before['rare_macro_f1']['point'])} to {_n(none_after['rare_macro_f1']['point'])}, S F1 {_n(none_before['f1_S']['point'])} to "
+            f"{_n(none_after['f1_S']['point'])})")
+    rule = s.get("sveb_rule")
+    if not rule:
+        return text + "."
+    key, best = max(rule.items(), key=lambda kv: kv[1]["rare_macro_f1"]["point"])
+    f1s = [v["f1_S"]["point"] for v in rule.values()]
+    ses = [v["se_S"]["point"] for v in rule.values()]
+    top = ", the highest test score of the study" if best["rare_macro_f1"]["point"] >= _best_test_score() else ""
+    return text + (f"; with Huang et al.'s rule on top, which uses the same feature directly, S F1 reached {_n(min(f1s))} to {_n(max(f1s))} "
+                   f"(sensitivity {_n(min(ses))} to {_n(max(ses))}) and the {SHORT[key.split('/')[1]]}'s rare-class macro-F1 "
+                   f"{_n(best['rare_macro_f1']['point'])}{top} (descriptive, not tested).")
 
 
 def _best_test_score() -> float:
-    """The highest test rare-class macro-F1 of any condition in any summary written so far (final evaluation and post hoc)."""
+    """The highest test rare-class macro-F1 of any condition in any summary written so far (final evaluation and post hoc,
+    P13's descriptive SVEB-rule results included)."""
     from ecgaug.names import POST_HOC
 
     best = 0.0
     for experiment in (FINAL_EVAL, *POST_HOC):
-        s = _load(paths.results_for(experiment) / "summary.json")
-        for entry in (s or {}).get("conditions", {}).values():
+        s = _load(paths.results_for(experiment) / "summary.json") or {}
+        for entry in [*s.get("conditions", {}).values(), *s.get("sveb_rule", {}).values()]:  # P13's descriptive rule results count too
             value = entry.get("rare_macro_f1") if isinstance(entry, dict) else None
             if isinstance(value, dict) and "point" in value:
                 best = max(best, float(value["point"]))
