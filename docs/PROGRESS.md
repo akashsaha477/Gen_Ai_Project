@@ -1079,3 +1079,6 @@ did not learn to use it from the one S-dominant training patient. The rule numbe
 many times, so they are reported as such. Figures `figures/phase6_record_rr/{check,results}.png`; paper and report
 regenerated (38 and 24 pages, no unresolved references); the discussion, conclusion and abstract report P13, and the
 "highest test score" scan now includes the rule results.
+
+Full test suite on Kaggle CPU at e5ba5b1 (kernel `phase6-record-rr-suite`, `tests_exit_code` 0; its recomputed P13
+selection is identical to the committed one). Pushed `main` (d3b4c86..e5ba5b1) and the tag `prereg-v12` (3a8561d).
