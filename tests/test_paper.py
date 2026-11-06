@@ -3,6 +3,8 @@
 import json
 import shutil
 
+import pytest
+
 from conftest import REPO
 from ecgaug import paper, paths
 
@@ -28,6 +30,7 @@ def test_macro_names_are_letters_only():
     assert paper._macro("phase1_input_representation C mean") == "PhaseOneInputRepresentationCMean"
 
 
+@pytest.mark.skipif(not (REPO / "paper" / "main.tex").is_file(), reason="the paper draft is kept out of the repository")
 def test_the_draft_cites_only_verified_entries_and_inputs_only_generated_files():
     import re
 
