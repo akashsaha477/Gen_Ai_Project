@@ -968,3 +968,49 @@ F1) could not show. Under adaptation, cVAE -0.010 and WGAN-GP +0.004 vs none (Ho
 cVAE +0.112 (p 0.023), WGAN-GP +0.048 (p 0.013). Reading: normalizing the patient at the input (P7) carries over to new
 patients; normalizing inside the network did not. The discussion gained a generated paragraph "Patient variation, not
 class imbalance" that states both.
+
+## 2026-11-06 (Day 31) — A30: INCART intervals by patient; P11 more patients (pre-registration v10)
+
+Asked whether a better dataset is needed. Two pieces of work.
+
+**A30, a bug in the external intervals.** INCART's 75 records come from 32 patients (the `.hea` headers name them); every
+external bootstrap had resampled records as if independent. Fixed at 153c9ab (`ext.clusters`; SVDB names no patients,
+so its records stay the unit). The five INCART parts were re-run on Kaggle CPU at 153c9ab (kernels
+`phase6-{external-validation,rr-baseline-external,relative-cnn-external,patient-transfer-external,patient-adaptation-external}-incartdb`;
+the full suite passed in the last of them, exit code 0). Point estimates are unchanged; intervals widened (e.g. v1 cnn
+none 0.256 [0.085, 0.364] -> [0.038, 0.395]). Holm verdicts on INCART, old -> new (commit 46dcea9 replaced the summaries):
+- P2 (frozen models): generative vs none lowered 4 of 4 -> **1 of 4** (cnn cVAE -0.078, p 0.001 -> 0.037; cnn WGAN-GP
+  -0.065, p 0.023 -> 0.167; rnn cVAE -0.073, p 0.009 -> 0.162; rnn WGAN-GP -0.104, p 0.006 -> 0.125).
+- P5 (v2): 3 of 4 -> **0 of 4** (cnn cVAE p 0.016 -> 0.149; rnn cVAE 0.016 -> 0.149; rnn WGAN-GP 0.005 -> 0.089).
+- P7: 0 of 2 -> 0 of 2 (cVAE p 0.051 -> 0.093). P9: 4 of 4 -> 4 of 4 (Holm p 0.001). P10: adaptation vs plain n.s.
+  (p 0.220 -> 0.521); cVAE under adaptation still lowered (p < 0.001); WGAN-GP n.s.
+Reading: the earlier claim that generative augmentation reliably lowered the INCART score was overstated by the record
+clustering; only patient transfer (P9) and one frozen cVAE cnn stay detectably lower. README, claims and the paper's
+deviation note were corrected; the paper text is generated from the new summaries.
+
+**P11, more patients** (`phase6_more_patients`, `prereg-v10` at b06953b, A31). The P7 cnn (v3 inputs, settings and P7's
+strengths unchanged) trained on DS1 plus every INCART and SVDB record (all S, V, F beats, at most 600 N per record),
+every 5th external patient to validation. Training beats: DS1 S 643 / F 387, INCART S 253 / F 211, SVDB S 9,404 / F 23
+(16 times DS1's S beats); validation: DS1 S 300, INCART S 1,705 (the every-5th rule put most INCART S beats there), SVDB
+S 2,790; F 35 in all, so selection uses S F1. Grid: 15 runs on a T4 (kernel phase6-more-patients-grid at b06953b;
+13 minutes of training in all, from the runs' `env.json`). Selection (89baa0c, before any DS2 read), validation S F1 seed means: none 0.753, class-weighted
+0.767, random oversampling 0.783, cVAE 0.778, WGAN-GP 0.770 (not comparable with MIT-BIH-only validation numbers: different
+validation patients). **Test** (one posthoc access at 46dcea9, kernel phase6-more-patients-test; the recomputed P7 none
+score matched exactly), rare-class macro-F1 (S F1, F F1), P11 vs P7: none 0.147 (0.294, **0.000**) vs 0.371; class-weighted
+**0.407** (0.293, 0.521) vs 0.366; random oversampling 0.383 (0.330, 0.436) vs 0.361; cVAE 0.245 (0.316, 0.175) vs 0.304;
+WGAN-GP 0.217 (0.333, 0.101) vs 0.312. Confirmatory, none with more patients vs DS1 only: -0.224 [-0.240, +0.010], Holm p
+0.164 (not detectably changed). Secondary, each condition vs none (Holm): class-weighted +0.260 (p 0.193), random
+oversampling +0.237 (p 0.193), cVAE +0.099 [+0.005, +0.104] (p 0.067), WGAN-GP +0.070 (p 0.193); none rejected.
+Reading: with 106 training patients F beats are 0.4% of training (621 of about 150,000) and the cnn without rebalancing
+never predicts F on the test records; every rebalancing method restores part of it, class weighting the most (the best
+test score of the project). S F1 stayed at 0.29-0.33 in every condition, as in P7: more patients did not move S on DS2.
+
+**P12, generators trained on what the cnn sees** (`phase6_relative_generators`, pre-registration v11, A32). Asked to
+"think of a solution". P11's cVAE and WGAN-GP conditions used the phase 3 generators, which learned ordinary beats of
+DS1's 17 training records; their beats were made patient-relative afterwards. P12 trains the same generators (cVAE D,
+WGAN-GP A; settings, 20,000 steps and seeds unchanged) on P11's training beats in v3 form, divided by one training SD;
+banks are multiplied back and not z-scored per beat. Then the P7 cnn on P11's data with each bank at 0.1, 0.25 and 0.5,
+unscreened, 3 seeds (18 runs), strengths chosen on P11's validation. Confirmatory: P12 vs the same generator in P11;
+secondary: vs P11 none and vs P11 random oversampling. Plus P8's nearest-patient check on the new banks. Approved at about
+2.5 T4-hours (two sessions, one per generator). An end-to-end test trains both real generators for 2 steps and exports
+their banks.

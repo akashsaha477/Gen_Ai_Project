@@ -369,9 +369,27 @@ no patient, so its records stay the unit (an assumption, reported). The INCART p
 with nothing else changed; the corrected numbers replace the old ones in the paper, and the old summaries stay in git
 history. No MIT-BIH result is affected.
 
+Outcome (re-runs at 153c9ab, summaries replaced at 46dcea9): point estimates identical, INCART intervals wider. Holm
+rejections on INCART (generative vs none, all of them "lowered"): P2 4 of 4 -> 1 of 4, P5 3 of 4 -> 0 of 4, P7 0 -> 0,
+P9 4 -> 4, P10 unchanged. Details in PROGRESS 2026-11-06.
+
 ## 2026-11-06 (Day 31) — A31: training on more patients (pre-registration v10) — Akash Saha ("do what you think would be most beneficial")
 
 Asked whether a better dataset is needed. The evidence says more patients, not more beats. P11 adds the INCART and SVDB
 patients to the training data (rare beats all kept, N beats capped per record), keeps DS2 as the test set, and trains
 the best configuration (the P7 cnn with patient-relative beats) with fixed strengths. It costs the external test: both
 external databases become training and validation data. One T4 session under 2 GPU-hours; the test on CPU.
+
+## 2026-11-06 (Day 31) — A32: generators trained on what the cnn sees (pre-registration v11) — Akash Saha ("think of a solution"; ran P12 at ~2.5 GPU-hours)
+
+P11's test: with 89 more patients the cnn without augmentation stopped predicting F beats (F F1 0.000), class weighting
+reached 0.407 and random oversampling 0.383, the highest scores so far, while the cVAE and WGAN-GP conditions stayed at
+0.245 and 0.217. Those conditions used banks of the phase 3 generators: trained on ordinary beats of DS1's 17 training
+records, their output made patient-relative afterwards by subtracting the template of the beat whose RR values each
+synthetic beat carries (`phase6_patient_template.remap_bank`). So the generators learned neither the patients nor the input
+the cnn now uses (P8: their S beats sit nearest record 209). P12 trains the same generators, settings unchanged, on P11's
+training beats in v3 form, and repeats the comparison. Comparisons were chosen after P11's result: against no augmentation
+alone would now mostly measure whether F beats are added at all, so the confirmatory question is new vs old generators and
+the matched control (copies of real beats) is secondary. The unscreened policy follows P9 (the screen narrowed patient
+diversity in P8) and keeps the cost down. Compute above 2 GPU-hours was approved by Akash Saha.
+

@@ -147,7 +147,7 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 - Every access is appended to `docs/TEST_ACCESS_LOG.md`. No decision of any kind uses test data.
 - After `/final-eval` nothing is retrained, re-selected or re-tuned. A bug found later is documented
   and any re-run is disclosed.
-- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v10): the analyses listed in §10 v4 to v10 only, after `/final-eval`, logged;
+- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v11): the analyses listed in §10 v4 to v11 only, after `/final-eval`, logged;
   they add evidence beside the primary results and replace none of them.
 
 ## 9. Generators and RQ3 (rules fixed now, thresholds in v2)
@@ -331,6 +331,21 @@ P11 tests the remedy directly: train on more patients.
 | model and conditions | the phase 2 gate's cnn with its settings unchanged; none, class-weighted loss, random oversampling, cVAE and WGAN-GP at the strengths P7 chose on validation (no new search; SMOTE left out to keep the run under 2 GPU-hours), the cVAE and WGAN-GP banks being v6's (generators trained on DS1 only), the full grid's screened policy; seeds 0-2: 15 runs; early stopping on the enlarged validation set as before |
 | test | one `posthoc` access on Kaggle (DS2 rebuilt and hash-checked, v2 ratios, templates). Confirmatory (1 test): P11 none vs P7 none, the same cnn trained on DS1 only, in rare-class macro-F1, record-level bootstrap 10,000, seed 0. Secondary family (Holm, 4 tests): each P11 condition vs P11 none. Descriptive: each P11 condition minus the same P7 condition; the recomputed P7 none score is checked against P7's summary |
 | reporting | its own section, labelled post hoc. Compute: one Kaggle T4 session, estimated under 2 GPU-hours; CPU for the test |
+
+**v11, committed 2026-11-06, after P11's test result, before any of the work below (DECISIONS A32).** One analysis, post
+hoc. P11 trained the P7 cnn on 106 patients but augmented it with banks of the phase 3 generators, which learned ordinary
+beats of DS1's 17 training records (their beats made patient-relative afterwards); on the test records those conditions
+(0.245, 0.217) stayed below random oversampling (0.383) and class weighting (0.407). P12 asks whether the generators fall
+short because of what they learned from, not because they are generators.
+
+| item | rule |
+|---|---|
+| P12 `phase6_relative_generators`, generators | the phase 3a gate's cVAE (D) and WGAN-GP (A), settings, 20,000-step budget and seeds 0-2 unchanged, trained on P11's training beats (its data, hash-checked) in v3 form divided by one scale, the SD of all training beat samples; no pilot harness, no hard gates (the variants are fixed) |
+| banks | from the final checkpoint; samples multiplied back by the scale and not z-scored per beat; RR features copied from real training beats of the class (phase 3 rule); size: what the unscreened policy adds at strength 0.5 |
+| classifier | the P7 cnn on P11's data, settings unchanged; each bank at 0.1, 0.25 and 0.5 x N, unscreened (`fraction_of_n`, as P9), seeds 0-2: 18 runs; one strength per generator chosen on P11's validation by the phase 4 gate rule |
+| test | one `posthoc` access on Kaggle (DS2 rebuilt and hash-checked, v3 form). Confirmatory (Holm, 2 tests): each P12 generator vs the same generator in P11, rare-class macro-F1, record-level bootstrap 10,000, seed 0. Secondary (Holm, 4 tests): each P12 generator vs P11 none and vs P11 random oversampling. P11's scores are recomputed and must match its summary |
+| descriptive | for S and F beats, the patient of the nearest real training beat (P8's measure, by patient; 5,000 beats per class from the seed-0 banks) for the P12 bank, the bank P11 used and the real beats |
+| reporting | its own section, labelled post hoc. Compute: two Kaggle T4 sessions, one per generator, about 2.5 GPU-hours in all (approved by Akash Saha, 2026-11-06); CPU for the test |
 
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 
