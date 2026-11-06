@@ -25,6 +25,7 @@ to GitHub, so you only `git pull`. No logic lives in the notebooks.
 | `phase6_patient_adaptation.ipynb` | post hoc (v9, P10): adaptive batch normalization per patient on the frozen checkpoints; `PART` = validation, test, external; CPU only | `ecgaug-v1-checkpoints`, `ecgaug-p7-runs`, `ecgaug-v5-external` |
 | `phase6_more_patients.ipynb` | post hoc (v10, P11): the P7 cnn trained on DS1 plus INCART and SVDB patients; `PART` = grid (GPU), test (CPU) | `ecgaug-banks`, `ecgaug-v5-external`, `ecgaug-p7-runs`, P11 runs |
 | `phase6_relative_generators.ipynb` | post hoc (v11, P12): the cVAE and WGAN-GP trained on patient-relative beats of P11's patients; `PART` = train with `FAMILY` (GPU, one session per generator), test (CPU) | `ecgaug-banks`, `ecgaug-v5-external`; test: `ecgaug-p11-runs`, P12 runs |
+| `phase6_record_rr.ipynb` | post hoc (v12, P13): `rr_prev` and `rr_next` over the mean RR of their recording, P11's and P12's conditions; `PART` = grid (GPU), test (CPU) | `ecgaug-banks`, `ecgaug-v5-external`, `ecgaug-p12-banks`; test: `ecgaug-p11-runs`, `ecgaug-p12-runs`, P13 runs |
 | `phase5_explainability.ipynb`, `phase5_clinical_notes.ipynb` | saliency methods and note generators on the phase 4 models | `mitdb-raw`, artifacts (checkpoints) |
 
 Other files in this folder: `kaggle_run.py` (the script every notebook calls), `make_raw_dataset.py`

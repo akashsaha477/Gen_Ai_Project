@@ -30,7 +30,8 @@ EXPERIMENTS = (
 )  # fmt: skip
 POST_HOC = ("phase6_rr_reference", "phase6_external_validation", "phase6_extra_seeds", "phase6_audit_check", "phase6_rr_baseline", "phase6_patient_template",
             "phase6_relative_cnn", "phase6_augmentation_mechanism", "phase6_patient_transfer",
-            "phase6_patient_adaptation", "phase6_more_patients", "phase6_relative_generators")
+            "phase6_patient_adaptation", "phase6_more_patients", "phase6_relative_generators",
+            "phase6_record_rr")
 RESULT_FOLDERS = (*EXPERIMENTS, "phase4_full_grid", *POST_HOC)  # every experiment's results, the full grid's ledger, post-hoc analyses
 EXTRA_RESULT_FILES = ("results/phase2_ptbxl_data/ptbxl_preprocessing.json",)
 ACCESS_LOG = "docs/TEST_ACCESS_LOG.md"  # appended by every DS2 read; its new rows are merged back by ingest
@@ -136,6 +137,16 @@ def setup_data(raw_dir: str, repo: Path = REPO, mirror: str | None = RAW_MIRROR)
     return len(expected)
 
 
+def bank_name(meta: Path) -> Path:
+    """Where the bank folder holding ``meta`` (its bank.json) goes under ``data/synthetic/``: its path below the last
+    ``synthetic`` folder when there is one (P12's banks sit in ``phase6_relative_generators/``), else its folder name
+    (a flat dataset), under ``audit/`` for audit banks."""
+    parts = meta.parent.parts
+    if "synthetic" in parts:
+        return Path(*parts[len(parts) - parts[::-1].index("synthetic") :])
+    return Path("audit", meta.parent.name) if meta.parent.parent.name == "audit" else Path(meta.parent.name)
+
+
 def setup_artifacts(artifacts_dir: str, repo: Path = REPO) -> list[str]:
     """Copy artifacts from an attached Kaggle dataset (an extracted Kaggle zip, or several):
     synthetic banks (folders holding a bank.json) into ``data/synthetic/``, and files of run folders
@@ -143,7 +154,7 @@ def setup_artifacts(artifacts_dir: str, repo: Path = REPO) -> list[str]:
     checks banks and checkpoints against their recorded SHA-256 before using them."""
     copied = []
     for meta in sorted(Path(artifacts_dir).rglob("bank.json")):
-        name = Path("audit", meta.parent.name) if meta.parent.parent.name == "audit" else Path(meta.parent.name)  # audit banks stay apart
+        name = bank_name(meta)
         target = repo / BANKS / name
         target.mkdir(parents=True, exist_ok=True)
         for path in sorted(p for p in meta.parent.iterdir() if p.is_file()):

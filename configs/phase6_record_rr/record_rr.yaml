@@ -1,0 +1,9 @@
+# P13 (PREREGISTRATION §10 v12): rr_prev and rr_next over the mean RR interval of their recording, P11's data, P11's and
+# P12's conditions at their chosen strengths. Nothing here is tuned.
+experiment: phase6_record_rr
+relative_generators_config: configs/phase6_relative_generators/relative_generators.yaml
+rule_threshold: 0.8  # Huang et al. (2014), SVEB stage: a beat called N becomes S when rr_prev over the recording's mean is below this
+check:  # the design check on training-side annotations (DS1, INCART, SVDB)
+  threshold: 0.8
+  s_heavy_min_beats: 50
+  s_heavy_min_share: 0.33
