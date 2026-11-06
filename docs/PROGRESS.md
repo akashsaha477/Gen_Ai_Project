@@ -1041,3 +1041,7 @@ a gain of this size from noise. Class weighting in P11 (0.407) stays the best te
 `figures/phase6_relative_generators/{mechanism,results}.png`. Paper and report regenerated (main 34 pages, report 21,
 no unresolved references); the discussion, conclusion and abstract now report P11 and P12; one overfull line in the
 deviations section fixed by rewording.
+
+Full test suite on Kaggle CPU at d3b4c86 (kernel `phase6-relative-generators-suite`, `tests_exit_code` 0; its recomputed
+P12 selection is identical to the committed one). Pushed `main` (8fc42b4..d3b4c86) and the tags `prereg-v10` (b06953b)
+and `prereg-v11` (99451a2).
