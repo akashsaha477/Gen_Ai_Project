@@ -165,3 +165,33 @@ def test_the_sampled_patients_are_built_split_every_fifth_and_their_files_hashed
     assert (arrays["split"][val] == "val").all() and (arrays["split"][~val] == "train").all()
     assert len(report["files_sha256"]) == 18 and all(len(h) == 64 for h in report["files_sha256"].values())
     assert set(arrays) == set(ic.mp.FIELDS) and (raw.external_dir(ic.DB) / f"{ic.segment_name(patients[0])}.dat").is_file()
+
+
+def test_a_failed_download_or_a_failing_segment_is_reported_not_fatal(monkeypatch):
+    patients = ic.sample_patients(4, 7)
+    lost, broken = ic.segment_name(patients[0]), ic.segment_name(patients[1])
+
+    def fake_download(chosen: list[int], dest: Path, **_) -> list[str]:
+        names = []
+        for p in chosen:
+            if ic.segment_name(p) != lost:
+                _write_record(dest, ic.segment_name(p))
+                names.append(ic.segment_name(p))
+        return names
+
+    real = ic.build_record
+
+    def flaky(name: str, *args, **kwargs):
+        if name == broken:
+            raise ValueError("malformed segment")
+        return real(name, *args, **kwargs)
+
+    monkeypatch.setattr(ic, "download", fake_download)
+    monkeypatch.setattr(ic, "build_record", flaky)
+    cfg = {"patients": 4, "patient_seed": 7, "n_cap_per_record": 10, "cap_seed": 0, "validation_every": 5,
+           "rr": {"rg": {"mp": {"pt": {"half_window_s": 60.0}}}}}  # fmt: skip
+    arrays, report = ic.build_icentia(cfg, SPEC)
+    reasons = {r["record"]: r.get("excluded") for r in report["records"]}
+    assert reasons[lost] == "download failed" and reasons[broken] == "ValueError: malformed segment"
+    assert sorted(np.unique(arrays["record"]).tolist()) == sorted(ic.RECORD_OFFSET + p for p in patients[2:])
+    assert len(report["files_sha256"]) == 9  # the three segments that arrived

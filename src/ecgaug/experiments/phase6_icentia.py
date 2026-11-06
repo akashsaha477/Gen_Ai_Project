@@ -101,14 +101,15 @@ def _fetch(urls: list[str], target: Path, retries: int) -> None:
                     out.write(response.read())
                 part.rename(target)
                 return
-            except OSError:
+            except Exception:  # urllib, http.client (a truncated read) and socket errors alike
                 continue
         time.sleep(2**attempt)
     raise OSError(f"Could not download {target.name} from {urls}")
 
 
-def download(patients: list[int], dest: Path, retries: int = 4, workers: int = 8) -> list[str]:
-    """Each patient's first segment (``.hea``, ``.atr``, ``.dat``) into ``dest``, skipping files already there."""
+def download(patients: list[int], dest: Path, retries: int = 6, workers: int = 8) -> list[str]:
+    """Each patient's first segment (``.hea``, ``.atr``, ``.dat``) into ``dest``, skipping files already there; returns the
+    segments whose three files all arrived."""
     from concurrent.futures import ThreadPoolExecutor
 
     dest.mkdir(parents=True, exist_ok=True)
@@ -119,9 +120,16 @@ def download(patients: list[int], dest: Path, retries: int = 4, workers: int = 8
             if not (target.is_file() and target.stat().st_size > 0):
                 url = segment_url(patient, extension)
                 jobs.append(([url.replace("https://physionet.org/files/", "https://physionet-open.s3.amazonaws.com/"), url], target))
+    def fetch(job: tuple[list[str], Path]) -> str | None:
+        try:
+            _fetch(job[0], job[1], retries)
+            return None
+        except OSError:
+            return job[1].name
+
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        list(pool.map(lambda job: _fetch(job[0], job[1], retries), jobs))
-    return [segment_name(p) for p in patients]
+        failed = {name for name in pool.map(fetch, jobs) if name}
+    return [segment_name(p) for p in patients if not any(f.startswith(segment_name(p)) for f in failed)]
 
 
 def build_record(name: str, spec: RepresentationSpec, cap: int, cap_seed: int, half_window_s: float) -> tuple[dict | None, dict]:
@@ -172,15 +180,23 @@ def build_icentia(cfg: dict, spec: RepresentationSpec) -> tuple[dict, dict]:
     names = download(patients, raw.external_dir(DB))
     half = float(cfg["rr"]["rg"]["mp"]["pt"]["half_window_s"])
     parts, reports = [], []
-    for name in names:
-        arrays, report = build_record(name, spec, int(cfg["n_cap_per_record"]), int(cfg["cap_seed"]), half)
+    for patient in patients:
+        name = segment_name(patient)
+        if name not in names:
+            reports.append({"record": name, "number": record_number(name), "excluded": "download failed"})
+            continue
+        try:
+            arrays, report = build_record(name, spec, int(cfg["n_cap_per_record"]), int(cfg["cap_seed"]), half)
+        except Exception as err:  # a malformed segment is left out and reported, as INCART's and SVDB's exclusions are
+            arrays, report = None, {"record": name, "number": record_number(name), "excluded": f"{type(err).__name__}: {err}"}
         reports.append(report)
         if arrays is not None:
             parts.append(arrays)
     if not parts:
-        raise PreconditionError("No Icentia11k segment was usable")
+        first = next((r["excluded"] for r in reports if "excluded" in r), "none")
+        raise PreconditionError(f"No Icentia11k segment was usable; first reason: {first}")
     folder = raw.external_dir(DB)
-    files = {f"{n}.{e}": sha256_file(folder / f"{n}.{e}") for n in names for e in ("hea", "atr", "dat")}
+    files = {f"{n}.{e}": sha256_file(folder / f"{n}.{e}") for n in names for e in ("hea", "atr", "dat")}  # every downloaded file
     arrays = {k: np.concatenate([p[k] for p in parts]) for k in mp.FIELDS}
     units = np.asarray(arrays["record"]).astype(np.int64)
     val = mp.validation_units(units, int(cfg["validation_every"]))
@@ -202,10 +218,8 @@ def data_record() -> dict | None:
 
 def build(cfg: dict) -> tuple[DataSource, DataSource, DataSource]:
     """P13's data (hash-checked) plus the Icentia11k patients; returns (P14's data, P13's, P11's)."""
-    from ecgaug.experiments import phase6_external_validation as ext
-
     p13, p11, _ = rr.build(cfg["rr"])
-    icentia, report = build_icentia(cfg, ext.frozen_spec())
+    icentia, report = build_icentia(cfg, p13.spec)  # the frozen representation, as P11 used for INCART and SVDB
     combined = {k: concat(np.asarray(p13.arrays[k]), np.asarray(icentia[k])) for k in mp.FIELDS}
     sha = content_sha256(combined)
     record = data_record()
