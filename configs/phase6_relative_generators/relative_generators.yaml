@@ -1,0 +1,7 @@
+# P12 (PREREGISTRATION §10 v11, post hoc): the phase 3a gate's generators trained on P11's training beats in v3 form.
+experiment: phase6_relative_generators
+more_patients_config: configs/phase6_more_patients/more_patients.yaml
+generators:                       # the variants chosen at the phase 3a gate; settings, step budget and seeds unchanged
+  cvae: configs/phase3_cvae/D_residual_film.yaml
+  wgan_gp: configs/phase3_wgan_gp/A_concat_embedding.yaml
+mechanism_beats: 5000             # synthetic beats per class whose nearest real training patient is counted (seed-0 banks)
