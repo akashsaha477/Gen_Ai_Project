@@ -1,0 +1,64 @@
+grid: configs/phase6_icentia/icentia.yaml
+grid_name: full_grid
+cell:
+  condition: cvae
+  strength: 0.1
+  architecture: cnn
+  seed: 2
+cell_sha: efac33992b252464031c25895241547b2e5fba2c37d4f61fe4712a1d8ff9038e
+policy:
+  kind: fraction_of_n
+condition_settings:
+  bank: phase6_relative_generators/phase3_cvae-D
+  strengths:
+  - 0.1
+bank: phase6_relative_generators/phase3_cvae-D
+classifier:
+  variant: A
+  config: configs/phase2_baseline_classifiers/A_shallow_cnn.yaml
+  model:
+    name: shallow_cnn
+    channels:
+    - 32
+    - 64
+    - 128
+    kernel: 7
+    side_hidden: 16
+  lr: 0.001
+  max_epochs: 40
+  patience: 5
+  min_epochs: 10
+  batch_size: 256
+  weight_decay: 0.01
+  run_ids:
+  - phase2_baseline_classifiers-A.lr1e-03-s0-a6ac8bf-202611010715
+  - phase2_baseline_classifiers-A.lr1e-03-s1-a6ac8bf-202611010715
+  - phase2_baseline_classifiers-A.lr1e-03-s2-a6ac8bf-202611010715
+  checkpoints:
+    phase2_baseline_classifiers-A.lr1e-03-s0-a6ac8bf-202611010715: 04e6f6f4c1fc4d0fcf3b6e16ff68e92e640fc99d25d84780b9781340976ef88c
+    phase2_baseline_classifiers-A.lr1e-03-s1-a6ac8bf-202611010715: 0235e139af9fe276d4455a2043c44fc5bc838d84f6842a7d6a64f273f8011416
+    phase2_baseline_classifiers-A.lr1e-03-s2-a6ac8bf-202611010715: f307abff674461fe3d4b7f3d7beec6e63eed913d8a1fb758b882ad10da1ce2dd
+class_weights: null
+n_added:
+  N: 0
+  S: 5533
+  V: 0
+  F: 28624
+run_id: phase6_icentia-cnn.cvae_0.1-s2-6c8d205-202611061806
+split:
+  name: V1
+  val:
+  - 115
+  - 118
+  - 201
+  - 205
+  - 223
+  selection_metric: s_f1
+dataset:
+  source: P13's data plus Icentia11k patients (PREREGISTRATION v13)
+  representation: C_short_window_rr_features
+  content_sha256: 56b9cd3a4f7b71d1705434f39153d2778a7265892ae212c86e08e96a6cd88101
+  frozen: false
+  version: v4+icentia
+provisional: false
+provisional_reasons: []

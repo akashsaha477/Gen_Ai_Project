@@ -1,0 +1,29 @@
+{
+  "cell_sha": "fa19eb166c97a0a31ddeda370b30b90b6d8396c07cc0b1b79e44d0a6e1b6aaa2",
+  "cell": {
+    "condition": "none",
+    "strength": null,
+    "architecture": "cnn",
+    "seed": 1
+  },
+  "condition": "none",
+  "strength": null,
+  "architecture": "cnn",
+  "seed": 1,
+  "run_id": "phase6_icentia-cnn.none-s1-6c8d205-202611061744",
+  "status": "done",
+  "bank": null,
+  "selection_metric": "s_f1",
+  "selection_value": 0.7997743141265251,
+  "tie_break_value": 0.8305866842452209,
+  "rare_macro_f1": 0.39988715706326255,
+  "n_recall": 0.9827525519183387,
+  "n_added": {
+    "N": 0,
+    "S": 0,
+    "V": 0,
+    "F": 0
+  },
+  "wall_clock_s": 101.2,
+  "provisional": false
+}
