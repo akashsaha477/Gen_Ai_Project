@@ -464,3 +464,14 @@ the code, briefs and pre-registration still points to the same text). The note g
 row is shortened to `<local scratch>/rebuild_v1.py`; its date, kind, commit and purpose are unchanged. The rewrite changes
 every commit SHA: run IDs keep the SHA7 they were created with, and `docs/COMMIT_MAP.csv` maps each old SHA to the
 rewritten one. No result, rule or pre-registered choice changes. The paper is generated and compiled locally.
+
+A34 outcome (grid at the commit now mapped from 6c8d205, selection committed before the DS2 read, one DS2 read): 388 of the
+400 sampled patients were usable (12 had no usable labelled beat); training beats added N 183,189, S 13,412, V 6,722, no F;
+40 patients have at least 50 S beats and none is S-dominant. Validation S F1 about 0.80 in every condition (now including
+Icentia11k validation patients). Test rare-class macro-F1, P13 -> with the Icentia11k patients: none 0.216 -> 0.121, class
+weighting 0.380 -> 0.247, random oversampling 0.374 -> 0.159, cVAE 0.356 -> 0.304; confirmatory differences -0.052 to -0.215,
+Holm p 0.543-1.000. F F1 fell most (cVAE 0.474 -> 0.344, random oversampling 0.425 -> 0.066): the added patients bring no F
+beats, come from another lead and device, and include no S-dominant recording. The cVAE ranked first among the four (vs none
++0.184, vs random oversampling +0.145, vs class weighting +0.057; Holm p 0.357-0.395), consistent with synthetic F beats
+mattering most when real ones are scarce. With Huang's rule on top (descriptive) the cVAE reached 0.460; P13's 0.523 stays
+the highest. Reading: more patients help only if they are of the right kind (the same lead, fusion beats, S-dominant rhythms).
