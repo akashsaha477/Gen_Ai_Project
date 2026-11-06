@@ -1104,3 +1104,19 @@ mention. Done: untracked and ignored locally (`.git/info/exclude`); rules moved 
 54 files reworded; the note generator is Gemini-only; the related tests pass. Next: P14's test, then the history rewrite
 (git filter-repo, once, at the end), a commit map, the full suite on Kaggle at the rewritten head, and the force-push of
 `main`, `finish-project` and every tag. GitHub keeps its own refs for the 10 pull requests, which only GitHub Support can purge.
+
+**P14 test** (one posthoc DS2 access, kernel `phase6-icentia-test` on CPU; P13's scores reproduced exactly). Adding 388
+Icentia11k patients lowered the test score in all four conditions, none detectably (Holm p 0.543-1.000): none 0.216 ->
+0.121, class weighting 0.380 -> 0.247, random oversampling 0.374 -> 0.159, cVAE 0.356 -> 0.304. F F1 fell most (no F beats
+in Icentia11k), S F1 stayed 0.23-0.27 (no S-dominant patient among the 388). The cVAE ranked first (vs none +0.184, Holm p
+0.357); with Huang's rule it reached 0.460 (P13's 0.523 stays the highest). Ideas from SimGANs and PGANs, checked on
+training-side data first: simulating S-dominant rhythm contexts did not transfer to the held-out S-dominant patient (SVDB
+865 turns out to be paroxysmal SVT episodes of up to 665 beats, not runs with pauses; by RR alone such episodes look like
+sinus tachycardia), so it was not run. A physiology-based fusion-beat synthesis (a fraction of each training patient's own
+V deviation; 137 of 175 training-side recordings hold at least 5 V beats, against about 5 effective patients for real F
+beats) is the most promising transfer and is not run yet.
+
+History rewrite force-pushed 2026-11-07 on request (A35): `main` and `finish-project` at 45e75be, all 16 tags rewritten
+(`prereg-v13` new on GitHub). A fresh clone from GitHub shows no removed path in any branch or tag history and no mention
+in the current files. GitHub's 10 pull-request refs still reach 83 old commits (50 with the removed paths); only GitHub
+Support or a new repository can drop them. Old SHAs map to new ones in `docs/COMMIT_MAP.csv`.
