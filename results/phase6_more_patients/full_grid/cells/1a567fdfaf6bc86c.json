@@ -1,0 +1,29 @@
+{
+  "cell_sha": "1a567fdfaf6bc86c1c0ef423bfa69d2cd3029e843581190031e86686f2a1c5b1",
+  "cell": {
+    "condition": "wgan_gp",
+    "strength": 0.1,
+    "architecture": "cnn",
+    "seed": 1
+  },
+  "condition": "wgan_gp",
+  "strength": 0.1,
+  "architecture": "cnn",
+  "seed": 1,
+  "run_id": "phase6_more_patients-cnn.wgan_gp_0.1-s1-b06953b-202611052049",
+  "status": "done",
+  "bank": "phase6_patient_template/phase3_wgan_gp-A",
+  "selection_metric": "s_f1",
+  "selection_value": 0.7793064455333585,
+  "tie_break_value": 0.8667846868776278,
+  "rare_macro_f1": 0.4384337105715573,
+  "n_recall": 0.956805359661495,
+  "n_added": {
+    "N": 0,
+    "S": 626,
+    "V": 0,
+    "F": 10305
+  },
+  "wall_clock_s": 42.9,
+  "provisional": false
+}

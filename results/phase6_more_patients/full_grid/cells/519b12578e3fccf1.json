@@ -1,0 +1,29 @@
+{
+  "cell_sha": "519b12578e3fccf1477ad8bb2bc6994a1f54660f03fd5ccf4ae17bc0b35ffd0b",
+  "cell": {
+    "condition": "none",
+    "strength": null,
+    "architecture": "cnn",
+    "seed": 1
+  },
+  "condition": "none",
+  "strength": null,
+  "architecture": "cnn",
+  "seed": 1,
+  "run_id": "phase6_more_patients-cnn.none-s1-b06953b-202611052034",
+  "status": "done",
+  "bank": null,
+  "selection_metric": "s_f1",
+  "selection_value": 0.7552571823477144,
+  "tie_break_value": 0.8317974908404574,
+  "rare_macro_f1": 0.4036026171478832,
+  "n_recall": 0.9661142454160789,
+  "n_added": {
+    "N": 0,
+    "S": 0,
+    "V": 0,
+    "F": 0
+  },
+  "wall_clock_s": 54.4,
+  "provisional": false
+}

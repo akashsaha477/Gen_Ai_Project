@@ -1,0 +1,29 @@
+{
+  "cell_sha": "7f9f5f78aa85407865ddf014b023b7b8c313be49a33c8ab91dcd64b772c40a5a",
+  "cell": {
+    "condition": "cvae",
+    "strength": 0.1,
+    "architecture": "cnn",
+    "seed": 2
+  },
+  "condition": "cvae",
+  "strength": 0.1,
+  "architecture": "cnn",
+  "seed": 2,
+  "run_id": "phase6_more_patients-cnn.cvae_0.1-s2-b06953b-202611052045",
+  "status": "done",
+  "bank": "phase6_patient_template/phase3_cvae-D",
+  "selection_metric": "s_f1",
+  "selection_value": 0.7743045017703591,
+  "tie_break_value": 0.8352980801616706,
+  "rare_macro_f1": 0.4124687065813821,
+  "n_recall": 0.9714033850493653,
+  "n_added": {
+    "N": 0,
+    "S": 626,
+    "V": 0,
+    "F": 10305
+  },
+  "wall_clock_s": 42.8,
+  "provisional": false
+}
