@@ -1014,3 +1014,30 @@ unscreened, 3 seeds (18 runs), strengths chosen on P11's validation. Confirmator
 secondary: vs P11 none and vs P11 random oversampling. Plus P8's nearest-patient check on the new banks. Approved at about
 2.5 T4-hours (two sessions, one per generator). An end-to-end test trains both real generators for 2 steps and exports
 their banks.
+
+**P12 training and selection** (kernels `phase6-relative-generators-{cvae,wgan-gp}` at 99451a2, two T4 sessions,
+about 11:16-12:50 IST). All six generators ran their 20,000 steps and none diverged (cVAE 874-879 s per seed, WGAN-GP
+1,236-1,241 s; training SD 0.570). Banks per seed: S 44,332, V 25,675, F 54,011. Nearest-patient check (seed-0 banks,
+5,000 beats per class), effective number of training patients: S real 32.0, P11's banks cVAE 10.9 / WGAN-GP 14.3, P12's
+banks 31.6 / 29.2; F real 4.9, P11's 1.3 / 1.3, P12's 3.4 / 3.3 (figure `figures/phase6_relative_generators/mechanism.png`).
+So the retrained generators spread over almost as many patients as the real beats. Grid: 18 runs of 40-89 s. Selection
+(committed at fb146a9, before any DS2 read), validation S F1 seed means: cVAE 0.1 chosen (0.768 +/- 0.014; 0.25: 0.733,
+0.5: 0.743); WGAN-GP 0.25 chosen (0.740 +/- 0.023; all three strengths within the 0.02 margin, V F1 tie-break 0.832 vs
+0.774 at 0.1 and 0.712 at 0.5). On the same validation P11's phase 3 generators scored cVAE 0.778 and WGAN-GP 0.770, so
+the wider patient coverage did not raise the validation score. f765ac6 adds a fake-data test of the DS2 report (P12's 9
+tests pass). The one DS2 read runs on Kaggle CPU at f765ac6 (kernel `phase6-relative-generators-test`).
+
+**P12 test** (one posthoc DS2 access at f765ac6, kernel `phase6-relative-generators-test` on CPU, logged in
+`docs/TEST_ACCESS_LOG.md`; P11's none score recomputed exactly, difference 0.0). Rare-class macro-F1 (S F1, F F1):
+cVAE at 0.1 **0.368** [0.087, 0.480] (0.260, 0.475), against 0.245 (0.316, 0.175) for the phase 3 cVAE in P11; WGAN-GP at
+0.25 0.243 [0.117, 0.288] (0.279, 0.206), against 0.217 (0.333, 0.101). Confirmatory, P12 vs the same generator in P11:
+cVAE +0.122 [-0.047, +0.177], WGAN-GP +0.026 [-0.044, +0.051], Holm p 1.000 for both. Secondary (Holm): cVAE vs P11
+none +0.221 (p 0.931), WGAN-GP vs none +0.096 (p 0.821), cVAE vs P11 random oversampling -0.016 [-0.085, +0.049]
+(p 0.931), WGAN-GP vs random oversampling -0.141 (p 0.312); none rejected. Reading: training the generators on what
+the cnn sees spread the synthetic beats over the training patients and moved the cVAE from well below random
+oversampling (0.245 vs 0.383) to close to it (0.368; difference -0.016), the gain coming from F (0.175 to 0.475) while S fell slightly;
+with 22 test records and wide intervals none of this is detectable, and more test patients and seeds are needed to tell
+a gain of this size from noise. Class weighting in P11 (0.407) stays the best test score of the study. Figures:
+`figures/phase6_relative_generators/{mechanism,results}.png`. Paper and report regenerated (main 34 pages, report 21,
+no unresolved references); the discussion, conclusion and abstract now report P11 and P12; one overfull line in the
+deviations section fixed by rewording.
