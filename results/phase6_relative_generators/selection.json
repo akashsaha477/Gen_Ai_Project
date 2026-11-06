@@ -1,0 +1,147 @@
+{
+  "experiment": "phase6_relative_generators",
+  "rule": "PREREGISTRATION \u00a710 v11 (the phase 4 gate rule)",
+  "chosen": {
+    "cnn": {
+      "cvae": {
+        "strength": 0.1,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_relative_generators-cnn.cvae_0.1-s0-99451a2-202611060646",
+          "phase6_relative_generators-cnn.cvae_0.1-s1-99451a2-202611060647",
+          "phase6_relative_generators-cnn.cvae_0.1-s2-99451a2-202611060647"
+        ],
+        "mean": 0.7681339864916187,
+        "sd": 0.013770610622293592,
+        "values": [
+          0.7792898150116947,
+          0.7723688360845337,
+          0.7527433083786278
+        ],
+        "tie_break_values": [
+          0.8687876897483885,
+          0.8736229474121804,
+          0.8367538285238045
+        ],
+        "tie_break_mean": 0.8597214885614578,
+        "tie_break_sd": 0.020036965460686052,
+        "n_recall": 0.9670310296191819,
+        "provisional": false,
+        "bank": "phase6_relative_generators/phase3_cvae-D",
+        "decision": {
+          "winner": "0.1",
+          "best_by_mean": "0.1",
+          "margins": {
+            "0.5": 0.02,
+            "0.25": 0.02,
+            "0.1": 0.02
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.1"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.1"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.5": {
+            "mean": 0.7429777418636444,
+            "sd": 0.014133329898198847
+          },
+          "0.25": {
+            "mean": 0.7329762302131703,
+            "sd": 0.007792693851066292
+          },
+          "0.1": {
+            "mean": 0.7681339864916187,
+            "sd": 0.013770610622293592
+          }
+        }
+      },
+      "wgan_gp": {
+        "strength": 0.25,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_relative_generators-cnn.wgan_gp_0.25-s0-99451a2-202611060704",
+          "phase6_relative_generators-cnn.wgan_gp_0.25-s1-99451a2-202611060705",
+          "phase6_relative_generators-cnn.wgan_gp_0.25-s2-99451a2-202611060706"
+        ],
+        "mean": 0.7402853721772059,
+        "sd": 0.022989052119604055,
+        "values": [
+          0.7171423377567715,
+          0.7405964948242287,
+          0.7631172839506173
+        ],
+        "tie_break_values": [
+          0.8477392899535988,
+          0.8438631790744466,
+          0.8042340627973359
+        ],
+        "tie_break_mean": 0.8319455106084604,
+        "tie_break_sd": 0.02407694568935978,
+        "n_recall": 0.9468617771509168,
+        "provisional": false,
+        "bank": "phase6_relative_generators/phase3_wgan_gp-A",
+        "decision": {
+          "winner": "0.25",
+          "best_by_mean": "0.1",
+          "margins": {
+            "0.5": 0.02,
+            "0.25": 0.02,
+            "0.1": 0.02
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.5",
+                "0.25",
+                "0.1"
+              ]
+            },
+            {
+              "step": "tie-break metric",
+              "tied": [
+                "0.25"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.25"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.5": {
+            "mean": 0.7452068339682197,
+            "sd": 0.020349574575016162
+          },
+          "0.25": {
+            "mean": 0.7402853721772059,
+            "sd": 0.022989052119604055
+          },
+          "0.1": {
+            "mean": 0.7527505116242419,
+            "sd": 0.012939912838741177
+          }
+        }
+      }
+    }
+  },
+  "git_sha": "d2dbe54675ddb900fe15f402869131c2c16cc305"
+}

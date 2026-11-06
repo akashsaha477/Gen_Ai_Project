@@ -1,0 +1,27 @@
+data_sha256: bd7023488e6fda02264fa808644546385c5424dfdbfdb674286715a24236be10
+experiment: phase6_relative_generators
+family: cvae
+scale: 0.5697834419149064
+seed: 1
+settings:
+  architecture: residual_film
+  batch_size: 128
+  beta: 1.0
+  channels:
+  - 32
+  - 64
+  - 128
+  classes:
+  - N
+  - S
+  - V
+  - F
+  final_steps: 20000
+  kernel: 7
+  kl_anneal_fraction: 0.3
+  latent_dim: 16
+  log_every: 50
+  lr: 0.001
+  pilot_steps: 5000
+  spectral_weight: 0.0
+steps: 20000
