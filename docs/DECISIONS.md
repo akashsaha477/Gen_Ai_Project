@@ -401,3 +401,24 @@ cVAE 0.1, WGAN-GP 0.25 (validation S F1 0.768 and 0.740; P11's generators 0.778 
 cVAE 0.368 (P11 0.245; F F1 0.175 to 0.475, S F1 0.316 to 0.260), WGAN-GP 0.243 (P11 0.217). Confirmatory P12 vs P11
 +0.122 [-0.047, +0.177] and +0.026 [-0.044, +0.051], Holm p 1.000 for both; no secondary comparison rejected either
 (cVAE vs P11 random oversampling -0.016, Holm p 0.931). The P11 none score was recomputed exactly before the comparison.
+
+## 2026-11-06 (Day 31) — A33: RR intervals over the recording's mean RR (pre-registration v12) — Akash Saha ("search literatures how they did it better ... and then fix this")
+
+A literature search on why published inter-patient methods detect S beats far better than ours (our best S F1 on DS2 is
+about 0.33; de Chazal et al. 2004 report S sensitivity 75.9% and +P 38.5%, Huang et al. 2014 91.1% and 42.2%) found one
+concrete gap. Published analyses of DS2 (github.com/amitb-gpu/ecg-arrhythmia; medRxiv 10.64898/2026.10.04.26364683)
+report that record 232 holds 75% of DS2's S beats, that S beats outnumber N beats there (1,382 vs 397) and come in runs
+without a compensatory pause, and that a CNN with RR intervals normalized by local averages finds 9% of them (S F1 0.280
+overall, like ours). Methods that find them normalize by the whole recording: Huang et al. (2014) call a non-V beat S when
+its RR interval is below 0.8 of the recording's mean RR; Lin and Yang (2014) and Mondejar-Guerra et al. (2019) divide RR
+intervals by the patient's average. Both of our ratios are local (v1: mean of the 10 preceding intervals; v2: median
+within +/-150 s), and in an S-dominant recording the local reference is set by the S beats themselves. The same pattern is
+in P11's own training data, so the change can be justified without DS2: SVDB record 865 (S 1,818 of 2,919; median
+post/pre 1.00), where the 0.8 rule finds 2.5% (v1), 1.4% (v2) and 93.6% (recording mean) of the S beats. The
+recording-mean ratio is not better everywhere (INCART: rule F1 0.316 vs 0.637 for v2, heart rate drifts within a record),
+so it is added beside v2's ratio, not instead of it: `rr_prev` and `rr_next` are divided by the recording's mean RR, which
+keeps the cnn, its three side inputs and every code path unchanged. Strengths are carried from P11 and P12 (no new
+selection), so the run costs 15 cnn runs. The design check, the comparisons and the descriptive Huang rule are fixed in
+v12 before any run. Kaggle's artifact copy flattened nested bank folders (P12's `phase6_relative_generators/phase3_cvae-D`
+would have collided with phase 3's `phase3_cvae-D`); it now keeps the path below `synthetic/` (`kaggle_run.bank_name`,
+tested), which leaves the existing flat datasets where they were.

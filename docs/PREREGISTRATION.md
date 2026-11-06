@@ -147,7 +147,7 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 - Every access is appended to `docs/TEST_ACCESS_LOG.md`. No decision of any kind uses test data.
 - After `/final-eval` nothing is retrained, re-selected or re-tuned. A bug found later is documented
   and any re-run is disclosed.
-- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v11): the analyses listed in §10 v4 to v11 only, after `/final-eval`, logged;
+- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v12): the analyses listed in §10 v4 to v12 only, after `/final-eval`, logged;
   they add evidence beside the primary results and replace none of them.
 
 ## 9. Generators and RQ3 (rules fixed now, thresholds in v2)
@@ -346,6 +346,28 @@ short because of what they learned from, not because they are generators.
 | test | one `posthoc` access on Kaggle (DS2 rebuilt and hash-checked, v3 form). Confirmatory (Holm, 2 tests): each P12 generator vs the same generator in P11, rare-class macro-F1, record-level bootstrap 10,000, seed 0. Secondary (Holm, 4 tests): each P12 generator vs P11 none and vs P11 random oversampling. P11's scores are recomputed and must match its summary |
 | descriptive | for S and F beats, the patient of the nearest real training beat (P8's measure, by patient; 5,000 beats per class from the seed-0 banks) for the P12 bank, the bank P11 used and the real beats |
 | reporting | its own section, labelled post hoc. Compute: two Kaggle T4 sessions, one per generator, about 2.5 GPU-hours in all (approved by Akash Saha, 2026-11-06); CPU for the test |
+
+**v12, committed 2026-11-06, after P12's test result, before any of the work below (DECISIONS A33).** One analysis, post
+hoc, asked for after a literature search on why published inter-patient methods detect S beats better. Published analyses
+of DS2 report that record 232 holds three quarters of DS2's S beats, that S beats outnumber N beats there and come without
+a compensatory pause, and that RR intervals normalized by local averages miss almost all of them (a CNN with such features:
+S F1 0.280, sensitivity 0.186); Huang et al. (2014) detect S beats by the RR interval over the mean RR interval of the
+whole recording (S sensitivity 91.1%, +P 42.2% on DS2), and Lin and Yang (2014) and Mondejar-Guerra et al. (2019)
+normalize RR intervals by the patient's average. Our features are local: v1's ratio uses the mean of the 10 preceding
+intervals, v2's the median within +/-150 s. The same failure is in P11's training data: SVDB record 865 (a training
+patient) has S 1,818 of 2,919 N and S beats with a median post/pre ratio of 1.00, and the rule "ratio < 0.8" finds 2.5% of
+its S beats with v1's ratio, 1.4% with v2's and 93.6% with the recording mean (`--part check`, annotations of DS1, INCART
+and SVDB only, `results/phase6_record_rr/design_check.json`). Because the idea was motivated in part by published analyses
+of DS2, P13's test result is not blind to its motivation; its validation results are reported beside it.
+
+| item | rule |
+|---|---|
+| P13 `phase6_record_rr`, data | P11's data (hash-checked) with `rr_prev` and `rr_next` divided by the mean RR interval of their recording (every interval between consecutive QRS annotations, pauses included, no label used; MIT-BIH, INCART and SVDB alike; offline, as the +/-150 s templates); `rr_ratio` stays v2's; beats, split and caps unchanged |
+| banks | P12's banks (seeds 0-2, hash-checked); each synthetic beat takes its RR features from the same real training beat as in P12 (the draws are recomputed from the bank seed and must reproduce the stored values), in the new form |
+| classifier | the P7 cnn, settings unchanged; the five conditions at the strengths already chosen, none chosen anew: none; class weighting 0.5 and random oversampling 0.25 (P11); cVAE 0.1 and WGAN-GP 0.25 (P12); P12's unscreened bank policy; seeds 0-2: 15 runs |
+| test | one `posthoc` access on Kaggle (DS2 rebuilt and hash-checked; v3 beats, v2 ratio, `rr_prev` and `rr_next` over the recording's mean). Confirmatory (Holm, 5 tests): each condition with the new features vs the same condition in P11 (none, class weighting, random oversampling) or P12 (cVAE, WGAN-GP), rare-class macro-F1, record-level bootstrap 10,000, seed 0. Secondary (Holm, 6 tests): with the new features, each generator vs none, vs random oversampling and vs class weighting. P11's and P12's scores are recomputed and must match their summaries |
+| descriptive | validation S F1 of each condition beside P11's and P12's; Huang et al.'s SVEB stage on top of each new condition (a beat the cnn calls N becomes S when `rr_prev` over its recording's mean is below 0.8, Huang's threshold, not tuned), test scores with intervals, no test |
+| reporting | its own section, labelled post hoc, framed as limited by scale. Compute: one Kaggle T4 session, under 1 GPU-hour; CPU for the test |
 
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 

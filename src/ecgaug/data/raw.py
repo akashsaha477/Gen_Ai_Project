@@ -200,6 +200,15 @@ def read_external(database: str, record: str, lead: str) -> tuple[np.ndarray, np
         signal = np.asarray(rec.p_signal[:, 0], dtype=np.float64)
     return np.asarray(ann.sample, dtype=np.int64), np.asarray(ann.symbol, dtype=str), signal, int(header.fs), list(header.sig_name)
 
+
+def read_external_annotations(database: str, record: str) -> tuple[np.ndarray, np.ndarray, int, list[str]]:
+    """Annotation samples and symbols, the sampling rate and the signal names of an external record; no signal is read."""
+    stem = str(external_dir(database) / record)
+    ann = wfdb.rdann(stem, "atr")
+    header = wfdb.rdheader(stem)
+    return np.asarray(ann.sample, dtype=np.int64), np.asarray(ann.symbol, dtype=str), int(header.fs), list(header.sig_name)
+
+
 PTBXL_ZIP_URL = "https://physionet.org/content/ptb-xl/get-zip/1.0.3/"
 PTBXL_NEEDED = ("ptbxl_database.csv", "scp_statements.csv")
 

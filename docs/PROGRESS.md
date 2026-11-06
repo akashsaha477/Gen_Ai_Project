@@ -1045,3 +1045,14 @@ deviations section fixed by rewording.
 Full test suite on Kaggle CPU at d3b4c86 (kernel `phase6-relative-generators-suite`, `tests_exit_code` 0; its recomputed
 P12 selection is identical to the committed one). Pushed `main` (8fc42b4..d3b4c86) and the tags `prereg-v10` (b06953b)
 and `prereg-v11` (99451a2).
+
+**P13, RR intervals over the recording's mean** (`phase6_record_rr`, pre-registration v12, A33). Asked to search the
+literature for how others do better and fix it. Finding: our S F1 on DS2 (about 0.3) matches a published CNN with local
+RR normalization (0.280), while methods that normalize RR by the whole recording reach S sensitivity 76-91% (de Chazal
+2004; Huang 2014). Published DS2 analyses put 75% of DS2's S beats in record 232, an S-dominant recording without
+compensatory pauses, where local ratios fail. The same pattern is in P11's training data: SVDB 865, where the 0.8 rule finds
+2.5% / 1.4% / 93.6% of the S beats with v1 / v2 / the recording mean (`--part check`, training-side annotations only;
+`results/phase6_record_rr/design_check.json`). P13 divides `rr_prev` and `rr_next` by the recording's mean RR (v2's ratio
+kept) and retrains the P7 cnn on P11's data in all five conditions at P11's and P12's strengths (15 runs; under 1 T4-hour).
+P12's banks are on Kaggle as `ecgaug-p12-banks`; Kaggle's bank copy now keeps nested bank folders apart (it used to flatten
+them). P13's 9 tests and the two existing bank-copy tests pass locally.
