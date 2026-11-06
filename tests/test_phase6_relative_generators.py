@@ -107,3 +107,67 @@ def test_train_generators_end_to_end_on_fake_beats(family, monkeypatch):
 
     run_dir = runs.find_run_dir(entry["run_id"])
     assert all((run_dir / f).is_file() for f in runs.REQUIRED_RUN_FILES) and (run_dir / "checkpoints" / "final.pt").is_file()
+
+
+def test_test_report_compares_each_new_generator_with_p11_and_checks_p11s_score(monkeypatch):
+    """The DS2 read on fake beats and fake predictions: the confirmatory and secondary families and the P11 check."""
+    from types import SimpleNamespace
+
+    from ecgaug import final_eval, paths
+    from ecgaug.eval import metrics as M
+    from ecgaug.experiments import phase6_more_patients as mp
+    from ecgaug.experiments import phase6_patient_template as pt
+    from ecgaug.experiments import phase6_rr_baseline as v5
+    from ecgaug.experiments.common import PreconditionError
+
+    records = np.repeat([100, 103, 105, 111], 40)
+    y = np.tile(np.repeat([0, 1, 2, 3], 10), 4).astype(np.int8)
+    test = {"X": np.zeros((len(y), 4), np.float32), "y": y, "record": records}
+
+    def fake_predict(run_ids: list[str], arrays: dict) -> list[np.ndarray]:
+        out = []
+        for run_id in run_ids:  # each run keeps 70% of the labels and guesses the rest
+            rng = np.random.default_rng(sum(map(ord, run_id)))
+            out.append(np.eye(4)[np.where(rng.random(len(arrays["y"])) < 0.7, arrays["y"], rng.integers(0, 4, len(arrays["y"])))])
+        return out
+
+    monkeypatch.setattr(rg, "check_preconditions", lambda: None)
+    monkeypatch.setattr(rg, "load_data", lambda *a, **k: SimpleNamespace(spec=None))
+    monkeypatch.setattr(pt, "test_arrays", lambda spec, experiment: test)
+    monkeypatch.setattr(v5, "record_ratios", lambda record, half, access: {})
+    monkeypatch.setattr(v5, "substitute", lambda arrays, ratios: arrays)
+    monkeypatch.setattr(pt, "mitbih_templates", lambda arrays, spec, half, access: None)
+    monkeypatch.setattr(pt, "relative", lambda arrays, templates: arrays)
+    monkeypatch.setattr(pt, "_predict", fake_predict)
+
+    def chosen(experiment: str, conditions: tuple, strength: float) -> dict:
+        return {"chosen": {"cnn": {c: {"strength": strength, "run_ids": [f"{experiment}-cnn.{c}-s{s}" for s in range(3)]} for c in conditions}}}
+
+    p11 = chosen(mp.EXPERIMENT, ("none", "class_weighted", "random_oversampling", *rg.FAMILIES), 0.1)
+    for name, selection in ((rg.EXPERIMENT, chosen(rg.EXPERIMENT, rg.FAMILIES, 0.25)), (mp.EXPERIMENT, p11)):
+        paths.results_for(name).mkdir(parents=True, exist_ok=True)
+        (paths.results_for(name) / "selection.json").write_text(json.dumps(selection))
+
+    def score(condition: str, selection: dict) -> np.ndarray:
+        return final_eval.per_record_cms(fake_predict(selection["chosen"]["cnn"][condition]["run_ids"], test), y, records)[1]
+
+    p11_none = float(np.mean(M.rare_macro_f1_from_cm(score("none", p11).sum(axis=1))))
+    summary_path = paths.results_for(mp.EXPERIMENT) / "summary.json"
+    cfg = {"mp": {"pt": {"half_window_s": 150.0}}}
+    summary_path.write_text(json.dumps({"conditions": {"cnn/none": {"rare_macro_f1": {"point": p11_none + 0.01}}}}))
+    with pytest.raises(PreconditionError):  # P11's score must reproduce before anything is compared
+        rg.test_report(cfg)
+    summary_path.write_text(json.dumps({"conditions": {"cnn/none": {"rare_macro_f1": {"point": p11_none}}}}))
+    s = rg.test_report(cfg)
+    assert set(s["conditions"]) == {"cnn/cvae", "cnn/wgan_gp"} and s["conditions"]["cnn/cvae"]["strength"] == 0.25
+    assert set(s["families"]["confirmatory"]) == {f"cnn: {f}, P12 vs P11 generators" for f in rg.FAMILIES}
+    assert set(s["families"]["secondary"]) == {f"cnn: {f} (P12) vs {c} (P11)" for f in rg.FAMILIES for c in ("none", "random oversampling")}
+    p12 = json.loads((paths.results_for(rg.EXPERIMENT) / "selection.json").read_text())
+    for f in rg.FAMILIES:
+        new, old = score(f, p12), score(f, p11)
+        expected = float(np.mean(M.rare_macro_f1_from_cm(new.sum(axis=1))) - np.mean(M.rare_macro_f1_from_cm(old.sum(axis=1))))
+        assert s["families"]["confirmatory"][f"cnn: {f}, P12 vs P11 generators"]["point"] == pytest.approx(expected)
+        assert s["conditions"][f"cnn/{f}"]["rare_macro_f1"]["point"] == pytest.approx(float(np.mean(M.rare_macro_f1_from_cm(new.sum(axis=1)))))
+    assert all("p_holm" in c for family in s["families"].values() for c in family.values())
+    assert s["run_ids"] == [r for f in rg.FAMILIES for r in p12["chosen"]["cnn"][f]["run_ids"]]
+    assert (paths.results_for(rg.EXPERIMENT) / "summary.json").is_file()
