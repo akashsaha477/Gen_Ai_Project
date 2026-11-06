@@ -1500,20 +1500,21 @@ def record_rr_results_figure(summary: dict) -> list[Path]:
     plt = _plt()
     names = {"none": "no augmentation", "class_weighted": "class-weighted loss", "random_oversampling": "random oversampling", "cvae": "cVAE", "wgan_gp": "WGAN-GP"}
     keys = list(summary["conditions"])
-    fig, axes = plt.subplots(1, 2, figsize=(13, 0.62 * len(keys) * 3 / 2 + 2.6))
-    ax = axes[0]
+    fig, axes = plt.subplots(1, 3, figsize=(17, 0.62 * len(keys) * 3 / 2 + 2.6), gridspec_kw={"width_ratios": [1, 0.75, 1.15]})
     rows = []
     for k in keys:
         c = k.split("/")[1]
         rows += [(f"{names[c]}: before", summary["before"][k], "#b8b6b0"), (f"{names[c]}: recording-mean RR", summary["conditions"][k], "#2a78d6"),
                  (f"{names[c]}: + SVEB rule", summary["sveb_rule"][k], "#eb6834")]  # fmt: skip
-    for i, (label, entry, color) in enumerate(reversed(rows)):
-        _interval(ax, entry["rare_macro_f1"], i, color)
-    ax.set_yticks(range(len(rows)), [label for label, _, _ in reversed(rows)], fontsize=7)
-    ax.set_xlim(left=0)
-    ax.set_xlabel("test rare-class macro-F1 (95% record-level CI)")
-    ax.set_title("each condition (the P7 cnn on P11's patients)", loc="left")
-    ax = axes[1]
+    for ax, metric, xlabel, title in ((axes[0], "rare_macro_f1", "test rare-class macro-F1 (95% record-level CI)", "each condition (the P7 cnn on P11's patients)"),
+                                      (axes[1], "f1_S", "test S F1 (95% record-level CI)", "S beats only")):  # fmt: skip
+        for i, (label, entry, color) in enumerate(reversed(rows)):
+            _interval(ax, entry[metric], i, color)
+        ax.set_yticks(range(len(rows)), [label for label, _, _ in reversed(rows)] if metric == "rare_macro_f1" else [], fontsize=7)
+        ax.set_xlim(0, 1 if metric == "f1_S" else None)
+        ax.set_xlabel(xlabel)
+        ax.set_title(title, loc="left")
+    ax = axes[2]
     comparisons = [(family, name) for family, items in summary["families"].items() for name in items]
     for i, (family, name) in enumerate(reversed(comparisons)):
         r = summary["families"][family][name]
