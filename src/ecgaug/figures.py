@@ -901,10 +901,11 @@ def external_validation_figure(summaries: dict[str, dict], final: dict) -> list[
             _interval(ax, final["conditions"][key][metric], i - 0.15, "#eb6834", "MIT-BIH test records (final evaluation)" if i == 0 else None)
         ax.set_yticks(range(len(keys)), list(reversed(keys)), fontsize=7)
         ax.set_xlim(left=0)
-        ax.set_xlabel(f"{'rare-class macro-F1' if metric == 'rare_macro_f1' else 'S F1'} (95% record-level CI)")
+        ax.set_xlabel(f"{'rare-class macro-F1' if metric == 'rare_macro_f1' else 'S F1'} (95% patient-level CI)")
         reject = sum(v["reject_holm"] for v in s["confirmatory"].values())
         label = {"incartdb": "INCART", "svdb": "SVDB"}.get(db, db)
-        ax.set_title(f"{label} ({s['role']}, {s['records']} records): Holm rejects {reject} of {len(s['confirmatory'])} vs none", loc="left", fontsize=9)
+        units = f"{s['records']} records, {s['patients']} patients" if s.get("patients", s["records"]) != s["records"] else f"{s['records']} records"
+        ax.set_title(f"{label} ({s['role']}, {units}): Holm rejects {reject} of {len(s['confirmatory'])} vs none", loc="left", fontsize=9)
     axes[0][0].legend(loc="lower left", bbox_to_anchor=(0, 1.06), ncol=2, fontsize=8)
     caption = ("Every frozen checkpoint of the phase 4 gate (3 seeds) applied unchanged to external databases; beats cut like the frozen dataset. "
                "INCART: lead II, 257 Hz resampled to 360 Hz; SVDB: ECG1, 128 Hz resampled (S F1 is its primary metric, fewer than 50 F beats). "
@@ -1029,7 +1030,7 @@ def rr_baseline_external_figure(v2: dict[str, dict], v1: dict[str, dict]) -> lis
             _interval(ax, v2[db]["conditions"][key][metric], i - 0.15, "#eb6834", "v2 features" if i == 0 else None)
         ax.set_yticks(range(len(keys)), list(reversed(keys)), fontsize=7)
         ax.set_xlim(left=0)
-        ax.set_xlabel(f"{'rare-class macro-F1' if metric == 'rare_macro_f1' else 'S F1'} (95% record-level CI)")
+        ax.set_xlabel(f"{'rare-class macro-F1' if metric == 'rare_macro_f1' else 'S F1'} (95% patient-level CI)")
         reject = sum(v["reject_holm"] for v in v2[db]["confirmatory"].values())
         ax.set_title(f"{ {'incartdb': 'INCART', 'svdb': 'SVDB'}.get(db, db)}: v2 Holm rejects {reject} of 4 vs none", loc="left", fontsize=9)
     axes[0][0].legend(loc="lower left", bbox_to_anchor=(0, 1.06), ncol=2, fontsize=8)
@@ -1164,7 +1165,7 @@ def patient_template_external_figure(versions: dict[str, dict[str, dict]]) -> li
                 _interval(ax, versions[version][db]["conditions"][key][metric], i + off, VERSION_COLORS[version], VERSION_LABELS[version] if i == 0 else None)
         ax.set_yticks(range(len(keys)), list(reversed(keys)), fontsize=7)
         ax.set_xlim(left=0)
-        ax.set_xlabel(f"{'rare-class macro-F1' if metric == 'rare_macro_f1' else 'S F1'} (95% record-level CI)")
+        ax.set_xlabel(f"{'rare-class macro-F1' if metric == 'rare_macro_f1' else 'S F1'} (95% patient-level CI)")
         reject = sum(v["reject_holm"] for v in v3[db]["confirmatory"].values())
         ax.set_title(f"{ {'incartdb': 'INCART', 'svdb': 'SVDB'}.get(db, db)}: v3 Holm rejects {reject} of 4 vs none", loc="left", fontsize=9)
     axes[0][0].legend(loc="lower left", bbox_to_anchor=(0, 1.06), ncol=len(present), fontsize=8)
@@ -1220,7 +1221,7 @@ def relative_cnn_external_figure(versions: dict[str, dict[str, dict]]) -> list[P
                 _interval(ax, versions[version][db]["conditions"][key][metric], i + off, VERSION_COLORS[version], VERSION_LABELS[version] if i == 0 else None)
         ax.set_yticks(range(len(keys)), list(reversed(keys)), fontsize=8)
         ax.set_xlim(left=0)
-        ax.set_xlabel(f"{'rare-class macro-F1' if metric == 'rare_macro_f1' else 'S F1'} (95% record-level CI)")
+        ax.set_xlabel(f"{'rare-class macro-F1' if metric == 'rare_macro_f1' else 'S F1'} (95% patient-level CI)")
         reject = sum(v["reject_holm"] for v in p7[db]["confirmatory"].values())
         ax.set_title(f"{ {'incartdb': 'INCART', 'svdb': 'SVDB'}.get(db, db)}: P7 Holm rejects {reject} of {len(p7[db]['confirmatory'])} vs none", loc="left", fontsize=9)
     axes[0][0].legend(loc="lower left", bbox_to_anchor=(0, 1.06), ncol=len(present), fontsize=8)
@@ -1389,6 +1390,36 @@ def patient_adaptation_figure(adoption: dict, summary: dict | None) -> list[Path
     return [_save(fig, paths.figures_for("phase6_patient_adaptation") / "adaptation.png", "Normalizing each patient inside the network", caption)]
 
 
+def more_patients_figure(summary: dict, p7: dict) -> list[Path]:
+    """P11 before and after: each cnn condition trained on DS1 only (P7) and on DS1 plus the INCART and SVDB patients."""
+    plt = _plt()
+    keys = list(summary["conditions"])
+    rows = [(family, name) for family, items in summary["families"].items() for name in items]
+    fig, axes = plt.subplots(1, 2, figsize=(13, 0.6 * max(len(keys), len(rows)) + 2.0))
+    ax = axes[0]
+    for i, key in enumerate(reversed(keys)):
+        _interval(ax, p7["conditions"][key]["rare_macro_f1"], i + 0.15, "#1f9e6e", "DS1 patients only (P7)" if i == 0 else None)
+        _interval(ax, summary["conditions"][key]["rare_macro_f1"], i - 0.15, "#7a4fd6", "DS1 + INCART + SVDB patients (P11)" if i == 0 else None)
+    ax.set_yticks(range(len(keys)), list(reversed(keys)), fontsize=8)
+    ax.set_xlim(left=0)
+    ax.set_xlabel("test rare-class macro-F1 (95% record-level CI)")
+    ax.set_title("each condition, by training patients", loc="left")
+    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.06), ncol=2, fontsize=7)
+    ax = axes[1]
+    for i, (family, name) in enumerate(reversed(rows)):
+        r = summary["families"][family][name]
+        _interval(ax, r, i, INK if family == "confirmatory" else INK_2)
+        ax.annotate(f"Holm p {r['p_holm']:.3f}", (r["ci_high"], i), xytext=(6, 0), textcoords="offset points", va="center", fontsize=7, color=INK_2)
+    ax.axvline(0, color=GRID, linewidth=1.2)
+    ax.set_yticks(range(len(rows)), [name for _, name in reversed(rows)], fontsize=7)
+    ax.set_xlabel("difference in test rare-class macro-F1 (95% CI)")
+    ax.set_title("pre-registered comparisons, P11", loc="left")
+    caption = ("The P7 cnn (patient-relative beats) trained on more patients: all S, V and F beats of INCART and SVDB and at most 600 N beats per "
+               "record, strengths fixed at P7's validation choices, 3 seeds. Black: confirmatory (more patients vs DS1 only, no augmentation); "
+               "grey: each condition vs none. Post hoc (PREREGISTRATION v10, P11).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_more_patients") / "results.png", "Before and after: more training patients", caption)]
+
+
 def posthoc_figures() -> list[Path]:
     """Every post-hoc figure whose summary exists (PREREGISTRATION v4, P1-P4); nothing is re-run."""
     final, written = _summary("final_eval"), []
@@ -1432,6 +1463,8 @@ def posthoc_figures() -> list[Path]:
         written += patient_transfer_results_figure(s, _summary("phase6_rr_baseline"))
     if (a := _summary("phase6_patient_adaptation", "adoption.json")) is not None:
         written += patient_adaptation_figure(a, _summary("phase6_patient_adaptation"))
+    if (s := _summary("phase6_more_patients")) is not None and (p7 := _summary("phase6_relative_cnn")) is not None:
+        written += more_patients_figure(s, p7)
     return written
 
 
