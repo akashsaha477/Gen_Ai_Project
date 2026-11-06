@@ -59,7 +59,7 @@ in each notebook's Output.
 | `ARTIFACTS_DIR` | phase 5 | the attached artifacts dataset holding the grid's weights |
 
 The note variants B-D call an LLM: add a Kaggle secret named `GEMINI_API_KEY` (free tier, from
-aistudio.google.com) or `LLM_API_KEY` and tick it for the notes notebook (optional: set
+aistudio.google.com) and tick it for the notes notebook (optional: set
 `ECGAUG_LLM_MODEL` in the cell). The key is passed to the run and never
 printed. Without it, B-D are recorded as not run.
 

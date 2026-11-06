@@ -135,18 +135,14 @@ def test_llm_variants_with_a_fake_client():
 
 
 def test_llm_client_comes_from_the_environment_and_hides_the_key(monkeypatch):
-    for name in ("GEMINI_API_KEY", "LLM_API_KEY", "ECGAUG_LLM_PROVIDER", "ECGAUG_LLM_MODEL", "ECGAUG_LLM_THINKING"):
+    for name in ("GEMINI_API_KEY", "ECGAUG_LLM_PROVIDER", "ECGAUG_LLM_MODEL", "ECGAUG_LLM_THINKING"):
         monkeypatch.delenv(name, raising=False)
     assert notes.client_from_env() is None
     monkeypatch.setenv("GEMINI_API_KEY", "g-secret-value")
     client = notes.client_from_env()
     assert client.provider == "gemini" and client.model == notes.DEFAULT_MODELS["gemini"] and "secret" not in repr(client)
-    monkeypatch.setenv("ECGAUG_LLM_PROVIDER", "otherllm")
-    assert notes.client_from_env() is None
-    monkeypatch.setenv("LLM_API_KEY", "sk-secret-value")
-    monkeypatch.setenv("ECGAUG_LLM_MODEL", "llm-model")
-    client = notes.client_from_env()
-    assert client.provider == "otherllm" and client.model == "llm-model" and "secret" not in repr(client)
+    monkeypatch.setenv("ECGAUG_LLM_MODEL", "gemini-other")
+    assert notes.client_from_env().model == "gemini-other"
     monkeypatch.setenv("ECGAUG_LLM_PROVIDER", "other")
     with pytest.raises(ValueError, match="not built"):
         notes.client_from_env()

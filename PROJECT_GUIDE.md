@@ -319,7 +319,7 @@ Everything below exists as code, configs, Kaggle notebook, tests and a brief per
 | phase3_cvae, phase3_wgan_gp pilots, then final banks | 3 | the phase 2 gate (pilot classifier, quality composite), then the phase 3a gate |
 | phase4_augmentation_policy, the full grid | 4 | the phase 3 gate (frozen banks), then the phase 4a gate |
 | the final test evaluation | 4 | the phase 4 gate |
-| phase5_explainability, phase5_clinical_notes, demo | 5 | the phase 4 gate (models); an `LLM_API_KEY` for the LLM notes |
+| phase5_explainability, phase5_clinical_notes, demo | 5 | the phase 4 gate (models); a `GEMINI_API_KEY` for the LLM notes |
 | paper text, verified references, course report | 6 | results |
 
 Design choices the team should confirm before the official runs are listed in `docs/DECISIONS.md` A14;

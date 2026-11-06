@@ -47,7 +47,7 @@ uv run python -m ecgaug.experiments.phase5_clinical_notes --config configs/phase
 uv run python -m ecgaug.experiments.phase5_clinical_notes --config configs/phase5_clinical_notes/B_llm_constrained.yaml              # the official run
 ```
 
-On Kaggle: import `kaggle/phase5_clinical_notes.ipynb`, set `VARIANTS = ["B"]`, `GIT_NAME`, `GIT_EMAIL`, then Run All. For B-D add the `LLM_API_KEY` Kaggle secret. Attach the artifacts dataset (the grid's zips) and set `ARTIFACTS_DIR`.
+On Kaggle: import `kaggle/phase5_clinical_notes.ipynb`, set `VARIANTS = ["B"]`, `GIT_NAME`, `GIT_EMAIL`, then Run All. For B-D add the `GEMINI_API_KEY` Kaggle secret. Attach the artifacts dataset (the grid's zips) and set `ARTIFACTS_DIR`.
 
 `python -m ecgaug.workflow status` says whether the gates this run needs are approved; an official run refuses
 otherwise and says why.
