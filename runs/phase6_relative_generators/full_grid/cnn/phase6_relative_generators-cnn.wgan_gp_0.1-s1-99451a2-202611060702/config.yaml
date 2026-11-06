@@ -1,0 +1,66 @@
+grid: configs/phase6_relative_generators/relative_generators.yaml
+grid_name: full_grid
+cell:
+  condition: wgan_gp
+  strength: 0.1
+  architecture: cnn
+  seed: 1
+cell_sha: 3042b0a9c188ff2516052eab0d3bffa972cd88f713f69c66360069d3af8b3597
+policy:
+  kind: fraction_of_n
+condition_settings:
+  bank: phase6_relative_generators/phase3_wgan_gp-A
+  strengths:
+  - 0.1
+  - 0.25
+  - 0.5
+bank: phase6_relative_generators/phase3_wgan_gp-A
+classifier:
+  variant: A
+  config: configs/phase2_baseline_classifiers/A_shallow_cnn.yaml
+  model:
+    name: shallow_cnn
+    channels:
+    - 32
+    - 64
+    - 128
+    kernel: 7
+    side_hidden: 16
+  lr: 0.001
+  max_epochs: 40
+  patience: 5
+  min_epochs: 10
+  batch_size: 256
+  weight_decay: 0.01
+  run_ids:
+  - phase2_baseline_classifiers-A.lr1e-03-s0-a6ac8bf-202611010715
+  - phase2_baseline_classifiers-A.lr1e-03-s1-a6ac8bf-202611010715
+  - phase2_baseline_classifiers-A.lr1e-03-s2-a6ac8bf-202611010715
+  checkpoints:
+    phase2_baseline_classifiers-A.lr1e-03-s0-a6ac8bf-202611010715: 04e6f6f4c1fc4d0fcf3b6e16ff68e92e640fc99d25d84780b9781340976ef88c
+    phase2_baseline_classifiers-A.lr1e-03-s1-a6ac8bf-202611010715: 0235e139af9fe276d4455a2043c44fc5bc838d84f6842a7d6a64f273f8011416
+    phase2_baseline_classifiers-A.lr1e-03-s2-a6ac8bf-202611010715: f307abff674461fe3d4b7f3d7beec6e63eed913d8a1fb758b882ad10da1ce2dd
+class_weights: null
+n_added:
+  N: 0
+  S: 626
+  V: 0
+  F: 10305
+run_id: phase6_relative_generators-cnn.wgan_gp_0.1-s1-99451a2-202611060702
+split:
+  name: V1
+  val:
+  - 115
+  - 118
+  - 201
+  - 205
+  - 223
+  selection_metric: s_f1
+dataset:
+  source: DS1 v3 plus INCART and SVDB patients (PREREGISTRATION v10)
+  representation: C_short_window_rr_features
+  content_sha256: bd7023488e6fda02264fa808644546385c5424dfdbfdb674286715a24236be10
+  frozen: false
+  version: v3+external
+provisional: false
+provisional_reasons: []

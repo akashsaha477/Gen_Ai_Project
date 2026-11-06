@@ -1,0 +1,29 @@
+{
+  "cell_sha": "d0e8b706c6d71738c29ec7b860468062bc67cbc8a00f5af1b61bff221c4b3100",
+  "cell": {
+    "condition": "wgan_gp",
+    "strength": 0.5,
+    "architecture": "cnn",
+    "seed": 0
+  },
+  "condition": "wgan_gp",
+  "strength": 0.5,
+  "architecture": "cnn",
+  "seed": 0,
+  "run_id": "phase6_relative_generators-cnn.wgan_gp_0.5-s0-99451a2-202611060707",
+  "status": "done",
+  "bank": "phase6_relative_generators/phase3_wgan_gp-A",
+  "selection_metric": "s_f1",
+  "selection_value": 0.7642850329104264,
+  "tie_break_value": 0.8036203405978326,
+  "rare_macro_f1": 0.38876503301150456,
+  "n_recall": 0.9643159379407616,
+  "n_added": {
+    "N": 0,
+    "S": 44332,
+    "V": 25675,
+    "F": 54011
+  },
+  "wall_clock_s": 89.1,
+  "provisional": false
+}

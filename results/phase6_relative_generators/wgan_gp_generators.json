@@ -1,0 +1,64 @@
+{
+  "experiment": "phase6_relative_generators",
+  "rule": "PREREGISTRATION \u00a710 v11",
+  "family": "wgan_gp",
+  "generator_config": "configs/phase3_wgan_gp/A_concat_embedding.yaml",
+  "variant": "A",
+  "generator_id": "phase6_relative_generators/phase3_wgan_gp-A",
+  "scale": 0.5697834419149064,
+  "steps": 20000,
+  "bank_counts": {
+    "S": 44332,
+    "V": 25675,
+    "F": 54011
+  },
+  "data_sha256": "bd7023488e6fda02264fa808644546385c5424dfdbfdb674286715a24236be10",
+  "device": "cuda",
+  "seeds": {
+    "0": {
+      "run_id": "phase6_relative_generators-generator.wgan_gp-s0-99451a2-202611060559",
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "generator_seconds": 1236.9541468449997,
+      "n_parameters": 501362,
+      "checkpoint_sha256": "4a973b114c5acbb1fb954a723ce7a196fbbaf60c1685f31a1864081820e482fc",
+      "bank_sha256": "c7790f003708c2a06d58dab19105bd6c1f1cc9ae6a6f7e741bc64a584425b479",
+      "bank_counts": {
+        "S": 44332,
+        "V": 25675,
+        "F": 54011
+      }
+    },
+    "1": {
+      "run_id": "phase6_relative_generators-generator.wgan_gp-s1-99451a2-202611060619",
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "generator_seconds": 1240.6077593320001,
+      "n_parameters": 501362,
+      "checkpoint_sha256": "04cdf5948e34ebfd00e13a222a90283aeec78516e33853a4b8209ddfbb786638",
+      "bank_sha256": "b0ba9589d437cf1c564852df4415507b1e09966554eaf119cd26be970f0834b8",
+      "bank_counts": {
+        "S": 44332,
+        "V": 25675,
+        "F": 54011
+      }
+    },
+    "2": {
+      "run_id": "phase6_relative_generators-generator.wgan_gp-s2-99451a2-202611060640",
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "generator_seconds": 1236.048951741,
+      "n_parameters": 501362,
+      "checkpoint_sha256": "1eb5a3a5bf97f5d17ae447158432214869fc1992e78ecc20bc7bd3ad82bdd0a9",
+      "bank_sha256": "de040ddb1b75627fb8e2fe4708490c5e6c09692883661ba54f37de66695b3d8f",
+      "bank_counts": {
+        "S": 44332,
+        "V": 25675,
+        "F": 54011
+      }
+    }
+  }
+}

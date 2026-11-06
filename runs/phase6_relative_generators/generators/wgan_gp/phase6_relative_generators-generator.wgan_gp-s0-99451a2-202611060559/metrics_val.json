@@ -1,0 +1,15 @@
+{
+  "run_id": "phase6_relative_generators-generator.wgan_gp-s0-99451a2-202611060559",
+  "steps_done": 20000,
+  "diverged": false,
+  "divergence": null,
+  "generator_seconds": 1236.9541468449997,
+  "n_parameters": 501362,
+  "checkpoint_sha256": "4a973b114c5acbb1fb954a723ce7a196fbbaf60c1685f31a1864081820e482fc",
+  "bank_sha256": "c7790f003708c2a06d58dab19105bd6c1f1cc9ae6a6f7e741bc64a584425b479",
+  "bank_counts": {
+    "S": 44332,
+    "V": 25675,
+    "F": 54011
+  }
+}

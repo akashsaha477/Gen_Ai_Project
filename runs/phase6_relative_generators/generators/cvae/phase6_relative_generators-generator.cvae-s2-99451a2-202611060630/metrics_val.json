@@ -1,0 +1,15 @@
+{
+  "run_id": "phase6_relative_generators-generator.cvae-s2-99451a2-202611060630",
+  "steps_done": 20000,
+  "diverged": false,
+  "divergence": null,
+  "generator_seconds": 876.0051463149998,
+  "n_parameters": 803841,
+  "checkpoint_sha256": "612f1dd3620d4509a3693bede7dcda7e347417c630253e5c66522aa2a66611a0",
+  "bank_sha256": "f23b63bcb2a773663b11c4611bbb861659901dbdef50b7b8c7afb2d9bea4bbdc",
+  "bank_counts": {
+    "S": 44332,
+    "V": 25675,
+    "F": 54011
+  }
+}
