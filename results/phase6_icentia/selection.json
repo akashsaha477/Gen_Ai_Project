@@ -1,0 +1,229 @@
+{
+  "experiment": "phase6_icentia",
+  "rule": "PREREGISTRATION \u00a710 v13 (strengths carried from P13)",
+  "chosen": {
+    "cnn": {
+      "none": {
+        "strength": null,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_icentia-cnn.none-s0-6c8d205-202611061743",
+          "phase6_icentia-cnn.none-s1-6c8d205-202611061744",
+          "phase6_icentia-cnn.none-s2-6c8d205-202611061746"
+        ],
+        "mean": 0.7998020473631647,
+        "sd": 0.0005479694815892435,
+        "values": [
+          0.7992684711046086,
+          0.7997743141265251,
+          0.8003633568583607
+        ],
+        "tie_break_values": [
+          0.8611599297012302,
+          0.8305866842452209,
+          0.8575377810541835
+        ],
+        "tie_break_mean": 0.8497614650002117,
+        "tie_break_sd": 0.016704315399225324,
+        "n_recall": 0.9831857688246283,
+        "provisional": false,
+        "bank": null,
+        "decision": {
+          "winner": "None",
+          "best_by_mean": "None",
+          "margins": {
+            "None": 0.02
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "None"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "None"
+            }
+          ]
+        },
+        "all_strengths": {
+          "None": {
+            "mean": 0.7998020473631647,
+            "sd": 0.0005479694815892435
+          }
+        }
+      },
+      "class_weighted": {
+        "strength": 0.5,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_icentia-cnn.class_weighted_0.5-s0-6c8d205-202611061748",
+          "phase6_icentia-cnn.class_weighted_0.5-s1-6c8d205-202611061751",
+          "phase6_icentia-cnn.class_weighted_0.5-s2-6c8d205-202611061752"
+        ],
+        "mean": 0.8072242327841718,
+        "sd": 0.0029928147587646964,
+        "values": [
+          0.8063713959271457,
+          0.8047504025764896,
+          0.8105508998488803
+        ],
+        "tie_break_values": [
+          0.8505188370571188,
+          0.8620946701453597,
+          0.8588465646137415
+        ],
+        "tie_break_mean": 0.8571533572720732,
+        "tie_break_sd": 0.00597077811077519,
+        "n_recall": 0.9768364335418189,
+        "provisional": false,
+        "bank": null,
+        "decision": {
+          "winner": "0.5",
+          "best_by_mean": "0.5",
+          "margins": {
+            "0.5": 0.02
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.5"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.5"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.5": {
+            "mean": 0.8072242327841718,
+            "sd": 0.0029928147587646964
+          }
+        }
+      },
+      "random_oversampling": {
+        "strength": 0.25,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_icentia-cnn.random_oversampling_0.25-s0-6c8d205-202611061754",
+          "phase6_icentia-cnn.random_oversampling_0.25-s1-6c8d205-202611061758",
+          "phase6_icentia-cnn.random_oversampling_0.25-s2-6c8d205-202611061800"
+        ],
+        "mean": 0.8027674665117149,
+        "sd": 0.00846225311520435,
+        "values": [
+          0.8101578229525233,
+          0.8046082346010343,
+          0.7935363419815876
+        ],
+        "tie_break_values": [
+          0.7966680905595899,
+          0.8292780614799239,
+          0.8042662453091053
+        ],
+        "tie_break_mean": 0.8100707991162063,
+        "tie_break_sd": 0.017062303025409734,
+        "n_recall": 0.9785106363775845,
+        "provisional": false,
+        "bank": null,
+        "decision": {
+          "winner": "0.25",
+          "best_by_mean": "0.25",
+          "margins": {
+            "0.25": 0.02
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.25"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.25"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.25": {
+            "mean": 0.8027674665117149,
+            "sd": 0.00846225311520435
+          }
+        }
+      },
+      "cvae": {
+        "strength": 0.1,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_icentia-cnn.cvae_0.1-s0-6c8d205-202611061802",
+          "phase6_icentia-cnn.cvae_0.1-s1-6c8d205-202611061804",
+          "phase6_icentia-cnn.cvae_0.1-s2-6c8d205-202611061806"
+        ],
+        "mean": 0.8025696881335963,
+        "sd": 0.004901239688169303,
+        "values": [
+          0.8010983123493169,
+          0.8080380750925437,
+          0.7985726769589281
+        ],
+        "tie_break_values": [
+          0.8138756466173039,
+          0.8183781661103475,
+          0.8423401571747356
+        ],
+        "tie_break_mean": 0.824864656634129,
+        "tie_break_sd": 0.015300751935930007,
+        "n_recall": 0.9817642758508652,
+        "provisional": false,
+        "bank": "phase6_relative_generators/phase3_cvae-D",
+        "decision": {
+          "winner": "0.1",
+          "best_by_mean": "0.1",
+          "margins": {
+            "0.1": 0.02
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.1"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.1"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.1": {
+            "mean": 0.8025696881335963,
+            "sd": 0.004901239688169303
+          }
+        }
+      }
+    }
+  },
+  "git_sha": "6cc814bac0a6529651b06f2a0206f3633615090b"
+}

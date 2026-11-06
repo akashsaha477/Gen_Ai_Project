@@ -1,0 +1,29 @@
+{
+  "cell_sha": "9123360fb1ad40f143005e7af742cf0c76bcdecc7924203dc48002d3a8e06e1a",
+  "cell": {
+    "condition": "random_oversampling",
+    "strength": 0.25,
+    "architecture": "cnn",
+    "seed": 2
+  },
+  "condition": "random_oversampling",
+  "strength": 0.25,
+  "architecture": "cnn",
+  "seed": 2,
+  "run_id": "phase6_icentia-cnn.random_oversampling_0.25-s2-6c8d205-202611061800",
+  "status": "done",
+  "bank": null,
+  "selection_metric": "s_f1",
+  "selection_value": 0.7935363419815876,
+  "tie_break_value": 0.8042662453091053,
+  "rare_macro_f1": 0.4183367984417742,
+  "n_recall": 0.9741288278775079,
+  "n_added": {
+    "N": 0,
+    "S": 49401,
+    "V": 37434,
+    "F": 72492
+  },
+  "wall_clock_s": 169.4,
+  "provisional": false
+}

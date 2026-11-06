@@ -1,0 +1,29 @@
+{
+  "cell_sha": "efac33992b252464031c25895241547b2e5fba2c37d4f61fe4712a1d8ff9038e",
+  "cell": {
+    "condition": "cvae",
+    "strength": 0.1,
+    "architecture": "cnn",
+    "seed": 2
+  },
+  "condition": "cvae",
+  "strength": 0.1,
+  "architecture": "cnn",
+  "seed": 2,
+  "run_id": "phase6_icentia-cnn.cvae_0.1-s2-6c8d205-202611061806",
+  "status": "done",
+  "bank": "phase6_relative_generators/phase3_cvae-D",
+  "selection_metric": "s_f1",
+  "selection_value": 0.7985726769589281,
+  "tie_break_value": 0.8423401571747356,
+  "rare_macro_f1": 0.39928633847946404,
+  "n_recall": 0.9883843717001056,
+  "n_added": {
+    "N": 0,
+    "S": 5533,
+    "V": 0,
+    "F": 28624
+  },
+  "wall_clock_s": 99.9,
+  "provisional": false
+}
