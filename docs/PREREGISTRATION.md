@@ -147,7 +147,7 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 - Every access is appended to `docs/TEST_ACCESS_LOG.md`. No decision of any kind uses test data.
 - After `/final-eval` nothing is retrained, re-selected or re-tuned. A bug found later is documented
   and any re-run is disclosed.
-- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v12): the analyses listed in §10 v4 to v12 only, after `/final-eval`, logged;
+- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v13): the analyses listed in §10 v4 to v13 only, after `/final-eval`, logged;
   they add evidence beside the primary results and replace none of them.
 
 ## 9. Generators and RQ3 (rules fixed now, thresholds in v2)
@@ -368,6 +368,26 @@ of DS2, P13's test result is not blind to its motivation; its validation results
 | test | one `posthoc` access on Kaggle (DS2 rebuilt and hash-checked; v3 beats, v2 ratio, `rr_prev` and `rr_next` over the recording's mean). Confirmatory (Holm, 5 tests): each condition with the new features vs the same condition in P11 (none, class weighting, random oversampling) or P12 (cVAE, WGAN-GP), rare-class macro-F1, record-level bootstrap 10,000, seed 0. Secondary (Holm, 6 tests): with the new features, each generator vs none, vs random oversampling and vs class weighting. P11's and P12's scores are recomputed and must match their summaries |
 | descriptive | validation S F1 of each condition beside P11's and P12's; Huang et al.'s SVEB stage on top of each new condition (a beat the cnn calls N becomes S when `rr_prev` over its recording's mean is below 0.8, Huang's threshold, not tuned), test scores with intervals, no test |
 | reporting | its own section, labelled post hoc, framed as limited by scale. Compute: one Kaggle T4 session, under 1 GPU-hour; CPU for the test |
+
+**v13, committed 2026-11-06, after P13's test result, before any of the work below (DECISIONS A34).** One analysis, post
+hoc, asked for to "find the solution". A design check on training-side annotations only (`phase6_icentia --part check`,
+`results/phase6_icentia/design_check.json`; DS1, INCART and SVDB with P11's split, SVDB 865 left out of training as an
+unseen S-dominant patient) finds a trade-off no rule or interval model escapes: references that are local (the mean of the
+10 preceding intervals, the mean or median within +/-150 s) give validation S F1 up to 0.738 but find 2-8% of the unseen
+patient's S beats; the recording mean finds 94-98% of them (Huang's rule, or a logistic regression on the recording-mean
+intervals alone) at validation S F1 0.627-0.650; vetoing irregular rhythm costs validation recall (0.248-0.288). With 865
+in training, every model finds its beats, which says nothing about an unseen patient. A network can only learn which
+reference to trust from training patients that hold these patterns, and P11's 106 hold one. P14 adds many more.
+
+| item | rule |
+|---|---|
+| P14 `phase6_icentia`, patients | 400 patients of Icentia11k (PhysioNet; 11,000 patients; technician-labelled N, S, V and Q beats; one chest lead at 250 Hz; CC BY-NC-SA 4.0) drawn at random with seed 0, no label looked at; the first segment (about 70 minutes) of each; files from PhysioNet's open-data mirror (AWS) or PhysioNet, each file's SHA-256 recorded |
+| beats | as P11 built INCART and SVDB (resampled to 360 Hz, the frozen representation, the usable-beat rule, the AAMI map, Q dropped), in P13's form (minus the +/-150 s template from all QRS annotations, v2's ratio, `rr_prev` and `rr_next` over the segment's mean RR); at most 600 N beats per record (P11's cap, seed 0), chosen before the templates; every S and V beat kept; every 5th patient in sorted order to validation (P11's rule) |
+| data | P13's data (hash-checked) plus these beats; the combined hash is recorded in `data.json` |
+| classifier | the P7 cnn, settings unchanged; four of P13's five conditions at P13's strengths: none, class weighting 0.5, random oversampling 0.25, cVAE 0.1 (P12's bank, RR features as in P13); seeds 0-2: 12 runs. WGAN-GP is left out: at 0.25 of the larger N count its bank holds too few F beats |
+| test | one `posthoc` access on Kaggle (DS2 in P13's form). Confirmatory (Holm, 4 tests): each condition with the Icentia11k patients vs the same condition in P13, rare-class macro-F1, record-level bootstrap 10,000, seed 0. Secondary (Holm, 3 tests): with them, the cVAE vs none, vs random oversampling and vs class weighting. P13's scores are recomputed and must match its summary |
+| descriptive | validation S F1 beside P13's; Huang's SVEB stage on top (P13's rule, threshold 0.8); per-class F1 |
+| reporting | its own section, labelled post hoc, framed as limited by scale. Compute: one Kaggle T4 session (download and build included), under 2 GPU-hours; CPU for the test |
 
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 

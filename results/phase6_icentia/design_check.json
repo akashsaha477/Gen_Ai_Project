@@ -1,0 +1,231 @@
+{
+  "experiment": "phase6_icentia",
+  "rule": "PREREGISTRATION \u00a710 v13 (design check, training-side annotations only)",
+  "held_out": [
+    "svdb",
+    865
+  ],
+  "n_records": {
+    "train": 140,
+    "val": 35
+  },
+  "val_s_beats": 4795,
+  "held_out_s_beats": 1818,
+  "rules": {
+    "recording mean < 0.8": {
+      "validation": {
+        "se": 0.7764337851929093,
+        "ppv": 0.5586734693877551,
+        "f1": 0.6497949210227768
+      },
+      "held_out_s_sensitivity": 0.9361936193619362
+    },
+    "recording mean < 0.8, irregularity < 0.1": {
+      "validation": {
+        "se": 0.17705943691345152,
+        "ppv": 0.41113801452784504,
+        "f1": 0.24752186588921282
+      },
+      "held_out_s_sensitivity": 0.9317931793179318
+    },
+    "+/-150 s mean < 0.8": {
+      "validation": {
+        "se": 0.7922836287799792,
+        "ppv": 0.6899745731928805,
+        "f1": 0.7375982914280167
+      },
+      "held_out_s_sensitivity": 0.02585258525852585
+    },
+    "+/-150 s mean < 0.8, irregularity < 0.1": {
+      "validation": {
+        "se": 0.1862356621480709,
+        "ppv": 0.6387696709585121,
+        "f1": 0.2883901178750202
+      },
+      "held_out_s_sensitivity": 0.022552255225522552
+    }
+  },
+  "models": {
+    "logistic regression: recording mean only": {
+      "without_held_out": {
+        "validation": {
+          "se": 0.9478623566214807,
+          "ppv": 0.4687983496647757,
+          "f1": 0.6273291925465838
+        },
+        "held_out_s_sensitivity": 0.9845984598459846
+      },
+      "with_held_out": {
+        "validation": {
+          "se": 0.9493222106360792,
+          "ppv": 0.42721726888784606,
+          "f1": 0.5892556634304208
+        },
+        "held_out_s_sensitivity": 0.9851485148514851
+      }
+    },
+    "gradient boosting: recording mean only": {
+      "without_held_out": {
+        "validation": {
+          "se": 0.9657977059436913,
+          "ppv": 0.48958663706522887,
+          "f1": 0.6497825171881577
+        },
+        "held_out_s_sensitivity": 0.23652365236523654
+      },
+      "with_held_out": {
+        "validation": {
+          "se": 0.9643378519290928,
+          "ppv": 0.5011922826793843,
+          "f1": 0.6595820554881963
+        },
+        "held_out_s_sensitivity": 0.9977997799779978
+      }
+    },
+    "logistic regression: recording mean and local averages": {
+      "without_held_out": {
+        "validation": {
+          "se": 0.9651720542231491,
+          "ppv": 0.5110424028268551,
+          "f1": 0.6682549996390152
+        },
+        "held_out_s_sensitivity": 0.0704070407040704
+      },
+      "with_held_out": {
+        "validation": {
+          "se": 0.9630865484880083,
+          "ppv": 0.4527007156161161,
+          "f1": 0.6158975726860496
+        },
+        "held_out_s_sensitivity": 0.9543454345434543
+      }
+    },
+    "gradient boosting: recording mean and local averages": {
+      "without_held_out": {
+        "validation": {
+          "se": 0.954118873826903,
+          "ppv": 0.5632849051957646,
+          "f1": 0.7083688162886118
+        },
+        "held_out_s_sensitivity": 0.033003300330033
+      },
+      "with_held_out": {
+        "validation": {
+          "se": 0.9639207507820646,
+          "ppv": 0.5554620838841485,
+          "f1": 0.704788045135712
+        },
+        "held_out_s_sensitivity": 1.0
+      }
+    },
+    "logistic regression: recording mean, v2 ratio and post/pre (P13's)": {
+      "without_held_out": {
+        "validation": {
+          "se": 0.9578727841501564,
+          "ppv": 0.49967362924281983,
+          "f1": 0.656752698934725
+        },
+        "held_out_s_sensitivity": 0.030803080308030802
+      },
+      "with_held_out": {
+        "validation": {
+          "se": 0.959541188738269,
+          "ppv": 0.4308859336954486,
+          "f1": 0.5947133716797001
+        },
+        "held_out_s_sensitivity": 0.9862486248624862
+      }
+    },
+    "gradient boosting: recording mean, v2 ratio and post/pre (P13's)": {
+      "without_held_out": {
+        "validation": {
+          "se": 0.9610010427528676,
+          "ppv": 0.5213259418486255,
+          "f1": 0.6759571659087575
+        },
+        "held_out_s_sensitivity": 0.026402640264026403
+      },
+      "with_held_out": {
+        "validation": {
+          "se": 0.954118873826903,
+          "ppv": 0.5407801418439716,
+          "f1": 0.6903055450773293
+        },
+        "held_out_s_sensitivity": 0.9988998899889989
+      }
+    },
+    "logistic regression: de Chazal's raw intervals": {
+      "without_held_out": {
+        "validation": {
+          "se": 0.9645464025026069,
+          "ppv": 0.5125789648675607,
+          "f1": 0.6694167028513534
+        },
+        "held_out_s_sensitivity": 0.08085808580858085
+      },
+      "with_held_out": {
+        "validation": {
+          "se": 0.9618352450469239,
+          "ppv": 0.3953707672524646,
+          "f1": 0.5603888213851761
+        },
+        "held_out_s_sensitivity": 0.9680968096809681
+      }
+    },
+    "gradient boosting: de Chazal's raw intervals": {
+      "without_held_out": {
+        "validation": {
+          "se": 0.9660062565172054,
+          "ppv": 0.5678558293490253,
+          "f1": 0.7152563310685609
+        },
+        "held_out_s_sensitivity": 0.025302530253025302
+      },
+      "with_held_out": {
+        "validation": {
+          "se": 0.9511991657977059,
+          "ppv": 0.571697167209827,
+          "f1": 0.714162686917717
+        },
+        "held_out_s_sensitivity": 1.0
+      }
+    },
+    "logistic regression: all": {
+      "without_held_out": {
+        "validation": {
+          "se": 0.9660062565172054,
+          "ppv": 0.5222685759386627,
+          "f1": 0.6779859484777517
+        },
+        "held_out_s_sensitivity": 0.030253025302530254
+      },
+      "with_held_out": {
+        "validation": {
+          "se": 0.9630865484880083,
+          "ppv": 0.4515056707078608,
+          "f1": 0.6147906543300273
+        },
+        "held_out_s_sensitivity": 0.9691969196919692
+      }
+    },
+    "gradient boosting: all": {
+      "without_held_out": {
+        "validation": {
+          "se": 0.9555787278415016,
+          "ppv": 0.5875112193871009,
+          "f1": 0.7276480863903447
+        },
+        "held_out_s_sensitivity": 0.022552255225522552
+      },
+      "with_held_out": {
+        "validation": {
+          "se": 0.9641293013555787,
+          "ppv": 0.5761465603190429,
+          "f1": 0.7212731102270068
+        },
+        "held_out_s_sensitivity": 0.9988998899889989
+      }
+    }
+  },
+  "git_sha": "ab3447b5c8de378ff4fac47635718ab9504af307"
+}
