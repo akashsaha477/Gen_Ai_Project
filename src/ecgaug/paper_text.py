@@ -848,6 +848,54 @@ def posthoc_record_rr() -> str:
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
 
 
+def posthoc_icentia() -> str:
+    """P14: the cnn trained on P13's data plus Icentia11k patients, from results/phase6_icentia/."""
+    from ecgaug.names import PHASE6_ICENTIA, PHASE6_RECORD_RR
+
+    folder = paths.results_for(PHASE6_ICENTIA)
+    check, data, selection, summary = (_load(folder / f) for f in ("design_check.json", "data.json", "selection.json", "summary.json"))
+    if check is None:
+        return _missing("P14: --part check (training-side annotations)") + "\n"
+    rules, models = check["rules"], {k: v["without_held_out"] for k, v in check["models"].items()}
+    local = {k: v for k, v in {**rules, **models}.items() if "recording mean" not in k or "local" in k or "v2" in k}
+    local = {k: v for k, v in local.items() if "irregularity" not in k}
+    record = {k: v for k, v in {**rules, **models}.items() if k in ("recording mean < 0.8", "logistic regression: recording mean only")}
+    veto = {k: v for k, v in rules.items() if "irregularity" in k}
+    lo_hi = lambda vals, digits=3: f"{_n(min(vals), digits)} to {_n(max(vals), digits)}"  # noqa: E731
+    text = (f"\\paragraph{{The design check.}} On the training-side annotations only, with SVDB record {check['held_out'][1]} left out of training as an "
+            f"unseen S-dominant patient ({check['held_out_s_beats']:,} S beats), every rule or interval model with a local reference reaches a "
+            f"validation S F1 of up to {_n(max(v['validation']['f1'] for v in local.values()))} but finds "
+            f"{lo_hi([100 * v['held_out_s_sensitivity'] for v in local.values()], 0)}\\% of the unseen patient's S beats; the recording mean "
+            f"(Huang's rule, or a logistic regression on the recording-mean intervals alone) finds {lo_hi([100 * v['held_out_s_sensitivity'] for v in record.values()], 0)}\\% "
+            f"at a validation S F1 of {lo_hi([v['validation']['f1'] for v in record.values()])}"
+            + (f" (a gradient-boosted model on the same two intervals finds {_n(100 * models['gradient boosting: recording mean only']['held_out_s_sensitivity'], 0)}\\%)"
+               if "gradient boosting: recording mean only" in models else "")
+            + "; vetoing irregular rhythm brings validation S F1 down to "
+            + f"{lo_hi([v['validation']['f1'] for v in veto.values()])} (Figure~\\ref{{fig:p14-check}}). Which reference to trust has to be learned from patients "
+            "who show both patterns, and P11's training set holds one S-dominant patient.")  # fmt: skip
+    if data is None:
+        return text + " " + _missing("P14 data: --part grid on Kaggle") + "\n"
+    used = [r for r in data["records"] if "excluded" not in r]
+    beats = data["icentia_beats"]
+    text += (f" P14 adds the first segment of {len(data['patients'])} Icentia11k patients drawn at random \\cite{{tan2022icentia,tan2021icentia}} "
+             f"({len(used)} usable; training beats N {beats['train']['N']:,}, S {beats['train']['S']:,}, V {beats['train']['V']:,}; validation "
+             f"S {beats['val']['S']:,}) and retrains the cnn in four of P13's conditions at P13's strengths.")  # fmt: skip
+    if selection is not None:
+        before = (_load(paths.results_for(PHASE6_RECORD_RR) / "selection.json") or {"chosen": {"cnn": {}}})["chosen"]["cnn"]
+        text += (" Validation S F1 (now including the Icentia11k validation patients), P13 and with them: " + ", ".join(
+            f"{SHORT[c]} {_n(before[c]['mean'])} and {_n(v['mean'])}" for c, v in selection["chosen"]["cnn"].items() if c in before) + ".")
+    if summary is None:
+        return text + " " + _missing("P14 results: --part select, then --part test") + "\n"
+    scores = "; ".join(f"{SHORT[k.split('/')[1]]} {_n(summary['before'][k]['rare_macro_f1']['point'])} ({_n(summary['before'][k]['f1_S']['point'])}, "
+                       f"{_n(summary['before'][k]['f1_F']['point'])}) to {_n(v['rare_macro_f1']['point'])} ({_n(v['f1_S']['point'])}, {_n(v['f1_F']['point'])})"
+                       for k, v in summary["conditions"].items())  # fmt: skip
+    rule = "; ".join(f"{SHORT[k.split('/')[1]]} {_n(v['rare_macro_f1']['point'])} (S F1 {_n(v['f1_S']['point'])})" for k, v in summary["sveb_rule"].items())
+    text += (f" On the test records (Figure~\\ref{{fig:p14}}), rare-class macro-F1 (S F1, F F1) in P13 and with the Icentia11k patients: {scores}. "
+             f"Against P13: {_family_sentence(summary['families']['confirmatory'])}. The cVAE against the other conditions: "
+             f"{_family_sentence(summary['families']['secondary'])}. With Huang et al.'s SVEB stage on top (descriptive): {rule}.")  # fmt: skip
+    return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
+
+
 def posthoc_table() -> str:
     """One row per post-hoc analysis (P1-P8): what it asked and what it found, from the summaries."""
     from ecgaug.names import (PHASE6_AUDIT_CHECK, PHASE6_AUGMENTATION_MECHANISM, PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS,
@@ -925,10 +973,18 @@ def posthoc_table() -> str:
         rows.append(("P13", "RR intervals over the recording's mean?", f"none {_n(p13['before']['cnn/none']['rare_macro_f1']['point'])} to "
                      f"{_n(p13['conditions']['cnn/none']['rare_macro_f1']['point'])}; best {SHORT[best_key.split('/')[1]]} {_n(best['rare_macro_f1']['point'])}; "
                      "vs before: " + verdicts(p13["families"]["confirmatory"]) + "; generative vs the others: " + verdicts(p13["families"]["secondary"])))
+    from ecgaug.names import PHASE6_ICENTIA
+
+    p14 = _load(paths.results_for(PHASE6_ICENTIA) / "summary.json")
+    if p14:
+        best_key, best = max(p14["conditions"].items(), key=lambda kv: kv[1]["rare_macro_f1"]["point"])
+        rows.append(("P14", "Many more training patients (Icentia11k)?", f"none {_n(p14['before']['cnn/none']['rare_macro_f1']['point'])} to "
+                     f"{_n(p14['conditions']['cnn/none']['rare_macro_f1']['point'])}; best {SHORT[best_key.split('/')[1]]} {_n(best['rare_macro_f1']['point'])}; "
+                     "vs P13: " + verdicts(p14["families"]["confirmatory"]) + "; cVAE vs the others: " + verdicts(p14["families"]["secondary"])))
     if not rows:
         return _missing("post-hoc table: no summaries yet") + "\n"
     body = "\n".join(f"{a} & {b} & {c} \\\\" for a, b, c in rows)
-    return ("\\begin{table}[htbp]\\centering\\small\n\\caption{The post-hoc analyses (pre-registration versions 4 to 12), each reported apart from the primary "
+    return ("\\begin{table}[htbp]\\centering\\small\n\\caption{The post-hoc analyses (pre-registration versions 4 to 13), each reported apart from the primary "
             "results. Numbers are test rare-class macro-F1 unless stated.}\\label{tab:posthoc}\n"
             "\\begin{tabular}{@{}lp{0.3\\linewidth}p{0.55\\linewidth}@{}}\n\\toprule\n & question & finding \\\\\n\\midrule\n" + body + "\n\\bottomrule\n\\end{tabular}\n\\end{table}\n")
 
@@ -1042,6 +1098,8 @@ def patient_variation_paragraph() -> str | None:
             text += (" The cnn had the same information among its inputs but did not learn to use it from the one S-dominant recording among the "
                      f"training-side databases (SVDB {h['record']}), where a fixed rule from the literature did; learning it would take more such patients, "
                      "which is where augmentation that adds patients rather than beats could help.")
+    if (ic := _icentia_sentence(with_section=True)) is not None:
+        text += " " + ic
     return text + (" The evidence points to how much patients differ as the main obstacle here; on DS1's patients, normalizing the input for the "
                    "patient raised the test score where rebalancing the classes did not, and augmentation that adds patients rather than beats is "
                    "the form of augmentation it points to.")
@@ -1075,6 +1133,31 @@ def _record_rr_sentence(with_section: bool = False) -> str | None:
     return text + (f"; with Huang et al.'s rule on top, which uses the same feature directly, S F1 reached {_n(min(f1s))} to {_n(max(f1s))} "
                    f"(sensitivity {_n(min(ses))} to {_n(max(ses))}) and the {SHORT[key.split('/')[1]]}'s rare-class macro-F1 "
                    f"{_n(best['rare_macro_f1']['point'])}{top} (descriptive, not tested).")
+
+
+def _icentia_sentence(with_section: bool = False) -> str | None:
+    """One sentence on P14 (many more training patients) from its summary, or None before its test."""
+    from ecgaug.names import PHASE6_ICENTIA
+
+    s = _load(paths.results_for(PHASE6_ICENTIA) / "summary.json")
+    data = _load(paths.results_for(PHASE6_ICENTIA) / "data.json")
+    if s is None or data is None:
+        return None
+    conf = s["families"]["confirmatory"]
+    up = sum(c["reject_holm"] and c["point"] > 0 for c in conf.values())
+    down = sum(c["reject_holm"] and c["point"] < 0 for c in conf.values())
+    verdict = (f"raised the test score detectably in {up} of {len(conf)} conditions" if up and not down else
+               f"changed the test score detectably in {up + down} of {len(conf)} conditions ({up} up, {down} down)" if up or down else
+               f"did not detectably change the test score in any of the {len(conf)} conditions")
+    where = " (Section~\\ref{sec:icentia})" if with_section else ""
+    nb, na = s["before"]["cnn/none"], s["conditions"]["cnn/none"]
+    key, best = max(s["conditions"].items(), key=lambda kv: kv[1]["rare_macro_f1"]["point"])
+    rkey, rbest = max(s["sveb_rule"].items(), key=lambda kv: kv[1]["rare_macro_f1"]["point"])
+    top = ", the highest test score of the study" if rbest["rare_macro_f1"]["point"] >= _best_test_score() else ""
+    return (f"Training on {len(data['patients'])} more patients from Icentia11k{where} {verdict} (without augmentation "
+            f"{_n(nb['rare_macro_f1']['point'])} to {_n(na['rare_macro_f1']['point'])}, S F1 {_n(nb['f1_S']['point'])} to {_n(na['f1_S']['point'])}; "
+            f"best {SHORT[key.split('/')[1]]} {_n(best['rare_macro_f1']['point'])}); with Huang et al.'s rule on top, the {SHORT[rkey.split('/')[1]]} "
+            f"reached {_n(rbest['rare_macro_f1']['point'])} (S F1 {_n(rbest['f1_S']['point'])}){top} (descriptive).")
 
 
 def _best_test_score() -> float:
@@ -1236,6 +1319,8 @@ def conclusion() -> str:
                      f"{_n(p11['conditions'][key]['rare_macro_f1']['point'])} to {_n(p12['conditions'][key]['rare_macro_f1']['point'])}).")  # fmt: skip
         if (rr := _record_rr_sentence()) is not None:
             text += " " + rr
+        if (ic := _icentia_sentence()) is not None:
+            text += " " + ic
     p7 = _load(paths.results_for(PHASE6_RELATIVE_CNN) / "summary.json")
     if p7 is not None and final is not None:
         text += (f" Changing the input alone raised the test score from {_n(final['conditions']['cnn/none']['rare_macro_f1']['point'])} to "
@@ -1315,6 +1400,8 @@ def abstract_posthoc() -> str:
         text += "."
     if (rr := _record_rr_sentence()) is not None:
         text += " " + rr
+    if (ic := _icentia_sentence()) is not None:
+        text += " " + ic
     sizes = _model_sizes()
     if sizes:
         text += (" These answers hold for small models (" + " and ".join(f"{_n(v / 1000, 0)}" for v in sizes.values())
@@ -1392,6 +1479,7 @@ def build() -> dict[str, str]:
     files["results_more_patients"] = posthoc_more_patients()
     files["results_relative_generators"] = posthoc_relative_generators()
     files["results_record_rr"] = posthoc_record_rr()
+    files["results_icentia"] = posthoc_icentia()
     files["table_posthoc"] = posthoc_table()
     files["outlook"] = outlook(heading=False)
     files["discussion"] = discussion()
