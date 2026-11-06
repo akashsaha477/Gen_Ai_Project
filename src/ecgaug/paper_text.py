@@ -758,6 +758,43 @@ def posthoc_more_patients() -> str:
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
 
 
+def posthoc_relative_generators() -> str:
+    """P12: the cVAE and WGAN-GP trained on P11's training beats in v3 form, from results/phase6_relative_generators/."""
+    from ecgaug.names import PHASE6_RELATIVE_GENERATORS
+
+    folder = paths.results_for(PHASE6_RELATIVE_GENERATORS)
+    gens = {f: _load(folder / f"{f}_generators.json") for f in GENERATIVE}
+    mechs = {f: _load(folder / f"{f}_mechanism.json") for f in GENERATIVE}
+    selection, summary = _load(folder / "selection.json"), _load(folder / "summary.json")
+    text = ("\\paragraph{Generators trained on what the cnn sees (P12).} The cVAE and WGAN-GP conditions of P7 and P11 used the phase 3 generators, "
+            "which learned ordinary beats of DS1's 17 training records; their beats were made patient-relative afterwards. Version 11 of the "
+            "pre-registration trains the same generators (settings, step budget and seeds unchanged) on P11's training beats in the form the cnn "
+            "sees them, divided by one scale, and repeats the comparison with each bank at 0.1, 0.25 and 0.5 (unscreened), one strength per "
+            "generator chosen on P11's validation.")  # fmt: skip
+    if not all(gens.values()):
+        return text + " " + _missing("P12: --part train for both generator families on Kaggle") + "\n"
+    diverged = [f"{SHORT[f]} seed {s}" for f, g in gens.items() for s, e in g["seeds"].items() if e["diverged"]]
+    text += " " + ("No generator diverged." if not diverged else f"Diverged: {', '.join(diverged)}.")
+    if all(mechs.values()):
+        parts = [f"{SHORT[f]} {cls} {_n(m['classes'][cls]['p12']['effective_records'], 1)} (P11's bank {_n(m['classes'][cls]['p11']['effective_records'], 1)})"
+                 for f, m in mechs.items() for cls in m["classes"]]  # fmt: skip
+        real = next(iter(mechs.values()))["classes"]
+        text += (" The synthetic beats' nearest real training beats came from an effective number of patients (exp of the entropy of their "
+                 f"shares, P8's measure; Figure~\\ref{{fig:p12-mechanism}}) of {'; '.join(parts)}, against "
+                 + " and ".join(f"{_n(e['real']['effective_records'], 1)} for the real {cls} beats" for cls, e in real.items()) + ".")  # fmt: skip
+    if selection is not None:
+        text += " Validation S F1 at the chosen strengths: " + ", ".join(
+            f"{SHORT[f]} {_n(v['mean'])} at {v['strength']}" for f, v in selection["chosen"]["cnn"].items()) + "."
+    if summary is None:
+        return text + " " + _missing("P12 results: --part select, then --part test") + "\n"
+    conf, sec = summary["families"]["confirmatory"], summary["families"]["secondary"]
+    scores = ", ".join(f"{SHORT[k.split('/')[1]]} {_n(v['rare_macro_f1']['point'])} ({_n(v['f1_S']['point'])}, {_n(v['f1_F']['point'])})"
+                       for k, v in summary["conditions"].items())  # fmt: skip
+    text += (f" On the test records (Figure~\\ref{{fig:p12}}), rare-class macro-F1 (S F1, F F1): {scores}. Against the same generator in P11: "
+             f"{_family_sentence(conf)}. Against P11's cnn without augmentation and with random oversampling: {_family_sentence(sec)}.")
+    return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
+
+
 def posthoc_table() -> str:
     """One row per post-hoc analysis (P1-P8): what it asked and what it found, from the summaries."""
     from ecgaug.names import (PHASE6_AUDIT_CHECK, PHASE6_AUGMENTATION_MECHANISM, PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS,
@@ -817,12 +854,20 @@ def posthoc_table() -> str:
 
     p11 = _load(paths.results_for(PHASE6_MORE_PATIENTS) / "summary.json")
     if p11:
+        best_key, best = max(p11["conditions"].items(), key=lambda kv: kv[1]["rare_macro_f1"]["point"])
         rows.append(("P11", "More training patients?", f"cnn none {_n(p11['conditions']['cnn/none']['rare_macro_f1']['point'])} vs DS1 only: "
-                     + verdicts(p11["families"]["confirmatory"]) + "; each condition vs none: " + verdicts(p11["families"]["secondary"])))
+                     + verdicts(p11["families"]["confirmatory"]) + "; each condition vs none: " + verdicts(p11["families"]["secondary"])
+                     + f"; best {SHORT[best_key.split('/')[1]]} {_n(best['rare_macro_f1']['point'])}"))
+    from ecgaug.names import PHASE6_RELATIVE_GENERATORS
+
+    p12 = _load(paths.results_for(PHASE6_RELATIVE_GENERATORS) / "summary.json")
+    if p12:
+        rows.append(("P12", "Generators trained on what the cnn sees?", ", ".join(f"{SHORT[k.split('/')[1]]} {_n(v['rare_macro_f1']['point'])}" for k, v in p12["conditions"].items())
+                     + "; vs the same generator in P11: " + verdicts(p12["families"]["confirmatory"]) + "; vs P11 none and oversampling: " + verdicts(p12["families"]["secondary"])))
     if not rows:
         return _missing("post-hoc table: no summaries yet") + "\n"
     body = "\n".join(f"{a} & {b} & {c} \\\\" for a, b, c in rows)
-    return ("\\begin{table}[htbp]\\centering\\small\n\\caption{The post-hoc analyses (pre-registration versions 4 to 10), each reported apart from the primary "
+    return ("\\begin{table}[htbp]\\centering\\small\n\\caption{The post-hoc analyses (pre-registration versions 4 to 11), each reported apart from the primary "
             "results. Numbers are test rare-class macro-F1 unless stated.}\\label{tab:posthoc}\n"
             "\\begin{tabular}{@{}lp{0.3\\linewidth}p{0.55\\linewidth}@{}}\n\\toprule\n & question & finding \\\\\n\\midrule\n" + body + "\n\\bottomrule\n\\end{tabular}\n\\end{table}\n")
 
@@ -898,8 +943,6 @@ def patient_variation_paragraph() -> str | None:
     from ecgaug.names import PHASE6_MORE_PATIENTS
 
     p11 = _load(paths.results_for(PHASE6_MORE_PATIENTS) / "summary.json")
-    if p11 is not None:
-        test["patient-relative input and more training patients"] = p11["conditions"]["cnn/none"]["rare_macro_f1"]["point"]
     if test:
         text += (f" On the test records the cnn without augmentation reached {_n(base)}; with " + " and with ".join(f"{k} {_n(v)}" for k, v in test.items()) + ".")
         carried = [k for k, v in test.items() if v > base + 0.05]
@@ -907,9 +950,31 @@ def patient_variation_paragraph() -> str | None:
         if carried and lost:
             text += (f" Only {' and '.join(carried)} carried the validation gain over to the test patients; {' and '.join(lost)} did not, so where the "
                      "patient is normalized matters as much as whether it is.")
-    return text + (" The evidence points to how much patients differ as the main obstacle here; normalizing the input for the patient raised the "
-                   "test score where rebalancing the classes did not, and augmentation that adds patients rather than beats is the form of "
-                   "augmentation it points to.")
+    if p11 is not None:
+        c = p11["conditions"]
+        best_key, best = max(c.items(), key=lambda kv: kv[1]["rare_macro_f1"]["point"])
+        top = " the highest test score of the study;" if best["rare_macro_f1"]["point"] >= _best_test_score() else ""
+        text += (f" Adding the INCART and SVDB patients (Section~\\ref{{sec:more-patients}}) changed which method is best rather than lifting the cnn "
+                 f"without augmentation: it reached {_n(c['cnn/none']['rare_macro_f1']['point'])} (F F1 {_n(c['cnn/none']['f1_F']['point'])}), while "
+                 f"{SHORT[best_key.split('/')[1]]} reached {_n(best['rare_macro_f1']['point'])} (F F1 {_n(best['f1_F']['point'])}),{top} with F beats "
+                 "rarer in the enlarged training set, rebalancing decided whether F was detected at all.")  # fmt: skip
+    return text + (" The evidence points to how much patients differ as the main obstacle here; on DS1's patients, normalizing the input for the "
+                   "patient raised the test score where rebalancing the classes did not, and augmentation that adds patients rather than beats is "
+                   "the form of augmentation it points to.")
+
+
+def _best_test_score() -> float:
+    """The highest test rare-class macro-F1 of any condition in any summary written so far (final evaluation and post hoc)."""
+    from ecgaug.names import POST_HOC
+
+    best = 0.0
+    for experiment in (FINAL_EVAL, *POST_HOC):
+        s = _load(paths.results_for(experiment) / "summary.json")
+        for entry in (s or {}).get("conditions", {}).values():
+            value = entry.get("rare_macro_f1") if isinstance(entry, dict) else None
+            if isinstance(value, dict) and "point" in value:
+                best = max(best, float(value["point"]))
+    return best
 
 
 def discussion() -> str:
@@ -1037,7 +1102,10 @@ def conclusion() -> str:
     if p11 is not None:
         more = p11["families"]["confirmatory"]
         up = any(c["reject_holm"] and c["point"] > 0 for c in more.values())
-        text += (" Training on more patients " + ("raised" if up else "did not detectably raise") + " the score of the best configuration further.")
+        best_key, best = max(p11["conditions"].items(), key=lambda kv: kv[1]["rare_macro_f1"]["point"])
+        top = ", the highest test score of the study" if best["rare_macro_f1"]["point"] >= _best_test_score() else ""
+        text += (" Training on more patients " + ("raised" if up else "did not detectably raise") + " the score of the best configuration without "
+                 f"augmentation; with more patients, {SHORT[best_key.split('/')[1]]} reached {_n(best['rare_macro_f1']['point'])}{top}.")  # fmt: skip
     p7 = _load(paths.results_for(PHASE6_RELATIVE_CNN) / "summary.json")
     if p7 is not None and final is not None:
         text += (f" Changing the input alone raised the test score from {_n(final['conditions']['cnn/none']['rare_macro_f1']['point'])} to "
@@ -1171,6 +1239,7 @@ def build() -> dict[str, str]:
     files["results_patient_transfer"] = posthoc_patient_transfer()
     files["results_patient_adaptation"] = posthoc_patient_adaptation()
     files["results_more_patients"] = posthoc_more_patients()
+    files["results_relative_generators"] = posthoc_relative_generators()
     files["table_posthoc"] = posthoc_table()
     files["outlook"] = outlook(heading=False)
     files["discussion"] = discussion()
