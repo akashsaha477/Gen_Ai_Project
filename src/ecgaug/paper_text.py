@@ -338,7 +338,9 @@ def posthoc_external(summaries: dict[str, dict]) -> str:
             ranked = ", ".join(f"{SHORT[c]} {_n(v)}" for c, v in sorted(others.items(), key=lambda kv: -kv[1]))
             context.append(f"the {arch}'s conditions ranked by {METRIC[metric]}: {ranked}")
         same = all(v["replicated"] for v in s["confirmatory"].values())
-        text = (f"On {DATABASE[db]} ({s['role']}; {s['records']} records; {beats['S']:,} S and {beats['F']:,} F beats; primary metric {METRIC[metric]}), "
+        units = (f"{s['records']} records from {s['patients']} patients, intervals resampling patients" if s.get("clustered_by") == "patient" and s.get("patients", s["records"]) != s["records"]
+                 else f"{s['records']} records, each taken as one patient")  # fmt: skip
+        text = (f"On {DATABASE[db]} ({s['role']}; {units}; {beats['S']:,} S and {beats['F']:,} F beats; primary metric {METRIC[metric]}), "
                 f"{base}. Against no augmentation, the confirmatory differences were: {comparisons}. Holm rejected {len(rejected)} of "
                 f"{len(s['confirmatory'])}, which {'matches' if same else 'does not match'} the verdicts on the MIT-BIH test records")  # fmt: skip
         if context:
@@ -716,6 +718,46 @@ def posthoc_patient_adaptation() -> str:
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
 
 
+def posthoc_more_patients() -> str:
+    """P11: the P7 cnn trained on DS1 plus the INCART and SVDB patients, from results/phase6_more_patients/."""
+    from ecgaug.names import PHASE6_MORE_PATIENTS
+
+    folder = paths.results_for(PHASE6_MORE_PATIENTS)
+    data, selection, summary = (_load(folder / n) for n in ("data.json", "selection.json", "summary.json"))
+    text = ("\\paragraph{More patients (P11).} If the few training patients are the limit, more patients should help. Version 10 of the "
+            "pre-registration trains the P7 cnn (patient-relative beats, settings and strengths unchanged) on DS1 plus every INCART and SVDB "
+            "record, keeping all their S, V and F beats and at most 600 N beats per record; every fifth external patient goes to validation, "
+            "and DS2 stays the test set, so no external database is left for testing.")  # fmt: skip
+    if data is None:
+        return text + " " + _missing("P11: --part grid on Kaggle") + "\n"
+    ext = data["external"]
+    added = {c: sum(e["beats"]["train"][c] for e in ext.values()) for c in ("S", "V", "F")}
+    units = sum(e["units"] - len(e["validation_units"]) for e in ext.values())
+    text += (f" The external training part adds {units} patients and {added['S']:,} S, {added['V']:,} V and {added['F']:,} F beats to DS1's "
+             f"{data['ds1']['train']['S']:,} S, {data['ds1']['train']['V']:,} V and {data['ds1']['train']['F']:,} F.")
+    split = "; ".join(f"{ {'incartdb': 'INCART', 'svdb': 'SVDB'}[db]} {len(e['validation_units'])} of {e['units']} patients and "
+                      f"{e['beats']['val']['S']:,} of {e['beats']['val']['S'] + e['beats']['train']['S']:,} S beats" for db, e in ext.items())  # fmt: skip
+    text += f" The every-fifth rule sent to validation: {split}, so where a database's S beats sit in few patients, the split decides how many are trained on."
+    if selection is not None:
+        text += " Validation S F1 (seed means, the enlarged validation set): " + ", ".join(
+            f"{'no augmentation' if c == 'none' else SHORT[c]} {_n(v['mean'])}" for c, v in selection["chosen"]["cnn"].items()) + "."
+    if summary is None:
+        return text + " " + _missing("P11 results: --part select, then --part test") + "\n"
+    conf, sec = summary["families"]["confirmatory"], summary["families"]["secondary"]
+    c = summary["conditions"]["cnn/none"]
+    text += (f" On the test records (Figure~\\ref{{fig:p11}}) the cnn without augmentation reached {_ci(c['rare_macro_f1'])} (S F1 {_n(c['f1_S']['point'])}, "
+             f"F F1 {_n(c['f1_F']['point'])}); against the same cnn trained on DS1 only: {_family_sentence(conf)}. With more patients, each "
+             f"condition against none: {_family_sentence(sec)}.")
+    total = lambda part: sum(part.values())  # noqa: E731
+    f_all = data["ds1"]["train"]["F"] + added["F"]
+    n_all = total(data["ds1"]["train"]) + sum(total(e["beats"]["train"]) for e in ext.values())
+    scores = ", ".join(f"{'no augmentation' if k == 'cnn/none' else SHORT[k.split('/')[1]]} {_n(v['rare_macro_f1']['point'])} "
+                       f"({_n(v['f1_S']['point'])}, {_n(v['f1_F']['point'])})" for k, v in summary["conditions"].items())  # fmt: skip
+    text += (f" Test scores (S F1, F F1): {scores}. F beats are {f_all / n_all:.1%} of the enlarged training set against "
+             f"{data['ds1']['train']['F'] / total(data['ds1']['train']):.1%} of DS1's, so the method that restores the rare class decides the F score.")
+    return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
+
+
 def posthoc_table() -> str:
     """One row per post-hoc analysis (P1-P8): what it asked and what it found, from the summaries."""
     from ecgaug.names import (PHASE6_AUDIT_CHECK, PHASE6_AUGMENTATION_MECHANISM, PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS,
@@ -771,10 +813,16 @@ def posthoc_table() -> str:
         if p10:
             found += "; test: adaptation " + verdicts(p10["families"]["adaptation"]) + ", generative vs none " + verdicts(p10["families"]["augmentation_under_adaptation"])
         rows.append(("P10", "Per-patient normalization in the network?", found))
+    from ecgaug.names import PHASE6_MORE_PATIENTS
+
+    p11 = _load(paths.results_for(PHASE6_MORE_PATIENTS) / "summary.json")
+    if p11:
+        rows.append(("P11", "More training patients?", f"cnn none {_n(p11['conditions']['cnn/none']['rare_macro_f1']['point'])} vs DS1 only: "
+                     + verdicts(p11["families"]["confirmatory"]) + "; each condition vs none: " + verdicts(p11["families"]["secondary"])))
     if not rows:
         return _missing("post-hoc table: no summaries yet") + "\n"
     body = "\n".join(f"{a} & {b} & {c} \\\\" for a, b, c in rows)
-    return ("\\begin{table}[htbp]\\centering\\small\n\\caption{The post-hoc analyses (pre-registration versions 4 to 9), each reported apart from the primary "
+    return ("\\begin{table}[htbp]\\centering\\small\n\\caption{The post-hoc analyses (pre-registration versions 4 to 10), each reported apart from the primary "
             "results. Numbers are test rare-class macro-F1 unless stated.}\\label{tab:posthoc}\n"
             "\\begin{tabular}{@{}lp{0.3\\linewidth}p{0.55\\linewidth}@{}}\n\\toprule\n & question & finding \\\\\n\\midrule\n" + body + "\n\\bottomrule\n\\end{tabular}\n\\end{table}\n")
 
@@ -847,6 +895,11 @@ def patient_variation_paragraph() -> str | None:
         test["patient-relative input"] = p7["conditions"]["cnn/none"]["rare_macro_f1"]["point"]
     if p10t is not None and "v1/cnn/none" in p10t["conditions"]:
         test["per-patient batch normalization"] = p10t["conditions"]["v1/cnn/none"]["rare_macro_f1"]["point"]
+    from ecgaug.names import PHASE6_MORE_PATIENTS
+
+    p11 = _load(paths.results_for(PHASE6_MORE_PATIENTS) / "summary.json")
+    if p11 is not None:
+        test["patient-relative input and more training patients"] = p11["conditions"]["cnn/none"]["rare_macro_f1"]["point"]
     if test:
         text += (f" On the test records the cnn without augmentation reached {_n(base)}; with " + " and with ".join(f"{k} {_n(v)}" for k, v in test.items()) + ".")
         carried = [k for k, v in test.items() if v > base + 0.05]
@@ -978,6 +1031,13 @@ def conclusion() -> str:
         text += " Placing the deviations of rare beats on other patients' normal beats, a post-hoc variant, did improve detection over no augmentation."
     elif p9 is False:
         text += " Placing the deviations of rare beats on other patients' normal beats did not detectably improve it at this scale either."
+    from ecgaug.names import PHASE6_MORE_PATIENTS
+
+    p11 = _load(paths.results_for(PHASE6_MORE_PATIENTS) / "summary.json")
+    if p11 is not None:
+        more = p11["families"]["confirmatory"]
+        up = any(c["reject_holm"] and c["point"] > 0 for c in more.values())
+        text += (" Training on more patients " + ("raised" if up else "did not detectably raise") + " the score of the best configuration further.")
     p7 = _load(paths.results_for(PHASE6_RELATIVE_CNN) / "summary.json")
     if p7 is not None and final is not None:
         text += (f" Changing the input alone raised the test score from {_n(final['conditions']['cnn/none']['rare_macro_f1']['point'])} to "
@@ -1110,6 +1170,7 @@ def build() -> dict[str, str]:
     files["results_mechanism"] = posthoc_mechanism()
     files["results_patient_transfer"] = posthoc_patient_transfer()
     files["results_patient_adaptation"] = posthoc_patient_adaptation()
+    files["results_more_patients"] = posthoc_more_patients()
     files["table_posthoc"] = posthoc_table()
     files["outlook"] = outlook(heading=False)
     files["discussion"] = discussion()
