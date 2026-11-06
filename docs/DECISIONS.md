@@ -393,3 +393,11 @@ alone would now mostly measure whether F beats are added at all, so the confirma
 the matched control (copies of real beats) is secondary. The unscreened policy follows P9 (the screen narrowed patient
 diversity in P8) and keeps the cost down. Compute above 2 GPU-hours was approved by Akash Saha.
 
+
+Outcome (generators and grid at 99451a2, selection committed at fb146a9, one DS2 read at f765ac6): no generator diverged;
+the retrained generators' S beats sit nearest 31.6 (cVAE) and 29.2 (WGAN-GP) effective training patients, against 32.0
+for the real S beats and 10.9 / 14.3 for P11's banks (F: 3.4 / 3.3 against 4.9 real and 1.3 / 1.3). Chosen on validation:
+cVAE 0.1, WGAN-GP 0.25 (validation S F1 0.768 and 0.740; P11's generators 0.778 and 0.770). Test rare-class macro-F1:
+cVAE 0.368 (P11 0.245; F F1 0.175 to 0.475, S F1 0.316 to 0.260), WGAN-GP 0.243 (P11 0.217). Confirmatory P12 vs P11
++0.122 [-0.047, +0.177] and +0.026 [-0.044, +0.051], Holm p 1.000 for both; no secondary comparison rejected either
+(cVAE vs P11 random oversampling -0.016, Holm p 0.931). The P11 none score was recomputed exactly before the comparison.

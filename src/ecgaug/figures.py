@@ -1438,6 +1438,8 @@ def relative_generators_mechanism_figure(mechs: dict[str, dict]) -> list[Path]:
             for xi, v in zip(x, values):
                 ax.annotate(f"{v:.1f}", (xi, v), xytext=(0, 2), textcoords="offset points", ha="center", fontsize=7, color=INK_2)
         ax.set_xticks(range(len(classes)), [f"{c} beats" for c in classes])
+        ax.set_axisbelow(True)
+        ax.grid(axis="x", visible=False)
         ax.set_ylabel("effective number of training patients")
         ax.set_title(names[family], loc="left")
         ax.legend(fontsize=7, loc="upper right")
@@ -1472,13 +1474,19 @@ def relative_generators_results_figure(summary: dict, p11: dict) -> list[Path]:
         _interval(ax, r, i, INK if family == "confirmatory" else INK_2)
         ax.annotate(f"Holm p {r['p_holm']:.3f}", (r["ci_high"], i), xytext=(6, 0), textcoords="offset points", va="center", fontsize=7, color=INK_2)
     ax.axvline(0, color=GRID, linewidth=1.2)
-    ax.set_yticks(range(len(comparisons)), [name for _, name in reversed(comparisons)], fontsize=7)
+
+    def pretty(name: str) -> str:
+        for key, label in names.items():
+            name = name.replace(key, label)
+        return name.removeprefix("cnn: ")
+
+    ax.set_yticks(range(len(comparisons)), [pretty(name) for _, name in reversed(comparisons)], fontsize=7)
     ax.locator_params(axis="x", nbins=6)
     ax.set_xlabel("difference in test rare-class macro-F1 (95% CI)")
     ax.set_title("pre-registered comparisons, P12", loc="left")
-    caption = ("The cVAE and WGAN-GP retrained on P11's training beats in the form the cnn sees them (settings and step budget unchanged), against the "
-               "same generators trained in phase 3 on DS1's ordinary beats; grey rows: P11's other conditions for reference. Black: confirmatory "
-               "(P12 vs the same generator in P11); grey: secondary. Post hoc (PREREGISTRATION v11, P12).")  # fmt: skip
+    caption = ("The cVAE and WGAN-GP retrained on P11's training beats in the form the cnn sees them (settings and step budget unchanged; coloured), "
+               "against the same generators trained in phase 3 on DS1's ordinary beats (light grey); dark grey rows: P11's other conditions for "
+               "reference. Right, black: confirmatory (P12 vs the same generator in P11); grey: secondary. Post hoc (PREREGISTRATION v11, P12).")  # fmt: skip
     return [_save(fig, paths.figures_for("phase6_relative_generators") / "results.png", "Before and after: generators trained on what the cnn sees", caption)]
 
 

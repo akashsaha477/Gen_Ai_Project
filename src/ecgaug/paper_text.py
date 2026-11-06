@@ -760,7 +760,7 @@ def posthoc_more_patients() -> str:
 
 def posthoc_relative_generators() -> str:
     """P12: the cVAE and WGAN-GP trained on P11's training beats in v3 form, from results/phase6_relative_generators/."""
-    from ecgaug.names import PHASE6_RELATIVE_GENERATORS
+    from ecgaug.names import PHASE6_MORE_PATIENTS, PHASE6_RELATIVE_GENERATORS
 
     folder = paths.results_for(PHASE6_RELATIVE_GENERATORS)
     gens = {f: _load(folder / f"{f}_generators.json") for f in GENERATIVE}
@@ -783,15 +783,26 @@ def posthoc_relative_generators() -> str:
                  f"shares, P8's measure; Figure~\\ref{{fig:p12-mechanism}}) of {'; '.join(parts)}, against "
                  + " and ".join(f"{_n(e['real']['effective_records'], 1)} for the real {cls} beats" for cls, e in real.items()) + ".")  # fmt: skip
     if selection is not None:
+        before = _load(paths.results_for(PHASE6_MORE_PATIENTS) / "selection.json")
         text += " Validation S F1 at the chosen strengths: " + ", ".join(
-            f"{SHORT[f]} {_n(v['mean'])} at {v['strength']}" for f, v in selection["chosen"]["cnn"].items()) + "."
+            f"{SHORT[f]} {_n(v['mean'])} at {v['strength']}" for f, v in selection["chosen"]["cnn"].items())
+        if before is not None:
+            text += " (P11's phase 3 generators on the same validation: " + ", ".join(
+                f"{SHORT[f]} {_n(before['chosen']['cnn'][f]['mean'])}" for f in selection["chosen"]["cnn"]) + ")"
+        text += "."
     if summary is None:
         return text + " " + _missing("P12 results: --part select, then --part test") + "\n"
     conf, sec = summary["families"]["confirmatory"], summary["families"]["secondary"]
     scores = ", ".join(f"{SHORT[k.split('/')[1]]} {_n(v['rare_macro_f1']['point'])} ({_n(v['f1_S']['point'])}, {_n(v['f1_F']['point'])})"
                        for k, v in summary["conditions"].items())  # fmt: skip
-    text += (f" On the test records (Figure~\\ref{{fig:p12}}), rare-class macro-F1 (S F1, F F1): {scores}. Against the same generator in P11: "
-             f"{_family_sentence(conf)}. Against P11's cnn without augmentation and with random oversampling: {_family_sentence(sec)}.")
+    text += f" On the test records (Figure~\\ref{{fig:p12}}), rare-class macro-F1 (S F1, F F1): {scores}."
+    p11 = _load(paths.results_for(PHASE6_MORE_PATIENTS) / "summary.json")
+    if p11 is not None:
+        text += " Per class, from the phase 3 generator (P11) to the retrained one: " + "; ".join(
+            f"{SHORT[k.split('/')[1]]} S F1 {_n(p11['conditions'][k]['f1_S']['point'])} to {_n(v['f1_S']['point'])} and F F1 "
+            f"{_n(p11['conditions'][k]['f1_F']['point'])} to {_n(v['f1_F']['point'])}" for k, v in summary["conditions"].items()) + "."
+    text += (f" Against the same generator in P11: {_family_sentence(conf)}. Against P11's cnn without augmentation and with random oversampling: "
+             f"{_family_sentence(sec)}.")
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
 
 
@@ -958,6 +969,18 @@ def patient_variation_paragraph() -> str | None:
                  f"without augmentation: it reached {_n(c['cnn/none']['rare_macro_f1']['point'])} (F F1 {_n(c['cnn/none']['f1_F']['point'])}), while "
                  f"{SHORT[best_key.split('/')[1]]} reached {_n(best['rare_macro_f1']['point'])} (F F1 {_n(best['f1_F']['point'])}),{top} with F beats "
                  "rarer in the enlarged training set, rebalancing decided whether F was detected at all.")  # fmt: skip
+    from ecgaug.names import PHASE6_RELATIVE_GENERATORS
+
+    p12 = _load(paths.results_for(PHASE6_RELATIVE_GENERATORS) / "summary.json")
+    if p11 is not None and p12 is not None:
+        conf = p12["families"]["confirmatory"]
+        moves = " and of the ".join(f"{SHORT[k.split('/')[1]]} from {_n(p11['conditions'][k]['rare_macro_f1']['point'])} to {_n(c['rare_macro_f1']['point'])}"
+                                    for k, c in p12["conditions"].items())  # fmt: skip
+        rejected = sum(c["reject_holm"] for c in conf.values())
+        verdict = ("neither change was detectable" if len(conf) == 2 else "no change was detectable") if rejected == 0 else f"{rejected} of {len(conf)} changes were detectable"
+        text += (" Retraining the generators on those patients' beats, in the form the cnn sees them (Section~\\ref{sec:relative-generators}), took the "
+                 f"test score of the {moves}; with {len(p12['records'])} test records {verdict} (Holm-adjusted $p$ "
+                 + " and ".join(f"{c['p_holm']:.3f}" for c in conf.values()) + ").")  # fmt: skip
     return text + (" The evidence points to how much patients differ as the main obstacle here; on DS1's patients, normalizing the input for the "
                    "patient raised the test score where rebalancing the classes did not, and augmentation that adds patients rather than beats is "
                    "the form of augmentation it points to.")
@@ -1038,9 +1061,13 @@ def discussion() -> str:
             relation = "at least as concentrated on" if mean_syn >= real["top_share"] - 0.05 else "less concentrated on"
             why.append(f"synthetic S beats were {relation} record {real['top_record']} as the real ones ({_n(mean_syn, 2)} against {_n(real['top_share'], 2)})")
     if why:
+        from ecgaug.names import PHASE6_RELATIVE_GENERATORS
+
+        tested = _load(paths.results_for(PHASE6_RELATIVE_GENERATORS) / "summary.json") is not None
         paras.append("\\paragraph{Why.} The analyses of Sections~\\ref{sec:patient-template} and~\\ref{sec:mechanism} point to the patients rather than the "
                      "beats: " + "; ".join(why) + ". With so few training patients, a generator can add beats of those patients but not new ones; generators trained "
-                     "on more patients, or conditioned on the patient, are what this points to.")  # fmt: skip
+                     "on more patients, or conditioned on the patient, are what this points to."
+                     + (" Section~\\ref{sec:relative-generators} tests the first of these; its result is in the next paragraphs." if tested else ""))  # fmt: skip
     if p9_helped:
         paras.append("\\paragraph{Augmentation that adds patients.} Moving the deviations of rare beats onto other patients' templates improved the "
                      "primary metric over no augmentation in the registered comparison (Section~\\ref{sec:patient-transfer}), where class-conditional "
@@ -1106,6 +1133,15 @@ def conclusion() -> str:
         top = ", the highest test score of the study" if best["rare_macro_f1"]["point"] >= _best_test_score() else ""
         text += (" Training on more patients " + ("raised" if up else "did not detectably raise") + " the score of the best configuration without "
                  f"augmentation; with more patients, {SHORT[best_key.split('/')[1]]} reached {_n(best['rare_macro_f1']['point'])}{top}.")  # fmt: skip
+        from ecgaug.names import PHASE6_RELATIVE_GENERATORS
+
+        p12 = _load(paths.results_for(PHASE6_RELATIVE_GENERATORS) / "summary.json")
+        if p12 is not None:
+            better = any(c["reject_holm"] and c["point"] > 0 for c in p12["families"]["confirmatory"].values())
+            key = max(p12["conditions"], key=lambda k: p12["conditions"][k]["rare_macro_f1"]["point"])
+            text += (" Generators retrained on those patients' beats, in the form the classifier sees them, " + ("improved" if better else "did not detectably improve")
+                     + f" on the same generators trained on DS1 alone (the {SHORT[key.split('/')[1]]} went from "
+                     f"{_n(p11['conditions'][key]['rare_macro_f1']['point'])} to {_n(p12['conditions'][key]['rare_macro_f1']['point'])}).")  # fmt: skip
     p7 = _load(paths.results_for(PHASE6_RELATIVE_CNN) / "summary.json")
     if p7 is not None and final is not None:
         text += (f" Changing the input alone raised the test score from {_n(final['conditions']['cnn/none']['rare_macro_f1']['point'])} to "
@@ -1164,6 +1200,25 @@ def abstract_posthoc() -> str:
                  f"macro-F1 without augmentation from {_n(final['conditions']['cnn/none']['rare_macro_f1']['point'])} to "
                  f"{_n(p7['conditions']['cnn/none']['rare_macro_f1']['point'])}, and generative augmentation "
                  + ("improved" if helped else "still did not improve") + " on it.")  # fmt: skip
+    from ecgaug.names import PHASE6_MORE_PATIENTS, PHASE6_RELATIVE_GENERATORS
+
+    p11 = _load(paths.results_for(PHASE6_MORE_PATIENTS) / "summary.json")
+    p12 = _load(paths.results_for(PHASE6_RELATIVE_GENERATORS) / "summary.json")
+    if p11 is not None:
+        best_key, best = max(p11["conditions"].items(), key=lambda kv: kv[1]["rare_macro_f1"]["point"])
+        name = best_key.split("/")[1]
+        top = ", the study's highest test score" if best["rare_macro_f1"]["point"] >= _best_test_score() else ""
+        vs_none = p11["families"]["secondary"].get(f"cnn: {name} vs none (more patients)")
+        text += (f" With the INCART and SVDB patients added to training, {SHORT[name]} reached {_n(best['rare_macro_f1']['point'])}{top}"
+                 + (f" (against no augmentation, {_p(vs_none)})" if vs_none is not None else ""))
+        if p12 is not None:
+            key = max(p12["conditions"], key=lambda k: p12["conditions"][k]["rare_macro_f1"]["point"])
+            family = key.split("/")[1]
+            c = p12["families"]["confirmatory"][f"cnn: {family}, P12 vs P11 generators"]
+            text += (f", and generators retrained on those patients' beats in the form the classifier sees them "
+                     f"{'raised' if c['point'] > 0 else 'lowered'} the {SHORT[family]}'s score from {_n(p11['conditions'][key]['rare_macro_f1']['point'])} "
+                     f"to {_n(p12['conditions'][key]['rare_macro_f1']['point'])} ({_p(c)})")  # fmt: skip
+        text += "."
     sizes = _model_sizes()
     if sizes:
         text += (" These answers hold for small models (" + " and ".join(f"{_n(v / 1000, 0)}" for v in sizes.values())
