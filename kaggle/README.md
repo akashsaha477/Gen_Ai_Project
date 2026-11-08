@@ -27,6 +27,7 @@ to GitHub, so you only `git pull`. No logic lives in the notebooks.
 | `phase6_relative_generators.ipynb` | post hoc (v11, P12): the cVAE and WGAN-GP trained on patient-relative beats of P11's patients; `PART` = train with `FAMILY` (GPU, one session per generator), test (CPU) | `ecgaug-banks`, `ecgaug-v5-external`; test: `ecgaug-p11-runs`, P12 runs |
 | `phase6_record_rr.ipynb` | post hoc (v12, P13): `rr_prev` and `rr_next` over the mean RR of their recording, P11's and P12's conditions; `PART` = grid (GPU), test (CPU) | `ecgaug-banks`, `ecgaug-v5-external`, `ecgaug-p12-banks`; test: `ecgaug-p11-runs`, `ecgaug-p12-runs`, P13 runs |
 | `phase6_icentia.ipynb` | post hoc (v13, P14): P13's data plus 400 Icentia11k patients; `PART` = grid (GPU, Internet on; downloads and builds), test (CPU) | `ecgaug-banks`, `ecgaug-v5-external`, `ecgaug-p12-banks`; test: `ecgaug-p13-runs`, P14 runs |
+| `phase6_diffusion.ipynb` | post hoc (v14, P15): a class-conditional diffusion model as the generator on P13's data; `PART` = train (GPU), test (CPU) | `ecgaug-banks`, `ecgaug-v5-external`, `ecgaug-p12-banks`; test: `ecgaug-p13-runs`, P15 runs |
 | `phase5_explainability.ipynb`, `phase5_clinical_notes.ipynb` | saliency methods and note generators on the phase 4 models | `mitdb-raw`, artifacts (checkpoints) |
 
 Other files in this folder: `kaggle_run.py` (the script every notebook calls), `make_raw_dataset.py`

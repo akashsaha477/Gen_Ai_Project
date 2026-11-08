@@ -1,0 +1,26 @@
+# P15 (PREREGISTRATION §10 v14): a class-conditional diffusion model trained on P13's training beats (P11's patients,
+# patient-relative, divided by one scale), the P7 cnn on P13's data with its bank at the phase 4 strengths.
+experiment: phase6_diffusion
+record_rr_config: configs/phase6_record_rr/record_rr.yaml
+classes: [N, S, V, F]            # learned with class-balanced batches; the banks hold S, V and F
+generator:
+  timesteps: 1000                # training noise levels, cosine schedule
+  sample_steps: 50               # DDIM levels at sampling
+  guidance: 1.5                  # classifier-free guidance scale at sampling
+  p_uncond: 0.1                  # share of training batches with the class replaced by the null class
+  ema_decay: 0.999               # the moving average used for sampling
+  channels: [64, 128, 256]       # 1D U-Net widths; 180 samples halve twice
+  kernel: 5
+  embed_dim: 128
+  groups: 8
+  weight_decay: 0.0
+  clip_x0: 10.0                  # guard on the clean-beat estimate (scaled units)
+training:                        # the phase 3 budget: batch 128 (32 beats per class), 20,000 steps, seeds 0-2
+  batch_size: 128
+  lr: 2.0e-4
+  final_steps: 20000
+  log_every: 200
+seeds: [0, 1, 2]
+strengths: [0.1, 0.25, 0.5]      # the phase 4 strengths; one chosen on validation by the phase 4 gate rule
+mechanism_beats: 5000
+rule_threshold: 0.8              # Huang et al. (2014), descriptive as in P13

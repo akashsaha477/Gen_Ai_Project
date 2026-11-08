@@ -475,3 +475,13 @@ beats, come from another lead and device, and include no S-dominant recording. T
 +0.184, vs random oversampling +0.145, vs class weighting +0.057; Holm p 0.357-0.395), consistent with synthetic F beats
 mattering most when real ones are scarce. With Huang's rule on top (descriptive) the cVAE reached 0.460; P13's 0.523 stays
 the highest. Reading: more patients help only if they are of the right kind (the same lead, fusion beats, S-dominant rhythms).
+
+## 2026-11-08 (Day 33) — A36: a diffusion model as the third generator family (pre-registration v14) — Akash Saha ("why are we not using diffusion models ... I want the best result")
+
+The study compared a cVAE and a WGAN-GP; diffusion models are the current standard for synthetic ECG and three papers in
+the team's reading list use them (SSSD-ECG; Nunez et al. 2024; Kwak and Jung 2024). P15 adds a class-conditional diffusion
+model (`ecgaug.generators.diffusion`: DDPM training with a cosine schedule, a small 1D U-Net, classifier-free guidance, an
+exponential moving average, DDIM sampling) under the same rules as P12: P13's training beats in the cnn's form, the phase 3
+step budget, batch and seeds, banks at the phase 4 strengths chosen on validation, one DS2 read. Its tests include a
+learning check: trained briefly on hand-made waveforms, guided samples of each class match that class's waveform. The
+guidance scale (1.5) and learning rate (2e-4, the DDPM default) are fixed before any run, not tuned.

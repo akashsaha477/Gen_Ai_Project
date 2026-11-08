@@ -1120,3 +1120,13 @@ History rewrite force-pushed 2026-11-07 on request (A35): `main` and `finish-pro
 (`prereg-v13` new on GitHub). A fresh clone from GitHub shows no removed path in any branch or tag history and no mention
 in the current files. GitHub's 10 pull-request refs still reach 83 old commits (50 with the removed paths); only GitHub
 Support or a new repository can drop them. Old SHAs map to new ones in `docs/COMMIT_MAP.csv`.
+
+## 2026-11-08 (Day 33) — P15 diffusion generator (pre-registration v14, A36); S false alarms located in AF
+
+Asked for diffusion models and the best result. P15 adds a class-conditional diffusion model as the third generator family
+(built and tested: 4 generator tests incl. a learning check, 4 experiment tests). Separately, on training-side annotations:
+89% of Huang's rule's false S calls on the MIT-BIH training records (1,251 of 1,412) sit in AF or flutter, where only 16 of
+933 real S beats lie. An RR-irregularity AF detector trained on the MIT-BIH AF database only (afdb annotations, 25 other
+subjects), with ectopic filtering and threshold 0.95, raises the rule's S F1 on the MIT-BIH training records from 0.486 to
+0.756 (+P 0.349 -> 0.749), leaves INCART (0.316 -> 0.319) and SVDB 865 (0.965) unchanged and costs SVDB a little (0.666 ->
+0.650). To be pre-registered as P16 before any DS2 read.

@@ -147,7 +147,7 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 - Every access is appended to `docs/TEST_ACCESS_LOG.md`. No decision of any kind uses test data.
 - After `/final-eval` nothing is retrained, re-selected or re-tuned. A bug found later is documented
   and any re-run is disclosed.
-- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v13): the analyses listed in §10 v4 to v13 only, after `/final-eval`, logged;
+- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v14): the analyses listed in §10 v4 to v14 only, after `/final-eval`, logged;
   they add evidence beside the primary results and replace none of them.
 
 ## 9. Generators and RQ3 (rules fixed now, thresholds in v2)
@@ -388,6 +388,20 @@ reference to trust from training patients that hold these patterns, and P11's 10
 | test | one `posthoc` access on Kaggle (DS2 in P13's form). Confirmatory (Holm, 4 tests): each condition with the Icentia11k patients vs the same condition in P13, rare-class macro-F1, record-level bootstrap 10,000, seed 0. Secondary (Holm, 3 tests): with them, the cVAE vs none, vs random oversampling and vs class weighting. P13's scores are recomputed and must match its summary |
 | descriptive | validation S F1 beside P13's; Huang's SVEB stage on top (P13's rule, threshold 0.8); per-class F1 |
 | reporting | its own section, labelled post hoc, framed as limited by scale. Compute: one Kaggle T4 session (download and build included), under 2 GPU-hours; CPU for the test |
+
+**v14, committed 2026-11-08, after P14's test result, before any of the work below (DECISIONS A36).** One analysis, post
+hoc. The study's generators are a cVAE and a WGAN-GP; the current standard for synthetic ECG is a diffusion model (SSSD-ECG,
+Alcaraz and Strodthoff 2023; conditional diffusion for imbalanced ECG classes, Kwak and Jung 2024). P15 adds it as the third
+generator family under the same rules.
+
+| item | rule |
+|---|---|
+| P15 `phase6_diffusion`, generator | `ecgaug.generators.diffusion`: a class-conditional DDPM (cosine schedule, 1,000 levels) with a 1D U-Net (widths 64/128/256, kernel 5, FiLM conditioning on noise level and class), classifier-free guidance (10% null-class training, scale 1.5 at sampling), an exponential moving average of the weights (0.999) used for sampling, DDIM sampling with 50 levels; AdamW, learning rate 2e-4; the phase 3 budget (batch 128 with 32 beats per class, 20,000 steps, seeds 0-2); a fit with a non-finite or exploding loss, or non-finite beats, is diverged |
+| data | P13's training beats (P11's patients, hash-checked) in the form the cnn sees them, divided by one scale (the SD of all training samples), as P12; banks multiplied back by the scale, not z-scored per beat; RR features copied from real training beats of the class in P13's form; bank size: what the unscreened policy adds at 0.5 |
+| classifier | the P7 cnn on P13's data, settings unchanged; the bank at 0.1, 0.25 and 0.5 x N (unscreened), seeds 0-2: 9 runs; one strength chosen on validation by the phase 4 gate rule |
+| test | one `posthoc` access on Kaggle (DS2 in P13's form). Confirmatory (Holm, 2 tests): the diffusion condition vs P13's cnn without augmentation, and vs P13's cVAE (the best earlier generator); rare-class macro-F1, record-level bootstrap 10,000, seed 0. Secondary (Holm, 2 tests): vs P13's class weighting and random oversampling. P13's scores are recomputed and must match its summary |
+| descriptive | Huang et al.'s SVEB stage on top of the diffusion condition and of P13's compared conditions (as P13); the nearest-patient check of P12 for the seed-0 bank beside P12's cVAE bank; validation S F1 |
+| reporting | its own section, labelled post hoc, framed as limited by scale. Compute: one Kaggle T4 session, under 2 GPU-hours (approved: "Run whatever you want", 2026-11-08); CPU for the test |
 
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 
