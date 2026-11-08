@@ -1,0 +1,11 @@
+# P16 (PREREGISTRATION §10 v15): Huang's SVEB stage with an AF veto. The detector is fitted on the MIT-BIH AF database only;
+# its threshold is the candidate with the highest mean S F1 of the vetoed rule over DS1, INCART and SVDB (training side).
+experiment: phase6_af_rule
+record_rr_config: configs/phase6_record_rr/record_rr.yaml
+diffusion_config: configs/phase6_diffusion/diffusion.yaml   # P15's chosen condition is compared too, when selected
+half_window_beats: 32          # 64 RR intervals around each beat
+premature_ratio: 0.85          # intervals below this share of the local median (and the next one) are removed first
+local_median_beats: 10
+fit_every: 5                   # every 5th afdb beat trains the detector
+thresholds: [0.5, 0.8, 0.9, 0.95, 0.99]
+rule_threshold: 0.8            # Huang et al. (2014), as P13

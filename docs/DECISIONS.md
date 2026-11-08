@@ -485,3 +485,15 @@ exponential moving average, DDIM sampling) under the same rules as P12: P13's tr
 step budget, batch and seeds, banks at the phase 4 strengths chosen on validation, one DS2 read. Its tests include a
 learning check: trained briefly on hand-made waveforms, guided samples of each class match that class's waveform. The
 guidance scale (1.5) and learning rate (2e-4, the DDPM default) are fixed before any run, not tuned.
+
+## 2026-11-09 (Day 34) — A37: Huang's SVEB stage with an atrial-fibrillation veto (pre-registration v15) — Akash Saha ("our results so far show the main obstacle is how much patients differ ... SO WE CAN IMPROVE THIS FIND A WAY")
+
+The best test scores so far (P13) come from Huang et al.'s SVEB stage on top of the cnn: a beat the cnn calls N becomes S
+when its RR interval is below 0.8 of its recording's mean. The rule finds S beats in patients whose S beats come in long
+runs without a pause (record 232's pattern), which the cnn misses, but it cannot tell an early beat from an irregular
+rhythm. On DS1's annotations, 1,251 of its 1,412 false S calls lie in atrial fibrillation or flutter, where only 16 of 944
+S beats lie. P16 (`phase6_af_rule`) adds an AF detector that reads only beat times (the irregularity of the surrounding
+intervals after premature beats and their pauses are removed), fitted on the MIT-BIH Atrial Fibrillation Database (other
+subjects), and undoes the rule's S calls where it fires. Its threshold (0.95) was chosen on the annotations of DS1, INCART
+and SVDB, and its form (only the rule's own conversions) on P13's validation patients, both by rules written into the code
+before they were computed. No DS2 data was used. One DS2 read, after P15's test; the diffusion condition is compared too.

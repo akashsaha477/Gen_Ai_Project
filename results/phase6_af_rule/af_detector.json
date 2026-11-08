@@ -1,0 +1,58 @@
+{
+  "experiment": "phase6_af_rule",
+  "rule": "PREREGISTRATION \u00a710 v15",
+  "database": "afdb (MIT-BIH Atrial Fibrillation Database)",
+  "records": [
+    "00735",
+    "03665",
+    "04015",
+    "04043",
+    "04048",
+    "04126",
+    "04746",
+    "04908",
+    "04936",
+    "05091",
+    "05121",
+    "05261",
+    "06426",
+    "06453",
+    "06995",
+    "07162",
+    "07859",
+    "07879",
+    "07910",
+    "08215",
+    "08219",
+    "08378",
+    "08405",
+    "08434",
+    "08455"
+  ],
+  "features": [
+    "nrmssd",
+    "cv",
+    "nrmssd_trimmed",
+    "jump_share",
+    "entropy"
+  ],
+  "coef": [
+    3.088376446080868,
+    -3.388106281181633,
+    0.07999106990175518,
+    -0.07835974060906364,
+    9.622809411527621
+  ],
+  "intercept": 6.062574341991888,
+  "beats": 244288,
+  "af_share": 0.4350029473408436,
+  "training_sensitivity": 0.9669790902075923,
+  "training_specificity": 0.9542754053701584,
+  "settings": {
+    "half_window_beats": 32,
+    "premature_ratio": 0.85,
+    "local_median_beats": 10,
+    "fit_every": 5
+  },
+  "git_sha": "186a950cb5f957a132b9066486caa2f4295f216d"
+}

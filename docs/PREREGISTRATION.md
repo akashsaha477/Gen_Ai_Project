@@ -147,7 +147,7 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 - Every access is appended to `docs/TEST_ACCESS_LOG.md`. No decision of any kind uses test data.
 - After `/final-eval` nothing is retrained, re-selected or re-tuned. A bug found later is documented
   and any re-run is disclosed.
-- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v14): the analyses listed in §10 v4 to v14 only, after `/final-eval`, logged;
+- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v15): the analyses listed in §10 v4 to v15 only, after `/final-eval`, logged;
   they add evidence beside the primary results and replace none of them.
 
 ## 9. Generators and RQ3 (rules fixed now, thresholds in v2)
@@ -402,6 +402,25 @@ generator family under the same rules.
 | test | one `posthoc` access on Kaggle (DS2 in P13's form). Confirmatory (Holm, 2 tests): the diffusion condition vs P13's cnn without augmentation, and vs P13's cVAE (the best earlier generator); rare-class macro-F1, record-level bootstrap 10,000, seed 0. Secondary (Holm, 2 tests): vs P13's class weighting and random oversampling. P13's scores are recomputed and must match its summary |
 | descriptive | Huang et al.'s SVEB stage on top of the diffusion condition and of P13's compared conditions (as P13); the nearest-patient check of P12 for the seed-0 bank beside P12's cVAE bank; validation S F1 |
 | reporting | its own section, labelled post hoc, framed as limited by scale. Compute: one Kaggle T4 session, under 2 GPU-hours (approved: "Run whatever you want", 2026-11-08); CPU for the test |
+
+**v15, committed 2026-11-09, after P15's training and validation selection, before P15's test read and before any of the
+work below (DECISIONS A37).** One analysis, post hoc. P13's best test scores come from Huang et al.'s SVEB stage on top of
+the cnn, a rule that reads only a beat's RR interval over its recording's mean. Irregular rhythms make normal beats look
+premature to it. On DS1's annotations (`phase6_af_rule --part check`, `results/phase6_af_rule/design_check.json`), 1,251
+of the stage's 1,412 false S calls lie in atrial fibrillation or flutter, where 16 of DS1's 944 S beats lie: without
+organized atrial activity a beat is not labelled S. P16 undoes the stage's S calls where an AF detector fires. The detector
+sees only beat times. The idea and every setting come from training-side data; the wish to improve the stage came after
+P13's test result, so P16 is reported as post hoc.
+
+| item | rule |
+|---|---|
+| P16 `phase6_af_rule`, AF detector | RR intervals only. Per beat, five irregularity measures of the 64 intervals around it (normalized RMSSD; coefficient of variation; RMSSD without the 4 largest jumps; the share of successive differences above 10% of the mean; the entropy of a 16-bin histogram of the intervals over their mean), after removing every interval below 0.85 of the median of its 21 neighbours and the interval after it (premature beats and their pauses); no value, and probability 0, where fewer than 16 intervals remain. A logistic regression (balanced classes) on their logarithms, fitted on every 5th beat of the 25 records of the MIT-BIH Atrial Fibrillation Database (other subjects; its beat detections and rhythm labels): 244,288 beats, 43.5% in AF or flutter, training sensitivity 0.967 and specificity 0.954 (`results/phase6_af_rule/af_detector.json`) |
+| threshold | the candidate in {0.5, 0.8, 0.9, 0.95, 0.99} with the highest mean S F1 of the vetoed stage over DS1, INCART and SVDB (annotations only; ties to the higher threshold): 0.95 (the stage alone 0.490, vetoed 0.575) |
+| form | "rule" (undo only the stage's own N-to-S conversions) or "all" (undo every S call where the detector fires): the higher mean validation S F1 over the compared conditions and seeds (P13's validation patients, the runs' stored validation predictions; ties to "rule"): "rule" 0.753, "all" 0.730; the stage alone 0.727; the cnn alone 0.755 |
+| conditions | P13's five (none, class weighting 0.5, random oversampling 0.25, cVAE 0.1, WGAN-GP 0.25) and P15's diffusion condition (0.25, chosen on validation): their selected runs, seeds 0-2; nothing is retrained |
+| test | one `posthoc` access on Kaggle, after P15's test (DS2 in P13's form; the detector reads each DS2 record's QRS annotation times, as the RR features already do, never a label; every test beat must sit on one). Confirmatory (Holm, 6 tests): per condition, the stage with the veto vs the stage alone, rare-class macro-F1 (only S calls change), record-level bootstrap 10,000, seed 0. The stage-alone scores must match P13's summary and, for the diffusion condition, P15's |
+| descriptive | S sensitivity, +P and F1 with and without the veto; the share of each DS2 record's beats the detector flags; without record 202 |
+| reporting | its own section, labelled post hoc, framed as limited by scale. Compute: CPU only (the fit and the check ran on annotations; the test on a Kaggle CPU session) |
 
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 

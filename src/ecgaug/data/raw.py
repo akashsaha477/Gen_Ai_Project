@@ -164,6 +164,14 @@ def read_annotations(record: int, access: str | None = None) -> tuple[np.ndarray
     return np.asarray(ann.sample, dtype=np.int64), np.asarray(ann.symbol, dtype=str)
 
 
+def read_annotation_notes(record: int, access: str | None = None) -> tuple[np.ndarray, np.ndarray, list[str]]:
+    """Reference annotations with their aux notes (the rhythm labels sit on the '+' annotations); guarded as
+    :func:`read_annotations`."""
+    record = _guard(record, access)
+    ann = wfdb.rdann(_stem(record), "atr")
+    return np.asarray(ann.sample, dtype=np.int64), np.asarray(ann.symbol, dtype=str), list(ann.aux_note)
+
+
 def read_signal(record: int, access: str | None = None, lead: str = LEAD) -> np.ndarray:
     """The ``lead`` channel of a record in physical units, selected by signal name.
 
