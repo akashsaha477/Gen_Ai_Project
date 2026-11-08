@@ -1,0 +1,29 @@
+{
+  "cell_sha": "e9f81bc867c217776c70d0da642f21cb5ca65c32ee2d510a22533e20f79c27c4",
+  "cell": {
+    "condition": "diffusion",
+    "strength": 0.25,
+    "architecture": "cnn",
+    "seed": 0
+  },
+  "condition": "diffusion",
+  "strength": 0.25,
+  "architecture": "cnn",
+  "seed": 0,
+  "run_id": "phase6_diffusion-cnn.diffusion_0.25-s0-186a950-202611081425",
+  "status": "done",
+  "bank": "phase6_diffusion/diffusion",
+  "selection_metric": "s_f1",
+  "selection_value": 0.771779031247202,
+  "tie_break_value": 0.8608103582989173,
+  "rare_macro_f1": 0.3956934371922285,
+  "n_recall": 0.944181946403385,
+  "n_added": {
+    "N": 0,
+    "S": 17016,
+    "V": 0,
+    "F": 26695
+  },
+  "wall_clock_s": 49.1,
+  "provisional": false
+}

@@ -1,0 +1,82 @@
+{
+  "experiment": "phase6_diffusion",
+  "rule": "PREREGISTRATION \u00a710 v14 (the phase 4 gate rule)",
+  "chosen": {
+    "cnn": {
+      "diffusion": {
+        "strength": 0.25,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_diffusion-cnn.diffusion_0.25-s0-186a950-202611081425",
+          "phase6_diffusion-cnn.diffusion_0.25-s1-186a950-202611081426",
+          "phase6_diffusion-cnn.diffusion_0.25-s2-186a950-202611081427"
+        ],
+        "mean": 0.7406072321361831,
+        "sd": 0.028735533376409005,
+        "values": [
+          0.771779031247202,
+          0.7151739936729573,
+          0.7348686714883897
+        ],
+        "tie_break_values": [
+          0.8608103582989173,
+          0.8260740152792936,
+          0.8310001119946243
+        ],
+        "tie_break_mean": 0.8392948285242784,
+        "tie_break_sd": 0.018795082423993976,
+        "n_recall": 0.9548895157498825,
+        "provisional": false,
+        "bank": "phase6_diffusion/diffusion",
+        "decision": {
+          "winner": "0.25",
+          "best_by_mean": "0.1",
+          "margins": {
+            "0.1": 0.030088464830735514,
+            "0.5": 0.0249567798181426,
+            "0.25": 0.02941977731303488
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.1",
+                "0.5",
+                "0.25"
+              ]
+            },
+            {
+              "step": "tie-break metric",
+              "tied": [
+                "0.25"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.25"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.1": {
+            "mean": 0.7459589419576439,
+            "sd": 0.030088464830735514
+          },
+          "0.5": {
+            "mean": 0.7337370252009805,
+            "sd": 0.018449010865412046
+          },
+          "0.25": {
+            "mean": 0.7406072321361831,
+            "sd": 0.028735533376409005
+          }
+        }
+      }
+    }
+  },
+  "git_sha": "186a950cb5f957a132b9066486caa2f4295f216d"
+}
