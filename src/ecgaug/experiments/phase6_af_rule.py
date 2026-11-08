@@ -391,6 +391,8 @@ def test_report(cfg: dict) -> dict:
                "af_share_flagged": {str(int(r)): float((p_af[records == r] > af_t).mean()) for r in unique},
                "rule_alone": {f"cnn/{c}": ref.condition_summary(cm, unique) for c, cm in plain.items()},
                "with_af_veto": {f"cnn/{c}": ref.condition_summary(cm, unique) for c, cm in vetoed.items()},
+               "without_202": {name: {f"cnn/{c}": ref.condition_summary(cm[:, unique != 202], unique[unique != 202]) for c, cm in table.items()}
+                               for name, table in (("rule_alone", plain), ("with_af_veto", vetoed))},
                "families": {"confirmatory": mp._family({f"cnn: {c}, rule with AF veto vs rule alone": (vetoed[c], plain[c]) for c in vetoed})},
                "reproduction_difference": reproduced, "git_sha": runs.git_sha()}  # fmt: skip
     (paths.results_for(EXPERIMENT) / "summary.json").write_text(json.dumps(summary, indent=2, default=float) + "\n")

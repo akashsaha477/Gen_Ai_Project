@@ -140,6 +140,7 @@ def test_test_report_compares_with_and_without_the_veto_and_checks_p13s_rule_sco
     assert set(s["rule_alone"]) == set(s["with_af_veto"]) == {f"cnn/{c}" for c in conditions}
     assert set(s["families"]["confirmatory"]) == {f"cnn: {c}, rule with AF veto vs rule alone" for c in conditions}
     assert s["af_threshold"] == 0.95 and s["veto_form"] == "rule" and set(s["af_share_flagged"]) == {"100", "103"}
+    assert set(s["without_202"]) == {"rule_alone", "with_af_veto"} and set(s["without_202"]["with_af_veto"]) == set(s["with_af_veto"])
     from ecgaug.experiments import phase6_diffusion as dif
 
     dif_ids = [f"p15-diffusion-s{s}" for s in range(3)]
