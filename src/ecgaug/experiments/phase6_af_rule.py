@@ -113,7 +113,6 @@ def detector_path() -> Path:
 def fit_detector(cfg: dict) -> dict:
     """Logistic regression (balanced classes) of 'in AF or flutter' on the log features, from every ``fit_every``-th beat of
     the MIT-BIH AF database (beat detections ``qrs``, rhythm labels ``atr``); written to ``af_detector.json``."""
-    import wfdb
     from sklearn.linear_model import LogisticRegression
 
     folder = raw.external_dir(AFDB)
@@ -122,9 +121,10 @@ def fit_detector(cfg: dict) -> dict:
         raise PreconditionError(f"{folder} holds no afdb annotations: download its .qrs, .atr and .hea files from PhysioNet")
     xs, ys, used = [], [], []
     for name in names:
-        qrs, atr = wfdb.rdann(str(folder / name), "qrs"), wfdb.rdann(str(folder / name), "atr")
-        f = irregularity_features(np.asarray(qrs.sample), qrs.fs, cfg["half_window_beats"], cfg["premature_ratio"], cfg["local_median_beats"])
-        af = np.isin(rhythm_at(np.asarray(atr.sample), np.asarray(atr.symbol), atr.aux_note, np.asarray(qrs.sample)), AF_RHYTHMS)
+        q_samples, _, _, q_fs = raw.read_external_annotator(AFDB, name, "qrs")
+        a_samples, a_symbols, a_aux, _ = raw.read_external_annotator(AFDB, name, "atr")
+        f = irregularity_features(q_samples, q_fs, cfg["half_window_beats"], cfg["premature_ratio"], cfg["local_median_beats"])
+        af = np.isin(rhythm_at(a_samples, a_symbols, a_aux, q_samples), AF_RHYTHMS)
         keep = np.flatnonzero(np.isfinite(f).all(axis=1))[:: int(cfg["fit_every"])]
         xs.append(_log(f[keep]))
         ys.append(af[keep])

@@ -217,6 +217,13 @@ def read_external_annotations(database: str, record: str) -> tuple[np.ndarray, n
     return np.asarray(ann.sample, dtype=np.int64), np.asarray(ann.symbol, dtype=str), int(header.fs), list(header.sig_name)
 
 
+def read_external_annotator(database: str, record: str, annotator: str) -> tuple[np.ndarray, np.ndarray, list[str], int]:
+    """Samples, symbols, aux notes and sampling rate of one annotator (e.g. ``atr``, ``qrs``) of an external record; no signal
+    is read. External databases hold no MIT-BIH record, so no test lock applies."""
+    ann = wfdb.rdann(str(external_dir(database) / record), annotator)
+    return np.asarray(ann.sample, dtype=np.int64), np.asarray(ann.symbol, dtype=str), list(ann.aux_note), int(ann.fs)
+
+
 PTBXL_ZIP_URL = "https://physionet.org/content/ptb-xl/get-zip/1.0.3/"
 PTBXL_NEEDED = ("ptbxl_database.csv", "scp_statements.csv")
 
