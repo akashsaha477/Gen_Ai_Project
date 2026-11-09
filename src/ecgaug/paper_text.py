@@ -1178,6 +1178,9 @@ def patient_variation_paragraph() -> str | None:
                      "which is where augmentation that adds patients rather than beats could help.")
     if (ic := _icentia_sentence(with_section=True)) is not None:
         text += " " + ic
+    for extra in (_diffusion_sentence(with_section=True), _af_sentence(with_section=True)):
+        if extra is not None:
+            text += " " + extra
     return text + (" The evidence points to how much patients differ as the main obstacle here; on DS1's patients, normalizing the input for the "
                    "patient raised the test score where rebalancing the classes did not, and augmentation that adds patients rather than beats is "
                    "the form of augmentation it points to.")
@@ -1238,6 +1241,44 @@ def _icentia_sentence(with_section: bool = False) -> str | None:
             f"reached {_n(rbest['rare_macro_f1']['point'])} (S F1 {_n(rbest['f1_S']['point'])}){top} (descriptive).")
 
 
+def _diffusion_sentence(with_section: bool = False) -> str | None:
+    """One sentence on P15 (the diffusion generator at the phase 3 budget) from its summary, or None before its test."""
+    from ecgaug.names import PHASE6_DIFFUSION
+
+    s = _load(paths.results_for(PHASE6_DIFFUSION) / "summary.json")
+    if s is None:
+        return None
+    new, cvae = s["conditions"]["cnn/diffusion"], s["before"]["cnn/cvae"]
+    c = s["families"]["confirmatory"]["cnn: diffusion vs cvae (P13)"]
+    where = " (Section~\\ref{sec:diffusion})" if with_section else ""
+    return (f"A class-conditional diffusion model trained with the same step budget{where} reached {_n(new['rare_macro_f1']['point'])} (S F1 "
+            f"{_n(new['f1_S']['point'])}, F F1 {_n(new['f1_F']['point'])}) against the cVAE's {_n(cvae['rare_macro_f1']['point'])} ({_p(c)}); its "
+            "loss was still falling at the end of the budget and its samples matched the real beats' class shapes less closely, so the budget, "
+            "not the family, may be what limits it.")
+
+
+def _af_sentence(with_section: bool = False) -> str | None:
+    """One sentence on P16 (the AF veto on Huang's stage) from its summary, or None before its test."""
+    from ecgaug.names import PHASE6_AF_RULE
+
+    s = _load(paths.results_for(PHASE6_AF_RULE) / "summary.json")
+    if s is None:
+        return None
+    conf = s["families"]["confirmatory"]
+    up = sum(c["reject_holm"] and c["point"] > 0 for c in conf.values())
+    lows = [c["ci_low"] for c in conf.values()]
+    key, best = max(s["with_af_veto"].items(), key=lambda kv: kv[1]["rare_macro_f1"]["point"])
+    before = s["rule_alone"][key]
+    top = ", the highest test score of the study" if best["rare_macro_f1"]["point"] >= _best_test_score() else ""
+    where = " (Section~\\ref{sec:af-rule})" if with_section else ""
+    ci = "every 95\\% interval above zero" if min(lows) > 0 else "not every interval above zero"
+    return (f"Undoing the rule's S calls inside atrial fibrillation, found by a detector that reads only beat times{where}, raised rare-class "
+            f"macro-F1 in all {len(conf)} conditions (by {_n(min(c['point'] for c in conf.values()))} to {_n(max(c['point'] for c in conf.values()))}; "
+            f"{ci}; detectable after Holm correction in {up}), by removing false S calls: the {SHORT[key.split('/')[1]]} went from "
+            f"{_n(before['rare_macro_f1']['point'])} to {_n(best['rare_macro_f1']['point'])}{top} (S F1 {_n(before['f1_S']['point'])} to "
+            f"{_n(best['f1_S']['point'])}, F F1 {_n(best['f1_F']['point'])}).")
+
+
 def _best_test_score() -> float:
     """The highest test rare-class macro-F1 of any condition in any summary written so far (final evaluation and post hoc,
     P13's descriptive SVEB-rule results included)."""
@@ -1246,7 +1287,7 @@ def _best_test_score() -> float:
     best = 0.0
     for experiment in (FINAL_EVAL, *POST_HOC):
         s = _load(paths.results_for(experiment) / "summary.json") or {}
-        for entry in [*s.get("conditions", {}).values(), *s.get("sveb_rule", {}).values()]:  # P13's descriptive rule results count too
+        for entry in [*s.get("conditions", {}).values(), *s.get("sveb_rule", {}).values(), *s.get("with_af_veto", {}).values()]:  # rule rows count too
             value = entry.get("rare_macro_f1") if isinstance(entry, dict) else None
             if isinstance(value, dict) and "point" in value:
                 best = max(best, float(value["point"]))
@@ -1399,6 +1440,9 @@ def conclusion() -> str:
             text += " " + rr
         if (ic := _icentia_sentence()) is not None:
             text += " " + ic
+        for extra in (_diffusion_sentence(), _af_sentence()):
+            if extra is not None:
+                text += " " + extra
     p7 = _load(paths.results_for(PHASE6_RELATIVE_CNN) / "summary.json")
     if p7 is not None and final is not None:
         text += (f" Changing the input alone raised the test score from {_n(final['conditions']['cnn/none']['rare_macro_f1']['point'])} to "
@@ -1480,6 +1524,9 @@ def abstract_posthoc() -> str:
         text += " " + rr
     if (ic := _icentia_sentence()) is not None:
         text += " " + ic
+    for extra in (_diffusion_sentence(), _af_sentence()):
+        if extra is not None:
+            text += " " + extra
     sizes = _model_sizes()
     if sizes:
         text += (" These answers hold for small models (" + " and ".join(f"{_n(v / 1000, 0)}" for v in sizes.values())
