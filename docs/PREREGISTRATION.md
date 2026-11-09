@@ -458,6 +458,23 @@ score came after P16's and P17's test results, so P18 is reported as post hoc.
 | descriptive | the ensembles alone and with the stage alone; the ten single runs (mean and spread); the three-run ensemble of seeds 0-2; without record 202; validation S, V and F F1 of the single runs and both ensembles (`--part check`, written with the run IDs before the test read) |
 | reporting | its own section, labelled post hoc, framed as limited by scale. P16's cVAE score (0.557) stays as reported; the paper says an ensemble needs ten trained models where P16 used one. Compute: one Kaggle T4 session, under 1 GPU-hour (P13's runs took 37-52 s each; requested: "can you make the cvae results even better", 2026-11-09); CPU for the test |
 
+**v18, committed 2026-11-10, after P18's test result, before any of the work below (DECISIONS A40).** One analysis, post
+hoc, reading no test records. P18's highest score (the cVAE's ten-run ensemble with Huang et al.'s SVEB stage and P16's AF
+veto, rare-class macro-F1 0.587) is the best of 14 post hoc reads of the same 22 DS2 patients, and one of them (record 232)
+holds 1,381 of DS2's 1,836 S beats. P19 asks whether the result holds on patients that played no part in any choice. The
+wish came after comparing P18 with published results; the design below was fixed before any Icentia11k beat of these
+patients was downloaded.
+
+| item | rule |
+|---|---|
+| P19 `phase6_fresh_patients`, data | Icentia11k (PhysioNet, CC BY-NC-SA 4.0): the first segment (about 70 minutes) of 1,000 patients drawn at random with seed 1 from the 10,600 that P14 did not draw (P14: 400 with seed 0); no label is looked at to draw them. Built as P14 built its patients (the frozen representation after resampling to 360 Hz, minus the local template of all QRS annotations within ±150 s; `rr_prev` and `rr_next` over the segment's mean RR interval; v2's ratio) but every usable N, S and V beat is kept (no cap on N beats). Q beats are dropped as everywhere; Icentia11k has no F labels. Segments whose download fails or that hold no usable labelled beat are left out and reported |
+| models | P18's sixty runs as listed in its `members.json` (ten per condition: none, class weighting, random oversampling, cVAE, WGAN-GP, diffusion), P16's AF detector (`af_detector.json`) with its threshold 0.95 and form "rule", Huang et al.'s threshold 0.8; each beat's AF probability from its segment's QRS annotation times. Nothing is fitted, chosen or tuned |
+| measures | S F1 is the primary measure (no F labels); V F1, S Se, S +P and N recall with it. Patient-level bootstrap (each patient one cluster), 10,000 resamples, seed 0 |
+| confirmatory (Holm, 6) | per condition, the ten-run ensemble vs P16's single runs (mean over seeds 0-2), both with the stage and the veto, on S F1 |
+| secondary (Holm, 5) | the cVAE's ten-run ensemble vs each other condition's, with the stage and the veto, on S F1 |
+| descriptive | the ensembles alone and with the stage alone; per condition, the stage and the stage with the veto against the ensemble alone (paired intervals, no correction); the three-run ensemble; the ten single runs; the share of beats called F; how many patients are S-dominant and the largest patient's share of S beats; P18's DS2 values beside |
+| reporting | its own section, labelled post hoc and as an external check on a different device and annotation process; P18's DS2 results stay as reported. Compute: one Kaggle T4 session, about 1-1.5 GPU-hours (the beats are built on the CPU cores; prediction on the CPU would take about 50 hours, 639 µs per beat and run measured locally); requested: "so improve these" and the choice "fresh-patient check", 2026-11-10 |
+
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 
 ## 11. Deviations and amendments

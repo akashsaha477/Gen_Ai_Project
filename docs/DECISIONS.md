@@ -518,3 +518,14 @@ those conditions with nothing else changed, averages each condition's ten runs, 
 reads DS2 once. Every condition gets the same ten seeds, so the comparisons between conditions stay equal-budget. Nothing
 is chosen on validation; the validation scores are descriptive. The decision was taken after P17's test result, so P18 is
 reported as post hoc.
+
+## 2026-11-10 (Day 35) — A40: P18's frozen pipeline on 1,000 unused Icentia11k patients (pre-registration v18) — Akash Saha ("so improve these"; chose the fresh-patient check)
+
+Against published inter-patient results, P18's best (S F1 0.647, F F1 0.527, V F1 0.936) sits at or near the top of the
+published range, but it is the best of 14 post hoc reads of the same 22 test patients, the cnn alone reaches S F1 0.247
+there, and record 232 holds three quarters of DS2's S beats. Of the options offered (a check on unused patients, rhythm-
+context augmentation, a bigger model), the check on unused patients was chosen: it tests the result without another DS2
+read. P19 (`phase6_fresh_patients`) runs P18's sixty runs, P16's veto and Huang's stage unchanged on the first segment of
+1,000 Icentia11k patients P14 did not draw, scored by S F1 (Icentia11k has no F labels) with a patient-level bootstrap.
+Prediction runs on a Kaggle GPU because the CPU would take about 50 hours; this departs from the habit of using the GPU
+only for training and is recorded here.

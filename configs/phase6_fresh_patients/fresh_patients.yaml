@@ -1,0 +1,6 @@
+# P19 (PREREGISTRATION §10 v18): P18's frozen pipeline on Icentia11k patients no analysis has used. Nothing is fitted or
+# chosen here: P18's ten runs per condition, P16's AF detector, threshold and form, and Huang's threshold come as they are.
+experiment: phase6_fresh_patients
+seed_ensemble_config: configs/phase6_seed_ensemble/seed_ensemble.yaml   # P18's config; it brings P16's and P13's
+patients: 1000      # drawn at random from the 10,600 patients P14 did not draw; the first segment (about 70 minutes) of each
+patient_seed: 1

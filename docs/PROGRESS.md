@@ -1238,3 +1238,14 @@ Full test suite on Kaggle at 54cf7d5 (`phase6-suite-p18`, CPU): tests exit code 
 Pushed 54cf7d5 to main and the tag `prereg-v17`. The tag reached GitHub only now, after P18's test read; the evidence that
 v17 came first is the commit order and the Kaggle kernels, which ran on repository bundles at 4cc7bc2 (grid, v17 already
 in it) and d43d46e (test). This note goes out with the next suite-tested push.
+
+**P19 (v18, A40), asked to improve on the published comparison; chose the check on unused patients.** Published
+inter-patient methods (checked against the papers where they were reachable): S F1 0.495-0.731, F F1 0-0.478 (Zhu et al.
+2022 0.478), V F1 0.797-0.960; the best rare-class score that reports both S and F is Zhu et al. 2022, 0.582. P18's 0.587
+matches it, but it is the best of 14 post hoc DS2 reads, and the cnn alone has S F1 0.247 on DS2 (0.776 on validation:
+the validation patients hold nothing like record 232). P19 (`phase6_fresh_patients`) runs P18's frozen pipeline on the
+first segment of 1,000 Icentia11k patients drawn with seed 1 from the 10,600 P14 did not draw, every usable beat, primary
+measure S F1; confirmatory per condition ensemble vs P16's single runs, secondary the cVAE vs the others. P14's 388 usable
+segments had a median of 3,900 N beats and about 1% S beats, so about 3.8 million beats are expected; CNN inference timed
+locally at 639 µs per beat and run (4 threads), about 50 hours for 60 runs on a CPU, so the kernel predicts on a T4. The
+scoring with a patient-level bootstrap over 1,000 patients took 120 s locally on fake predictions.
