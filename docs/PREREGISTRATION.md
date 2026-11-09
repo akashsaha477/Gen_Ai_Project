@@ -147,7 +147,7 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 - Every access is appended to `docs/TEST_ACCESS_LOG.md`. No decision of any kind uses test data.
 - After `/final-eval` nothing is retrained, re-selected or re-tuned. A bug found later is documented
   and any re-run is disclosed.
-- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v15): the analyses listed in §10 v4 to v15 only, after `/final-eval`, logged;
+- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v16): the analyses listed in §10 v4 to v16 only, after `/final-eval`, logged;
   they add evidence beside the primary results and replace none of them.
 
 ## 9. Generators and RQ3 (rules fixed now, thresholds in v2)
@@ -421,6 +421,24 @@ P13's test result, so P16 is reported as post hoc.
 | test | one `posthoc` access on Kaggle, after P15's test (DS2 in P13's form; the detector reads each DS2 record's QRS annotation times, as the RR features already do, never a label; every test beat must sit on one). Confirmatory (Holm, 6 tests): per condition, the stage with the veto vs the stage alone, rare-class macro-F1 (only S calls change), record-level bootstrap 10,000, seed 0. The stage-alone scores must match P13's summary and, for the diffusion condition, P15's |
 | descriptive | S sensitivity, +P and F1 with and without the veto; the share of each DS2 record's beats the detector flags; without record 202 |
 | reporting | its own section, labelled post hoc, framed as limited by scale. Compute: CPU only (the fit and the check ran on annotations; the test on a Kaggle CPU session) |
+
+**v16, committed 2026-11-09, after P15's training and P16's design, before P15's and P16's test results were read and
+before any of the work below (DECISIONS A38).** One analysis, post hoc. P15 trained its diffusion model with the phase 3
+budget of 20,000 steps. Two training-side signs say the budget was too small for it. Its training loss was still falling
+at the end: a mean of 0.117-0.118 over steps 1,001-2,000, 0.098-0.099 over 15,001-16,000 and 0.096 over 19,001-20,000, in
+all three seeds (the runs' `train_log.csv`). And the median beat of each class in its banks matches the median of real
+DS1 training beats far less closely than the cVAE's does: correlation S 0.11-0.30, V 0.57-0.59, F 0.72-0.73, against the
+cVAE's 0.58-0.74, 0.94-0.96 and 0.96 (`phase6_diffusion_long --part shape`, `results/phase6_diffusion_long/shape_check.json`).
+Sampling P15's seed-0 model with its raw weights instead of their moving average, or without guidance, did not close the
+gap in an exploratory check. P15's and P16's test summaries had been written and committed by then, but not read.
+
+| item | rule |
+|---|---|
+| P17 `phase6_diffusion_long`, generator | P15's model, data, sampler, batch, seeds, bank sizes, strengths and selection rule, unchanged (the config is checked against P15's when it is loaded); 100,000 steps instead of 20,000 |
+| classifier | the P7 cnn on P13's data with each P17 bank at 0.1, 0.25 and 0.5 x N (unscreened), seeds 0-2: 9 runs; one strength chosen on validation by the phase 4 gate rule |
+| test | one `posthoc` access on Kaggle (DS2 in P13's form; the AF detector reads only each DS2 record's QRS annotation times). Confirmatory (Holm, 2 tests): P17 vs P15's diffusion condition (the budget) and vs P13's cnn without augmentation; rare-class macro-F1, record-level bootstrap 10,000, seed 0. Secondary (Holm, 3 tests): vs P13's cVAE, class weighting and random oversampling. P13's, P15's and P16's scores are recomputed and must match their summaries |
+| descriptive | Huang et al.'s SVEB stage, and the stage with P16's AF veto (threshold 0.95, form "rule"), on top of every compared condition; the nearest-patient check (as P15); the shape check for P17's banks; validation S F1 |
+| reporting | its own section, labelled post hoc, framed as limited by scale. Only the diffusion model gets the longer budget; the cVAE and WGAN-GP keep the phase 3 budget, so P17 against them is not an equal-budget comparison, and the paper says so. Compute: one Kaggle T4 session, about 6 GPU-hours (P15 took about 18 minutes per 20,000 steps; approved: "Run whatever you want", 2026-11-08); CPU for the test |
 
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 

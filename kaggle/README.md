@@ -29,6 +29,7 @@ to GitHub, so you only `git pull`. No logic lives in the notebooks.
 | `phase6_icentia.ipynb` | post hoc (v13, P14): P13's data plus 400 Icentia11k patients; `PART` = grid (GPU, Internet on; downloads and builds), test (CPU) | `ecgaug-banks`, `ecgaug-v5-external`, `ecgaug-p12-banks`; test: `ecgaug-p13-runs`, P14 runs |
 | `phase6_diffusion.ipynb` | post hoc (v14, P15): a class-conditional diffusion model as the generator on P13's data; `PART` = train (GPU), test (CPU) | `ecgaug-banks`, `ecgaug-v5-external`, `ecgaug-p12-banks`; test: `ecgaug-v5-external`, `ecgaug-p13-runs`, `ecgaug-p15-runs` |
 | `phase6_af_rule.ipynb` | post hoc (v15, P16): Huang's SVEB stage with an AF veto (detector fitted on the MIT-BIH AF database, RR intervals only); `PART` = test (CPU); fit and check run locally | `ecgaug-v5-external`, `ecgaug-p13-runs`, `ecgaug-p15-runs` |
+| `phase6_diffusion_long.ipynb` | post hoc (v16, P17): P15's diffusion model trained for 100,000 steps instead of 20,000, nothing else changed; `PART` = train (GPU), test (CPU) | `ecgaug-banks`, `ecgaug-v5-external`, `ecgaug-p12-banks`; test: `ecgaug-v5-external`, `ecgaug-p13-runs`, `ecgaug-p15-runs`, P17 runs |
 | `phase5_explainability.ipynb`, `phase5_clinical_notes.ipynb` | saliency methods and note generators on the phase 4 models | `mitdb-raw`, artifacts (checkpoints) |
 
 Other files in this folder: `kaggle_run.py` (the script every notebook calls), `make_raw_dataset.py`

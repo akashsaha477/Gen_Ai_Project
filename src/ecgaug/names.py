@@ -68,11 +68,12 @@ PHASE6_RECORD_RR = "phase6_record_rr"  # RR intervals over the mean RR of their 
 PHASE6_ICENTIA = "phase6_icentia"  # the P13 cnn trained on many more patients, from Icentia11k (v13)
 PHASE6_DIFFUSION = "phase6_diffusion"  # a class-conditional diffusion model as the generator, on P13's data (v14)
 PHASE6_AF_RULE = "phase6_af_rule"  # Huang's SVEB stage with atrial-fibrillation beats vetoed (v15)
+PHASE6_DIFFUSION_LONG = "phase6_diffusion_long"  # P15's diffusion model trained five times longer (v16)
 POST_HOC: tuple[str, ...] = (PHASE6_RR_REFERENCE, PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS, PHASE6_AUDIT_CHECK, PHASE6_RR_BASELINE,
                              PHASE6_PATIENT_TEMPLATE, PHASE6_RELATIVE_CNN, PHASE6_AUGMENTATION_MECHANISM,
                              PHASE6_PATIENT_TRANSFER, PHASE6_PATIENT_ADAPTATION, PHASE6_MORE_PATIENTS, PHASE6_RELATIVE_GENERATORS,
                              PHASE6_RECORD_RR, PHASE6_ICENTIA, PHASE6_DIFFUSION,
-                             PHASE6_AF_RULE)
+                             PHASE6_AF_RULE, PHASE6_DIFFUSION_LONG)
 
 # Result folders that travel back from Kaggle: every experiment's, plus the full grid's ledger.
 RESULT_FOLDERS: tuple[str, ...] = (*EXPERIMENTS, PHASE4_FULL_GRID, *POST_HOC)

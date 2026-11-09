@@ -1,0 +1,28 @@
+# P17 (PREREGISTRATION §10 v16): P15's diffusion model trained five times longer. Every other setting must equal P15's
+# (checked when the config is loaded): the data, model, sampler, batch, seeds, banks, strengths and selection rule.
+experiment: phase6_diffusion_long
+record_rr_config: configs/phase6_record_rr/record_rr.yaml
+diffusion_config: configs/phase6_diffusion/diffusion.yaml    # P15
+af_rule_config: configs/phase6_af_rule/af_rule.yaml          # P16's detector, threshold and form, for the descriptive rows
+classes: [N, S, V, F]
+generator:
+  timesteps: 1000
+  sample_steps: 50
+  guidance: 1.5
+  p_uncond: 0.1
+  ema_decay: 0.999
+  channels: [64, 128, 256]
+  kernel: 5
+  embed_dim: 128
+  groups: 8
+  weight_decay: 0.0
+  clip_x0: 10.0
+training:
+  batch_size: 128
+  lr: 2.0e-4
+  final_steps: 100000            # five times the phase 3 budget (P15: 20,000); the only change
+  log_every: 200
+seeds: [0, 1, 2]
+strengths: [0.1, 0.25, 0.5]
+mechanism_beats: 5000
+rule_threshold: 0.8

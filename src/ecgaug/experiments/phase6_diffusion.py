@@ -58,20 +58,20 @@ def load_config(path: Path) -> dict:
     return {**cfg, "file": str(path), "rr": rr.load_config(paths.repo_root() / cfg["record_rr_config"])}
 
 
-def generator_id() -> str:
-    return f"{EXPERIMENT}/diffusion"
+def generator_id(experiment: str = EXPERIMENT) -> str:
+    return f"{experiment}/diffusion"
 
 
 def settings(cfg: dict) -> dict:
     return {**cfg["training"], **cfg["generator"], "classes": list(cfg["classes"])}
 
 
-def generators_path() -> Path:
-    return paths.results_for(EXPERIMENT) / "diffusion_generators.json"
+def generators_path(experiment: str = EXPERIMENT) -> Path:
+    return paths.results_for(experiment) / "diffusion_generators.json"
 
 
-def generators_record() -> dict:
-    path = generators_path()
+def generators_record(experiment: str = EXPERIMENT) -> dict:
+    path = generators_path(experiment)
     if not path.is_file():
         raise PreconditionError("Train the generators first: --part train")
     return json.loads(path.read_text())
@@ -82,7 +82,7 @@ def generators_record() -> dict:
 # --------------------------------------------------------------------------------------------------
 
 
-def train_generators(cfg: dict, data: DataSource, device: torch.device) -> dict:
+def train_generators(cfg: dict, data: DataSource, device: torch.device, experiment: str = EXPERIMENT, rule: str = "PREREGISTRATION §10 v14") -> dict:
     """One diffusion model per seed on the training beats (divided by one scale), and one bank per seed."""
     arrays = data.arrays
     train = training_beats(arrays)
@@ -92,14 +92,14 @@ def train_generators(cfg: dict, data: DataSource, device: torch.device) -> dict:
     s = settings(cfg)
     steps = int(cfg["training"]["final_steps"])
     counts = rg.bank_counts(train["y"], max(cfg["strengths"]))
-    gid = generator_id()
-    record = {"experiment": EXPERIMENT, "rule": "PREREGISTRATION §10 v14", "family": FAMILY, "settings": s, "generator_id": gid, "scale": scale,
+    gid = generator_id(experiment)
+    record = {"experiment": experiment, "rule": rule, "family": FAMILY, "settings": s, "generator_id": gid, "scale": scale,
               "steps": steps, "bank_counts": counts, "data_sha256": data.info["content_sha256"], "device": str(device), "seeds": {}}  # fmt: skip
     for seed in cfg["seeds"]:
-        run_id = runs.make_run_id(EXPERIMENT, "generator", int(seed), tag=FAMILY)
-        run_dir = paths.runs_dir() / EXPERIMENT / "generators" / FAMILY / run_id
+        run_id = runs.make_run_id(experiment, "generator", int(seed), tag=FAMILY)
+        run_dir = paths.runs_dir() / experiment / "generators" / FAMILY / run_id
         (run_dir / "checkpoints").mkdir(parents=True)
-        (run_dir / "config.yaml").write_text(yaml.safe_dump({"experiment": EXPERIMENT, "family": FAMILY, "settings": s, "steps": steps,
+        (run_dir / "config.yaml").write_text(yaml.safe_dump({"experiment": experiment, "family": FAMILY, "settings": s, "steps": steps,
                                                              "seed": int(seed), "scale": scale, "data_sha256": data.info["content_sha256"]}))  # fmt: skip
         generator = build_generator(FAMILY, s, data.spec.n_samples, int(seed))
         fit = generator.fit(part, steps, int(seed), device, val_records=val_records, fractions=(1.0,), log_every=int(cfg["training"]["log_every"]))
@@ -121,17 +121,17 @@ def train_generators(cfg: dict, data: DataSource, device: torch.device) -> dict:
         m = json.loads(meta.read_text())
         m["normalization"] = "P13's form (beat minus the patient's template); generator trained on beats / scale, samples multiplied back by scale"
         meta.write_text(json.dumps(m, indent=2) + "\n")
-    out = paths.results_for(EXPERIMENT)
+    out = paths.results_for(experiment)
     out.mkdir(parents=True, exist_ok=True)
-    generators_path().write_text(json.dumps(record, indent=2, default=float) + "\n")
+    generators_path(experiment).write_text(json.dumps(record, indent=2, default=float) + "\n")
     return record
 
 
-def load_diffusion_bank(seed: int) -> tuple[dict, str]:
-    entry = generators_record()["seeds"].get(str(seed))
+def load_diffusion_bank(seed: int, experiment: str = EXPERIMENT) -> tuple[dict, str]:
+    entry = generators_record(experiment)["seeds"].get(str(seed))
     if entry is None or "bank_sha256" not in entry:
         raise PreconditionError(f"No diffusion bank for seed {seed} (did its generator diverge?)")
-    return banks.load_bank(generator_id(), seed, expected_sha256=entry["bank_sha256"]), entry["bank_sha256"]
+    return banks.load_bank(generator_id(experiment), seed, expected_sha256=entry["bank_sha256"]), entry["bank_sha256"]
 
 
 # --------------------------------------------------------------------------------------------------
@@ -139,46 +139,46 @@ def load_diffusion_bank(seed: int) -> tuple[dict, str]:
 # --------------------------------------------------------------------------------------------------
 
 
-def diffusion_grid(cfg: dict) -> dict:
+def diffusion_grid(cfg: dict, experiment: str = EXPERIMENT) -> dict:
     """P13's grid (the P7 cnn, settings, seeds, unscreened policy) with the diffusion bank at the phase 4 strengths."""
     base = rr.record_grid(cfg["rr"])
-    return {**base, "experiment": EXPERIMENT, "name": GRID_NAME, "conditions": {FAMILY: {"bank": generator_id(), "strengths": list(cfg["strengths"])}},
+    return {**base, "experiment": experiment, "name": GRID_NAME, "conditions": {FAMILY: {"bank": generator_id(experiment), "strengths": list(cfg["strengths"])}},
             "file": cfg["file"]}  # fmt: skip
 
 
-def run_grid(cfg: dict, data: DataSource, device: torch.device) -> dict:
+def run_grid(cfg: dict, data: DataSource, device: torch.device, experiment: str = EXPERIMENT) -> dict:
     split = check_preconditions()
-    grid = diffusion_grid(cfg)
+    grid = diffusion_grid(cfg, experiment)
     ledger = runner.read_ledger(grid)
     report = {"done_before": 0, "ran": 0}
     for cell in runner.cells(grid):
         classifier = runner.classifier_settings(grid, cell.architecture, preview=False)
-        bank, bank_sha = load_diffusion_bank(cell.seed)
+        bank, bank_sha = load_diffusion_bank(cell.seed, experiment)
         sha = runner.cell_sha(cell, grid, classifier, data, bank_sha)
         if runner.is_done(ledger.get(sha)):
             report["done_before"] += 1
             continue
-        ledger[sha] = runner.run_cell(cell, grid, split, data, classifier, device, sha, bank, generator_id(), [])
+        ledger[sha] = runner.run_cell(cell, grid, split, data, classifier, device, sha, bank, generator_id(experiment), [])
         runner.write_cell(grid, ledger[sha])
         report["ran"] += 1
     return report
 
 
-def select(cfg: dict) -> dict:
-    grid = diffusion_grid(cfg)
+def select(cfg: dict, experiment: str = EXPERIMENT, rule: str = "PREREGISTRATION §10 v14 (the phase 4 gate rule)") -> dict:
+    grid = diffusion_grid(cfg, experiment)
     expected = runner.cells(grid)
     done = {(r["condition"], r["strength"], r["architecture"], r["seed"]) for r in runner.read_ledger(grid).values() if r["status"] == "done"}
     missing = [c for c in expected if (c.condition, c.strength, c.architecture, c.seed) not in done]
     if missing:
         raise PreconditionError(f"{len(missing)} of {len(expected)} cells are not done, e.g. {missing[:2]}")
     chosen, _ = workflow.choose_strengths(grid, runner.summarize(grid))
-    out = {"experiment": EXPERIMENT, "rule": "PREREGISTRATION §10 v14 (the phase 4 gate rule)", "chosen": chosen, "git_sha": runs.git_sha()}
-    (paths.results_for(EXPERIMENT) / "selection.json").write_text(json.dumps(out, indent=2, default=float) + "\n")
+    out = {"experiment": experiment, "rule": rule, "chosen": chosen, "git_sha": runs.git_sha()}
+    (paths.results_for(experiment) / "selection.json").write_text(json.dumps(out, indent=2, default=float) + "\n")
     return out
 
 
-def load_selection() -> dict:
-    path = paths.results_for(EXPERIMENT) / "selection.json"
+def load_selection(experiment: str = EXPERIMENT) -> dict:
+    path = paths.results_for(experiment) / "selection.json"
     if not path.is_file():
         raise PreconditionError("Apply the selection first: --part select")
     return json.loads(path.read_text())
@@ -189,15 +189,15 @@ def load_selection() -> dict:
 # --------------------------------------------------------------------------------------------------
 
 
-def mechanism(cfg: dict, data: DataSource) -> dict:
+def mechanism(cfg: dict, data: DataSource, experiment: str = EXPERIMENT) -> dict:
     """For S and F: the patient of the nearest real training beat of 'mechanism_beats' synthetic beats from the seed-0 bank,
     beside the real beats' own spread and P12's cVAE bank (the generator P13 used)."""
     train = training_beats(data.arrays)
     units = rg.patient_units(train["record"])
-    diffusion, _ = load_diffusion_bank(0)
+    diffusion, _ = load_diffusion_bank(0, experiment)
     cvae, _ = rg.load_relative_bank(cfg["rr"]["rg"], "cvae", 0)
     n = int(cfg["mechanism_beats"])
-    out = {"experiment": EXPERIMENT, "unit": "patient", "beats_per_class": n, "classes": {}}
+    out = {"experiment": experiment, "unit": "patient", "beats_per_class": n, "classes": {}}
     for cls in ("S", "F"):
         mask = np.asarray(train["y"]) == CLASS_INDEX[cls]
         reference, owners = np.asarray(train["X"])[mask], units[mask]
@@ -206,7 +206,7 @@ def mechanism(cfg: dict, data: DataSource) -> dict:
             idx = np.flatnonzero(np.asarray(bank["y"]) == CLASS_INDEX[cls])[:n]
             entry[name] = mech._entry(owners[mech.nearest(reference, np.asarray(bank["X"])[idx])])
         out["classes"][cls] = entry
-    (paths.results_for(EXPERIMENT) / "mechanism.json").write_text(json.dumps(out, indent=2, default=float) + "\n")
+    (paths.results_for(experiment) / "mechanism.json").write_text(json.dumps(out, indent=2, default=float) + "\n")
     return out
 
 

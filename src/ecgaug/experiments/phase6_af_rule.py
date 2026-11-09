@@ -343,6 +343,22 @@ def _conditions() -> dict[str, list[str]]:
     return out
 
 
+def ds2_af_probability(detector: dict, records: np.ndarray, r_idx: np.ndarray) -> np.ndarray:
+    """The AF probability of every test beat, from its DS2 record's QRS annotation times only (a posthoc read; no label is
+    used). Every beat must sit on one of the record's QRS annotations."""
+    p_af = np.zeros(np.asarray(records).size)
+    for record in sorted(set(np.asarray(records).tolist())):
+        samples, symbols = raw.read_annotations(int(record), access="posthoc")
+        qrs = np.sort(np.asarray(samples)[np.isin(symbols, sorted(QRS_SYMBOLS))])
+        prob = af_probability(detector, qrs, FS)
+        mask = np.asarray(records) == record
+        pos = np.searchsorted(qrs, r_idx[mask])
+        if not np.array_equal(qrs[np.clip(pos, 0, qrs.size - 1)], r_idx[mask]):
+            raise PreconditionError(f"Record {record}: test beats do not match its QRS annotations")
+        p_af[mask] = prob[pos]
+    return p_af
+
+
 def test_report(cfg: dict) -> dict:
     """DS2 in P13's form, one posthoc access. For every compared condition: Huang's rule alone and with the AF veto.
     Confirmatory (Holm): with the veto vs without, per condition. The rule-alone scores of P13's conditions must reproduce
@@ -358,17 +374,8 @@ def test_report(cfg: dict) -> dict:
         ratios.update({(record, r): v for r, v in v5.record_ratios(record, half, access="posthoc").items()})
     v3 = pt.relative(v5.substitute(v1_test, ratios), pt.mitbih_templates(v1_test, spec, half, access="posthoc"))
     test = rr.normalize(v3, rr.mean_rr_by_record(np.asarray(v3["record"]), access="posthoc"))
-    y, records, r_idx = test["y"], np.asarray(test["record"]), np.asarray(test["r_idx"])
-    p_af = np.zeros(y.size)
-    for record in sorted(set(records.tolist())):
-        samples, symbols = raw.read_annotations(int(record), access="posthoc")
-        qrs = np.sort(np.asarray(samples)[np.isin(symbols, sorted(QRS_SYMBOLS))])
-        prob = af_probability(detector, qrs, FS)
-        mask = records == record
-        pos = np.searchsorted(qrs, r_idx[mask])
-        if not np.array_equal(qrs[np.clip(pos, 0, qrs.size - 1)], r_idx[mask]):
-            raise PreconditionError(f"Record {record}: test beats do not match its QRS annotations")
-        p_af[mask] = prob[pos]
+    y, records = test["y"], np.asarray(test["record"])
+    p_af = ds2_af_probability(detector, records, np.asarray(test["r_idx"]))
     plain, vetoed, unique = {}, {}, None
     for c, run_ids in _conditions().items():
         probs = pt._predict(run_ids, test)

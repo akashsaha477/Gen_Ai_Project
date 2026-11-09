@@ -497,3 +497,13 @@ intervals after premature beats and their pauses are removed), fitted on the MIT
 subjects), and undoes the rule's S calls where it fires. Its threshold (0.95) was chosen on the annotations of DS1, INCART
 and SVDB, and its form (only the rule's own conversions) on P13's validation patients, both by rules written into the code
 before they were computed. No DS2 data was used. One DS2 read, after P15's test; the diffusion condition is compared too.
+
+## 2026-11-09 (Day 34) — A38: the diffusion model trained five times longer (pre-registration v16) — Akash Saha ("Run whatever you want ... I want industry standard result"; "finish the work")
+
+P15 gave the diffusion model the same step budget as the phase 3 generators (20,000 steps). On training-side evidence
+that budget was too small for it: its loss was still falling at the end, and its banks' class medians correlate with
+real training beats far less than the cVAE's (P17's shape check). A fair test of the third generator family needs it
+trained to a usable state, so P17 (`phase6_diffusion_long`) repeats P15 with 100,000 steps and nothing else changed (the
+config is checked against P15's), with one DS2 read that compares it with P15 and with P13's conditions. The decision was
+taken before P15's and P16's test results were read. The other generators keep the phase 3 budget; the paper reports the
+unequal budget.
