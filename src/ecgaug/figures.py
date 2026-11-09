@@ -1642,7 +1642,7 @@ def _comparisons_panel(ax, families: dict, title: str) -> None:
     ax.axvline(0, color=GRID, linewidth=1.2)
 
     def pretty(name: str) -> str:
-        for key in ("random_oversampling", "class_weighted", "wgan_gp", "cvae"):
+        for key in ("diffusion_long", "random_oversampling", "class_weighted", "wgan_gp", "cvae"):
             name = name.replace(key, CONDITION_NAMES[key])
         return name.removeprefix("cnn: ")
 
@@ -1965,7 +1965,8 @@ def diffusion_long_results_figure(summary: dict) -> list[Path]:
     test set, alone, with Huang's SVEB stage and with the stage plus P16's AF veto; the pre-registered comparisons."""
     plt = _plt()
     colors = {"none": "#8f8d88", "class_weighted": "#a6a49f", "random_oversampling": "#bdbbb6", "cvae": "#2a78d6", "diffusion": DIFFUSION_COLOR, "diffusion_long": LONG_COLOR}
-    entries = {**summary["before"], **summary["conditions"]}
+    before = sorted(summary["before"], key=lambda k: k.split("/")[1] == "diffusion")  # P15 last, next to P17
+    entries = {**{k: summary["before"][k] for k in before}, **summary["conditions"]}
     rows = []
     for key, entry in entries.items():
         c = key.split("/")[1]

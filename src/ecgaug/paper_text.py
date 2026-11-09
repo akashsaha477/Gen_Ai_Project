@@ -1354,8 +1354,13 @@ def _diffusion_sentence(with_section: bool = False) -> str | None:
         return text + ", so the budget, not the family, may be what limits it."
     lc = long["families"]["confirmatory"]["cnn: diffusion_long vs diffusion (P15)"]
     ln = long["conditions"]["cnn/diffusion_long"]
-    return text + (f". Trained for five times as many steps (Section~\\ref{{sec:diffusion-long}}) it reached {_n(ln['rare_macro_f1']['point'])} "
-                   f"(S F1 {_n(ln['f1_S']['point'])}, F F1 {_n(ln['f1_F']['point'])}; against the shorter training {_p(lc)}).")
+    early, late = _window_loss(PHASE6_DIFFUSION_LONG, 20000), _window_loss(PHASE6_DIFFUSION_LONG, 100000)
+    fell = " its loss fell further, but" if early and late and max(late) < min(early) else ""
+    change = "a detectable change" if lc["reject_holm"] else "no detectable change"
+    gap = ", so more steps alone did not close the gap to the cVAE" if ln["rare_macro_f1"]["point"] < cvae["rare_macro_f1"]["point"] else ""
+    where_long = " (Section~\\ref{sec:diffusion-long})" if with_section else ""
+    return text + (f". Trained for five times as many steps{where_long}{fell} it reached {_n(ln['rare_macro_f1']['point'])} "
+                   f"(S F1 {_n(ln['f1_S']['point'])}, F F1 {_n(ln['f1_F']['point'])}; {change} from the shorter training, {_p(lc)}){gap}.")
 
 
 def _af_sentence(with_section: bool = False) -> str | None:

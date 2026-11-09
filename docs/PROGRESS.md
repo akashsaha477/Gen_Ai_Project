@@ -1171,8 +1171,17 @@ of the real beats' median position of it) moved with the longer training but not
 0.61-0.66 (P17), F 0.45-0.50 to 0.63-0.70, S 0.16-0.25 to 0.23-0.25 over seeds; real beats 0.75, 0.75, 0.63; cVAE
 0.81-0.84, 0.82-0.83, 0.70-0.72. Figure: `figures/phase6_diffusion_long/check.png` (loss, shape, alignment, spread over
 patients; training data only). Effective patients: S 37.8, F 6.4 (real 32.0 and 4.9). Validation
-chose strength 0.1 (S F1 0.754 ± 0.002; 0.1 and 0.25 tied on the metric and the tie-break, 0.1 is the simpler). Next: one
-test read on CPU.
+chose strength 0.1 (S F1 0.754 ± 0.002; 0.1 and 0.25 tied on the metric and the tie-break, 0.1 is the simpler).
 
-Open: P17's test read; the paper sections for P17 (text and figures are generated); the full test suite on Kaggle at
-the final commit; push main.
+**P17 test (one posthoc read, logged; CPU kernel `phase6-diffusion-long-test` at f495dbe).** Rare-class macro-F1 0.267
+[0.129, 0.341] (S F1 0.307, F F1 0.226); P15 0.280. Confirmatory: vs P15 -0.013 [-0.040, +0.032], vs none +0.050
+[-0.071, +0.139], Holm p 0.924 both. Secondary: vs cVAE -0.089, class weighting -0.113, random oversampling -0.108
+(Holm p 0.776, 0.737, 0.776). With Huang et al.'s rule 0.404 (S F1 0.581); with the rule and P16's AF veto 0.440 (S F1
+0.653, F F1 0.226; the cVAE's 0.557 stays the study's highest). P13's, P15's and P16's scores reproduced exactly. More
+steps alone did not close the gap to the cVAE; with the training-side checks above, the next things to try would be a
+larger model or another sampler. Ingest kept the local `shape_check.json` (the bundle's copy predates the alignment
+count; correlations identical) and the locally drawn samples figure (the test kernel had no P17 banks, so its copy lacks the P17 row).
+Figure: `figures/phase6_diffusion_long/results.png`.
+
+Open: PROJECT_GUIDE.md and CODE_GUIDE.md do not yet describe the post hoc analyses (P1-P17); the full test suite on
+Kaggle at the final commit; push main.
