@@ -1989,6 +1989,69 @@ def diffusion_long_results_figure(summary: dict) -> list[Path]:
     return [_save(fig, paths.figures_for("phase6_diffusion_long") / "results.png", "Before and after: the diffusion model trained five times longer", caption)]
 
 
+ENSEMBLE_COLOR, SINGLE_RUN_COLOR = "#0f6e8c", "#a6a49f"
+
+
+def seed_ensemble_check_figure(members: dict) -> list[Path]:
+    """P18 before and after on the validation patients (the runs' stored predictions, no test data): S and V F1 with Huang's
+    SVEB stage and P16's AF veto, for each of the ten single runs, the three-run and the ten-run ensemble of each condition."""
+    plt = _plt()
+    table = members["validation"]
+    conditions = list(table)
+    fig, axes = plt.subplots(1, 2, figsize=(11.5, 0.5 * len(conditions) + 2.0), sharey=True)
+    for ax, cls in zip(axes, ("S", "V")):
+        for i, c in enumerate(reversed(conditions)):
+            e = table[c]["veto"][cls]
+            ax.scatter(e["single"], np.full(len(e["single"]), i), s=14, color=SINGLE_RUN_COLOR, zorder=2, label="single runs (seeds 0-9)" if i == 0 else None)
+            ax.scatter([e["three"]], [i + 0.18], s=40, facecolors="none", edgecolors=ENSEMBLE_COLOR, linewidths=1.4, zorder=3,
+                       label="three-run ensemble (seeds 0-2)" if i == 0 else None)  # fmt: skip
+            ax.scatter([e["ten"]], [i - 0.18], s=40, color=ENSEMBLE_COLOR, zorder=3, label="ten-run ensemble" if i == 0 else None)
+        ax.set_yticks(range(len(conditions)), [CONDITION_NAMES[c] for c in reversed(conditions)])
+        ax.set_xlabel(f"validation {cls} F1, with the SVEB stage and the AF veto")
+        ax.set_title(f"{cls} beats", loc="left")
+        ax.grid(axis="y", visible=False)
+    handles, labels = axes[0].get_legend_handles_labels()
+    if handles:
+        axes[1].legend(handles, labels, fontsize=7, loc="upper left", bbox_to_anchor=(1.02, 1.0), frameon=False)
+    caption = (f"Validation patients only ({len(members['records'])} recordings; the runs' stored predictions). Grey: each of a condition's ten "
+               "runs alone; open: the mean class probabilities of seeds 0-2; filled: of all ten. Huang et al.'s SVEB stage and P16's AF veto are "
+               "applied after the averaging. Descriptive: nothing is chosen. Post hoc (PREREGISTRATION v17, P18).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_seed_ensemble") / "check.png", "Before and after: ten runs averaged, on the validation patients", caption)]
+
+
+def seed_ensemble_results_figure(summary: dict) -> list[Path]:
+    """P18 before and after on the test set: per condition, P16's single runs (seeds 0-2) and the ten-run ensemble, both with
+    Huang's SVEB stage and P16's AF veto, with the ten single runs' scores; the pre-registered comparisons."""
+    plt = _plt()
+    keys = list(summary["ensemble"]["with_af_veto"])
+    rows = []
+    for key in keys:
+        name = CONDITION_NAMES[key.split("/")[1]]
+        rows += [(f"{name}: single runs (P16)", summary["p16"]["with_af_veto"][key], VETO_COLOR, "D", summary["per_run_points"][key]),
+                 (f"{name}: ten-run ensemble", summary["ensemble"]["with_af_veto"][key], ENSEMBLE_COLOR, "o", None)]  # fmt: skip
+    fig, axes = plt.subplots(1, 4, figsize=(19, 0.36 * len(rows) + 2.4), gridspec_kw={"width_ratios": [1, 0.7, 0.7, 1.1]})
+    for ax, metric, xlabel, title in ((axes[0], "rare_macro_f1", "test rare-class macro-F1 (95% record-level CI)", "each condition, stage and veto on top"),
+                                      (axes[1], "f1_S", "test S F1", "S beats"), (axes[2], "f1_F", "test F F1", "F beats")):  # fmt: skip
+        for i, (label, entry, color, marker, points) in enumerate(reversed(rows)):
+            if metric == "rare_macro_f1" and points is not None:
+                ax.scatter(points, np.full(len(points), i - 0.22), s=9, color=SINGLE_RUN_COLOR, zorder=2,
+                           label="each of the ten single runs" if i == 1 else None)  # fmt: skip
+            _interval(ax, entry[metric], i, color, marker=marker)
+        ax.set_yticks(range(len(rows)), [r[0] for r in reversed(rows)] if metric == "rare_macro_f1" else [], fontsize=7)
+        ax.set_xlim(0, 1)
+        ax.set_xlabel(xlabel)
+        ax.set_title(title, loc="left")
+    handles, labels = axes[0].get_legend_handles_labels()
+    if handles:
+        axes[0].legend(handles, labels, fontsize=7, loc="lower right")
+    _comparisons_panel(axes[3], summary["families"], "pre-registered comparisons, P18")
+    caption = ("Every row has Huang et al.'s SVEB stage and P16's AF veto on top. Diamonds: P16, the mean over three single runs (seeds 0-2); "
+               "grey dots: each of the condition's ten runs alone; circles: the ten runs' class probabilities averaged before the argmax. Right, "
+               "black: confirmatory (per condition, ensemble vs P16); grey: secondary (the cVAE's ensemble vs each other condition's). "
+               "Post hoc (PREREGISTRATION v17, P18).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_seed_ensemble") / "results.png", "Before and after: ten runs averaged per condition", caption)]
+
+
 def posthoc_figures() -> list[Path]:
     """Every post-hoc figure whose summary exists (PREREGISTRATION v4, P1-P4); nothing is re-run."""
     final, written = _summary("final_eval"), []
@@ -2060,6 +2123,10 @@ def posthoc_figures() -> list[Path]:
         written += diffusion_long_check_figure(c)
     if (s := _summary("phase6_diffusion_long")) is not None:
         written += diffusion_long_results_figure(s)
+    if (m := _summary("phase6_seed_ensemble", "members.json")) is not None:
+        written += seed_ensemble_check_figure(m)
+    if (s := _summary("phase6_seed_ensemble")) is not None:
+        written += seed_ensemble_results_figure(s)
     return written
 
 

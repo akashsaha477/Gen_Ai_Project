@@ -220,6 +220,23 @@ def _validation_predictions(run_ids: list[str]) -> tuple[list[np.ndarray], tuple
     return probs, beats
 
 
+def _epoch_noise(run_ids: list[str]) -> dict:
+    """For runs on disk: the largest change in validation S F1 between consecutive epochs (their ``train_log.csv``) and how
+    many kept their first epoch (``metrics_val.json``)."""
+    import csv
+
+    jumps, first = [], 0
+    for run_id in run_ids:
+        folder = runs.find_run_dir(run_id)
+        if folder is None:
+            raise PreconditionError(f"No run folder for {run_id}")
+        with (folder / "train_log.csv").open() as fh:
+            s = np.array([float(row["val_f1_S"]) for row in csv.DictReader(fh)])
+        jumps.append(float(np.max(np.abs(np.diff(s)))) if s.size > 1 else 0.0)
+        first += int(json.loads((folder / "metrics_val.json").read_text())["best_epoch"] == 1)
+    return {"runs": len(run_ids), "largest_jump": {"min": min(jumps), "median": float(np.median(jumps)), "max": max(jumps)}, "kept_first_epoch": first}
+
+
 def validation_check(cfg: dict) -> dict:
     """On P13's validation patients, from the runs' stored validation predictions (no test data): per condition, S, V and F
     F1 of the cnn alone, with Huang's stage, and with the stage and P16's veto, for each of the ten single runs, the
@@ -242,7 +259,10 @@ def validation_check(cfg: dict) -> dict:
                   "ten": float(np.mean([table[c][k]["S"]["ten"] for c in table]))} for k in KINDS}  # fmt: skip
     out = {"experiment": EXPERIMENT, "rule": f"{RULE} (validation patients, the runs' stored predictions; descriptive)",
            "rule_threshold": t_rule, "af_threshold": af_t, "veto_form": form, "members": m, "validation": table,
-           "mean_s_f1": mean_s, "records": sorted(int(r) for r in cache), "git_sha": runs.git_sha()}  # fmt: skip
+           "mean_s_f1": mean_s, "records": sorted(int(r) for r in cache),
+           "epochs": {"seeds_0_2": _epoch_noise([i for ids in m.values() for i in ids[: len(EXISTING_SEEDS)]]),
+                      "all_seeds": _epoch_noise([i for ids in m.values() for i in ids])},
+           "git_sha": runs.git_sha()}  # fmt: skip
     folder = paths.results_for(EXPERIMENT)
     folder.mkdir(parents=True, exist_ok=True)
     (folder / "members.json").write_text(json.dumps(out, indent=2, default=float) + "\n")
@@ -336,8 +356,8 @@ def test_report(cfg: dict) -> dict:
                "per_run_points": {f"cnn/{c}": [float(v) for v in M.rare_macro_f1_from_cm(cm.sum(axis=1))] for c, cm in single["veto"].items()},
                "three_run_ensemble": {"with_af_veto": block(three["veto"])},
                "without_202": {"ensemble": block(ten["veto"], keep), "p16": block(p16_veto, keep)},
-               "families": {"confirmatory": mp._family({f"cnn: {c}, ten-run ensemble vs single runs (P16)": (ten["veto"][c], p16_veto[c]) for c in CONDITIONS}),
-                            "secondary": mp._family({f"cnn: {REFERENCE} vs {c}, ten-run ensembles": (ten["veto"][REFERENCE], ten["veto"][c])
+               "families": {"confirmatory": mp._family({f"cnn: {c}, ensemble vs P16": (ten["veto"][c], p16_veto[c]) for c in CONDITIONS}),
+                            "secondary": mp._family({f"cnn: {REFERENCE} vs {c}, ensembles": (ten["veto"][REFERENCE], ten["veto"][c])
                                                      for c in CONDITIONS if c != REFERENCE})},
                "note": "every row has Huang et al.'s SVEB stage and P16's AF veto on top unless its name says otherwise",
                "reproduction_difference": checks, "run_ids": m, "git_sha": runs.git_sha()}  # fmt: skip

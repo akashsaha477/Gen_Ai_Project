@@ -1067,6 +1067,49 @@ def posthoc_af_rule() -> str:
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
 
 
+def posthoc_seed_ensemble() -> str:
+    """P18: each condition's ten runs averaged, with Huang's SVEB stage and P16's AF veto on top, from results/phase6_seed_ensemble/."""
+    from ecgaug.names import PHASE6_SEED_ENSEMBLE
+
+    folder = paths.results_for(PHASE6_SEED_ENSEMBLE)
+    members, summary = _load(folder / "members.json"), _load(folder / "summary.json")
+    if members is None:
+        return _missing("P18: --part grid on Kaggle, then --part check") + "\n"
+    e = members["epochs"]["seeds_0_2"]
+    j = e["largest_jump"]
+    text = ("\\paragraph{Ten runs averaged per condition (P18).} Each run of the cnn keeps the epoch with the highest validation S F1. In the "
+            f"{e['runs']} runs P16 compares, that score moved by {_n(j['min'], 2)} to {_n(j['max'], 2)} between consecutive epochs (median "
+            f"{_n(j['median'], 2)}), and {e['kept_first_epoch']} of them kept their first epoch, so the model a run keeps is a noisy draw. "
+            "Averaging the class probabilities of independently trained runs, a deep ensemble \\cite{lakshminarayanan2017ensembles}, is the "
+            "standard remedy, and such ensembles held up best under dataset shift in \\cite{ovadia2019shift}. P18 trains seeds 3--9 of P16's six "
+            "conditions with every setting unchanged (a run of seed $s$ uses bank seed $s \\bmod 3$), averages each condition's ten runs before "
+            "the argmax, and puts Huang et al.'s stage and P16's veto on top. Nothing is chosen on validation.")  # fmt: skip
+    v, m = members["validation"], members["mean_s_f1"]["veto"]
+    up = {cls: sum(v[c]["veto"][cls]["ten"] > float(np.mean(v[c]["veto"][cls]["single"])) for c in v) for cls in ("S", "V")}
+    cv = v["cvae"]["veto"]
+    text += (f" On the validation patients (Figure~\\ref{{fig:p18-check}}; the runs' stored predictions), with the stage and the veto, the mean "
+             f"S F1 over the conditions was {_n(m['single'])} for single runs, {_n(m['three'])} for three-run and {_n(m['ten'])} for ten-run "
+             f"ensembles. The ten-run ensemble beat its single runs' mean S F1 in {up['S']} of {len(v)} conditions and their mean V F1 in "
+             f"{up['V']} (the cVAE: S F1 {_n(float(np.mean(cv['S']['single'])))} to {_n(cv['S']['ten'])}, V F1 "
+             f"{_n(float(np.mean(cv['V']['single'])))} to {_n(cv['V']['ten'])}).")  # fmt: skip
+    if summary is None:
+        return text + " " + _missing("P18: --part test") + "\n"
+    ens, p16 = summary["ensemble"]["with_af_veto"], summary["p16"]["with_af_veto"]
+    rows = "; ".join(f"{SHORT[k.split('/')[1]]} {_n(p16[k]['rare_macro_f1']['point'])} to {_n(x['rare_macro_f1']['point'])}" for k, x in ens.items())
+    cvt, cpt = ens["cnn/cvae"], p16["cnn/cvae"]
+    points = summary["per_run_points"]["cnn/cvae"]
+    top = ", the highest test score of the study" if cvt["rare_macro_f1"]["point"] >= _best_test_score() else ""
+    w202 = summary["without_202"]
+    text += (f" On the test records (Figure~\\ref{{fig:p18}}), with the stage and the veto, rare-class macro-F1 went from P16's single runs to "
+             f"the ten-run ensemble as follows: {rows}. The cVAE's ensemble reached {_ci(cvt['rare_macro_f1'])}{top} (S F1 {_n(cpt['f1_S']['point'])} "
+             f"to {_n(cvt['f1_S']['point'])}, F F1 {_n(cpt['f1_F']['point'])} to {_n(cvt['f1_F']['point'])}); its ten single runs scored "
+             f"{_n(min(points))} to {_n(max(points))}, and without record 202 the ensemble scored {_n(w202['ensemble']['cnn/cvae']['rare_macro_f1']['point'])} "
+             f"(P16 {_n(w202['p16']['cnn/cvae']['rare_macro_f1']['point'])}). Confirmatory: {_family_sentence(summary['families']['confirmatory'])}. "
+             f"Secondary: {_family_sentence(summary['families']['secondary'])}. An ensemble needs ten trained models where P16 used one, and P16's "
+             "scores stay as reported.")  # fmt: skip
+    return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
+
+
 def posthoc_table() -> str:
     """One row per post-hoc analysis (P1-P8): what it asked and what it found, from the summaries."""
     from ecgaug.names import (PHASE6_AUDIT_CHECK, PHASE6_AUGMENTATION_MECHANISM, PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS,
@@ -1271,7 +1314,7 @@ def patient_variation_paragraph() -> str | None:
                      "which is where augmentation that adds patients rather than beats could help.")
     if (ic := _icentia_sentence(with_section=True)) is not None:
         text += " " + ic
-    for extra in (_diffusion_sentence(with_section=True), _af_sentence(with_section=True)):
+    for extra in (_diffusion_sentence(with_section=True), _af_sentence(with_section=True), _ensemble_sentence(with_section=True)):
         if extra is not None:
             text += " " + extra
     return text + (" The evidence points to how much patients differ as the main obstacle here; on DS1's patients, normalizing the input for the "
@@ -1385,6 +1428,28 @@ def _af_sentence(with_section: bool = False) -> str | None:
             f"{_n(best['f1_S']['point'])}, F F1 {_n(best['f1_F']['point'])}).")
 
 
+def _ensemble_sentence(with_section: bool = False) -> str | None:
+    """One sentence on P18 (ten runs averaged per condition) from its summary, or None before its test."""
+    from ecgaug.names import PHASE6_SEED_ENSEMBLE
+
+    s = _load(paths.results_for(PHASE6_SEED_ENSEMBLE) / "summary.json")
+    if s is None:
+        return None
+    conf = s["families"]["confirmatory"]
+    up = sum(c["reject_holm"] and c["point"] > 0 for c in conf.values())
+    down = sum(c["reject_holm"] and c["point"] < 0 for c in conf.values())
+    points = [c["point"] for c in conf.values()]
+    cv, cp = s["ensemble"]["with_af_veto"]["cnn/cvae"], s["p16"]["with_af_veto"]["cnn/cvae"]
+    top = ", the highest test score of the study" if cv["rare_macro_f1"]["point"] >= _best_test_score() else ""
+    where = " (Section~\\ref{sec:seed-ensemble})" if with_section else ""
+    found = [f"raised it in {up}" if up else "", f"lowered it in {down}" if down else ""]
+    verdict = " and ".join(f for f in found if f) + f" of {len(conf)} conditions" if up or down else f"no detectable change in any of {len(conf)} conditions"
+    return (f"Averaging the class probabilities of ten independently trained runs per condition{where} changed rare-class macro-F1 by "
+            f"{_s(min(points))} to {_s(max(points))} against P16's single runs (after Holm correction: {verdict}); the cVAE's ensemble reached "
+            f"{_n(cv['rare_macro_f1']['point'])}{top} (S F1 {_n(cv['f1_S']['point'])}, F F1 {_n(cv['f1_F']['point'])}; single runs "
+            f"{_n(cp['rare_macro_f1']['point'])}).")
+
+
 def _best_test_score() -> float:
     """The highest test rare-class macro-F1 of any condition in any summary written so far (final evaluation and post hoc,
     P13's descriptive SVEB-rule results included)."""
@@ -1393,7 +1458,8 @@ def _best_test_score() -> float:
     best = 0.0
     for experiment in (FINAL_EVAL, *POST_HOC):
         s = _load(paths.results_for(experiment) / "summary.json") or {}
-        for entry in [*s.get("conditions", {}).values(), *s.get("sveb_rule", {}).values(), *s.get("with_af_veto", {}).values()]:  # rule rows count too
+        ensembles = [e for block in s.get("ensemble", {}).values() for e in block.values()]  # P18's ensembles, stage and veto included
+        for entry in [*s.get("conditions", {}).values(), *s.get("sveb_rule", {}).values(), *s.get("with_af_veto", {}).values(), *ensembles]:
             value = entry.get("rare_macro_f1") if isinstance(entry, dict) else None
             if isinstance(value, dict) and "point" in value:
                 best = max(best, float(value["point"]))
@@ -1546,7 +1612,7 @@ def conclusion() -> str:
             text += " " + rr
         if (ic := _icentia_sentence()) is not None:
             text += " " + ic
-        for extra in (_diffusion_sentence(), _af_sentence()):
+        for extra in (_diffusion_sentence(), _af_sentence(), _ensemble_sentence()):
             if extra is not None:
                 text += " " + extra
     p7 = _load(paths.results_for(PHASE6_RELATIVE_CNN) / "summary.json")
@@ -1630,7 +1696,7 @@ def abstract_posthoc() -> str:
         text += " " + rr
     if (ic := _icentia_sentence()) is not None:
         text += " " + ic
-    for extra in (_diffusion_sentence(), _af_sentence()):
+    for extra in (_diffusion_sentence(), _af_sentence(), _ensemble_sentence()):
         if extra is not None:
             text += " " + extra
     sizes = _model_sizes()
@@ -1714,6 +1780,7 @@ def build() -> dict[str, str]:
     files["results_diffusion"] = posthoc_diffusion()
     files["results_af_rule"] = posthoc_af_rule()
     files["results_diffusion_long"] = posthoc_diffusion_long()
+    files["results_seed_ensemble"] = posthoc_seed_ensemble()
     files["table_posthoc"] = posthoc_table()
     files["outlook"] = outlook(heading=False)
     files["discussion"] = discussion()

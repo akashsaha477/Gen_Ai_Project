@@ -113,11 +113,13 @@ def test_validation_check_scores_single_runs_and_both_ensembles(monkeypatch):
     monkeypatch.setattr(se, "_validation_features", lambda rec, r_idx, detector, cache: (np.full(100, 0.9), np.zeros(100)))
     monkeypatch.setattr(af, "load_detector", lambda: {})
     monkeypatch.setattr(af, "chosen_design", lambda: (0.95, "rule"))
+    monkeypatch.setattr(se, "_epoch_noise", lambda run_ids: {"runs": len(run_ids)})
     out = se.validation_check({"af": {"rule_threshold": 0.8}})
     assert out["members"] == ids and set(out["validation"]) == set(se.CONDITIONS)
     entry = out["validation"]["cvae"]["veto"]["S"]
     assert len(entry["single"]) == 10 and 0.0 <= entry["three"] <= 1.0 and 0.0 <= entry["ten"] <= 1.0
     assert set(out["mean_s_f1"]) == set(se.KINDS) and se.load_members()["members"] == ids
+    assert out["epochs"] == {"seeds_0_2": {"runs": 18}, "all_seeds": {"runs": 60}}
 
 
 def test_test_report_checks_earlier_scores_then_compares_the_ensembles(monkeypatch):
@@ -181,9 +183,62 @@ def test_test_report_checks_earlier_scores_then_compares_the_ensembles(monkeypat
     keys = {f"cnn/{c}" for c in se.CONDITIONS}
     assert set(s["ensemble"]) == {"with_af_veto", "rule_alone", "cnn_alone"} and all(set(v) == keys for v in s["ensemble"].values())
     assert set(s["p16"]["with_af_veto"]) == set(s["single_runs"]["with_af_veto"]) == set(s["three_run_ensemble"]["with_af_veto"]) == keys
-    assert set(s["families"]["confirmatory"]) == {f"cnn: {c}, ten-run ensemble vs single runs (P16)" for c in se.CONDITIONS}
-    assert set(s["families"]["secondary"]) == {f"cnn: cvae vs {c}, ten-run ensembles" for c in se.CONDITIONS if c != "cvae"}
+    assert set(s["families"]["confirmatory"]) == {f"cnn: {c}, ensemble vs P16" for c in se.CONDITIONS}
+    assert set(s["families"]["secondary"]) == {f"cnn: cvae vs {c}, ensembles" for c in se.CONDITIONS if c != "cvae"}
     assert all(len(v) == 10 for v in s["per_run_points"].values()) and set(s["without_202"]["ensemble"]) == set(s["without_202"]["p16"]) == keys
     assert all(abs(d) < 1e-9 for d in s["reproduction_difference"].values()) and s["seeds"] == list(range(10))
     p16 = s["p16"]["with_af_veto"]["cnn/cvae"]["rare_macro_f1"]["point"]
     assert p16 == pytest.approx(float(np.mean(s["per_run_points"]["cnn/cvae"][:3])))
+
+
+def test_figures_draw_from_fake_results():
+    from ecgaug import figures
+
+    def interval(point: float) -> dict:
+        return {"point": point, "ci_low": point - 0.1, "ci_high": point + 0.1}
+
+    table = {c: {k: {cls: {"single": list(np.linspace(0.6, 0.8, 10)), "three": 0.75, "ten": 0.78} for cls in ("S", "V", "F")} for k in se.KINDS} for c in se.CONDITIONS}
+    out = figures.seed_ensemble_check_figure({"validation": table, "records": [115, 118]})
+    keys = [f"cnn/{c}" for c in se.CONDITIONS]
+    entry, comparison = {m: interval(0.5) for m in ("rare_macro_f1", "f1_S", "f1_F")}, {"point": 0.02, "ci_low": -0.01, "ci_high": 0.05, "p_holm": 0.5}
+    summary = {"ensemble": {"with_af_veto": {k: entry for k in keys}}, "p16": {"with_af_veto": {k: entry for k in keys}},
+               "per_run_points": {k: list(np.linspace(0.4, 0.6, 10)) for k in keys},
+               "families": {"confirmatory": {f"cnn: {c}, ensemble vs P16": comparison for c in se.CONDITIONS},
+                            "secondary": {f"cnn: cvae vs {c}, ensembles": comparison for c in se.CONDITIONS if c != "cvae"}}}  # fmt: skip
+    out += figures.seed_ensemble_results_figure(summary)
+    assert len(out) == 2 and all(p.is_file() for p in out)
+
+
+def test_epoch_noise_reads_the_largest_jump_and_the_kept_epoch(monkeypatch, tmp_path: Path):
+    folder = tmp_path / "run"
+    folder.mkdir()
+    (folder / "train_log.csv").write_text("epoch,val_f1_S\n1,0.70\n2,0.50\n3,0.65\n")
+    (folder / "metrics_val.json").write_text(json.dumps({"best_epoch": 1}))
+    monkeypatch.setattr(se.runs, "find_run_dir", lambda run_id: folder)
+    out = se._epoch_noise(["a", "b"])
+    assert out["runs"] == 2 and out["kept_first_epoch"] == 2 and out["largest_jump"]["max"] == pytest.approx(0.20)
+
+
+def test_paper_text_comes_from_members_and_summary():
+    from ecgaug import paper_text
+
+    folder = paths.results_for(se.EXPERIMENT)
+    folder.mkdir(parents=True, exist_ok=True)
+    table = {c: {k: {cls: {"single": [0.7] * 10, "three": 0.72, "ten": 0.74} for cls in ("S", "V", "F")} for k in se.KINDS} for c in se.CONDITIONS}
+    members = {"validation": table, "mean_s_f1": {k: {"single": 0.7, "three": 0.72, "ten": 0.74} for k in se.KINDS}, "records": [115],
+               "epochs": {"seeds_0_2": {"runs": 18, "largest_jump": {"min": 0.09, "median": 0.2, "max": 0.34}, "kept_first_epoch": 6}}}  # fmt: skip
+    (folder / "members.json").write_text(json.dumps(members))
+    text = paper_text.posthoc_seed_ensemble()
+    assert "\\missing{P18: --part test}" in text and "In the 18 runs P16 compares" in text and "6 of them kept their first epoch" in text
+    entry = {m: {"point": 0.5, "ci_low": 0.4, "ci_high": 0.6} for m in ("rare_macro_f1", "f1_S", "f1_F")}
+    keys = [f"cnn/{c}" for c in se.CONDITIONS]
+    comparison = {"point": 0.02, "ci_low": -0.01, "ci_high": 0.05, "p_holm": 0.5, "reject_holm": False}
+    summary = {"ensemble": {"with_af_veto": {k: entry for k in keys}}, "p16": {"with_af_veto": {k: entry for k in keys}},
+               "per_run_points": {k: [0.4, 0.6] for k in keys}, "without_202": {"ensemble": {k: entry for k in keys}, "p16": {k: entry for k in keys}},
+               "families": {"confirmatory": {f"cnn: {c}, ensemble vs P16": comparison for c in se.CONDITIONS},
+                            "secondary": {f"cnn: cvae vs {c}, ensembles": comparison for c in se.CONDITIONS if c != "cvae"}}}  # fmt: skip
+    (folder / "summary.json").write_text(json.dumps(summary))
+    text = paper_text.posthoc_seed_ensemble()
+    assert "\\missing" not in text and "Figure~\\ref{fig:p18}" in text and text.count("{") == text.count("}")
+    sentence = paper_text._ensemble_sentence(with_section=True)
+    assert "no detectable change in any of 6 conditions" in sentence and "sec:seed-ensemble" in sentence
