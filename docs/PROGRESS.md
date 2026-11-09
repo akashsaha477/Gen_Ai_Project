@@ -1183,5 +1183,9 @@ larger model or another sampler. Ingest kept the local `shape_check.json` (the b
 count; correlations identical) and the locally drawn samples figure (the test kernel had no P17 banks, so its copy lacks the P17 row).
 Figure: `figures/phase6_diffusion_long/results.png`.
 
-Open: PROJECT_GUIDE.md and CODE_GUIDE.md do not yet describe the post hoc analyses (P1-P17); the full test suite on
-Kaggle at the final commit; push main.
+Guides: `PROJECT_GUIDE.md` was last updated on Day 10 and said nothing had run; it now has section 5.15 (P1-P17: what
+each asks, the primary result unchanged, the highest post hoc score) and section 6 rewritten as what has run.
+`CODE_GUIDE.md` has a section on the `phase6_*` runners (parts, the posthoc permission, result files, reproduction
+checks).
+
+Open: the full test suite on Kaggle at the final commit; push main.

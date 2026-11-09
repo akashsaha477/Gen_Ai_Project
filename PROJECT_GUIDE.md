@@ -2,7 +2,9 @@
 
 This is the long explanation of the project: what we are trying to find out, how the work is
 organised, what each part does, and what is finished. For commands only, see `README.md`. For the
-day-by-day log, see `docs/PROGRESS.md`. Last updated 2026-10-16 (Day 10 of 30).
+day-by-day log, see `docs/PROGRESS.md`. Sections 1 to 5.14 were written on 2026-10-16 (Day 10 of 30), before the
+experiments ran, and describe the design. Section 5.15 (the post hoc analyses) and section 6 (what has run) were added
+on 2026-11-09. The checklist in `README.md` gives the state and the result of every item.
 
 ## Contents
 
@@ -11,7 +13,7 @@ day-by-day log, see `docs/PROGRESS.md`. Last updated 2026-10-16 (Day 10 of 30).
 3. [The rules we work by](#3-the-rules-we-work-by)
 4. [The plan: six phases](#4-the-plan-six-phases)
 5. [What is built, part by part](#5-what-is-built-part-by-part)
-6. [Built but not run yet](#6-built-but-not-run-yet)
+6. [What has run](#6-what-has-run)
 7. [How to run things](#7-how-to-run-things)
 8. [Where everything lives](#8-where-everything-lives)
 9. [Decisions made so far](#9-decisions-made-so-far)
@@ -305,25 +307,46 @@ Asks: does pretraining on a large ECG dataset help rare-beat detection on MIT-BI
   missing results show as red placeholders, so the draft always compiles. `scripts/reproduce.sh` lists
   the whole pipeline in order.
 
+### 5.15 After the final evaluation: post hoc analyses P1-P17 (`src/ecgaug/experiments/phase6_*.py`)
+
+The single final evaluation (2026-11-04) is the study's primary result and stays so: the cnn without augmentation
+reached a test rare-class macro-F1 of 0.088, and no generator was detectably better than the simpler options. The
+analyses below came after it, mostly to find out why test scores fell so far below validation and what would raise
+them. Each was pre-registered as a new version of `docs/PREREGISTRATION.md` §10 (v4 to v16) before it ran, reads the
+test records at most once (logged in `docs/TEST_ACCESS_LOG.md`), and is reported as post hoc; none replaces the primary
+result.
+
+| | Experiment | What it asks |
+|---|---|---|
+| P1 | `phase6_rr_reference` | how fixed RR-feature reference classifiers compare with the cnn |
+| P2 | `phase6_external_validation` | how the frozen models do on two databases never used before (INCART, SVDB) |
+| P3 | `phase6_extra_seeds` | whether the final evaluation holds with seeds 3 and 4 |
+| P4 | `phase6_audit_check` | two checks of the leakage audit |
+| P5 | `phase6_rr_baseline` | the full grid again with an RR ratio relative to the patient's baseline |
+| P6 | `phase6_patient_template` | the full grid again with patient-relative beats (beat minus the patient's template) |
+| P7 | `phase6_relative_cnn` | the cnn alone with patient-relative beats, the full comparison |
+| P8 | `phase6_augmentation_mechanism` | why augmentation does not carry over to new patients |
+| P9 | `phase6_patient_transfer` | rare-class beats moved onto other patients as augmentation |
+| P10 | `phase6_patient_adaptation` | per-patient batch-normalization statistics at test time |
+| P11 | `phase6_more_patients` | the P7 cnn trained on more patients (DS1 plus INCART and SVDB) |
+| P12 | `phase6_relative_generators` | the generators retrained on what the P7 cnn sees |
+| P13 | `phase6_record_rr` | RR intervals over the mean RR of their recording; Huang et al.'s SVEB rule on top |
+| P14 | `phase6_icentia` | the P13 cnn trained on many more patients, from Icentia11k |
+| P15 | `phase6_diffusion` | a class-conditional diffusion model as a third generator family |
+| P16 | `phase6_af_rule` | Huang et al.'s SVEB rule with its S calls undone inside atrial fibrillation |
+| P17 | `phase6_diffusion_long` | P15's diffusion model trained five times longer |
+
+The highest post hoc test score is the cVAE with Huang et al.'s SVEB rule and the atrial-fibrillation veto (P16):
+rare-class macro-F1 0.557 (S F1 0.640, F F1 0.474). The result of every analysis is in the `README.md` checklist, the
+detail in `docs/PROGRESS.md`, and the before-and-after figures in `figures/phase6_*/`.
+
 ---
 
-## 6. Built but not run yet
+## 6. What has run
 
-Everything below exists as code, configs, Kaggle notebook, tests and a brief per variant
-(`docs/briefs/`). None of it has run officially: each runner waits for the gates before it.
-
-| Part | Phase | Waits for |
-|---|---|---|
-| phase 1 gate approval (frozen dataset) | 1 | the team (report: `results/phase1_gate/report.md`, analysis: `docs/PHASE1_REPORT.md`) |
-| phase2_baseline_classifiers, phase2_quality_metrics, phase2_ptbxl_pretraining (for C) | 2 | the phase 1 gate |
-| phase3_cvae, phase3_wgan_gp pilots, then final banks | 3 | the phase 2 gate (pilot classifier, quality composite), then the phase 3a gate |
-| phase4_augmentation_policy, the full grid | 4 | the phase 3 gate (frozen banks), then the phase 4a gate |
-| the final test evaluation | 4 | the phase 4 gate |
-| phase5_explainability, phase5_clinical_notes, demo | 5 | the phase 4 gate (models); a `GEMINI_API_KEY` for the LLM notes |
-| paper text, verified references, course report | 6 | results |
-
-Design choices the team should confirm before the official runs are listed in `docs/DECISIONS.md` A14;
-the values still to fix in the pre-registration are in `docs/PREREGISTRATION.md` §10.
+Phases 1 to 5, the full grid, the single final evaluation (2026-11-04), the leakage audit and the post hoc
+analyses P1-P17 (section 5.15) have all run. The checklist in `README.md` gives the state of every item, including
+any approval still open; `python -m ecgaug.workflow status` prints it.
 
 ---
 

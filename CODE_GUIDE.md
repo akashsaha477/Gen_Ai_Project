@@ -479,6 +479,19 @@ precondition before the first test byte, predicts the test set with every frozen
 - `demo.py`: `explain_beat` classifies, explains and describes one beat and saves the figure.
 - `paper.py`: `build()` writes the paper's tables and numbers from the result files.
 
+### `experiments/phase6_*.py` — the post hoc analyses P1-P17
+
+Each file runs one post hoc analysis (`PROJECT_GUIDE.md` section 5.15 says what each asks), listed in `names.POST_HOC`;
+most have a config folder `configs/<experiment>/` and a notebook `kaggle/<experiment>.ipynb`. The command line runs one
+`--part` at a time, for example `train` or `grid` (on Kaggle), `select` (on validation) and `test`. `--part test` is the
+analysis's one read of the test records: it needs `ALLOW_TEST_POSTHOC=1` and is logged in `docs/TEST_ACCESS_LOG.md`.
+P2 and P8 read no test records; P4 reads them once under the audit permission (`ALLOW_TEST_AUDIT=1`). Results go to
+`results/<experiment>/`: `selection.json` from validation, `summary.json` from the test read. Later analyses reuse
+earlier ones' code: P17, for example, calls P15's `train_generators`, `diffusion_grid` and `select` under its own
+experiment name. From P9 on, each test report also recomputes the earlier test scores it compares against and records
+the difference (`reproduction_difference` in its summary). `figures.posthoc_figures()` draws every post hoc figure whose
+result file exists, and `paper_text.py` writes the paper's post hoc paragraphs from the same files.
+
 ## 8. `configs/`: the settings files
 
 | File | Sets |
