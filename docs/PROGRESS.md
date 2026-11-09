@@ -1130,3 +1130,37 @@ Asked for diffusion models and the best result. P15 adds a class-conditional dif
 subjects), with ectopic filtering and threshold 0.95, raises the rule's S F1 on the MIT-BIH training records from 0.486 to
 0.756 (+P 0.349 -> 0.749), leaves INCART (0.316 -> 0.319) and SVDB 865 (0.965) unchanged and costs SVDB a little (0.666 ->
 0.650). To be pre-registered as P16 before any DS2 read.
+
+## 2026-11-09 (Day 34) — P15 results, P16 AF veto (pre-registration v15, A37), P17 longer diffusion (v16, A38)
+
+**P15 (diffusion, v14).** The first training kernel failed: Kaggle served an old repository bundle because the client
+reused an expired upload token from its cache; the cache record was removed and the bundle uploaded again. Training then
+ran on a T4 (`phase6-diffusion-train`): 3 seeds, 20,000 steps each, none diverged, about 18 minutes per seed; 9 grid runs.
+The banks resemble more training patients than the cVAE's (effective patients S 34.4 vs 31.6, F 7.0 vs 3.4; real 32.0
+and 4.9). Validation chose strength 0.25 (S F1 0.741 ± 0.029; P13: none 0.760, cVAE 0.769). Test (one posthoc read,
+logged): rare-class macro-F1 0.280 [0.128, 0.339] (S F1 0.308, F F1 0.252); vs none +0.064 [-0.061, +0.151] and vs the
+cVAE -0.076 [-0.148, +0.093], Holm p 0.806 both; secondary vs class weighting -0.100 and random oversampling -0.094
+(Holm p 0.442). With Huang et al.'s rule: 0.410. P13's scores reproduced exactly.
+
+**Why the diffusion model fell short (training-side only).** Its loss was still falling at the end of the budget (0.117
+over steps 1,001-2,000, 0.098 over 15,001-16,000, 0.096 over 19,001-20,000, all seeds), and its banks' class medians match
+real DS1 training beats far less than the cVAE's (`phase6_diffusion_long --part shape`: correlation S 0.11-0.30, V
+0.57-0.59, F 0.72-0.73 against 0.58-0.74, 0.94-0.96, 0.96). An exploratory CPU check on seed 0 (raw weights instead of
+their average; guidance 1.0; not part of the repository) did not close the gap. Figure: `figures/phase6_diffusion/samples.png`.
+
+**P16 (AF veto, v15, A37).** The design check (annotations only) now also counts DS1's rhythms (1,251 of the rule's
+1,412 false S calls in AF or flutter; 16 of 944 S beats) and chooses the veto's form on validation: undoing only the rule's
+own conversions, 0.753 mean validation S F1, against 0.730 for undoing every S call in AF (rule alone 0.727, cnn alone
+0.755). Test (one posthoc read, after P15's, logged): the veto raised rare-class macro-F1 in all six conditions: none
+0.300 to 0.319, class weighting 0.489 to 0.512, random oversampling 0.501 to 0.525, cVAE 0.523 to 0.557, WGAN-GP 0.356 to
+0.375, diffusion 0.410 to 0.436 (every 95% CI above 0; Holm p 0.018, 0.032, then 0.057). It works through precision (cVAE:
+S +P 0.415 to 0.496, Se 0.920 to 0.903). Without record 202: cVAE 0.560 to 0.583 (S F1 0.646 to 0.691). The study's
+highest score is now cVAE + rule + veto, 0.557 (S F1 0.640, F F1 0.474), post hoc. P13's and P15's rule scores reproduced.
+
+**P17 (v16, A38).** P15's model with 100,000 steps, nothing else changed (the config is checked against P15's), decided
+and pre-registered before P15's and P16's test summaries were read (they were ingested and committed unread). Running on a
+Kaggle T4 (`phase6-diffusion-long-train`, about 6 GPU-hours); then `--part shape` and `--part select` locally and one test
+read on CPU.
+
+Open: P17's results; the paper sections for P15-P17 (text and figures are generated); the full test suite on Kaggle at
+the final commit; push main with tags prereg-v14 to v16.

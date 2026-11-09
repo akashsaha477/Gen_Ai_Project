@@ -1627,6 +1627,219 @@ def relative_generators_results_figure(summary: dict, p11: dict) -> list[Path]:
     return [_save(fig, paths.figures_for("phase6_relative_generators") / "results.png", "Before and after: generators trained on what the cnn sees", caption)]
 
 
+DIFFUSION_COLOR, VETO_COLOR = "#8a5cc8", "#1a9a6c"
+CONDITION_NAMES = {"none": "no augmentation", "class_weighted": "class-weighted loss", "random_oversampling": "random oversampling", "cvae": "cVAE",
+                   "wgan_gp": "WGAN-GP", "diffusion": "diffusion"}  # fmt: skip
+
+
+def _comparisons_panel(ax, families: dict, title: str) -> None:
+    """Pre-registered comparisons with their intervals and Holm-adjusted p (black: confirmatory; grey: secondary)."""
+    comparisons = [(family, name) for family, items in families.items() for name in items]
+    for i, (family, name) in enumerate(reversed(comparisons)):
+        r = families[family][name]
+        _interval(ax, r, i, INK if family == "confirmatory" else INK_2)
+        ax.annotate(f"Holm p {r['p_holm']:.3f}", (r["ci_high"], i), xytext=(6, 0), textcoords="offset points", va="center", fontsize=7, color=INK_2)
+    ax.axvline(0, color=GRID, linewidth=1.2)
+
+    def pretty(name: str) -> str:
+        for key in ("random_oversampling", "class_weighted", "wgan_gp", "cvae"):
+            name = name.replace(key, CONDITION_NAMES[key])
+        return name.removeprefix("cnn: ")
+
+    ax.set_yticks(range(len(comparisons)), [pretty(name) for _, name in reversed(comparisons)], fontsize=7)
+    ax.locator_params(axis="x", nbins=6)
+    ax.set_xlabel("difference in test rare-class macro-F1 (95% CI)")
+    ax.set_title(title, loc="left")
+
+
+def diffusion_mechanism_figure(mech: dict) -> list[Path]:
+    """P15 before and after: over how many training patients the synthetic beats spread, for P12's cVAE bank and the
+    diffusion bank, beside the real beats themselves."""
+    plt = _plt()
+    classes = list(mech["classes"])
+    series = [("real training beats", "real", INK), ("cVAE bank (P12, the best earlier generator)", "cvae_p12", "#2a78d6"),
+              ("diffusion bank (P15)", "diffusion", DIFFUSION_COLOR)]  # fmt: skip
+    fig, ax = plt.subplots(figsize=(7.4, 4.0))
+    width = 0.8 / len(series)
+    for j, (label, key, color) in enumerate(series):
+        values = [mech["classes"][c][key]["effective_records"] for c in classes]
+        x = np.arange(len(classes)) + (j - (len(series) - 1) / 2) * width
+        ax.bar(x, values, width=width * 0.9, color=color, label=label)
+        for xi, v in zip(x, values):
+            ax.annotate(f"{v:.1f}", (xi, v), xytext=(0, 2), textcoords="offset points", ha="center", fontsize=7, color=INK_2)
+    ax.set_xticks(range(len(classes)), [f"{c} beats" for c in classes])
+    ax.set_axisbelow(True)
+    ax.grid(axis="x", visible=False)
+    ax.set_ylabel("effective number of training patients")
+    ax.legend(fontsize=7, loc="upper right")
+    caption = (f"For each synthetic beat ({mech['beats_per_class']:,} per class from the seed-0 banks), the patient of its nearest real training beat "
+               "(Euclidean, the form the cnn sees); bars give exp of the entropy of those patient shares (P8's measure, by patient). Real: the "
+               "training beats' own spread. Post hoc (PREREGISTRATION v14, P15).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_diffusion") / "mechanism.png", "Before and after: how many patients the synthetic beats resemble", caption)]
+
+
+def _real_relative_beats(per_class: int = 2000, seed: int = 0) -> dict[int, np.ndarray] | None:
+    """Real DS1 training beats of S, V and F in the cnn's form (P17's shape check uses the same draw); None without local data."""
+    from ecgaug.experiments import phase6_diffusion_long as long
+    from ecgaug.experiments.common import PreconditionError
+
+    try:
+        return long.real_training_beats(per_class, seed)
+    except PreconditionError:
+        return None
+
+
+def diffusion_samples_figure() -> list[Path]:
+    """P15 before and after: per rare class, the median and middle half of real DS1 training beats, the seed-0 cVAE bank (P12)
+    and the seed-0 diffusion bank (P15), in the form the cnn sees them, with three single beats of each (drawn with seed 0)."""
+    from ecgaug.generators import bank as banks
+
+    plt = _plt()
+    loaded = {}
+    for key, gid in (("cvae", "phase6_relative_generators/phase3_cvae-D"), ("diffusion", "phase6_diffusion/diffusion")):
+        path = banks.bank_dir(gid) / "seed0.npz"
+        if not path.is_file():
+            return []
+        with np.load(path) as z:
+            X, y = np.asarray(z["X"], dtype=np.float32), np.asarray(z["y"])
+            loaded[key] = {c: X[y == c] for c in (1, 2, 3)}
+    rows = [("cvae", "#2a78d6", "cVAE bank (P12)"), ("diffusion", DIFFUSION_COLOR, "diffusion bank (P15)")]
+    real = _real_relative_beats()
+    if real is not None:
+        loaded["real"] = real
+        rows.insert(0, ("real", INK, "real DS1 training beats"))
+    names = ("N", "S", "V", "F")
+    fig, axes = plt.subplots(len(rows), 3, figsize=(13, 2.8 * len(rows)), sharex=True, sharey="col")
+    rng = np.random.default_rng(0)
+    for row, (key, color, label) in enumerate(rows):
+        for col, cls in enumerate((1, 2, 3)):
+            ax = axes[row, col]
+            beats = loaded[key][cls]
+            t = np.arange(beats.shape[1])
+            lo, mid, hi = np.percentile(beats, [25, 50, 75], axis=0)
+            ax.fill_between(t, lo, hi, color=color, alpha=0.25, linewidth=0)
+            ax.plot(t, mid, color=color, linewidth=1.6)
+            for b in beats[rng.choice(len(beats), 3, replace=False)]:
+                ax.plot(t, b, color=INK_2, linewidth=0.6, alpha=0.8)
+            ax.set_title(f"{label}: {names[cls]} ({len(beats):,} beats)", loc="left", fontsize=9)
+            ax.set_axisbelow(True)
+        axes[row, 0].set_ylabel("beat minus the patient's template")
+    for ax in axes[-1]:
+        ax.set_xlabel("sample (360 Hz, R peak in the window)")
+    caption = ("In the form the cnn sees them: the beat minus the patient's ±150 s template (synthetic beats multiplied back by the training scale). "
+               "Coloured: median and 25-75% band; grey: three single beats drawn at random. The real row shows up to 2,000 DS1 training beats per "
+               "class (the MIT-BIH part of the generators' training patients; INCART and SVDB are not drawn). cVAE: P12; diffusion: P15, the same "
+               "training beats and step budget. Post hoc (PREREGISTRATION v14, P15).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_diffusion") / "samples.png", "Before and after: real and synthetic rare beats", caption)]
+
+
+def diffusion_results_figure(summary: dict) -> list[Path]:
+    """P15 before and after: P13's conditions and the diffusion condition on the test set, alone and with Huang's SVEB stage,
+    and the pre-registered comparisons."""
+    plt = _plt()
+    greys = {"none": "#8f8d88", "class_weighted": "#a6a49f", "random_oversampling": "#bdbbb6", "cvae": "#2a78d6"}
+    rows = []
+    for key, entry in summary["before"].items():
+        c = key.split("/")[1]
+        rows += [(f"{CONDITION_NAMES[c]} (P13)", entry, greys.get(c, INK_2)), (f"{CONDITION_NAMES[c]} (P13) + SVEB rule", summary["sveb_rule"][key], "#eb6834")]
+    for key, entry in summary["conditions"].items():
+        rows += [(f"diffusion, strength {entry.get('strength')} (P15)", entry, DIFFUSION_COLOR), ("diffusion (P15) + SVEB rule", summary["sveb_rule"][key], "#eb6834")]
+    fig, axes = plt.subplots(1, 4, figsize=(19, 0.42 * len(rows) + 2.4), gridspec_kw={"width_ratios": [1, 0.7, 0.7, 1.1]})
+    for ax, metric, xlabel, title in ((axes[0], "rare_macro_f1", "test rare-class macro-F1 (95% record-level CI)", "each condition (the P7 cnn on P11's patients)"),
+                                      (axes[1], "f1_S", "test S F1", "S beats"), (axes[2], "f1_F", "test F F1", "F beats")):  # fmt: skip
+        for i, (label, entry, color) in enumerate(reversed(rows)):
+            _interval(ax, entry[metric], i, color, marker="s" if "SVEB" in label else "o")
+        ax.set_yticks(range(len(rows)), [label for label, _, _ in reversed(rows)] if metric == "rare_macro_f1" else [], fontsize=7)
+        ax.set_xlim(0, 1)
+        ax.set_xlabel(xlabel)
+        ax.set_title(title, loc="left")
+    _comparisons_panel(axes[3], summary["families"], "pre-registered comparisons, P15")
+    caption = ("P13's conditions (grey; cVAE blue) and the class-conditional diffusion model (purple), same cnn, data and selection rule; squares: Huang et "
+               "al.'s SVEB stage on top (descriptive). Right, black: confirmatory (diffusion vs no augmentation and vs the cVAE, P13); grey: "
+               "secondary. Post hoc (PREREGISTRATION v14, P15).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_diffusion") / "results.png", "Before and after: a diffusion model as the generator", caption)]
+
+
+def af_rule_check_figure(check: dict) -> list[Path]:
+    """P16's design check: where DS1's false S calls of the rule lie, the vetoed rule's S F1 per training-side database at
+    each threshold, and the validation S F1 of each form per condition."""
+    plt = _plt()
+    fig, axes = plt.subplots(1, 3, figsize=(17.5, 4.3), gridspec_kw={"width_ratios": [0.75, 1.1, 1.3]})
+    ax = axes[0]
+    r = check["ds1_rhythm"]
+    groups = [("rule's false S calls", r["rule_false_s_in_af"], r["rule_false_s"] - r["rule_false_s_in_af"]), ("real S beats", r["s_beats_in_af"], r["s_beats"] - r["s_beats_in_af"])]
+    for i, (label, inside, outside) in enumerate(groups):
+        ax.bar(i, inside, color="#eb6834", width=0.55, label="in AF or flutter" if i == 0 else None)
+        ax.bar(i, outside, bottom=inside, color="#b8b6b0", width=0.55, label="other rhythms" if i == 0 else None)
+        ax.annotate(f"{inside:,} of {inside + outside:,} in AF", (i, inside + outside), xytext=(0, 3), textcoords="offset points", ha="center", fontsize=8, color=INK_2)
+    ax.set_xticks(range(len(groups)), [g[0] for g in groups])
+    ax.set_ylabel("beats (DS1 annotations)")
+    ax.set_title("DS1: where the rule goes wrong", loc="left")
+    ax.legend(fontsize=7, loc="upper right")
+    ax.set_axisbelow(True)
+    ax.grid(axis="x", visible=False)
+    ax = axes[1]
+    dbs = {"mitdb_ds1": "DS1", "incartdb": "INCART", "svdb": "SVDB"}
+    thresholds = list(check["mean_f1_by_threshold"])
+    for db, color in zip(check["databases"], ("#2a78d6", "#1a9a6c", "#8a5cc8")):
+        e = check["databases"][db]
+        ax.plot([float(t) for t in thresholds], [e[f"veto_{t}"]["f1"] for t in thresholds], marker="o", color=color, label=f"{dbs[db]}, vetoed")
+        ax.axhline(e["rule"]["f1"], color=color, linestyle=":", linewidth=1.2)
+    ax.plot([float(t) for t in thresholds], list(check["mean_f1_by_threshold"].values()), marker="s", color=INK, label="mean of the three, vetoed")
+    ax.axvline(check["chosen_threshold"], color=GRID, linewidth=1.2)
+    ax.annotate(f"chosen: {check['chosen_threshold']}", (check["chosen_threshold"], 0.04), xytext=(-4, 0), textcoords="offset points", ha="right", fontsize=7, color=INK_2)
+    ax.set_ylim(0, 1)
+    ax.set_xlabel("AF probability threshold of the veto")
+    ax.set_ylabel(f"S F1 of the rule (ratio < {check['rule_threshold']})")
+    ax.set_title("training-side annotations (dotted: the rule alone)", loc="left")
+    ax.legend(fontsize=7, loc="lower left")
+    ax = axes[2]
+    v = check["validation"]["conditions"]
+    keys = [("cnn", "cnn alone", INK_2), ("rule", "+ SVEB rule", "#eb6834"), ("veto_rule", "+ rule with AF veto (its own S calls)", VETO_COLOR),
+            ("veto_all", "+ rule with AF veto (every S call)", "#9ec5f4")]  # fmt: skip
+    conditions = list(v)
+    width = 0.8 / len(keys)
+    for j, (k, label, color) in enumerate(keys):
+        x = np.arange(len(conditions)) + (j - (len(keys) - 1) / 2) * width
+        ax.bar(x, [float(np.mean(v[c][k]["f1"])) for c in conditions], width=width * 0.9, color=color, label=label)
+    ax.set_xticks(range(len(conditions)), [CONDITION_NAMES[c].replace(" ", "\n", 1) for c in conditions], fontsize=7)
+    ax.set_ylim(0.5, 0.85)
+    ax.set_ylabel("validation S F1 (mean of 3 seeds)")
+    ax.set_title(f"validation patients: chosen form '{check['chosen_form']}'", loc="left")
+    ax.legend(fontsize=7, loc="upper right", ncol=2)
+    ax.set_axisbelow(True)
+    ax.grid(axis="x", visible=False)
+    caption = ("No test data. Left: DS1's annotated rhythms. Middle: the rule on the annotations of DS1, INCART and SVDB, vetoed where the AF detector "
+               "(fitted on the MIT-BIH AF database, beat times only) exceeds each threshold; the registered choice is the highest mean. Right: the "
+               "training runs' validation predictions; the registered form is the higher mean. Post hoc (PREREGISTRATION v15, P16).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_af_rule") / "check.png", "Why an AF veto: the rule's false S calls sit in atrial fibrillation", caption)]
+
+
+def af_rule_results_figure(summary: dict) -> list[Path]:
+    """P16 before and after: each condition with Huang's SVEB stage alone and with the AF veto, on the test set; S precision
+    and recall; the pre-registered comparisons."""
+    plt = _plt()
+    rows = []
+    for key in summary["rule_alone"]:
+        c = key.split("/")[1]
+        rows += [(f"{CONDITION_NAMES[c]} + SVEB rule", summary["rule_alone"][key], "#eb6834"), (f"{CONDITION_NAMES[c]} + rule with AF veto", summary["with_af_veto"][key], VETO_COLOR)]
+    fig, axes = plt.subplots(1, 5, figsize=(21, 0.42 * len(rows) + 2.4), gridspec_kw={"width_ratios": [1, 0.65, 0.65, 0.65, 1.1]})
+    panels = ((axes[0], "rare_macro_f1", "test rare-class macro-F1 (95% CI)", "each condition (the P7 cnn)"), (axes[1], "f1_S", "test S F1", "S beats"),
+              (axes[2], "ppv_S", "test S +P (precision)", "S calls that are right"), (axes[3], "se_S", "test S Se (recall)", "S beats found"))  # fmt: skip
+    for ax, metric, xlabel, title in panels:
+        for i, (label, entry, color) in enumerate(reversed(rows)):
+            _interval(ax, entry[metric], i, color)
+        ax.set_yticks(range(len(rows)), [label for label, _, _ in reversed(rows)] if metric == "rare_macro_f1" else [], fontsize=7)
+        ax.set_xlim(0, 1)
+        ax.set_xlabel(xlabel)
+        ax.set_title(title, loc="left")
+    _comparisons_panel(axes[4], summary["families"], "pre-registered comparisons, P16")
+    caption = (f"Huang et al.'s SVEB stage (orange) and the same stage with its S calls undone where the AF detector exceeds {summary['af_threshold']} "
+               f"(green; form '{summary['veto_form']}'). The detector reads only each test record's beat times. F calls are unchanged. Right: per "
+               "condition, the veto vs the stage alone (Holm). Post hoc (PREREGISTRATION v15, P16).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_af_rule") / "results.png", "Before and after: an atrial-fibrillation veto on the SVEB rule", caption)]
+
+
 def posthoc_figures() -> list[Path]:
     """Every post-hoc figure whose summary exists (PREREGISTRATION v4, P1-P4); nothing is re-run."""
     final, written = _summary("final_eval"), []
@@ -1685,6 +1898,15 @@ def posthoc_figures() -> list[Path]:
         written += icentia_check_figure(c)
     if (s := _summary("phase6_icentia")) is not None:
         written += icentia_results_figure(s)
+    if (m := _summary("phase6_diffusion", "mechanism.json")) is not None:
+        written += diffusion_mechanism_figure(m)
+    written += diffusion_samples_figure()
+    if (s := _summary("phase6_diffusion")) is not None:
+        written += diffusion_results_figure(s)
+    if (c := _summary("phase6_af_rule", "design_check.json")) is not None and "validation" in c:
+        written += af_rule_check_figure(c)
+    if (s := _summary("phase6_af_rule")) is not None:
+        written += af_rule_results_figure(s)
     return written
 
 

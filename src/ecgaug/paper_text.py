@@ -20,7 +20,7 @@ from ecgaug.names import FINAL_EVAL, PHASE2_GATE, PHASE4_LEAKAGE_AUDIT, PHASE4_Q
 CONDITION = {"none": "no augmentation", "class_weighted": "class-weighted loss", "random_oversampling": "random oversampling",
              "smote": "SMOTE", "cvae": "cVAE augmentation", "wgan_gp": "WGAN-GP augmentation"}  # fmt: skip
 SHORT = {"none": "none", "class_weighted": "class-weighted loss", "random_oversampling": "random oversampling", "smote": "SMOTE",
-         "cvae": "cVAE", "wgan_gp": "WGAN-GP"}  # fmt: skip
+         "cvae": "cVAE", "wgan_gp": "WGAN-GP", "diffusion": "diffusion"}  # fmt: skip
 GENERATIVE = ("cvae", "wgan_gp")
 METHOD = {"gradcam": "Grad-CAM", "integrated_gradients": "integrated gradients", "smoothgrad": "SmoothGrad", "occlusion": "occlusion"}
 
@@ -896,6 +896,84 @@ def posthoc_icentia() -> str:
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
 
 
+def _scores(entry: dict) -> str:
+    return f"{_n(entry['rare_macro_f1']['point'])} (S F1 {_n(entry['f1_S']['point'])}, F F1 {_n(entry['f1_F']['point'])})"
+
+
+def posthoc_diffusion() -> str:
+    """P15: a class-conditional diffusion model as the third generator family, from results/phase6_diffusion/."""
+    from ecgaug.names import PHASE6_DIFFUSION, PHASE6_RECORD_RR
+
+    folder = paths.results_for(PHASE6_DIFFUSION)
+    gens, mech, selection, summary = (_load(folder / f) for f in ("diffusion_generators.json", "mechanism.json", "selection.json", "summary.json"))
+    if gens is None:
+        return _missing("P15: --part train on Kaggle") + "\n"
+    s, seeds = gens["settings"], gens["seeds"]
+    minutes = [e["generator_seconds"] / 60 for e in seeds.values()]
+    text = (f"\\paragraph{{A diffusion model as the generator (P15).}} The study's generators are a cVAE and a WGAN-GP; the current standard for "
+            f"synthetic ECG is a diffusion model \\cite{{alcaraz2023sssd,kwak2024diffusion}}. P15 trains a class-conditional DDPM ({s['timesteps']:,} "
+            f"noise levels, cosine schedule; a 1D U-Net with {next(iter(seeds.values()))['n_parameters']:,} parameters; classifier-free guidance, scale "
+            f"{s['guidance']}; DDIM sampling with {s['sample_steps']} levels; weights averaged with decay {s['ema_decay']}) on P13's training beats in the "
+            f"form the cnn sees them, with the phase 3 budget ({gens['steps']:,} steps, batch {s['batch_size']}, seeds "
+            f"{', '.join(seeds)}): {sum(not e['diverged'] for e in seeds.values())} of {len(seeds)} fits finished without divergence, "
+            + (f"about {_n(min(minutes), 0)} minutes each on a T4." if round(min(minutes)) == round(max(minutes)) else f"{_n(min(minutes), 0)} to {_n(max(minutes), 0)} minutes each on a T4."))  # fmt: skip
+    if mech is not None:
+        eff = {c: {k: v["effective_records"] for k, v in e.items() if isinstance(v, dict) and "effective_records" in v} for c, e in mech["classes"].items()}
+        text += (" Its synthetic beats resemble more training patients than the cVAE's (effective number of patients of the nearest real beat, "
+                 + "; ".join(f"{c}: diffusion {_n(e['diffusion'], 1)}, cVAE {_n(e['cvae_p12'], 1)}, real beats {_n(e['real'], 1)}" for c, e in eff.items())
+                 + "), but their class shapes match the real training beats less closely than the cVAE's, and the training loss was still "
+                 "falling at the end of the budget (Figure~\\ref{fig:p15-samples}).")  # fmt: skip
+    if selection is None:
+        return text + " " + _missing("P15: --part select") + "\n"
+    chosen = selection["chosen"]["cnn"]["diffusion"]
+    before = (_load(paths.results_for(PHASE6_RECORD_RR) / "selection.json") or {"chosen": {"cnn": {}}})["chosen"]["cnn"]
+    text += (f" On validation the phase 4 gate rule chose strength {chosen['strength']} (S F1 {_n(chosen['mean'])} $\\pm$ {_n(chosen['sd'])}; P13: "
+             + ", ".join(f"{SHORT[c]} {_n(v['mean'])}" for c, v in before.items() if c in ("none", "cvae")) + ").")
+    if summary is None:
+        return text + " " + _missing("P15: --part test") + "\n"
+    new = summary["conditions"]["cnn/diffusion"]
+    old = "; ".join(f"{SHORT[k.split('/')[1]]} {_scores(v)}" for k, v in summary["before"].items())
+    rule = "; ".join(f"{SHORT.get(k.split('/')[1], k.split('/')[1])} {_n(v['rare_macro_f1']['point'])} (S F1 {_n(v['f1_S']['point'])})" for k, v in summary["sveb_rule"].items())
+    text += (f" On the test records (Figure~\\ref{{fig:p15}}) the diffusion condition reaches rare-class macro-F1 {_scores(new)}, against P13's {old}. "
+             f"Confirmatory: {_family_sentence(summary['families']['confirmatory'])}. Secondary: {_family_sentence(summary['families']['secondary'])}. "
+             f"With Huang et al.'s SVEB stage on top (descriptive): {rule}.")  # fmt: skip
+    return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
+
+
+def posthoc_af_rule() -> str:
+    """P16: Huang's SVEB stage with an atrial-fibrillation veto, from results/phase6_af_rule/."""
+    from ecgaug.names import PHASE6_AF_RULE
+
+    folder = paths.results_for(PHASE6_AF_RULE)
+    det, check, summary = (_load(folder / f) for f in ("af_detector.json", "design_check.json", "summary.json"))
+    if det is None or check is None or "validation" not in check:
+        return _missing("P16: --part fit and --part check (annotations only)") + "\n"
+    r, v = check["ds1_rhythm"], check["validation"]["mean_s_f1"]
+    dbs = {"mitdb_ds1": "DS1", "incartdb": "INCART", "svdb": "SVDB"}
+    t = check["chosen_threshold"]
+    text = (f"\\paragraph{{An atrial-fibrillation veto on the SVEB stage (P16).}} Huang et al.'s stage reads only a beat's RR interval over its "
+            f"recording's mean, so an irregular rhythm makes normal beats look premature: on DS1's annotations {r['rule_false_s_in_af']:,} of its "
+            f"{r['rule_false_s']:,} false S calls lie in atrial fibrillation or flutter, where {r['s_beats_in_af']} of {r['s_beats']:,} S beats lie "
+            "(without organized atrial activity a beat is not labelled S). P16 undoes the stage's S calls where an AF detector fires. The detector reads "
+            f"only beat times (five irregularity measures of the 64 surrounding RR intervals after premature beats and their pauses are removed; a "
+            f"logistic regression) and is fitted on the {len(det['records'])} records of the MIT-BIH Atrial Fibrillation Database \\cite{{moody1983afdb}} "
+            f"({det['beats']:,} beats; sensitivity {_n(det['training_sensitivity'])}, specificity {_n(det['training_specificity'])}). Its threshold, "
+            f"{t}, has the highest mean S F1 of the vetoed stage over the training-side databases ("
+            + ", ".join(f"{dbs[db]} {_n(e['rule']['f1'])} to {_n(e[f'veto_{t}']['f1'])}" for db, e in check["databases"].items())
+            + f"); its form, undoing only the stage's own conversions, has the higher validation S F1 over the compared conditions and seeds "
+            f"({_n(v['veto_rule'])}, against {_n(v['veto_all'])} for undoing every S call there; the stage alone {_n(v['rule'])}, the cnn alone "
+            f"{_n(v['cnn'])}; Figure~\\ref{{fig:p16-check}}).")  # fmt: skip
+    if summary is None:
+        return text + " " + _missing("P16: --part test") + "\n"
+    rows = "; ".join(f"{SHORT.get(k.split('/')[1], k.split('/')[1])} {_n(summary['rule_alone'][k]['rare_macro_f1']['point'])} to "
+                     f"{_n(e['rare_macro_f1']['point'])} (S F1 {_n(summary['rule_alone'][k]['f1_S']['point'])} to {_n(e['f1_S']['point'])}, "
+                     f"+P {_n(summary['rule_alone'][k]['ppv_S']['point'])} to {_n(e['ppv_S']['point'])})"
+                     for k, e in summary["with_af_veto"].items())  # fmt: skip
+    text += (f" On the test records (Figure~\\ref{{fig:p16}}), rare-class macro-F1 with the stage alone and with the veto: {rows}. "
+             f"Confirmatory: {_family_sentence(summary['families']['confirmatory'])}.")
+    return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
+
+
 def posthoc_table() -> str:
     """One row per post-hoc analysis (P1-P8): what it asked and what it found, from the summaries."""
     from ecgaug.names import (PHASE6_AUDIT_CHECK, PHASE6_AUGMENTATION_MECHANISM, PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS,
@@ -1480,6 +1558,8 @@ def build() -> dict[str, str]:
     files["results_relative_generators"] = posthoc_relative_generators()
     files["results_record_rr"] = posthoc_record_rr()
     files["results_icentia"] = posthoc_icentia()
+    files["results_diffusion"] = posthoc_diffusion()
+    files["results_af_rule"] = posthoc_af_rule()
     files["table_posthoc"] = posthoc_table()
     files["outlook"] = outlook(heading=False)
     files["discussion"] = discussion()
