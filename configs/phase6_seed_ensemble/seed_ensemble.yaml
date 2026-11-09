@@ -1,0 +1,6 @@
+# P18 (PREREGISTRATION §10 v17): the cnn's class probabilities averaged over ten runs per condition. Seeds 0-2 are P13's and
+# P15's selected runs; seeds 3-9 are trained here with every setting unchanged (a run of seed s uses bank seed s mod 3).
+# Huang et al.'s SVEB stage and P16's AF veto (its threshold and form, chosen on training-side data) go on top.
+experiment: phase6_seed_ensemble
+af_rule_config: configs/phase6_af_rule/af_rule.yaml     # P16's detector settings and rule threshold; it brings P13's config
+new_seeds: [3, 4, 5, 6, 7, 8, 9]

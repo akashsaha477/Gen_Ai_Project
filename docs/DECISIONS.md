@@ -507,3 +507,14 @@ trained to a usable state, so P17 (`phase6_diffusion_long`) repeats P15 with 100
 config is checked against P15's), with one DS2 read that compares it with P15 and with P13's conditions. The decision was
 taken before P15's and P16's test results were read. The other generators keep the phase 3 budget; the paper reports the
 unequal budget.
+
+## 2026-11-09 (Day 34) — A39: the cnn's probabilities averaged over ten runs per condition (pre-registration v17) — Akash Saha ("can you make the cvae results even better")
+
+The cVAE with Huang et al.'s SVEB stage and P16's AF veto is the study's highest post hoc score (0.557). Each cnn run keeps
+one noisy epoch: its validation S F1 moves by a median 0.20 between consecutive epochs. Averaging the class probabilities of
+independently trained runs is the standard remedy (a deep ensemble), and on the validation patients the average of the
+three existing runs raised S F1 and V F1 in all six of P16's conditions. P18 (`phase6_seed_ensemble`) trains seeds 3-9 of
+those conditions with nothing else changed, averages each condition's ten runs, puts the stage and the veto on top, and
+reads DS2 once. Every condition gets the same ten seeds, so the comparisons between conditions stay equal-budget. Nothing
+is chosen on validation; the validation scores are descriptive. The decision was taken after P17's test result, so P18 is
+reported as post hoc.

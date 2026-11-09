@@ -147,7 +147,7 @@ Generators, oversamplers and any fitted preprocessing never see validation recor
 - Every access is appended to `docs/TEST_ACCESS_LOG.md`. No decision of any kind uses test data.
 - After `/final-eval` nothing is retrained, re-selected or re-tuned. A bug found later is documented
   and any re-run is disclosed.
-- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v16): the analyses listed in §10 v4 to v16 only, after `/final-eval`, logged;
+- **Post hoc** (`ALLOW_TEST_POSTHOC=1`, v4 to v17): the analyses listed in §10 v4 to v17 only, after `/final-eval`, logged;
   they add evidence beside the primary results and replace none of them.
 
 ## 9. Generators and RQ3 (rules fixed now, thresholds in v2)
@@ -439,6 +439,24 @@ gap in an exploratory check. P15's and P16's test summaries had been written and
 | test | one `posthoc` access on Kaggle (DS2 in P13's form; the AF detector reads only each DS2 record's QRS annotation times). Confirmatory (Holm, 2 tests): P17 vs P15's diffusion condition (the budget) and vs P13's cnn without augmentation; rare-class macro-F1, record-level bootstrap 10,000, seed 0. Secondary (Holm, 3 tests): vs P13's cVAE, class weighting and random oversampling. P13's, P15's and P16's scores are recomputed and must match their summaries |
 | descriptive | Huang et al.'s SVEB stage, and the stage with P16's AF veto (threshold 0.95, form "rule"), on top of every compared condition; the nearest-patient check (as P15); the shape check for P17's banks; validation S F1 |
 | reporting | its own section, labelled post hoc, framed as limited by scale. Only the diffusion model gets the longer budget; the cVAE and WGAN-GP keep the phase 3 budget, so P17 against them is not an equal-budget comparison, and the paper says so. Compute: one Kaggle T4 session, about 6 GPU-hours (P15 took about 18 minutes per 20,000 steps; approved: "Run whatever you want", 2026-11-08); CPU for the test |
+
+**v17, committed 2026-11-09, after P17's test result, before any of the work below (DECISIONS A39).** One analysis, post
+hoc. Every run of the cnn keeps the epoch with the highest validation S F1. Within one run that score moves by 0.09 to
+0.34 between consecutive epochs (median 0.20; the 18 runs P16 compares, their `train_log.csv`), and 6 of the 18 kept their
+first epoch, so the model a run keeps is a noisy draw. Averaging the class probabilities of runs trained independently (a
+deep ensemble; Lakshminarayanan et al., 2017) is the standard way to reduce that noise, and such ensembles held up best
+under dataset shift in Ovadia et al. (2019). On P13's validation patients the average of the three existing runs raised S
+F1 with Huang et al.'s stage and P16's veto in all six of P16's conditions (mean 0.753 to 0.767; cVAE 0.765 to 0.777) and V
+F1 in all six (cVAE 0.796 to 0.823): the runs' stored validation predictions, no test data. The wish to raise the cVAE's
+score came after P16's and P17's test results, so P18 is reported as post hoc.
+
+| item | rule |
+|---|---|
+| P18 `phase6_seed_ensemble`, runs | the P7 cnn on P13's data in P16's six conditions at their selected strengths (none; class weighting 0.5; random oversampling 0.25; cVAE 0.1; WGAN-GP 0.25; diffusion 0.25), every setting unchanged. Seeds 0-2 are P13's and P15's selected runs; seeds 3-9 are trained (42 runs). A run of seed s uses bank seed s mod 3 (each generator's three frozen banks, P12's and P15's); random oversampling draws with the run's seed |
+| ensemble | per condition, the mean of its ten runs' class probabilities, then argmax; Huang et al.'s SVEB stage (0.8) and P16's AF veto (threshold 0.95, form "rule") on top, as in P16. Nothing is chosen: the ten seeds and the averaging are fixed now |
+| test | one `posthoc` access on Kaggle (DS2 in P13's form; the AF detector reads only each DS2 record's QRS annotation times). Confirmatory (Holm, 6 tests): per condition, the ten-run ensemble vs P16's three single runs (mean F1 over the runs), both with the stage and the veto; rare-class macro-F1, record-level bootstrap 10,000, seed 0. Secondary (Holm, 5 tests): the cVAE's ensemble vs each other condition's ensemble, with the stage and the veto. P13's, P15's and P16's scores are recomputed from seeds 0-2 and must match their summaries |
+| descriptive | the ensembles alone and with the stage alone; the ten single runs (mean and spread); the three-run ensemble of seeds 0-2; without record 202; validation S, V and F F1 of the single runs and both ensembles (`--part check`, written with the run IDs before the test read) |
+| reporting | its own section, labelled post hoc, framed as limited by scale. P16's cVAE score (0.557) stays as reported; the paper says an ensemble needs ten trained models where P16 used one. Compute: one Kaggle T4 session, under 1 GPU-hour (P13's runs took 37-52 s each; requested: "can you make the cvae results even better", 2026-11-09); CPU for the test |
 
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 

@@ -1191,3 +1191,16 @@ checks).
 Full test suite on Kaggle at 45f7869 (`phase6-suite-p17`, CPU): 369 passed, 2 skipped, 0 failed (the kernel log holds
 the notebook output twice, so its progress dots count each test twice; checked against the 371 tests collected
 locally). Pushed 45f7869 to main. This note is committed after the push and goes out with the next suite-tested push.
+
+**P18 (v17, A39), asked to raise the cVAE's score further.** Each cnn run keeps the epoch with the best validation S F1,
+and that score jumps between consecutive epochs (largest jump per run 0.09-0.34, median 0.20, over the 18 runs P16
+compares; 6 of them kept their first epoch). A deep ensemble (mean class probabilities of independently trained runs)
+is the standard remedy. Pilot on validation only (the runs' stored predictions, no test data): averaging the three
+existing runs raised S F1 with the stage and the veto in all six of P16's conditions (mean 0.753 to 0.767; cVAE 0.765 to
+0.777) and V F1 in all six (cVAE 0.796 to 0.823). P18 (`phase6_seed_ensemble`) trains seeds 3-9 of the six conditions
+(42 runs, bank seed = seed mod 3, nothing else changed), averages each condition's ten runs and reads DS2 once.
+Confirmatory: per condition, ensemble vs P16's single runs; secondary: the cVAE's ensemble vs every other condition's.
+Nothing is chosen on validation. P15's diffusion banks were uploaded as the private dataset `ecgaug-p15-banks` for the
+grid kernel. The first upload attempt failed because the laptop's disk was full (117 MB free of 460 GB); the
+upload's partial archive was deleted and the retry succeeded with 1.9 GB free. The disk needs more free space before
+much more local work.
