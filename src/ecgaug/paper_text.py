@@ -940,6 +940,54 @@ def posthoc_diffusion() -> str:
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
 
 
+def posthoc_diffusion_long() -> str:
+    """P17: P15's diffusion model trained five times longer, from results/phase6_diffusion_long/."""
+    from ecgaug.names import PHASE6_DIFFUSION, PHASE6_DIFFUSION_LONG
+
+    folder = paths.results_for(PHASE6_DIFFUSION_LONG)
+    shape, gens, mech, selection, summary = (_load(folder / f) for f in ("shape_check.json", "diffusion_generators.json", "mechanism.json", "selection.json", "summary.json"))
+    if shape is None:
+        return _missing("P17: --part shape (local)") + "\n"
+
+    def corr(name: str, cls: str) -> str:
+        vals = [e[cls]["corr"] for e in shape["banks"].get(name, {}).values()]
+        return f"{_n(min(vals), 2)}-{_n(max(vals), 2)}" if vals else "--"
+
+    text = ("\\paragraph{The diffusion model trained five times longer (P17).} At the phase 3 budget P15's loss was still falling, and the median "
+            "beat of each class in its banks matched the median of real DS1 training beats far less closely than the cVAE's (correlation S "
+            f"{corr('diffusion_p15', 'S')}, V {corr('diffusion_p15', 'V')}, F {corr('diffusion_p15', 'F')}, against {corr('cvae_p12', 'S')}, "
+            f"{corr('cvae_p12', 'V')} and {corr('cvae_p12', 'F')}). P17 trains the same model for five times as many steps, with every other setting "
+            "unchanged.")  # fmt: skip
+    if gens is None:
+        return text + " " + _missing("P17: --part train on Kaggle") + "\n"
+    seeds = gens["seeds"]
+    minutes = [e["generator_seconds"] / 60 for e in seeds.values()]
+    text += (f" {sum(not e['diverged'] for e in seeds.values())} of {len(seeds)} fits of {gens['steps']:,} steps finished without divergence "
+             f"({_n(min(minutes), 0)} to {_n(max(minutes), 0)} minutes each on a T4).")
+    if "diffusion_p17" in shape["banks"]:
+        text += (f" Its banks' class medians correlate with the real ones at S {corr('diffusion_p17', 'S')}, V {corr('diffusion_p17', 'V')} and F "
+                 f"{corr('diffusion_p17', 'F')}.")
+    if mech is not None:
+        eff = {c: e["diffusion"]["effective_records"] for c, e in mech["classes"].items()}
+        text += " Effective number of training patients its beats resemble: " + ", ".join(f"{c} {_n(v, 1)}" for c, v in eff.items()) + "."
+    if selection is None:
+        return text + " " + _missing("P17: --part select") + "\n"
+    chosen = selection["chosen"]["cnn"]["diffusion"]
+    p15 = (_load(paths.results_for(PHASE6_DIFFUSION) / "selection.json") or {"chosen": {"cnn": {}}})["chosen"]["cnn"].get("diffusion")
+    text += (f" On validation the phase 4 gate rule chose strength {chosen['strength']} (S F1 {_n(chosen['mean'])} $\\pm$ {_n(chosen['sd'])}"
+             + (f"; P15 {_n(p15['mean'])}" if p15 else "") + ").")
+    if summary is None:
+        return text + " " + _missing("P17: --part test") + "\n"
+    new = summary["conditions"]["cnn/diffusion_long"]
+    rule, veto = summary["sveb_rule"]["cnn/diffusion_long"], summary["with_af_veto"]["cnn/diffusion_long"]
+    text += (f" On the test records (Figure~\\ref{{fig:p17}}) it reaches rare-class macro-F1 {_scores(new)}; P15's model {_scores(summary['before']['cnn/diffusion'])}, "
+             f"P13's cVAE {_scores(summary['before']['cnn/cvae'])}. Confirmatory: {_family_sentence(summary['families']['confirmatory'])}. Secondary: "
+             f"{_family_sentence(summary['families']['secondary'])}. With Huang et al.'s SVEB stage on top {_n(rule['rare_macro_f1']['point'])} "
+             f"(S F1 {_n(rule['f1_S']['point'])}), and with P16's AF veto as well {_n(veto['rare_macro_f1']['point'])} (S F1 {_n(veto['f1_S']['point'])}; "
+             "descriptive). Only the diffusion model had the longer budget, so P17 against the other generators is not an equal-budget comparison.")  # fmt: skip
+    return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
+
+
 def posthoc_af_rule() -> str:
     """P16: Huang's SVEB stage with an atrial-fibrillation veto, from results/phase6_af_rule/."""
     from ecgaug.names import PHASE6_AF_RULE
@@ -1251,10 +1299,18 @@ def _diffusion_sentence(with_section: bool = False) -> str | None:
     new, cvae = s["conditions"]["cnn/diffusion"], s["before"]["cnn/cvae"]
     c = s["families"]["confirmatory"]["cnn: diffusion vs cvae (P13)"]
     where = " (Section~\\ref{sec:diffusion})" if with_section else ""
-    return (f"A class-conditional diffusion model trained with the same step budget{where} reached {_n(new['rare_macro_f1']['point'])} (S F1 "
+    text = (f"A class-conditional diffusion model trained with the same step budget{where} reached {_n(new['rare_macro_f1']['point'])} (S F1 "
             f"{_n(new['f1_S']['point'])}, F F1 {_n(new['f1_F']['point'])}) against the cVAE's {_n(cvae['rare_macro_f1']['point'])} ({_p(c)}); its "
-            "loss was still falling at the end of the budget and its samples matched the real beats' class shapes less closely, so the budget, "
-            "not the family, may be what limits it.")
+            "loss was still falling at the end of the budget and its samples matched the real beats' class shapes less closely")
+    from ecgaug.names import PHASE6_DIFFUSION_LONG
+
+    long = _load(paths.results_for(PHASE6_DIFFUSION_LONG) / "summary.json")
+    if long is None:
+        return text + ", so the budget, not the family, may be what limits it."
+    lc = long["families"]["confirmatory"]["cnn: diffusion_long vs diffusion (P15)"]
+    ln = long["conditions"]["cnn/diffusion_long"]
+    return text + (f". Trained for five times as many steps (Section~\\ref{{sec:diffusion-long}}) it reached {_n(ln['rare_macro_f1']['point'])} "
+                   f"(S F1 {_n(ln['f1_S']['point'])}, F F1 {_n(ln['f1_F']['point'])}; against the shorter training {_p(lc)}).")
 
 
 def _af_sentence(with_section: bool = False) -> str | None:
@@ -1607,6 +1663,7 @@ def build() -> dict[str, str]:
     files["results_icentia"] = posthoc_icentia()
     files["results_diffusion"] = posthoc_diffusion()
     files["results_af_rule"] = posthoc_af_rule()
+    files["results_diffusion_long"] = posthoc_diffusion_long()
     files["table_posthoc"] = posthoc_table()
     files["outlook"] = outlook(heading=False)
     files["discussion"] = discussion()

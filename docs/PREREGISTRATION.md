@@ -427,8 +427,8 @@ before any of the work below (DECISIONS A38).** One analysis, post hoc. P15 trai
 budget of 20,000 steps. Two training-side signs say the budget was too small for it. Its training loss was still falling
 at the end: a mean of 0.117-0.118 over steps 1,001-2,000, 0.098-0.099 over 15,001-16,000 and 0.096 over 19,001-20,000, in
 all three seeds (the runs' `train_log.csv`). And the median beat of each class in its banks matches the median of real
-DS1 training beats far less closely than the cVAE's does: correlation S 0.11-0.30, V 0.57-0.59, F 0.72-0.73, against the
-cVAE's 0.58-0.74, 0.94-0.96 and 0.96 (`phase6_diffusion_long --part shape`, `results/phase6_diffusion_long/shape_check.json`).
+DS1 training beats far less closely than the cVAE's does: correlation S 0.10-0.30, V 0.57-0.59, F 0.72-0.73, against the
+cVAE's 0.58-0.74, 0.94-0.96 and 0.95-0.96 (`phase6_diffusion_long --part shape`, `results/phase6_diffusion_long/shape_check.json`).
 Sampling P15's seed-0 model with its raw weights instead of their moving average, or without guidance, did not close the
 gap in an exploratory check. P15's and P16's test summaries had been written and committed by then, but not read.
 
@@ -449,3 +449,4 @@ Each version is committed before the experiments it governs, tagged `prereg-vK` 
 | 2026-10-26 | §4 early stopping | `min_epochs: 10` for every MIT-BIH classifier from phase 2 on | 10 of 24 phase 1 runs stopped at epoch 6 on an all-N model (PHASE1_REPORT §6); fixed before any phase 2 run | Akash Saha (DECISIONS A15), pending team confirmation |
 | 2026-11-01 | §9 RQ3 | The separate TSTR analysis has no data: TSTR was not scored in the sanity harness and is not in the composite | Fixed recipe gives S F1 = 0 on real beats (PROGRESS 2026-11-01); to be stated in the paper | Akash Saha (phase 2 gate) |
 | 2026-11-03 | §10 v2 diversity floor | cVAE D bank seed 1 has lowest diversity 0.694 (class S), under the 0.7 floor; the bank is kept and frozen | The floor is pre-registered for pilot seeds only; final banks have no rule, and adding one after seeing the result would be post hoc. Disclosed in the paper | Akash Saha (phase 3 gate, DECISIONS A20) |
+| 2026-11-09 | §10 v16 motivation | Two motivating correlations were rounded by hand when v16 was written: P15's lowest S value 0.105 was given as 0.11 (0.10) and the cVAE's F range 0.955-0.963 as 0.96 (0.95-0.96); corrected in place | Transcription error found when the paper text was generated from `shape_check.json`; no rule, threshold or analysis depends on these numbers | to be confirmed by Akash Saha |

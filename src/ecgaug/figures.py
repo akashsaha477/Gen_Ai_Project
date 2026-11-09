@@ -1627,9 +1627,9 @@ def relative_generators_results_figure(summary: dict, p11: dict) -> list[Path]:
     return [_save(fig, paths.figures_for("phase6_relative_generators") / "results.png", "Before and after: generators trained on what the cnn sees", caption)]
 
 
-DIFFUSION_COLOR, VETO_COLOR = "#8a5cc8", "#1a9a6c"
+DIFFUSION_COLOR, VETO_COLOR, LONG_COLOR = "#8a5cc8", "#1a9a6c", "#c2408f"
 CONDITION_NAMES = {"none": "no augmentation", "class_weighted": "class-weighted loss", "random_oversampling": "random oversampling", "cvae": "cVAE",
-                   "wgan_gp": "WGAN-GP", "diffusion": "diffusion"}  # fmt: skip
+                   "wgan_gp": "WGAN-GP", "diffusion": "diffusion", "diffusion_long": "diffusion, 5x steps"}  # fmt: skip
 
 
 def _comparisons_panel(ax, families: dict, title: str) -> None:
@@ -1704,6 +1704,12 @@ def diffusion_samples_figure() -> list[Path]:
             X, y = np.asarray(z["X"], dtype=np.float32), np.asarray(z["y"])
             loaded[key] = {c: X[y == c] for c in (1, 2, 3)}
     rows = [("cvae", "#2a78d6", "cVAE bank (P12)"), ("diffusion", DIFFUSION_COLOR, "diffusion bank (P15)")]
+    longer = banks.bank_dir("phase6_diffusion_long/diffusion") / "seed0.npz"
+    if longer.is_file():  # P17: the same model trained five times longer
+        with np.load(longer) as z:
+            X, y = np.asarray(z["X"], dtype=np.float32), np.asarray(z["y"])
+            loaded["diffusion_long"] = {c: X[y == c] for c in (1, 2, 3)}
+        rows.append(("diffusion_long", LONG_COLOR, "diffusion, 5x steps (P17)"))
     real = _real_relative_beats()
     if real is not None:
         loaded["real"] = real
@@ -1729,7 +1735,8 @@ def diffusion_samples_figure() -> list[Path]:
     caption = ("In the form the cnn sees them: the beat minus the patient's ±150 s template (synthetic beats multiplied back by the training scale). "
                "Coloured: median and 25-75% band; grey: three single beats drawn at random. The real row shows up to 2,000 DS1 training beats per "
                "class (the MIT-BIH part of the generators' training patients; INCART and SVDB are not drawn). cVAE: P12; diffusion: P15, the same "
-               "training beats and step budget. Post hoc (PREREGISTRATION v14, P15).")  # fmt: skip
+               "training beats and step budget" + ("; P17: P15's model trained for five times as many steps" if "diffusion_long" in loaded else "")
+               + ". Post hoc (PREREGISTRATION v14" + (" and v16, P15 and P17)." if "diffusion_long" in loaded else ", P15)."))  # fmt: skip
     return [_save(fig, paths.figures_for("phase6_diffusion") / "samples.png", "Before and after: real and synthetic rare beats", caption)]
 
 
@@ -1840,6 +1847,34 @@ def af_rule_results_figure(summary: dict) -> list[Path]:
     return [_save(fig, paths.figures_for("phase6_af_rule") / "results.png", "Before and after: an atrial-fibrillation veto on the SVEB rule", caption)]
 
 
+def diffusion_long_results_figure(summary: dict) -> list[Path]:
+    """P17 before and after: P15's diffusion condition, P13's conditions and the longer-trained diffusion condition on the
+    test set, alone, with Huang's SVEB stage and with the stage plus P16's AF veto; the pre-registered comparisons."""
+    plt = _plt()
+    colors = {"none": "#8f8d88", "class_weighted": "#a6a49f", "random_oversampling": "#bdbbb6", "cvae": "#2a78d6", "diffusion": DIFFUSION_COLOR, "diffusion_long": LONG_COLOR}
+    entries = {**summary["before"], **summary["conditions"]}
+    rows = []
+    for key, entry in entries.items():
+        c = key.split("/")[1]
+        name = CONDITION_NAMES[c] + (" (P17)" if c == "diffusion_long" else " (P15)" if c == "diffusion" else " (P13)")
+        rows += [(name, entry, colors.get(c, INK_2), "o"), (f"{name} + SVEB rule", summary["sveb_rule"][key], "#eb6834", "s"),
+                 (f"{name} + rule with AF veto", summary["with_af_veto"][key], VETO_COLOR, "D")]  # fmt: skip
+    fig, axes = plt.subplots(1, 4, figsize=(19, 0.36 * len(rows) + 2.4), gridspec_kw={"width_ratios": [1, 0.7, 0.7, 1.1]})
+    for ax, metric, xlabel, title in ((axes[0], "rare_macro_f1", "test rare-class macro-F1 (95% record-level CI)", "each condition (the P7 cnn on P11's patients)"),
+                                      (axes[1], "f1_S", "test S F1", "S beats"), (axes[2], "f1_F", "test F F1", "F beats")):  # fmt: skip
+        for i, (label, entry, color, marker) in enumerate(reversed(rows)):
+            _interval(ax, entry[metric], i, color, marker=marker)
+        ax.set_yticks(range(len(rows)), [label for label, _, _, _ in reversed(rows)] if metric == "rare_macro_f1" else [], fontsize=7)
+        ax.set_xlim(0, 1)
+        ax.set_xlabel(xlabel)
+        ax.set_title(title, loc="left")
+    _comparisons_panel(axes[3], summary["families"], "pre-registered comparisons, P17")
+    caption = ("Dots: each condition alone (P13's conditions grey, cVAE blue; P15's diffusion model purple; P17, the same model trained for five times "
+               "as many steps, magenta); squares: Huang et al.'s SVEB stage on top; diamonds: the stage with P16's AF veto (both descriptive). Right, "
+               "black: confirmatory (P17 vs P15 and vs no augmentation); grey: secondary. Post hoc (PREREGISTRATION v16, P17).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_diffusion_long") / "results.png", "Before and after: the diffusion model trained five times longer", caption)]
+
+
 def posthoc_figures() -> list[Path]:
     """Every post-hoc figure whose summary exists (PREREGISTRATION v4, P1-P4); nothing is re-run."""
     final, written = _summary("final_eval"), []
@@ -1907,6 +1942,8 @@ def posthoc_figures() -> list[Path]:
         written += af_rule_check_figure(c)
     if (s := _summary("phase6_af_rule")) is not None:
         written += af_rule_results_figure(s)
+    if (s := _summary("phase6_diffusion_long")) is not None:
+        written += diffusion_long_results_figure(s)
     return written
 
 

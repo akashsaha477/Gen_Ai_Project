@@ -1144,8 +1144,8 @@ cVAE -0.076 [-0.148, +0.093], Holm p 0.806 both; secondary vs class weighting -0
 
 **Why the diffusion model fell short (training-side only).** Its loss was still falling at the end of the budget (0.117
 over steps 1,001-2,000, 0.098 over 15,001-16,000, 0.096 over 19,001-20,000, all seeds), and its banks' class medians match
-real DS1 training beats far less than the cVAE's (`phase6_diffusion_long --part shape`: correlation S 0.11-0.30, V
-0.57-0.59, F 0.72-0.73 against 0.58-0.74, 0.94-0.96, 0.96). An exploratory CPU check on seed 0 (raw weights instead of
+real DS1 training beats far less than the cVAE's (`phase6_diffusion_long --part shape`: correlation S 0.10-0.30, V
+0.57-0.59, F 0.72-0.73 against 0.58-0.74, 0.94-0.96, 0.95-0.96). An exploratory CPU check on seed 0 (raw weights instead of
 their average; guidance 1.0; not part of the repository) did not close the gap. Figure: `figures/phase6_diffusion/samples.png`.
 
 **P16 (AF veto, v15, A37).** The design check (annotations only) now also counts DS1's rhythms (1,251 of the rule's
