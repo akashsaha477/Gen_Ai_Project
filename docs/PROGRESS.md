@@ -1274,3 +1274,8 @@ the veto (chosen on MIT-BIH training patients) were set on few patients, and cho
 pool is the next step. Figure `figures/phase6_fresh_patients/results.png` (DS2 squares beside the new patients). Paper:
 section "The same pipeline on 1,000 new patients" with the stage's Se/+P sentence added; abstract, discussion and
 conclusion carry the new-patient sentence. README P19 row, PROJECT_GUIDE and CODE_GUIDE (P1-P19) updated.
+
+Full test suite on Kaggle at 94bdb48 (`phase6-suite-p19`, CPU, with `ecgaug-v5-external` as before): tests passed,
+run exit code 0; 387 passed, 2 skipped, 0 failed (778 progress marks halved, against the 389 tests collected locally).
+Pushed 94bdb48 to main (fast-forward from 54cf7d5), which also carries P19's pre-registration (2682907, tag `prereg-v18`
+pushed before the kernel ran). This note goes out with the next suite-tested push.
