@@ -1215,3 +1215,20 @@ V 0.821 to 0.860; WGAN-GP S 0.733 to 0.760). Validation F F1 stays near zero for
 60 runs the largest epoch-to-epoch jump in validation S F1 was 0.05-0.40 (median 0.18), and 15 kept their first epoch.
 `members.json` (the ten run IDs per condition) is committed before the test read. Figure:
 `figures/phase6_seed_ensemble/check.png`.
+
+**P18 test (one posthoc read, logged; CPU kernel `phase6-seed-ensemble-test` at d43d46e).** The 42 checkpoints went up as
+the private dataset `ecgaug-p18-runs`. Ingest clean (one result file, one access-log row; the bundle's `members.json`
+identical to the committed one). The access-log row names `results/phase6_seed_ensemble/selection.json` as its decision
+file because the shared logger writes that for every experiment; P18 has no selection, its runs are in `members.json`.
+P13's, P15's and P16's scores reproduced exactly (18 checks, difference 0). With the stage and the veto, rare-class
+macro-F1 from P16's single runs to the ten-run ensemble: none 0.319 to 0.316, class weighting 0.512 to 0.515, random
+oversampling 0.525 to 0.541, cVAE 0.557 to 0.587 [0.086, 0.702], WGAN-GP 0.375 to 0.474, diffusion 0.436 to 0.433.
+Confirmatory (Holm, 6): only the WGAN-GP's change is detectable (+0.099 [+0.005, +0.113], Holm p 0.006); cVAE +0.030
+[-0.044, +0.057], Holm p 1.000; the rest -0.004 to +0.017, Holm p 1.000. Secondary (the cVAE's ensemble vs the others',
+Holm, 5): +0.046 to +0.271, none detectable (Holm p 0.107-1.000). The cVAE's ensemble, 0.587 (S F1 0.640 to 0.647, F F1
+0.474 to 0.527, V F1 0.882 to 0.936), is the study's highest test score, but not detectably above P16's 0.557, which stays
+as reported. Its ten single runs scored 0.451-0.610 (mean 0.536; seeds 0-2, P16's runs, 0.557), so P16's three seeds were
+above the typical single run; the ensemble's 0.587 is above eight of the ten single runs (seed 0 scored 0.607, seed 6 0.610). Without record 202: 0.615 (P16 0.583).
+Three-run ensemble (seeds 0-2) 0.581. Figure: `figures/phase6_seed_ensemble/results.png`. Paper: section "Ten runs averaged
+per condition" with the two references checked against arXiv (1612.01474, 1906.02530); the abstract, discussion and
+conclusion now name the ensemble's 0.587 as the highest score and say it is not detectably above P16's.

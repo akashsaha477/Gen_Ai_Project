@@ -1081,7 +1081,7 @@ def posthoc_seed_ensemble() -> str:
             f"{e['runs']} runs P16 compares, that score moved by {_n(j['min'], 2)} to {_n(j['max'], 2)} between consecutive epochs (median "
             f"{_n(j['median'], 2)}), and {e['kept_first_epoch']} of them kept their first epoch, so the model a run keeps is a noisy draw. "
             "Averaging the class probabilities of independently trained runs, a deep ensemble \\cite{lakshminarayanan2017ensembles}, is the "
-            "standard remedy, and such ensembles held up best under dataset shift in \\cite{ovadia2019shift}. P18 trains seeds 3--9 of P16's six "
+            "standard remedy, and such ensembles held up best under dataset shift in Ovadia et al.'s comparison \\cite{ovadia2019shift}. P18 trains seeds 3--9 of P16's six "
             "conditions with every setting unchanged (a run of seed $s$ uses bank seed $s \\bmod 3$), averages each condition's ten runs before "
             "the argmax, and puts Huang et al.'s stage and P16's veto on top. Nothing is chosen on validation.")  # fmt: skip
     v, m = members["validation"], members["mean_s_f1"]["veto"]
@@ -1103,7 +1103,8 @@ def posthoc_seed_ensemble() -> str:
     text += (f" On the test records (Figure~\\ref{{fig:p18}}), with the stage and the veto, rare-class macro-F1 went from P16's single runs to "
              f"the ten-run ensemble as follows: {rows}. The cVAE's ensemble reached {_ci(cvt['rare_macro_f1'])}{top} (S F1 {_n(cpt['f1_S']['point'])} "
              f"to {_n(cvt['f1_S']['point'])}, F F1 {_n(cpt['f1_F']['point'])} to {_n(cvt['f1_F']['point'])}); its ten single runs scored "
-             f"{_n(min(points))} to {_n(max(points))}, and without record 202 the ensemble scored {_n(w202['ensemble']['cnn/cvae']['rare_macro_f1']['point'])} "
+             f"{_n(min(points))} to {_n(max(points))} (mean {_n(float(np.mean(points)))}; seeds 0--2, P16's runs, {_n(float(np.mean(points[:3])))}), "
+             f"and without record 202 the ensemble scored {_n(w202['ensemble']['cnn/cvae']['rare_macro_f1']['point'])} "
              f"(P16 {_n(w202['p16']['cnn/cvae']['rare_macro_f1']['point'])}). Confirmatory: {_family_sentence(summary['families']['confirmatory'])}. "
              f"Secondary: {_family_sentence(summary['families']['secondary'])}. An ensemble needs ten trained models where P16 used one, and P16's "
              "scores stay as reported.")  # fmt: skip
@@ -1444,10 +1445,11 @@ def _ensemble_sentence(with_section: bool = False) -> str | None:
     where = " (Section~\\ref{sec:seed-ensemble})" if with_section else ""
     found = [f"raised it in {up}" if up else "", f"lowered it in {down}" if down else ""]
     verdict = " and ".join(f for f in found if f) + f" of {len(conf)} conditions" if up or down else f"no detectable change in any of {len(conf)} conditions"
+    cc = conf["cnn: cvae, ensemble vs P16"]
     return (f"Averaging the class probabilities of ten independently trained runs per condition{where} changed rare-class macro-F1 by "
             f"{_s(min(points))} to {_s(max(points))} against P16's single runs (after Holm correction: {verdict}); the cVAE's ensemble reached "
-            f"{_n(cv['rare_macro_f1']['point'])}{top} (S F1 {_n(cv['f1_S']['point'])}, F F1 {_n(cv['f1_F']['point'])}; single runs "
-            f"{_n(cp['rare_macro_f1']['point'])}).")
+            f"{_n(cv['rare_macro_f1']['point'])}{top} (S F1 {_n(cv['f1_S']['point'])}, F F1 {_n(cv['f1_F']['point'])}), against "
+            f"{_n(cp['rare_macro_f1']['point'])} for its single runs ({'a detectable' if cc['reject_holm'] else 'not a detectable'} change, {_p(cc)}).")
 
 
 def _best_test_score() -> float:

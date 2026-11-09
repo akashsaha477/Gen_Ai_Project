@@ -337,8 +337,9 @@ result.
 | P17 | `phase6_diffusion_long` | P15's diffusion model trained five times longer |
 | P18 | `phase6_seed_ensemble` | each condition's class probabilities averaged over ten independently trained runs, with the SVEB rule and the AF veto on top |
 
-The highest post hoc test score is the cVAE with Huang et al.'s SVEB rule and the atrial-fibrillation veto (P16):
-rare-class macro-F1 0.557 (S F1 0.640, F F1 0.474). The result of every analysis is in the `README.md` checklist, the
+The highest post hoc test score is the cVAE with Huang et al.'s SVEB rule and the atrial-fibrillation veto, its class
+probabilities averaged over ten runs (P18): rare-class macro-F1 0.587 (S F1 0.647, F F1 0.527). Against the same set-up with
+single runs (P16, 0.557) that is not a detectable change (Holm p 1.000). The result of every analysis is in the `README.md` checklist, the
 detail in `docs/PROGRESS.md`, and the before-and-after figures in `figures/phase6_*/`.
 
 ---
@@ -346,7 +347,7 @@ detail in `docs/PROGRESS.md`, and the before-and-after figures in `figures/phase
 ## 6. What has run
 
 Phases 1 to 5, the full grid, the single final evaluation (2026-11-04), the leakage audit and the post hoc
-analyses P1-P17 (section 5.15) have all run. The checklist in `README.md` gives the state of every item, including
+analyses P1-P18 (section 5.15) have all run. The checklist in `README.md` gives the state of every item, including
 any approval still open; `python -m ecgaug.workflow status` prints it.
 
 ---
