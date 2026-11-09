@@ -1158,9 +1158,15 @@ S +P 0.415 to 0.496, Se 0.920 to 0.903). Without record 202: cVAE 0.560 to 0.583
 highest score is now cVAE + rule + veto, 0.557 (S F1 0.640, F F1 0.474), post hoc. P13's and P15's rule scores reproduced.
 
 **P17 (v16, A38).** P15's model with 100,000 steps, nothing else changed (the config is checked against P15's), decided
-and pre-registered before P15's and P16's test summaries were read (they were ingested and committed unread). Running on a
-Kaggle T4 (`phase6-diffusion-long-train`, about 6 GPU-hours); then `--part shape` and `--part select` locally and one test
-read on CPU.
+and pre-registered before P15's and P16's test summaries were read (they were ingested and committed unread). Trained on a
+Kaggle T4 (`phase6-diffusion-long-train`): 3 seeds, 100,000 steps each, none diverged, about 87 minutes per seed; 9 grid
+runs; ingest clean (12 runs, 3 banks, no conflicts, no test access). The loss kept falling slowly (0.117-0.118 over steps
+1,001-2,000, 0.096 over 19,001-20,000 as in P15, 0.088 over 59,001-60,000, 0.084-0.085 over 99,001-100,000, all seeds),
+but the class medians did not move closer to real DS1 training beats (`--part shape`, median over seeds: correlation S
+0.02, V 0.60, F 0.79; P15 0.24, 0.58, 0.72; cVAE 0.64, 0.95, 0.96). More steps alone did not close the gap; a larger
+model or another sampler would be the next thing to try. Effective patients: S 37.8, F 6.4 (real 32.0 and 4.9). Validation
+chose strength 0.1 (S F1 0.754 ± 0.002; 0.1 and 0.25 tied on the metric and the tie-break, 0.1 is the simpler). Next: one
+test read on CPU.
 
-Open: P17's results; the paper sections for P15-P17 (text and figures are generated); the full test suite on Kaggle at
-the final commit; push main with tags prereg-v14 to v16.
+Open: P17's test read; the paper sections for P17 (text and figures are generated); the full test suite on Kaggle at
+the final commit; push main.

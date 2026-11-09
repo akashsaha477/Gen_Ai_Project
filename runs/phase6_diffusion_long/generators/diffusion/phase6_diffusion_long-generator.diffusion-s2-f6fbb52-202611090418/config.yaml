@@ -1,0 +1,30 @@
+data_sha256: ef3cecfaf85e757ccbb1d701adeca49273abdf1b0df4281ccd086360ca379a28
+experiment: phase6_diffusion_long
+family: diffusion
+scale: 0.5697834419149064
+seed: 2
+settings:
+  batch_size: 128
+  channels:
+  - 64
+  - 128
+  - 256
+  classes:
+  - N
+  - S
+  - V
+  - F
+  clip_x0: 10.0
+  ema_decay: 0.999
+  embed_dim: 128
+  final_steps: 100000
+  groups: 8
+  guidance: 1.5
+  kernel: 5
+  log_every: 200
+  lr: 0.0002
+  p_uncond: 0.1
+  sample_steps: 50
+  timesteps: 1000
+  weight_decay: 0.0
+steps: 100000

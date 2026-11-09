@@ -1,0 +1,82 @@
+{
+  "experiment": "phase6_diffusion_long",
+  "rule": "PREREGISTRATION \u00a710 v16 (the phase 4 gate rule)",
+  "chosen": {
+    "cnn": {
+      "diffusion": {
+        "strength": 0.1,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "run_ids": [
+          "phase6_diffusion_long-cnn.diffusion_0.1-s0-f6fbb52-202611090609",
+          "phase6_diffusion_long-cnn.diffusion_0.1-s1-f6fbb52-202611090610",
+          "phase6_diffusion_long-cnn.diffusion_0.1-s2-f6fbb52-202611090610"
+        ],
+        "mean": 0.7539399061371315,
+        "sd": 0.002322068418687421,
+        "values": [
+          0.7513207547169811,
+          0.7547524545644454,
+          0.7557465091299678
+        ],
+        "tie_break_values": [
+          0.7521367521367521,
+          0.8337517738238184,
+          0.8470145351877026
+        ],
+        "tie_break_mean": 0.8109676870494243,
+        "tie_break_sd": 0.051378832088450045,
+        "n_recall": 0.9695580629995298,
+        "provisional": false,
+        "bank": "phase6_diffusion_long/diffusion",
+        "decision": {
+          "winner": "0.1",
+          "best_by_mean": "0.1",
+          "margins": {
+            "0.1": 0.02,
+            "0.25": 0.02,
+            "0.5": 0.023083630701321602
+          },
+          "steps": [
+            {
+              "step": "selection metric",
+              "tied": [
+                "0.1",
+                "0.25"
+              ]
+            },
+            {
+              "step": "tie-break metric",
+              "tied": [
+                "0.1",
+                "0.25"
+              ]
+            },
+            {
+              "step": "simplicity, then wall-clock",
+              "winner": "0.1"
+            }
+          ]
+        },
+        "all_strengths": {
+          "0.1": {
+            "mean": 0.7539399061371315,
+            "sd": 0.002322068418687421
+          },
+          "0.25": {
+            "mean": 0.7418891357377347,
+            "sd": 0.022032869525395953
+          },
+          "0.5": {
+            "mean": 0.7258663361892905,
+            "sd": 0.032562493930424444
+          }
+        }
+      }
+    }
+  },
+  "git_sha": "a7beb1e92572ce04d2792912fd6468d7d0f94b75"
+}

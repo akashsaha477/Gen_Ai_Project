@@ -1,0 +1,15 @@
+{
+  "run_id": "phase6_diffusion_long-generator.diffusion-s0-f6fbb52-202611090038",
+  "steps_done": 100000,
+  "diverged": false,
+  "divergence": null,
+  "generator_seconds": 5220.943856968001,
+  "n_parameters": 2250497,
+  "checkpoint_sha256": "35998eb7d5ecf7c28e11a836302c62f3a174589f06679fab004a4fc2049b20ef",
+  "bank_sha256": "efd481f33f2eb2029b126cafcf81d7fc9d4fc6ce07afa7d17714b2c861275778",
+  "bank_counts": {
+    "S": 44332,
+    "V": 25675,
+    "F": 54011
+  }
+}

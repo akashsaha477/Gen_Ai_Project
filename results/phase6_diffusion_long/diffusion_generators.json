@@ -1,0 +1,89 @@
+{
+  "experiment": "phase6_diffusion_long",
+  "rule": "PREREGISTRATION \u00a710 v16",
+  "family": "diffusion",
+  "settings": {
+    "batch_size": 128,
+    "lr": 0.0002,
+    "final_steps": 100000,
+    "log_every": 200,
+    "timesteps": 1000,
+    "sample_steps": 50,
+    "guidance": 1.5,
+    "p_uncond": 0.1,
+    "ema_decay": 0.999,
+    "channels": [
+      64,
+      128,
+      256
+    ],
+    "kernel": 5,
+    "embed_dim": 128,
+    "groups": 8,
+    "weight_decay": 0.0,
+    "clip_x0": 10.0,
+    "classes": [
+      "N",
+      "S",
+      "V",
+      "F"
+    ]
+  },
+  "generator_id": "phase6_diffusion_long/diffusion",
+  "scale": 0.5697834419149064,
+  "steps": 100000,
+  "bank_counts": {
+    "S": 44332,
+    "V": 25675,
+    "F": 54011
+  },
+  "data_sha256": "ef3cecfaf85e757ccbb1d701adeca49273abdf1b0df4281ccd086360ca379a28",
+  "device": "cuda",
+  "seeds": {
+    "0": {
+      "run_id": "phase6_diffusion_long-generator.diffusion-s0-f6fbb52-202611090038",
+      "steps_done": 100000,
+      "diverged": false,
+      "divergence": null,
+      "generator_seconds": 5220.943856968001,
+      "n_parameters": 2250497,
+      "checkpoint_sha256": "35998eb7d5ecf7c28e11a836302c62f3a174589f06679fab004a4fc2049b20ef",
+      "bank_sha256": "efd481f33f2eb2029b126cafcf81d7fc9d4fc6ce07afa7d17714b2c861275778",
+      "bank_counts": {
+        "S": 44332,
+        "V": 25675,
+        "F": 54011
+      }
+    },
+    "1": {
+      "run_id": "phase6_diffusion_long-generator.diffusion-s1-f6fbb52-202611090228",
+      "steps_done": 100000,
+      "diverged": false,
+      "divergence": null,
+      "generator_seconds": 5225.731193489999,
+      "n_parameters": 2250497,
+      "checkpoint_sha256": "fea7ff3e02ac5ea3d515cc7cc3823a379439f778e8835335f065cb2a182ff2f3",
+      "bank_sha256": "f8b946a34db9809544ce80e14ef28d1555b9fcf94f64869d6e89a1d4f91e7e85",
+      "bank_counts": {
+        "S": 44332,
+        "V": 25675,
+        "F": 54011
+      }
+    },
+    "2": {
+      "run_id": "phase6_diffusion_long-generator.diffusion-s2-f6fbb52-202611090418",
+      "steps_done": 100000,
+      "diverged": false,
+      "divergence": null,
+      "generator_seconds": 5226.485393363999,
+      "n_parameters": 2250497,
+      "checkpoint_sha256": "6b765b6e87837226447c58d02dc21662e12a14f355f0d99c7185b2390cfd9f7d",
+      "bank_sha256": "ebd8eb06d88fa74fa61d753caf606ce6458276fb74a0e49a815fb14a11240908",
+      "bank_counts": {
+        "S": 44332,
+        "V": 25675,
+        "F": 54011
+      }
+    }
+  }
+}
