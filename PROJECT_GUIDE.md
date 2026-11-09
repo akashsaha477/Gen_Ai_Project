@@ -307,12 +307,12 @@ Asks: does pretraining on a large ECG dataset help rare-beat detection on MIT-BI
   missing results show as red placeholders, so the draft always compiles. `scripts/reproduce.sh` lists
   the whole pipeline in order.
 
-### 5.15 After the final evaluation: post hoc analyses P1-P17 (`src/ecgaug/experiments/phase6_*.py`)
+### 5.15 After the final evaluation: post hoc analyses P1-P18 (`src/ecgaug/experiments/phase6_*.py`)
 
 The single final evaluation (2026-11-04) is the study's primary result and stays so: the cnn without augmentation
 reached a test rare-class macro-F1 of 0.088, and no generator was detectably better than the simpler options. The
 analyses below came after it, mostly to find out why test scores fell so far below validation and what would raise
-them. Each was pre-registered as a new version of `docs/PREREGISTRATION.md` §10 (v4 to v16) before it ran, reads the
+them. Each was pre-registered as a new version of `docs/PREREGISTRATION.md` §10 (v4 to v17) before it ran, reads the
 test records at most once (logged in `docs/TEST_ACCESS_LOG.md`), and is reported as post hoc; none replaces the primary
 result.
 
@@ -335,6 +335,7 @@ result.
 | P15 | `phase6_diffusion` | a class-conditional diffusion model as a third generator family |
 | P16 | `phase6_af_rule` | Huang et al.'s SVEB rule with its S calls undone inside atrial fibrillation |
 | P17 | `phase6_diffusion_long` | P15's diffusion model trained five times longer |
+| P18 | `phase6_seed_ensemble` | each condition's class probabilities averaged over ten independently trained runs, with the SVEB rule and the AF veto on top |
 
 The highest post hoc test score is the cVAE with Huang et al.'s SVEB rule and the atrial-fibrillation veto (P16):
 rare-class macro-F1 0.557 (S F1 0.640, F F1 0.474). The result of every analysis is in the `README.md` checklist, the

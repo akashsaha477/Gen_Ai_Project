@@ -1204,3 +1204,14 @@ Nothing is chosen on validation. P15's diffusion banks were uploaded as the priv
 grid kernel. The first upload attempt failed because the laptop's disk was full (117 MB free of 460 GB); the
 upload's partial archive was deleted and the retry succeeded with 1.9 GB free. The disk needs more free space before
 much more local work.
+
+**P18 grid and validation check.** Kernel `phase6-seed-ensemble-grid` (T4, commit 4cc7bc2): 42 runs (six conditions,
+seeds 3-9, the pre-registered strengths), 38-74 s each, 33 minutes in all. Ingest clean: 42 runs, no conflicts, nothing
+refused, no test access. The run configs name the bank but not its seed; the seed comes from `bank_seed` (seed mod 3) in
+the code that loaded it. `--part check` locally (35 validation recordings, the runs' stored predictions), with the stage and
+the veto: mean S F1 over the six conditions 0.756 for single runs, 0.767 for the three-run and 0.772 for the ten-run
+ensemble; the ten-run ensemble beat its single runs' mean S F1 and V F1 in all six conditions (cVAE S 0.772 to 0.785,
+V 0.821 to 0.860; WGAN-GP S 0.733 to 0.760). Validation F F1 stays near zero for everything (few F beats there). Over all
+60 runs the largest epoch-to-epoch jump in validation S F1 was 0.05-0.40 (median 0.18), and 15 kept their first epoch.
+`members.json` (the ten run IDs per condition) is committed before the test read. Figure:
+`figures/phase6_seed_ensemble/check.png`.
