@@ -307,7 +307,7 @@ Asks: does pretraining on a large ECG dataset help rare-beat detection on MIT-BI
   missing results show as red placeholders, so the draft always compiles. `scripts/reproduce.sh` lists
   the whole pipeline in order.
 
-### 5.15 After the final evaluation: post hoc analyses P1-P18 (`src/ecgaug/experiments/phase6_*.py`)
+### 5.15 After the final evaluation: post hoc analyses P1-P19 (`src/ecgaug/experiments/phase6_*.py`)
 
 The single final evaluation (2026-11-04) is the study's primary result and stays so: the cnn without augmentation
 reached a test rare-class macro-F1 of 0.088, and no generator was detectably better than the simpler options. The
@@ -336,10 +336,11 @@ result.
 | P16 | `phase6_af_rule` | Huang et al.'s SVEB rule with its S calls undone inside atrial fibrillation |
 | P17 | `phase6_diffusion_long` | P15's diffusion model trained five times longer |
 | P18 | `phase6_seed_ensemble` | each condition's class probabilities averaged over ten independently trained runs, with the SVEB rule and the AF veto on top |
+| P19 | `phase6_fresh_patients` | P18's frozen pipeline on 1,000 Icentia11k patients no analysis had used, with no test record read |
 
 The highest post hoc test score is the cVAE with Huang et al.'s SVEB rule and the atrial-fibrillation veto, its class
 probabilities averaged over ten runs (P18): rare-class macro-F1 0.587 (S F1 0.647, F F1 0.527). Against the same set-up with
-single runs (P16, 0.557) that is not a detectable change (Holm p 1.000). The result of every analysis is in the `README.md` checklist, the
+single runs (P16, 0.557) that is not a detectable change (Holm p 1.000). On 977 new Icentia11k patients (P19) the same pipeline reached S F1 0.294 and V F1 0.648, below its DS2 scores; there the ensemble alone (S F1 0.348) did better than with the SVEB rule and the veto on top. The result of every analysis is in the `README.md` checklist, the
 detail in `docs/PROGRESS.md`, and the before-and-after figures in `figures/phase6_*/`.
 
 ---
@@ -347,7 +348,7 @@ detail in `docs/PROGRESS.md`, and the before-and-after figures in `figures/phase
 ## 6. What has run
 
 Phases 1 to 5, the full grid, the single final evaluation (2026-11-04), the leakage audit and the post hoc
-analyses P1-P18 (section 5.15) have all run. The checklist in `README.md` gives the state of every item, including
+analyses P1-P19 (section 5.15) have all run. The checklist in `README.md` gives the state of every item, including
 any approval still open; `python -m ecgaug.workflow status` prints it.
 
 ---

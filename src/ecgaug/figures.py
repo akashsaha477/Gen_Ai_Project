@@ -2086,7 +2086,7 @@ def fresh_patients_figure(summary: dict, p18: dict | None) -> list[Path]:
                "ensemble vs P16's single runs); grey: secondary (the cVAE vs each other condition), both on S F1"
                + (f"; {data['s_dominant_patients']} S-dominant patients" if "s_dominant_patients" in data else "")
                + ". Post hoc (PREREGISTRATION v18, P19).")  # fmt: skip
-    return [_save(fig, paths.figures_for("phase6_fresh_patients") / "results.png", "Before and after: the same pipeline on 1,000 new patients", caption)]
+    return [_save(fig, paths.figures_for("phase6_fresh_patients") / "results.png", f"Before and after: the same pipeline on {summary['patients']:,} new patients", caption)]
 
 
 def posthoc_figures() -> list[Path]:

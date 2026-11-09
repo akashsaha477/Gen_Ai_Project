@@ -1249,3 +1249,28 @@ measure S F1; confirmatory per condition ensemble vs P16's single runs, secondar
 segments had a median of 3,900 N beats and about 1% S beats, so about 3.8 million beats are expected; CNN inference timed
 locally at 639 µs per beat and run (4 threads), about 50 hours for 60 runs on a CPU, so the kernel predicts on a T4. The
 scoring with a patient-level bootstrap over 1,000 patients took 120 s locally on fake predictions.
+
+**P19 result (GPU kernel `phase6-fresh-patients` at 2682907, 2026-11-10).** One T4 session of 4,299 s (72 minutes,
+inside A40's 1-1.5 GPU-hour estimate). Exit code 0; ingest clean (two result files, no run conflicts, no access-log row:
+no test record was read, `docs/TEST_ACCESS_LOG.md` unchanged; no figure replaced). Of the 1,000 patients drawn, 977 first
+segments were usable; 23 were excluded (18 with no usable labelled beat, 4 whose R peaks were not strictly increasing, 1
+with fewer than 3 QRS annotations). Beats: 3,675,681 N, 34,072 S, 29,473 V; 494 patients with an S beat, none with more S
+than N beats, the largest share of S beats in one patient 0.076. So unlike DS2 (record 232 holds three quarters of its
+S beats), no patient dominates.
+With Huang's stage and P16's veto, the ten-run ensembles reached S F1 0.286-0.295 in every condition (cVAE 0.294
+[0.237, 0.350], S Se 0.594, S +P 0.195; V F1 0.648 [0.569, 0.713]); on DS2 the same pipeline had S F1 0.647 and V F1 0.936.
+Confirmatory (Holm, 6), ensemble vs P16's single runs on S F1: +0.006 to +0.016, detectable in five conditions (Holm p
+0.001 each; cVAE +0.014 [+0.007, +0.022]); none +0.001 [-0.007, +0.008], Holm p 0.815. Secondary (Holm, 5), the cVAE's
+ensemble vs the others': -0.001 to +0.008, none detectable (Holm p 0.187-1.000); the generative conditions add nothing over
+no augmentation on these patients. Descriptive: the ensembles alone did better, S F1 0.259-0.382 (none 0.354, class
+weighting 0.382, random oversampling 0.365, cVAE 0.348, WGAN-GP 0.259, diffusion 0.343). Huang's stage alone took S F1
+down by 0.012-0.131 (below zero in five conditions): for the cVAE it raised S Se from 0.303 to 0.629 but cut S +P from
+0.408 to 0.157; the veto brought +P back to 0.195, leaving S F1 0.054 below the ensemble alone (interval -0.112 to
++0.006). With the veto, the change against the ensemble alone was -0.091 to +0.035, below zero in four conditions. V F1
+0.602-0.683, N recall 0.970-0.975 with the stage and the veto. Ten single runs per condition: S F1 0.253-0.306.
+F calls on these patients (no F labels): 0.004-0.39% of beats.
+Reading: on new patients, P18's DS2 score does not carry over; the stage's 0.8 threshold (Huang et al., MIT-BIH) and
+the veto (chosen on MIT-BIH training patients) were set on few patients, and choosing them on a larger, more varied
+pool is the next step. Figure `figures/phase6_fresh_patients/results.png` (DS2 squares beside the new patients). Paper:
+section "The same pipeline on 1,000 new patients" with the stage's Se/+P sentence added; abstract, discussion and
+conclusion carry the new-patient sentence. README P19 row, PROJECT_GUIDE and CODE_GUIDE (P1-P19) updated.

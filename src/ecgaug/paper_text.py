@@ -1144,6 +1144,11 @@ def posthoc_fresh_patients() -> str:
     down = sum(v["ci_high"] < 0 for v in veto.values())
     text += (f" Against the ensemble alone, the stage with the veto changed S F1 by {_s(min(v['point'] for v in veto.values()))} to "
              f"{_s(max(v['point'] for v in veto.values()))} (interval above zero in {up} of {len(veto)} conditions, below zero in {down}; descriptive).")
+    rule, lone = s["ensemble"]["rule_alone"]["cnn/cvae"], alone["cnn/cvae"]
+    text += (f" For the cVAE, Huang et al.'s stage raised S Se from {_n(lone['se_S']['point'])} to {_n(rule['se_S']['point'])} and lowered S +P from "
+             f"{_n(lone['ppv_S']['point'])} to {_n(rule['ppv_S']['point'])}; the veto took S +P back to {_n(cv['ppv_S']['point'])}. The stage's 0.8 "
+             "threshold comes from Huang et al.'s MIT-BIH study and the veto was chosen on MIT-BIH's training patients; choosing both on a larger, "
+             "more varied pool of patients is the next step.")  # fmt: skip
     return text + " Post hoc; Icentia11k comes from a different device and annotation process, and the primary results stay those of Table~\\ref{tab:test}.\n"
 
 
