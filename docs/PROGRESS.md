@@ -1232,3 +1232,9 @@ above the typical single run; the ensemble's 0.587 is above eight of the ten sin
 Three-run ensemble (seeds 0-2) 0.581. Figure: `figures/phase6_seed_ensemble/results.png`. Paper: section "Ten runs averaged
 per condition" with the two references checked against arXiv (1612.01474, 1906.02530); the abstract, discussion and
 conclusion now name the ensemble's 0.587 as the highest score and say it is not detectably above P16's.
+
+Full test suite on Kaggle at 54cf7d5 (`phase6-suite-p18`, CPU): tests exit code 0; 380 passed, 2 skipped, 0 failed
+(the log's progress marks, halved because the log holds the output twice, against the 382 tests collected locally).
+Pushed 54cf7d5 to main and the tag `prereg-v17`. The tag reached GitHub only now, after P18's test read; the evidence that
+v17 came first is the commit order and the Kaggle kernels, which ran on repository bundles at 4cc7bc2 (grid, v17 already
+in it) and d43d46e (test). This note goes out with the next suite-tested push.
