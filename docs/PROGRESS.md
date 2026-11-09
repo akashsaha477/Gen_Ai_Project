@@ -1188,4 +1188,6 @@ each asks, the primary result unchanged, the highest post hoc score) and section
 `CODE_GUIDE.md` has a section on the `phase6_*` runners (parts, the posthoc permission, result files, reproduction
 checks).
 
-Open: the full test suite on Kaggle at the final commit; push main.
+Full test suite on Kaggle at 45f7869 (`phase6-suite-p17`, CPU): 369 passed, 2 skipped, 0 failed (the kernel log holds
+the notebook output twice, so its progress dots count each test twice; checked against the 371 tests collected
+locally). Pushed 45f7869 to main. This note is committed after the push and goes out with the next suite-tested push.
