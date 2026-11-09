@@ -98,17 +98,30 @@ def real_training_beats(per_class: int = 2000, seed: int = 0) -> dict[int, np.nd
 
 
 SHAPE_BANKS = {"cvae_p12": "phase6_relative_generators/phase3_cvae-D", "diffusion_p15": f"{dif.EXPERIMENT}/diffusion", "diffusion_p17": f"{EXPERIMENT}/diffusion"}
+ALIGN_WINDOW = 10  # samples, 28 ms at 360 Hz
+ALIGN_RULE = ("exploratory, added after P17's training and before its test read: the share of beats whose largest absolute deflection "
+              "lies within `window` samples of the real beats' median position of it")  # fmt: skip
+
+
+def peak_alignment(beats: np.ndarray, peak: int, window: int = ALIGN_WINDOW) -> float:
+    """Share of beats whose largest absolute deflection lies within ``window`` samples of ``peak`` (exploratory)."""
+    return float(np.mean(np.abs(np.argmax(np.abs(np.asarray(beats)), axis=1) - peak) <= window))
 
 
 def shape_check(per_class: int = 2000) -> dict:
     """Descriptive, training data only: per rare class, the correlation and RMSE between the median beat of each bank seed
-    and the median of real DS1 training beats in the cnn's form (P12's cVAE, P15's and P17's diffusion banks, those on disk)."""
+    and the median of real DS1 training beats in the cnn's form (P12's cVAE, P15's and P17's diffusion banks, those on disk),
+    and (exploratory) how many beats have their largest deflection where the real beats have it."""
     from ecgaug.data.records import CLASSES
     from ecgaug.generators import bank as banks
 
     real = real_training_beats(per_class)
     med = {c: np.median(beats, axis=0) for c, beats in real.items()}
-    out = {"experiment": EXPERIMENT, "rule": f"{RULE} (descriptive)", "real_beats": {CLASSES[c]: int(len(b)) for c, b in real.items()}, "banks": {}}
+    peak = {c: int(np.median(np.argmax(np.abs(beats), axis=1))) for c, beats in real.items()}
+    out = {"experiment": EXPERIMENT, "rule": f"{RULE} (descriptive)", "real_beats": {CLASSES[c]: int(len(b)) for c, b in real.items()},
+           "alignment": {"rule": ALIGN_RULE, "window": ALIGN_WINDOW, "real_peak_sample": {CLASSES[c]: p for c, p in peak.items()},
+                         "real": {CLASSES[c]: peak_alignment(b, peak[c]) for c, b in real.items()}},
+           "banks": {}}  # fmt: skip
     for name, gid in SHAPE_BANKS.items():
         for seed in (0, 1, 2):
             path = banks.bank_dir(gid) / f"seed{seed}.npz"
@@ -119,7 +132,8 @@ def shape_check(per_class: int = 2000) -> dict:
             entry = {"bank_sha256": banks.sha256_file(path)}
             for c, m in med.items():
                 b = np.median(X[y == c], axis=0)
-                entry[CLASSES[c]] = {"corr": float(np.corrcoef(b, m)[0, 1]), "rmse": float(np.sqrt(np.mean((b - m) ** 2)))}
+                entry[CLASSES[c]] = {"corr": float(np.corrcoef(b, m)[0, 1]), "rmse": float(np.sqrt(np.mean((b - m) ** 2))),
+                                     "aligned": peak_alignment(X[y == c], peak[c])}  # fmt: skip
             out["banks"].setdefault(name, {})[str(seed)] = entry
     folder = paths.results_for(EXPERIMENT)
     folder.mkdir(parents=True, exist_ok=True)

@@ -1847,6 +1847,119 @@ def af_rule_results_figure(summary: dict) -> list[Path]:
     return [_save(fig, paths.figures_for("phase6_af_rule") / "results.png", "Before and after: an atrial-fibrillation veto on the SVEB rule", caption)]
 
 
+def _generator_losses(experiment: str) -> list[tuple[np.ndarray, np.ndarray]]:
+    """Per seed of a diffusion experiment, the training loss averaged over 1,000-step windows (end step, mean); seeds whose
+    run log is not on disk are left out."""
+    from ecgaug import runs
+
+    curves = []
+    for seed in ((_summary(experiment, "diffusion_generators.json") or {}).get("seeds") or {}).values():
+        run_dir = runs.find_run_dir(seed["run_id"])
+        if run_dir is None or not (run_dir / "train_log.csv").is_file():
+            continue
+        log = np.genfromtxt(run_dir / "train_log.csv", delimiter=",", names=True)
+        window = (log["step"].astype(int) - 1) // 1000
+        ends = np.unique(window)
+        curves.append(((ends + 1) * 1000, np.array([log["loss"][window == w].mean() for w in ends])))
+    return curves
+
+
+def diffusion_long_check_figure(shape: dict) -> list[Path]:
+    """P17 before and after, training data only: the loss of P15's and P17's runs, how closely each bank's class medians
+    match real DS1 training beats, and over how many training patients the synthetic beats spread."""
+    plt = _plt()
+    fig, grid = plt.subplots(2, 2, figsize=(14, 8.6))
+    axes = [grid[0, 0], grid[0, 1], grid[1, 1], grid[1, 0]]
+    ax = axes[0]
+    runs_drawn =(("phase6_diffusion_long", LONG_COLOR, "P17: 100,000 steps", 1.0, 2), ("phase6_diffusion", DIFFUSION_COLOR, "P15: 20,000 steps", 1.8, 3))
+    for experiment, color, label, linewidth, z in runs_drawn:  # P15 on top: both start from the same seeds and settings
+        for i, (steps, loss) in enumerate(_generator_losses(experiment)):
+            ax.plot(steps[1:] / 1000, loss[1:], color=color, linewidth=linewidth, zorder=z, label=f"{label} (3 seeds)" if i == 0 else None)
+    ax.axvline(20, color=INK_2, linewidth=0.8, linestyle=":")
+    ax.annotate("P15's budget", (20, 1), xycoords=("data", "axes fraction"), xytext=(4, -4), textcoords="offset points", va="top", fontsize=7, color=INK_2)
+    ax.set_xlabel("training step (thousands)")
+    ax.set_ylabel("loss, mean over 1,000 steps")
+    ax.set_title("training loss", loc="left")
+    if ax.get_legend_handles_labels()[0]:
+        ax.legend(fontsize=7, loc="upper right")
+    banks_shown = (("cvae_p12", "#2a78d6", "cVAE (P12)"), ("diffusion_p15", DIFFUSION_COLOR, "diffusion (P15)"), ("diffusion_p17", LONG_COLOR, "diffusion, 5x steps (P17)"))
+    ax = axes[1]
+    classes, width = ("S", "V", "F"), 0.8 / len(banks_shown)
+    for j, (key, color, label) in enumerate(banks_shown):
+        seeds = shape["banks"].get(key, {})
+        if not seeds:
+            continue
+        x = np.arange(len(classes)) + (j - (len(banks_shown) - 1) / 2) * width
+        values = [[s[c]["corr"] for s in seeds.values()] for c in classes]
+        ax.bar(x, [float(np.median(v)) for v in values], width=width * 0.9, color=color, label=label)
+        for xi, v in zip(x, values):
+            ax.scatter([xi] * len(v), v, s=12, color=INK_2, zorder=3)
+            ax.annotate(f"{np.median(v):.2f}", (xi, max(max(v), float(np.median(v)))), xytext=(0, 3), textcoords="offset points", ha="center", fontsize=7, color=INK_2)
+    ax.axhline(0, color=INK_2, linewidth=0.8)
+    ax.set_xticks(range(len(classes)), [f"{c} beats" for c in classes])
+    ax.set_ylim(min(-0.1, ax.get_ylim()[0]), 1.12)
+    ax.set_ylabel("correlation with the real median beat")
+    ax.set_title("shape: bank median vs real training beats", loc="left")
+    ax.legend(fontsize=7, loc="lower right")
+    ax.set_axisbelow(True)
+    ax.grid(axis="x", visible=False)
+    ax = axes[2]
+    mech = {"phase6_diffusion": _summary("phase6_diffusion", "mechanism.json"), "phase6_diffusion_long": _summary("phase6_diffusion_long", "mechanism.json")}
+    series = [("real training beats", "phase6_diffusion_long", "real", INK), ("cVAE (P12)", "phase6_diffusion_long", "cvae_p12", "#2a78d6"),
+              ("diffusion (P15)", "phase6_diffusion", "diffusion", DIFFUSION_COLOR), ("diffusion, 5x steps (P17)", "phase6_diffusion_long", "diffusion", LONG_COLOR)]  # fmt: skip
+    series = [s for s in series if mech[s[1]] is not None]
+    mech_classes = list(mech["phase6_diffusion_long"]["classes"]) if mech["phase6_diffusion_long"] is not None else []
+    width = 0.8 / max(len(series), 1)
+    for j, (label, experiment, key, color) in enumerate(series):
+        values = [mech[experiment]["classes"][c][key]["effective_records"] for c in mech_classes]
+        x = np.arange(len(mech_classes)) + (j - (len(series) - 1) / 2) * width
+        ax.bar(x, values, width=width * 0.9, color=color, label=label)
+        for xi, v in zip(x, values):
+            ax.annotate(f"{v:.1f}", (xi, v), xytext=(0, 2), textcoords="offset points", ha="center", fontsize=7, color=INK_2)
+    ax.set_xticks(range(len(mech_classes)), [f"{c} beats" for c in mech_classes])
+    ax.set_ylabel("effective number of training patients")
+    ax.set_title("spread over training patients", loc="left")
+    if ax.get_legend_handles_labels()[0]:
+        ax.legend(fontsize=7, loc="upper right")
+    ax.set_axisbelow(True)
+    ax.grid(axis="x", visible=False)
+    ax = axes[3]
+    align = shape.get("alignment")
+    if align is not None:
+        series = [("real", INK, "real training beats"), *banks_shown]
+        width = 0.8 / len(series)
+        for j, (key, color, label) in enumerate(series):
+            if key == "real":
+                values = [[align["real"][c]] for c in classes]
+            else:
+                seeds = shape["banks"].get(key, {})
+                if not seeds or "aligned" not in next(iter(seeds.values()))["S"]:
+                    continue
+                values = [[s[c]["aligned"] for s in seeds.values()] for c in classes]
+            x = np.arange(len(classes)) + (j - (len(series) - 1) / 2) * width
+            ax.bar(x, [float(np.median(v)) for v in values], width=width * 0.9, color=color, label=label)
+            for xi, v in zip(x, values):
+                if len(v) > 1:
+                    ax.scatter([xi] * len(v), v, s=12, color=INK_2, zorder=3)
+                ax.annotate(f"{np.median(v):.2f}", (xi, max(v)), xytext=(0, 3), textcoords="offset points", ha="center", fontsize=7, color=INK_2)
+        ax.set_xticks(range(len(classes)), [f"{c} beats" for c in classes])
+        ax.set_ylim(0, 1.05)
+        ax.set_ylabel(f"share with the largest deflection within {align['window']} samples")
+        ax.set_title("aligned with the real beats' peak (exploratory)", loc="left")
+        ax.legend(fontsize=7, loc="upper left", ncol=2)
+        ax.set_axisbelow(True)
+        ax.grid(axis="x", visible=False)
+    else:
+        ax.set_visible(False)
+    caption = ("No test data. Top left: the diffusion model's training loss (each line one seed; P15's runs drawn on top of P17's, which start "
+               "from the same seeds and settings; dotted: P15's budget). Top right: correlation between each bank's median beat and the median "
+               "of up to 2,000 real DS1 training beats per class, in the form the cnn sees (bars: median over the three seed banks; dots: single "
+               "seeds). Bottom left (exploratory, added after P17's training and before its test read): the share of beats whose largest "
+               "deflection lies within 10 samples (28 ms) of where the real beats have it. Bottom right: over how many training patients the "
+               "seed-0 synthetic beats spread (P8's measure, as in P15), beside the real beats. Post hoc (PREREGISTRATION v16, P17).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_diffusion_long") / "check.png", "Before and after: five times more training steps for the diffusion model", caption)]
+
+
 def diffusion_long_results_figure(summary: dict) -> list[Path]:
     """P17 before and after: P15's diffusion condition, P13's conditions and the longer-trained diffusion condition on the
     test set, alone, with Huang's SVEB stage and with the stage plus P16's AF veto; the pre-registered comparisons."""
@@ -1942,6 +2055,8 @@ def posthoc_figures() -> list[Path]:
         written += af_rule_check_figure(c)
     if (s := _summary("phase6_af_rule")) is not None:
         written += af_rule_results_figure(s)
+    if (c := _summary("phase6_diffusion_long", "shape_check.json")) is not None:
+        written += diffusion_long_check_figure(c)
     if (s := _summary("phase6_diffusion_long")) is not None:
         written += diffusion_long_results_figure(s)
     return written

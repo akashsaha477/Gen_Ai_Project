@@ -1164,7 +1164,13 @@ runs; ingest clean (12 runs, 3 banks, no conflicts, no test access). The loss ke
 1,001-2,000, 0.096 over 19,001-20,000 as in P15, 0.088 over 59,001-60,000, 0.084-0.085 over 99,001-100,000, all seeds),
 but the class medians did not move closer to real DS1 training beats (`--part shape`, median over seeds: correlation S
 0.02, V 0.60, F 0.79; P15 0.24, 0.58, 0.72; cVAE 0.64, 0.95, 0.96). More steps alone did not close the gap; a larger
-model or another sampler would be the next thing to try. Effective patients: S 37.8, F 6.4 (real 32.0 and 4.9). Validation
+model or another sampler would be the next thing to try. The samples figure shows why: single synthetic beats have sharp
+deflections, but not at the R peak as real beats do, so the median flattens. An exploratory count added to `--part shape`
+after training and before the test read (`peak_alignment`: share of beats whose largest deflection lies within 10 samples
+of the real beats' median position of it) moved with the longer training but not to the real level: V 0.42-0.49 (P15) to
+0.61-0.66 (P17), F 0.45-0.50 to 0.63-0.70, S 0.16-0.25 to 0.23-0.25 over seeds; real beats 0.75, 0.75, 0.63; cVAE
+0.81-0.84, 0.82-0.83, 0.70-0.72. Figure: `figures/phase6_diffusion_long/check.png` (loss, shape, alignment, spread over
+patients; training data only). Effective patients: S 37.8, F 6.4 (real 32.0 and 4.9). Validation
 chose strength 0.1 (S F1 0.754 ± 0.002; 0.1 and 0.25 tied on the metric and the tie-break, 0.1 is the simpler). Next: one
 test read on CPU.
 

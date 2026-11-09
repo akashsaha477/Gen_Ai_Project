@@ -940,6 +940,23 @@ def posthoc_diffusion() -> str:
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
 
 
+def _window_loss(experiment: str, end: int) -> list[float]:
+    """Per seed of a diffusion experiment, the mean training loss over steps ``end - 999`` to ``end``; seeds whose run log is
+    not on disk are left out."""
+    from ecgaug import runs
+
+    out = []
+    for seed in ((_load(paths.results_for(experiment) / "diffusion_generators.json") or {}).get("seeds") or {}).values():
+        run_dir = runs.find_run_dir(seed["run_id"])
+        if run_dir is None or not (run_dir / "train_log.csv").is_file():
+            continue
+        log = np.genfromtxt(run_dir / "train_log.csv", delimiter=",", names=True)
+        at = (log["step"] > end - 1000) & (log["step"] <= end)
+        if at.any():
+            out.append(float(log["loss"][at].mean()))
+    return out
+
+
 def posthoc_diffusion_long() -> str:
     """P17: P15's diffusion model trained five times longer, from results/phase6_diffusion_long/."""
     from ecgaug.names import PHASE6_DIFFUSION, PHASE6_DIFFUSION_LONG
@@ -949,24 +966,52 @@ def posthoc_diffusion_long() -> str:
     if shape is None:
         return _missing("P17: --part shape (local)") + "\n"
 
-    def corr(name: str, cls: str) -> str:
-        vals = [e[cls]["corr"] for e in shape["banks"].get(name, {}).values()]
-        return f"{_n(min(vals), 2)}-{_n(max(vals), 2)}" if vals else "--"
+    def vals(name: str, cls: str, key: str = "corr") -> list[float]:
+        return [e[cls][key] for e in shape["banks"].get(name, {}).values() if key in e[cls]]
+
+    def span(values: list[float], digits: int = 2) -> str:
+        if not values:
+            return "--"
+        lo, hi = _n(min(values), digits), _n(max(values), digits)
+        return (lo if lo == hi else f"{lo} to {hi}").replace("-", "$-$")
+
+    def corr(name: str, cls: str, key: str = "corr") -> str:
+        return span(vals(name, cls, key))
 
     text = ("\\paragraph{The diffusion model trained five times longer (P17).} At the phase 3 budget P15's loss was still falling, and the median "
-            "beat of each class in its banks matched the median of real DS1 training beats far less closely than the cVAE's (correlation S "
-            f"{corr('diffusion_p15', 'S')}, V {corr('diffusion_p15', 'V')}, F {corr('diffusion_p15', 'F')}, against {corr('cvae_p12', 'S')}, "
-            f"{corr('cvae_p12', 'V')} and {corr('cvae_p12', 'F')}). P17 trains the same model for five times as many steps, with every other setting "
-            "unchanged.")  # fmt: skip
+            "beat of each class in its banks matched the median of real DS1 training beats far less closely than the cVAE's (correlation over the "
+            f"three seed banks S {corr('diffusion_p15', 'S')}, V {corr('diffusion_p15', 'V')}, F {corr('diffusion_p15', 'F')}, against "
+            f"{corr('cvae_p12', 'S')}, {corr('cvae_p12', 'V')} and {corr('cvae_p12', 'F')}). P17 trains the same model for five times as many steps, "
+            "with every other setting unchanged.")  # fmt: skip
     if gens is None:
         return text + " " + _missing("P17: --part train on Kaggle") + "\n"
     seeds = gens["seeds"]
     minutes = [e["generator_seconds"] / 60 for e in seeds.values()]
-    text += (f" {sum(not e['diverged'] for e in seeds.values())} of {len(seeds)} fits of {gens['steps']:,} steps finished without divergence "
-             f"({_n(min(minutes), 0)} to {_n(max(minutes), 0)} minutes each on a T4).")
+    ok = sum(not e["diverged"] for e in seeds.values())
+    took = f"about {_n(min(minutes), 0)}" if round(min(minutes)) == round(max(minutes)) else f"{_n(min(minutes), 0)} to {_n(max(minutes), 0)}"
+    text += (f" {'All' if ok == len(seeds) else f'{ok} of'} {len(seeds)} fits of {gens['steps']:,} steps finished without divergence "
+             f"({took} minutes each on a T4).")
+    early, late = _window_loss(PHASE6_DIFFUSION_LONG, 20000), _window_loss(PHASE6_DIFFUSION_LONG, int(gens["steps"]))
+    if early and late:
+        p15 = _window_loss(PHASE6_DIFFUSION, 20000)
+        same = ", as in P15," if p15 and span(p15, 3) == span(early, 3) else (f" (P15 {span(p15, 3)})" if p15 else "")
+        text += (f" The loss kept falling: {span(early, 3)} over steps 19,001--20,000{same} and {span(late, 3)} over the last 1,000 steps "
+                 "(Figure~\\ref{fig:p17-check}).")
     if "diffusion_p17" in shape["banks"]:
+        below = all(vals("diffusion_p17", c) and vals("cvae_p12", c) and max(vals("diffusion_p17", c)) < min(vals("cvae_p12", c)) for c in "SVF")
         text += (f" Its banks' class medians correlate with the real ones at S {corr('diffusion_p17', 'S')}, V {corr('diffusion_p17', 'V')} and F "
-                 f"{corr('diffusion_p17', 'F')}.")
+                 f"{corr('diffusion_p17', 'F')}" + (", below the cVAE's in every class." if below else "."))
+    align = shape.get("alignment")
+    if align is not None and all(vals(k, c, "aligned") for k in ("diffusion_p17", "diffusion_p15", "cvae_p12") for c in "SVF"):
+        text += (f" An exploratory count, added after this training and before the test read, gives the share of beats whose largest deflection "
+                 f"lies within {align['window']} samples ({align['window'] / 0.36:.0f}~ms) of where the real beats have theirs: real beats "
+                 + ", ".join(f"{c} {_n(align['real'][c], 2)}" for c in "SVF") + "; "
+                 + "; ".join(f"{label} " + ", ".join(f"{c} {corr(key, c, 'aligned')}" for c in "SVF")
+                             for key, label in (("diffusion_p17", "P17"), ("diffusion_p15", "P15"), ("cvae_p12", "the cVAE"))) + ".")  # fmt: skip
+        closer = all(min(vals("diffusion_p17", c, "aligned")) > max(vals("diffusion_p15", c, "aligned")) for c in "VF")
+        short = all(max(vals("diffusion_p17", c, "aligned")) < align["real"][c] for c in "VF")
+        if closer:
+            text += " The longer training put more V and F peaks where the real beats have theirs" + (", though still fewer than among real beats." if short else ".")
     if mech is not None:
         eff = {c: e["diffusion"]["effective_records"] for c, e in mech["classes"].items()}
         text += " Effective number of training patients its beats resemble: " + ", ".join(f"{c} {_n(v, 1)}" for c, v in eff.items()) + "."

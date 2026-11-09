@@ -132,3 +132,18 @@ def test_test_report_compares_with_p15_and_p13_and_checks_earlier_scores_first(m
     assert set(s["families"]["secondary"]) == {f"cnn: diffusion_long vs {c} (P13)" for c in ("cvae", "class_weighted", "random_oversampling")}
     assert set(s["sveb_rule"]) == set(s["with_af_veto"]) == {"cnn/diffusion_long", "cnn/diffusion", *(f"cnn/{c}" for c in long.BEFORE)}
     assert s["veto_form"] == "rule" and all(abs(d) < 1e-9 for d in s["reproduction_difference"].values())
+
+
+def test_peak_alignment_counts_beats_whose_largest_deflection_is_near_the_peak():
+    beats = np.array([[0, 5, 0, 0, 0, 0], [0, 0, 0, 0, 0, -7], [1, 0, 0, 0, 0, 0]], dtype=np.float32)
+    assert long.peak_alignment(beats, peak=1, window=1) == pytest.approx(2 / 3)
+    assert long.peak_alignment(beats, peak=1, window=0) == pytest.approx(1 / 3)
+
+
+def test_check_figure_draws_without_run_logs():
+    from ecgaug import figures
+
+    seed = {c: {"corr": 0.5, "rmse": 0.1, "aligned": 0.6} for c in "SVF"}
+    shape = {"banks": {"cvae_p12": {"0": seed}, "diffusion_p17": {"0": seed, "1": seed}}, "alignment": {"window": 10, "real": {"S": 0.6, "V": 0.75, "F": 0.75}}}
+    out = figures.diffusion_long_check_figure(shape)
+    assert len(out) == 1 and out[0].is_file()
