@@ -121,3 +121,31 @@ def test_members_must_be_p18s(monkeypatch):
     (paths.results_for(se.EXPERIMENT) / "members.json").write_text(json.dumps({"members": m}))
     with pytest.raises(PreconditionError):
         fp.frozen_members()
+
+
+def _fake_summary() -> dict:
+    keys = [f"cnn/{c}" for c in se.CONDITIONS]
+    entry = {s: {"point": 0.5, "ci_low": 0.4, "ci_high": 0.6} for s in fp.STATS}
+    comparison = {"point": 0.02, "ci_low": -0.01, "ci_high": 0.05, "p_holm": 0.5, "reject_holm": False}
+    return {"patients": 990, "beats": {"N": 3_700_000, "S": 40_000, "V": 19_000, "F": 0},
+            "data": {"patients_with": {"S": 900, "V": 800}, "s_dominant_patients": 2, "largest_s_share": 0.08},
+            "ensemble": {k: {c: entry for c in keys} for k in ("with_af_veto", "rule_alone", "cnn_alone")},
+            "families": {"confirmatory": {f"cnn: {c}, ensemble vs P16": comparison for c in se.CONDITIONS},
+                         "secondary": {f"cnn: cvae vs {c}, ensembles": comparison for c in se.CONDITIONS if c != "cvae"}},
+            "stages": {f"cnn/{c}: {k} vs cnn alone": comparison for c in se.CONDITIONS for k in ("rule", "veto")}}  # fmt: skip
+
+
+def test_figure_and_paper_text_come_from_the_summary():
+    from ecgaug import figures, paper_text
+
+    assert "\\missing{P19: --part run on Kaggle}" in paper_text.posthoc_fresh_patients() and paper_text._fresh_sentence() is None
+    s = _fake_summary()
+    folder = paths.results_for(fp.EXPERIMENT)
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "summary.json").write_text(json.dumps(s))
+    out = figures.fresh_patients_figure(s, None)
+    assert len(out) == 1 and out[0].is_file()
+    text = paper_text.posthoc_fresh_patients()
+    assert "\\missing" not in text and "990 segments were usable" in text and "2 with more S than N beats" in text
+    assert text.count("{") == text.count("}") and "Figure~\\ref{fig:p19}" in text
+    assert "On 990 Icentia11k patients" in paper_text._fresh_sentence() and "sec:fresh-patients" in paper_text._fresh_sentence(with_section=True)

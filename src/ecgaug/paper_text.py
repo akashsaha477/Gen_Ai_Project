@@ -1111,6 +1111,42 @@ def posthoc_seed_ensemble() -> str:
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
 
 
+def posthoc_fresh_patients() -> str:
+    """P19: P18's frozen pipeline on 1,000 unused Icentia11k patients, from results/phase6_fresh_patients/."""
+    from ecgaug.names import PHASE6_FRESH_PATIENTS, PHASE6_SEED_ENSEMBLE
+
+    s = _load(paths.results_for(PHASE6_FRESH_PATIENTS) / "summary.json")
+    text = ("\\paragraph{The same pipeline on 1,000 new patients (P19).} P18's highest score is the best of 14 post hoc reads of the same 22 "
+            "test patients, one of whom holds three quarters of their S beats. P19 runs P18's sixty runs, Huang et al.'s stage and P16's veto "
+            "unchanged on the first segment (about 70 minutes) of 1,000 Icentia11k patients \\cite{tan2022icentia} drawn at random from those "
+            "no analysis had used, keeping every usable beat; nothing is fitted or chosen, and the primary measure is S F1 because "
+            "Icentia11k has no F labels.")  # fmt: skip
+    if s is None:
+        return text + " " + _missing("P19: --part run on Kaggle") + "\n"
+    b, d = s["beats"], s.get("data", {})
+    text += (f" {s['patients']:,} segments were usable ({b['N']:,} N, {b['S']:,} S and {b['V']:,} V beats"
+             + (f"; {d['patients_with']['S']:,} patients with an S beat, {d['s_dominant_patients']} with more S than N beats, the largest share "
+                f"of S beats in one patient {_n(d['largest_s_share'], 2)}" if "patients_with" in d else "") + ").")  # fmt: skip
+    ens, alone = s["ensemble"]["with_af_veto"], s["ensemble"]["cnn_alone"]
+    cv = ens["cnn/cvae"]
+    p18 = _load(paths.results_for(PHASE6_SEED_ENSEMBLE) / "summary.json")
+    on_ds2 = ""
+    if p18 is not None:
+        e = p18["ensemble"]["with_af_veto"]["cnn/cvae"]
+        on_ds2 = f" (on DS2 {_n(e['f1_S']['point'])} and {_n(e['f1_V']['point'])})"
+    rows = "; ".join(f"{SHORT[k.split('/')[1]]} {_n(e['f1_S']['point'])} (alone {_n(alone[k]['f1_S']['point'])})" for k, e in ens.items())
+    text += (f" With the stage and the veto, the cVAE's ten-run ensemble reached S F1 {_ci(cv['f1_S'])} and V F1 {_ci(cv['f1_V'])}{on_ds2}; "
+             f"S Se {_n(cv['se_S']['point'])}, S +P {_n(cv['ppv_S']['point'])} (Figure~\\ref{{fig:p19}}). S F1 per condition, with the stage "
+             f"and the veto and for the ensemble alone: {rows}. Confirmatory: {_family_sentence(s['families']['confirmatory'])}. Secondary: "
+             f"{_family_sentence(s['families']['secondary'])}.")  # fmt: skip
+    veto = {k.split(": ")[0]: v for k, v in s["stages"].items() if k.endswith("veto vs cnn alone")}
+    up = sum(v["ci_low"] > 0 for v in veto.values())
+    down = sum(v["ci_high"] < 0 for v in veto.values())
+    text += (f" Against the ensemble alone, the stage with the veto changed S F1 by {_s(min(v['point'] for v in veto.values()))} to "
+             f"{_s(max(v['point'] for v in veto.values()))} (interval above zero in {up} of {len(veto)} conditions, below zero in {down}; descriptive).")
+    return text + " Post hoc; Icentia11k comes from a different device and annotation process, and the primary results stay those of Table~\\ref{tab:test}.\n"
+
+
 def posthoc_table() -> str:
     """One row per post-hoc analysis (P1-P8): what it asked and what it found, from the summaries."""
     from ecgaug.names import (PHASE6_AUDIT_CHECK, PHASE6_AUGMENTATION_MECHANISM, PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS,
@@ -1315,7 +1351,8 @@ def patient_variation_paragraph() -> str | None:
                      "which is where augmentation that adds patients rather than beats could help.")
     if (ic := _icentia_sentence(with_section=True)) is not None:
         text += " " + ic
-    for extra in (_diffusion_sentence(with_section=True), _af_sentence(with_section=True), _ensemble_sentence(with_section=True)):
+    for extra in (_diffusion_sentence(with_section=True), _af_sentence(with_section=True), _ensemble_sentence(with_section=True),
+                  _fresh_sentence(with_section=True)):
         if extra is not None:
             text += " " + extra
     return text + (" The evidence points to how much patients differ as the main obstacle here; on DS1's patients, normalizing the input for the "
@@ -1450,6 +1487,20 @@ def _ensemble_sentence(with_section: bool = False) -> str | None:
             f"{_s(min(points))} to {_s(max(points))} against P16's single runs (after Holm correction: {verdict}); the cVAE's ensemble reached "
             f"{_n(cv['rare_macro_f1']['point'])}{top} (S F1 {_n(cv['f1_S']['point'])}, F F1 {_n(cv['f1_F']['point'])}), against "
             f"{_n(cp['rare_macro_f1']['point'])} for its single runs ({'a detectable' if cc['reject_holm'] else 'not a detectable'} change, {_p(cc)}).")
+
+
+def _fresh_sentence(with_section: bool = False) -> str | None:
+    """One sentence on P19 (P18's pipeline on 1,000 unused Icentia11k patients), or None before it ran."""
+    from ecgaug.names import PHASE6_FRESH_PATIENTS
+
+    s = _load(paths.results_for(PHASE6_FRESH_PATIENTS) / "summary.json")
+    if s is None:
+        return None
+    cv, alone = s["ensemble"]["with_af_veto"]["cnn/cvae"], s["ensemble"]["cnn_alone"]["cnn/cvae"]
+    where = " (Section~\\ref{sec:fresh-patients})" if with_section else ""
+    return (f"On {s['patients']:,} Icentia11k patients that no analysis had used{where}, the same pipeline, unchanged, reached S F1 "
+            f"{_ci(cv['f1_S'])} and V F1 {_n(cv['f1_V']['point'])} for the cVAE's ensemble with the stage and the veto, and S F1 "
+            f"{_n(alone['f1_S']['point'])} for the ensemble alone.")
 
 
 def _best_test_score() -> float:
@@ -1614,7 +1665,7 @@ def conclusion() -> str:
             text += " " + rr
         if (ic := _icentia_sentence()) is not None:
             text += " " + ic
-        for extra in (_diffusion_sentence(), _af_sentence(), _ensemble_sentence()):
+        for extra in (_diffusion_sentence(), _af_sentence(), _ensemble_sentence(), _fresh_sentence()):
             if extra is not None:
                 text += " " + extra
     p7 = _load(paths.results_for(PHASE6_RELATIVE_CNN) / "summary.json")
@@ -1698,7 +1749,7 @@ def abstract_posthoc() -> str:
         text += " " + rr
     if (ic := _icentia_sentence()) is not None:
         text += " " + ic
-    for extra in (_diffusion_sentence(), _af_sentence(), _ensemble_sentence()):
+    for extra in (_diffusion_sentence(), _af_sentence(), _ensemble_sentence(), _fresh_sentence()):
         if extra is not None:
             text += " " + extra
     sizes = _model_sizes()
@@ -1783,6 +1834,7 @@ def build() -> dict[str, str]:
     files["results_af_rule"] = posthoc_af_rule()
     files["results_diffusion_long"] = posthoc_diffusion_long()
     files["results_seed_ensemble"] = posthoc_seed_ensemble()
+    files["results_fresh_patients"] = posthoc_fresh_patients()
     files["table_posthoc"] = posthoc_table()
     files["outlook"] = outlook(heading=False)
     files["discussion"] = discussion()

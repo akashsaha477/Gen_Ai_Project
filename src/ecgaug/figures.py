@@ -2052,6 +2052,43 @@ def seed_ensemble_results_figure(summary: dict) -> list[Path]:
     return [_save(fig, paths.figures_for("phase6_seed_ensemble") / "results.png", "Before and after: ten runs averaged per condition", caption)]
 
 
+FRESH_COLOR = "#c46a1b"
+
+
+def fresh_patients_figure(summary: dict, p18: dict | None) -> list[Path]:
+    """P19 before and after: per condition, S and V F1 on the test records (P18) and on 1,000 unused Icentia11k patients, the ten-run
+    ensemble with Huang's stage and P16's veto and the ensemble alone; the pre-registered comparisons on S F1."""
+    plt = _plt()
+    keys = list(summary["ensemble"]["with_af_veto"])
+    rows = []
+    for key in keys:
+        name = CONDITION_NAMES[key.split("/")[1]]
+        if p18 is not None:
+            rows.append((f"{name}: test records (P18), stage and veto", p18["ensemble"]["with_af_veto"].get(key), ENSEMBLE_COLOR, "s"))
+        rows += [(f"{name}: new patients, stage and veto", summary["ensemble"]["with_af_veto"][key], FRESH_COLOR, "o"),
+                 (f"{name}: new patients, cnn alone", summary["ensemble"]["cnn_alone"][key], SINGLE_RUN_COLOR, "o")]  # fmt: skip
+    fig, axes = plt.subplots(1, 3, figsize=(17, 0.3 * len(rows) + 2.4), gridspec_kw={"width_ratios": [1, 1, 1.1]})
+    for ax, metric, xlabel in ((axes[0], "f1_S", "S F1 (95% patient-level CI)"), (axes[1], "f1_V", "V F1 (95% patient-level CI)")):
+        for i, (label, entry, color, marker) in enumerate(reversed(rows)):
+            if entry is not None and metric in entry:
+                _interval(ax, entry[metric], i, color, marker=marker)
+        ax.set_yticks(range(len(rows)), [r[0] for r in reversed(rows)] if metric == "f1_S" else [], fontsize=7)
+        ax.set_xlim(0, 1)
+        ax.set_xlabel(xlabel)
+        ax.set_title(f"{metric[-1]} beats, ten-run ensembles", loc="left")
+    _comparisons_panel(axes[2], summary["families"], "pre-registered comparisons, P19")
+    axes[2].set_xlabel("difference in S F1 on the new patients (95% CI)")
+    data = summary.get("data", {})
+    beats = summary["beats"]
+    caption = (f"{summary['patients']:,} Icentia11k patients that no analysis had used (first segment each; {beats['N']:,} N, {beats['S']:,} S and "
+               f"{beats['V']:,} V beats; no F labels), scored with P18's sixty runs, Huang et al.'s stage and P16's AF veto unchanged. Squares: P18 "
+               "on the test records; orange: the new patients with the stage and the veto; grey: the ensemble alone. Right, black: confirmatory (per condition, "
+               "ensemble vs P16's single runs); grey: secondary (the cVAE vs each other condition), both on S F1"
+               + (f"; {data['s_dominant_patients']} S-dominant patients" if "s_dominant_patients" in data else "")
+               + ". Post hoc (PREREGISTRATION v18, P19).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_fresh_patients") / "results.png", "Before and after: the same pipeline on 1,000 new patients", caption)]
+
+
 def posthoc_figures() -> list[Path]:
     """Every post-hoc figure whose summary exists (PREREGISTRATION v4, P1-P4); nothing is re-run."""
     final, written = _summary("final_eval"), []
@@ -2127,6 +2164,8 @@ def posthoc_figures() -> list[Path]:
         written += seed_ensemble_check_figure(m)
     if (s := _summary("phase6_seed_ensemble")) is not None:
         written += seed_ensemble_results_figure(s)
+    if (s := _summary("phase6_fresh_patients")) is not None:
+        written += fresh_patients_figure(s, _summary("phase6_seed_ensemble"))
     return written
 
 
