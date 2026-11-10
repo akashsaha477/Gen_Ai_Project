@@ -1389,3 +1389,11 @@ registered. v21 committed and tagged `prereg-v21` (4315d21, pushed) before P21's
 P19's, the DS2 read, shared by P22 and P23), `experiments/phase6_bigger_classifier.py`, `experiments/phase6_physics_fitted.py`,
 configs, notebooks, figures (`ensemble_pairs_figure`, P22's validation figure, P23's check and bank figures), paper text;
 14 new tests pass with P21's. Compute about 1.5 (P22) and 5.5 (P23) GPU-hours.
+
+P21 score files downloaded (results/phase6_physics_prior/choice.json and summary.json, git cb40777): P20's baseline S F1
+reproduced exactly (difference 0.0). S F1 on P19's 977 patients (95% patient-level CI): cVAE + Euler loss 0.412
+(0.340-0.477) vs P18's cVAE 0.414 (0.342-0.479), difference -0.002 (-0.009 to 0.005), Holm p 1.0; WGAN-GP + Euler loss
+0.400 (0.331-0.462) vs 0.378 (0.313-0.437), difference +0.022 (0.001 to 0.042), unadjusted p 0.039, Holm p 0.116 (over
+three). V F1 fell for both (0.648 to 0.621; 0.683 to 0.634). Ensembles alone (descriptive): WGAN-GP 0.259 to 0.303. Since
+the Euler loss left the banks at P12's level, the WGAN-GP difference more likely comes from training three more WGAN-GPs
+and keeping the best on validation than from physics. Figure `figures/phase6_physics_prior/results.png`.
