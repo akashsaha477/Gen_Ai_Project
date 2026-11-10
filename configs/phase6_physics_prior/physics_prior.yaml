@@ -1,0 +1,6 @@
+# P21 (PREREGISTRATION §10 v20): a physics prior for the generators and physiological fusion beats. Post hoc.
+experiment: phase6_physics_prior
+seed_ensemble_config: configs/phase6_seed_ensemble/seed_ensemble.yaml
+lambdas: [0.1, 1.0, 10.0]
+fit: {per_class: 5000, seed: 0, iterations: 500, lr: 0.01}
+fusion: {min_v_beats: 5, min_f_beats: 50, min_recordings: 3, low_quantile: 0.1, high_quantile: 0.9}

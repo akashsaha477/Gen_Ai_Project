@@ -156,10 +156,14 @@ class WGANGP(BeatGenerator):
         _, labels = draw()
         cond = self._labels(labels)
         z = torch.randn(labels.shape[0], self.noise_dim, device=self.device)
-        score, logits = critic(generator(z, cond), cond)
+        fake = generator(z, cond)
+        score, logits = critic(fake, cond)
         generator_loss = -score.mean()
         if aux:
             generator_loss = generator_loss + aux * F.cross_entropy(logits, labels)
+        prior = self.prior_term(fake, labels) if self.prior is not None and self.prior_weight else None
+        if prior is not None:
+            generator_loss = generator_loss + self.prior_weight * prior
         opt_g.zero_grad(set_to_none=True)
         generator_loss.backward()
         opt_g.step()
@@ -169,6 +173,7 @@ class WGANGP(BeatGenerator):
             f"wasserstein{suffix}": (real_score.mean() - fake_score.mean()).item(),
             f"gradient_penalty{suffix}": penalty.item(),
             f"generator_loss{suffix}": generator_loss.item(),
+            **({f"prior{suffix}": prior.item()} if prior is not None else {}),
         }
 
     def generate(self, labels: torch.Tensor, noise: torch.Generator) -> torch.Tensor:

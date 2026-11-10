@@ -105,6 +105,10 @@ class BeatGenerator(ABC):
         self.device = torch.device("cpu")
         names = settings.get("classes", list(CLASSES))
         self.class_ids: tuple[int, ...] = tuple(CLASS_INDEX[c] for c in names)
+        # An optional extra term of the generator's objective on its own samples, ``prior(beats, labels)`` -> scalar or
+        # None, weighted by ``prior_weight`` (P21's Euler loss). None leaves training exactly as before.
+        self.prior: Callable[[torch.Tensor, torch.Tensor], torch.Tensor | None] | None = None
+        self.prior_weight = 0.0
 
     @abstractmethod
     def modules(self) -> dict[str, nn.Module]:
@@ -144,7 +148,15 @@ class BeatGenerator(ABC):
         for module in self.modules().values():
             module.to(device)
         self.device = torch.device(device)
+        if self.prior is not None and hasattr(self.prior, "to"):
+            self.prior.to(self.device)
         return self
+
+    def prior_term(self, beats: torch.Tensor, labels: torch.Tensor) -> torch.Tensor | None:
+        """The weighted prior on generated ``beats`` of ``labels``, or None without a prior (or no class it scores)."""
+        if self.prior is None or not self.prior_weight:
+            return None
+        return self.prior(beats, labels)
 
     def fit(
         self,

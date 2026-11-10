@@ -32,7 +32,7 @@ POST_HOC = ("phase6_rr_reference", "phase6_external_validation", "phase6_extra_s
             "phase6_relative_cnn", "phase6_augmentation_mechanism", "phase6_patient_transfer",
             "phase6_patient_adaptation", "phase6_more_patients", "phase6_relative_generators",
             "phase6_record_rr", "phase6_icentia", "phase6_diffusion", "phase6_af_rule", "phase6_diffusion_long",
-            "phase6_seed_ensemble", "phase6_fresh_patients", "phase6_rule_tuning")
+            "phase6_seed_ensemble", "phase6_fresh_patients", "phase6_rule_tuning", "phase6_physics_prior")
 RESULT_FOLDERS = (*EXPERIMENTS, "phase4_full_grid", *POST_HOC)  # every experiment's results, the full grid's ledger, post-hoc analyses
 EXTRA_RESULT_FILES = ("results/phase2_ptbxl_data/ptbxl_preprocessing.json",)
 ACCESS_LOG = "docs/TEST_ACCESS_LOG.md"  # appended by every DS2 read; its new rows are merged back by ingest

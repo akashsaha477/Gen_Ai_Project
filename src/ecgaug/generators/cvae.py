@@ -178,6 +178,14 @@ class CVAE(BeatGenerator):
             spectral = (torch.fft.rfft(x, norm="ortho").abs() - torch.fft.rfft(x_hat, norm="ortho").abs()).abs().sum(dim=1).mean()
             loss = loss + self.spectral_weight * spectral
             out["spectral"] = spectral.item()
+        if self.prior is not None and self.prior_weight:
+            # P21: decoded standard-normal codes, one per training-batch beat, labels as in the batch (the prior scores
+            # only the classes it has a pool for)
+            sampled = self.decoder(torch.randn(labels.shape[0], self.latent, device=x.device), labels)
+            term = self.prior_term(sampled, labels)
+            if term is not None:
+                loss = loss + self.prior_weight * term
+                out["prior"] = term.item()
         self.optimizer.zero_grad(set_to_none=True)
         loss.backward()
         self.optimizer.step()
