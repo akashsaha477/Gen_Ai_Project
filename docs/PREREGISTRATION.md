@@ -529,6 +529,49 @@ a good fit does not show that the physics is right; the stop rules only catch a 
 | descriptive | the ensembles alone (DS2 and P19's patients); DS2 S and F F1 and without record 202; V F1 on P19's patients; validation scores of every lambda including 0; each bank's Euler distance per class (real beats 1; P12's banks beside); the effective number of training patients of the nearest real beat for S and F (P12's check); the class medians' correlation with the real beats' (P17's shape check); the fits' R^2 and alpha-hat |
 | reporting | its own section, labelled post hoc, framed as limited by scale; DS2 is read for the 16th time after the final evaluation, and the primary results stay those of the final evaluation. Compute: the fits on a Kaggle CPU session; one T4 session per family (P12 took 874-879 s per cVAE fit and 1,236-1,241 s per WGAN-GP fit; five fits each plus 22 cnn runs: about 1.7 and 2.3 hours); the fusion runs and the scoring on a T4 (about 0.7 hours); the DS2 read on CPU. About 5 GPU-hours in all. Requested: "can we do something like the simgans like adding physics" and the choice "All three" (offered at about 4 GPU-hours; refined while writing this), 2026-11-10 |
 
+
+**v21, committed 2026-11-10, after P21's result on P19's patients and before its DS2 read, before any of the work below
+(DECISIONS A43).** Two analyses, post hoc.
+
+P22 asks whether a larger classifier helps. Phase 2's ResNet1D (variant B; 488,362 parameters against the P7 cnn's 73,226
+in phase 2's counts) lost to the cnn there (validation S F1 0.231 against 0.349, v1 data, no augmentation) and has not run
+since; the pipeline has changed (patient-relative beats, RR features, the banks, the ensemble, the stage and the veto).
+Expectation, written before any result: the rare classes come from few training patients (F from about 5 effective
+patients), so a larger model may fit those patients more closely, and no gain is expected; the comparison tests the
+explanation "more capacity is needed".
+
+P23 changes P21's physics loss. P21 drew the simulator's parameters independently of the generated beat, so the loss was
+dominated by the draw (with each real beat's own parameters the distance was 0.1-1.9% of kappa), and all ten P21 fits
+stayed at the real-beat level from the first logged step. P23 fits the parameters to each generated beat instead, so the
+loss is what the simulator cannot explain. Before this was committed, two forms were checked on 60 DS1 training beats per
+class (v1, drawn with seed 0; v1's ratio stood in for v2's), with each class's mean wave positions and widths from P21's
+`physics.json` and the heights and baseline solved per beat. In SimGANs' derivative form (the Euler residual) the fit
+explained a median 0.28 (N), 0.35 (S), 0.47 (V) and 0.82 (F) of the target, and smoothing a beat (9-sample moving
+average) lowered its distance to 0.16-0.48 of the real beat's: that form mostly measures high-frequency roughness. In the
+signal form (the simulated beat against the beat) the median R^2 was 0.72 (N), 0.72 (S), 0.93 (V) and 0.97 (F); noise of
+0.05 SD raised the distance by 1-6% and smoothing lowered it to 0.53-0.82. The signal form is registered. Expectation,
+written before any result: it still rewards smoother beats, so the banks may become smoother and less varied.
+
+| item | rule |
+|---|---|
+| P22 `phase6_bigger_classifier`, classifier | phase 2's variant B (`configs/phase2_baseline_classifiers/B_resnet1d.yaml`): ResNet1D, a stem convolution and four residual stages (channels 32, 64, 128, 128; kernel 7), global average pooling, the RR side input (16 hidden units); phase 2's chosen learning rate for it (0.001) and the budget every phase 2 classifier shared, the cnn's (at most 40 epochs, patience 5, at least 10 epochs, batch 256, weight decay 0.01); each run keeps its epoch with the highest validation S F1 |
+| P22 runs | P13's data; conditions none, cVAE (strength 0.1) and WGAN-GP (0.25) with P12's banks in P13's form as P18 (bank seed s mod 3); seeds 0-9; 30 runs. Each condition's ten-run ensemble (mean probability) |
+| P22 setting | per ResNet condition, Huang's stage and P16's veto chosen among P20's 50 settings on P14's 400 Icentia11k patients by P20's rule, written to `choice.json` before P19's patients are scored; P18's cnn conditions keep P20's choices |
+| P22 confirmatory (Holm, 3) | one posthoc DS2 read, logged: per condition (none, cVAE, WGAN-GP), the ResNet's ensemble vs P18's cnn ensemble, each with its chosen setting, on rare-class macro-F1. P20's DS2 values for the cnn must reproduce exactly |
+| P22 secondary (Holm, 3) | the same three comparisons on P19's 977 patients, on S F1; P20's values for the cnn must reproduce within 0.001 |
+| P22 descriptive | the ensembles alone; within the ResNet, cVAE vs none and WGAN-GP vs none (paired intervals, no correction), on DS2 and on P19's patients; DS2 per-class F1 and without record 202; V F1 on P19's patients; validation S, V and F F1 over the ten seeds (mean, SD) beside the cnn's; epochs run; parameter counts |
+| P23 `phase6_physics_fitted`, physics loss | for a generated beat of class c (S, V or F): add the template of a training beat of class c drawn at random and take that beat's omega (P21's whole beat); simulate from the window's first sample with class c's mean wave positions and widths (P21's `physics.json`) and the heights and baseline that fit this whole beat best (least squares, solved exactly and differentiably); the loss is the summed squared difference between the whole beat and its simulated beat, over kappa'_c, averaged over the batch. kappa'_c is the mean of the same quantity over P21's fitted real whole training beats of class c (5,000 S, 5,000 V, all 621 F; drawn with seed 0), so real beats score 1 on average. Applied as in P21: the cVAE on decoded standard-normal codes, one per S, V or F beat of the training batch with its label; the WGAN-GP on its batch in the generator update. N beats get no loss |
+| P23 check | on a Kaggle CPU session before any generator is trained, written to `physics.json`: kappa'_c, and per class the R^2 of every fitted real beat with the class's positions and fitted heights. Stop rule: a class with median R^2 below 0.5 stops both conditions, which are reported. Descriptive: the score of P12's seed-0 banks, of P21's chosen banks and of the templates alone (a zero deviation) |
+| P23 generators | P12's cVAE (variant D) and WGAN-GP (variant A), settings, 20,000 steps, P11's training beats, scale and bank counts unchanged; banks sampled as P12's, put in P13's form as P13 did |
+| P23 lambda | per family, lambda in {0.1, 1, 10}, as P21: generator seed 0 at each value, its bank at P12's strength (cVAE 0.1, WGAN-GP 0.25) in the P7 cnn on P13's data, cnn seeds 0-2; the highest mean validation S F1 wins, ties to the smaller lambda; lambda = 0 (P12's seed-0 bank, the same cnn seeds) beside, descriptive. Then generator seeds 1 and 2 at the chosen lambda |
+| P23 runs | two conditions (`cvae_fitted`, `wgan_gp_fitted`): the P7 cnn on P13's data at the base family's strength, seeds 0-9 (bank seed s mod 3), every setting as P18; each condition's ten-run ensemble |
+| P23 setting | as P22: per new condition, P20's rule on P14's patients; P18's cVAE and WGAN-GP keep P20's choices |
+| P23 confirmatory (Holm, 2) | one posthoc DS2 read, logged: `cvae_fitted` vs P18's cVAE ensemble and `wgan_gp_fitted` vs P18's WGAN-GP ensemble, each with its chosen setting, on rare-class macro-F1; P20's DS2 values for the baselines must reproduce exactly |
+| P23 secondary (Holm, 2) | the same two comparisons on P19's patients, on S F1; P20's values must reproduce within 0.001 |
+| P23 descriptive | the ensembles alone; DS2 S and F F1 and without record 202; V F1 on P19's patients; validation scores of every lambda including 0; each bank's physics loss per class (real beats 1; P12's banks, P21's and the templates beside); roughness, the mean squared first difference of the whole beats over the real beats'; the effective number of training patients of the nearest real beat for S and F; the class medians' correlation with the real beats' |
+| measures (both) | DS2 rare-class macro-F1 with per-class F1; on P19's patients S F1 with V F1; validation S, V and F F1. Record- and patient-level bootstrap, 10,000 resamples, seed 0 |
+| reporting (both) | each its own section, labelled post hoc, framed as limited by scale; DS2 is read for the 17th and 18th time after the final evaluation (in the order the two reads run), and the primary results stay those of the final evaluation. Compute: P22 on one T4 session (the ResNet took 2.6 times the cnn's time per run in phase 2, so about 2 minutes per run: 30 runs about 1 hour, prediction with 60 runs on the two patient sets about 0.5 hours); P23's check on CPU, one T4 session per family (P21's took 2.2 and 2.4 hours) and the scoring on a T4 (about 0.6 hours); the DS2 reads on CPU. About 1.5 and 5.5 GPU-hours, about 7 in all. Requested: "do these things and then also try with a bigger model and also try with changing the model a bit" and the choices "Bigger classifier" and "Fix the physics loss" (offered at about 1.5 and 5 GPU-hours), 2026-11-10 |
+
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 
 ## 11. Deviations and amendments

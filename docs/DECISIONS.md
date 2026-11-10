@@ -559,3 +559,17 @@ Addendum, 2026-11-10, after P21's check and before any P21 model was trained: th
 (median R^2 0.387 over 621 training F beats in 31 recordings), so `cvae_fusion` is not run. The confirmatory and secondary
 families keep Holm's adjustment for the three registered comparisons (the stricter reading; Holm over the two that remain
 would be looser), so a stop rule cannot make the remaining comparisons easier to call.
+
+## 2026-11-10 (Day 35) — A43: a larger classifier and a fitted physics loss (pre-registration v21) — Akash Saha ("do these things and then also try with a bigger model and also try with changing the model a bit"; chose "Bigger classifier" and "Fix the physics loss")
+
+Asked which model to enlarge and what to change, Akash chose the larger classifier and a corrected physics loss. P22
+(`phase6_bigger_classifier`) trains phase 2's ResNet1D (6.7 times the cnn's parameters, phase 2's learning rate and the
+shared budget) in P18's pipeline for no augmentation, the cVAE and the WGAN-GP, ten seeds each, and compares each ensemble
+with P18's cnn ensemble for the same condition after P20's rule chooses the stage and the veto on P14's patients. P23
+(`phase6_physics_fitted`) keeps P21's design but fits the simulator's heights and baseline to each generated beat (with
+the class's mean wave positions and widths) and scores what the simulator cannot explain, instead of drawing the
+parameters at random. A check on 60 DS1 training beats per class, made before committing, showed that SimGANs'
+derivative form of that loss mostly measures roughness (smoothing a beat cut its distance to 16-48% of the real beat's),
+so the signal form (simulated beat against beat) is registered; the check is reported in the pre-registration. Both are
+compared on P19's patients and once each on DS2, and each is labelled post hoc. Offered at about 1.5 and 5 GPU-hours;
+about 7 in all after writing the pre-registration. Pre-registration v21 is committed and tagged before P21's DS2 read.
