@@ -134,7 +134,7 @@ def generators() -> list[dict]:
         _row("generator", "Physics loss, drawn parameters", "generator objective", "McSharry et al.'s ECG equation, Euler residual with 16 parameters drawn from the class (SimGANs)", None,
              "P21", "barely moved the generators; post hoc"),
         _row("generator", "Physics loss, fitted heights", "generator objective", "the simulator's best fit with the class's wave timing, heights and baseline solved per beat", None,
-             "P23", "post hoc"),
+             "P23", "moved the generators (large weights smooth the banks); small S gain on P19's patients for the cVAE; post hoc"),
         _row("generator", "SMOTE, random oversampling, class weights", "baselines", "interpolation between same-class beats; repeated real beats; class-weighted cross-entropy", None,
              "phase 4 grid; P5-P18", "the pre-registered comparison conditions"),
         _row("generator", "Patient transfer, fusion beats", "augmentation without a learned model", "a real deviation placed on other patients' templates (P9); a fraction of a real V deviation as F (P21)", None,

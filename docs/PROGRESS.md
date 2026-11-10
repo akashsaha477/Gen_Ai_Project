@@ -1499,3 +1499,14 @@ WGAN-GP 0.349/0.462 vs 0.446/0.328 (the fitted WGAN-GP trades sensitivity for pr
 Correction: six values in the two P23 training entries above were rounded wrongly by hand and now match
 cvae.json and wgan_gp.json (cVAE weight 0.1 validation 0.770, not 0.771; P12's F loss 1.81, not 1.82; WGAN-GP roughness
 1.02/0.88/0.95 and 0.85, loss 1.85, roughness 0.46). No decision used them.
+
+P23 DS2 read (`phase6-physics-fitted-test`, CPU, 903ed3d, exit code 0; the 18th read, logged in TEST_ACCESS_LOG.md;
+P20's DS2 values for P18's cVAE and WGAN-GP reproduced exactly; run IDs `phase6_physics_fitted-cnn.*_fitted_0.1-s*-5d12290-*`
+in test_summary.json). Rare-class macro-F1 (95% record-level CI), fitted vs P18's: cVAE 0.465 (0.112-0.506) vs 0.459,
++0.006 (-0.009 to 0.016), Holm p 0.483; WGAN-GP 0.224 (0.114-0.264) vs 0.497, -0.272 (-0.352 to 0.026), Holm p 0.483.
+Neither is detectable. S F1: 0.411 vs 0.391, 0.443 vs 0.654; F F1: 0.518 vs 0.527, 0.005 vs 0.339 (the fitted WGAN-GP
+ensemble almost never predicts F on the test records). Without record 202: 0.484/0.242 vs 0.475/0.531. Ensembles alone
+(descriptive): +0.009 and -0.162. So the fitted loss's small S gain for the cVAE on P19's patients shows on the test
+records only as a non-detectable +0.006; for the WGAN-GP the F score, which depends on very few test patients, drops.
+More seeds per weight and more patients with F beats are needed to tell. P18's 0.587 stays the highest test score.
+Figure `figures/phase6_physics_fitted/results.png` with the test panels. P23 is done.
