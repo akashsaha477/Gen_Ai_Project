@@ -1279,3 +1279,13 @@ Full test suite on Kaggle at 94bdb48 (`phase6-suite-p19`, CPU, with `ecgaug-v5-e
 run exit code 0; 387 passed, 2 skipped, 0 failed (778 progress marks halved, against the 389 tests collected locally).
 Pushed 94bdb48 to main (fast-forward from 54cf7d5), which also carries P19's pre-registration (2682907, tag `prereg-v18`
 pushed before the kernel ran). This note goes out with the next suite-tested push.
+
+**P20 (v19, A41), asked "do it" after the proposal to choose the stage and the veto on more varied patients.**
+`phase6_rule_tuning`: per condition, one of 50 settings (the ten-run ensemble alone; Huang's stage at t 0.60-0.90 with no
+veto or P16's veto at a 0.50-0.95, form "rule") by pooled S F1 on P14's 400 Icentia11k patients (P18's runs were trained
+on DS1, INCART and SVDB only). The choice goes to `choice.json` before P19's patients are loaded; P19's patients are
+rebuilt and must reproduce P19's `content_sha256`. Confirmatory (Holm, 6): chosen vs P19's setting on S F1; secondary
+(Holm, 6): chosen vs the ensemble alone; DS2 (Holm, 6, one logged read, the 15th): chosen vs P18's setting on rare-class
+macro-F1, P18's values reproduced exactly. Code: P19's build split into `build_set` (P19's output unchanged) and P18's
+DS2 construction into `ds2_inputs` (P18's test read unchanged); 8 new tests. Plan on Kaggle: build on CPU (1,400
+segments), predict on one T4 session with the build output attached as a kernel input (about 0.7 GPU-hours), DS2 on CPU.

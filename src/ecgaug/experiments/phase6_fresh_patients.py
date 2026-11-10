@@ -118,8 +118,18 @@ def _build_star(args: tuple) -> tuple[dict | None, dict]:
 def build(cfg: dict, spec, workers: int | None = None) -> tuple[dict, dict]:
     """The sampled patients' beats and a data record (patients, exclusions, class counts, hashes); no model is involved."""
     patients = sample_patients(N_FRESH, FRESH_SEED, used_patients())
+    arrays, info = build_set(patients, spec, float(cfg["rr"]["rg"]["mp"]["pt"]["half_window_s"]), workers)
+    record = {"experiment": EXPERIMENT, "rule": RULE, "patients": patients, "used_before": P14_PATIENTS, **info, "git_sha": runs.git_sha()}
+    out = paths.results_for(EXPERIMENT)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "data.json").write_text(json.dumps(record, indent=2, default=float) + "\n")
+    return arrays, record
+
+
+def build_set(patients: list[int], spec, half: float, workers: int | None = None) -> tuple[dict, dict]:
+    """Every usable beat of these patients' first segments (``build_one``, in patient order), and what was built:
+    segments used, exclusions, class counts, S concentration, the content hash and the raw files' hashes."""
     names = ic.download(patients, raw.external_dir(ic.DB))
-    half = float(cfg["rr"]["rg"]["mp"]["pt"]["half_window_s"])
     detector = af.load_detector()
     jobs = [(ic.segment_name(p), spec, half, detector) for p in patients if ic.segment_name(p) in names]
     reports = [{"record": ic.segment_name(p), "number": ic.RECORD_OFFSET + p, "excluded": "download failed"} for p in patients if ic.segment_name(p) not in names]
@@ -142,17 +152,13 @@ def build(cfg: dict, spec, workers: int | None = None) -> tuple[dict, dict]:
     y, rec = np.asarray(arrays["y"]), np.asarray(arrays["record"])
     per = {int(r): {c: int(((rec == r) & (y == i)).sum()) for i, c in enumerate(CLASSES)} for r in np.unique(rec)}
     s_total = sum(v["S"] for v in per.values())
-    record = {"experiment": EXPERIMENT, "rule": RULE, "patients": patients, "used_before": P14_PATIENTS,
-              "segments_used": len(parts), "excluded": [r for r in reports if "excluded" in r],
-              "beats": {c: int((y == i).sum()) for i, c in enumerate(CLASSES)},
-              "patients_with": {c: sum(v[c] > 0 for v in per.values()) for c in ("S", "V")},
-              "s_dominant_patients": sum(v["S"] > v["N"] for v in per.values()),
-              "largest_s_share": max(v["S"] for v in per.values()) / s_total if s_total else 0.0,
-              "content_sha256": content_sha256({k: arrays[k] for k in FIELDS}), "files_sha256": files, "git_sha": runs.git_sha()}  # fmt: skip
-    out = paths.results_for(EXPERIMENT)
-    out.mkdir(parents=True, exist_ok=True)
-    (out / "data.json").write_text(json.dumps(record, indent=2, default=float) + "\n")
-    return arrays, record
+    info = {"segments_used": len(parts), "excluded": [r for r in reports if "excluded" in r],
+            "beats": {c: int((y == i).sum()) for i, c in enumerate(CLASSES)},
+            "patients_with": {c: sum(v[c] > 0 for v in per.values()) for c in ("S", "V")},
+            "s_dominant_patients": sum(v["S"] > v["N"] for v in per.values()),
+            "largest_s_share": max(v["S"] for v in per.values()) / s_total if s_total else 0.0,
+            "content_sha256": content_sha256({k: arrays[k] for k in FIELDS}), "files_sha256": files}  # fmt: skip
+    return arrays, info
 
 
 def beats_path() -> Path:

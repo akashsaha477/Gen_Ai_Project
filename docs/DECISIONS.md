@@ -529,3 +529,14 @@ read. P19 (`phase6_fresh_patients`) runs P18's sixty runs, P16's veto and Huang'
 1,000 Icentia11k patients P14 did not draw, scored by S F1 (Icentia11k has no F labels) with a patient-level bootstrap.
 Prediction runs on a Kaggle GPU because the CPU would take about 50 hours; this departs from the habit of using the GPU
 only for training and is recorded here.
+
+## 2026-11-10 (Day 35) — A41: Huang's stage and the AF veto chosen on 400 Icentia11k patients (pre-registration v19) — Akash Saha ("do it")
+
+On P19's 977 unused patients the frozen pipeline reached S F1 0.294 with the stage and the veto, while the ten-run
+ensembles alone reached 0.259-0.382: the stage doubled S sensitivity but cut S +P from about 0.4 to 0.16. Its 0.8
+threshold is Huang et al.'s MIT-BIH value and P16's veto threshold was chosen on MIT-BIH, INCART and SVDB annotations, so
+both were set on few patients. Proposed and accepted: choose both thresholds, and whether to use the stage at all, on P14's
+400 Icentia11k patients, which none of P18's runs has seen, then score the choice on P19's patients (paired with P19's
+setting and with the ensemble alone) and once on DS2. P20 is `phase6_rule_tuning`. The beats are built on a Kaggle CPU
+session and only the prediction runs on a T4 (about 0.7 GPU-hours), to keep GPU use low; the CPU session's output (the
+built beats) is attached to the GPU session as a kernel input.

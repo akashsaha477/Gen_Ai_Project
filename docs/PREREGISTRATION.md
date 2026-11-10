@@ -475,6 +475,28 @@ patients was downloaded.
 | descriptive | the ensembles alone and with the stage alone; per condition, the stage and the stage with the veto against the ensemble alone (paired intervals, no correction); the three-run ensemble; the ten single runs; the share of beats called F; how many patients are S-dominant and the largest patient's share of S beats; P18's DS2 values beside |
 | reporting | its own section, labelled post hoc and as an external check on a different device and annotation process; P18's DS2 results stay as reported. Compute: one Kaggle T4 session, about 1-1.5 GPU-hours (the beats are built on the CPU cores; prediction on the CPU would take about 50 hours, 639 µs per beat and run measured locally); requested: "so improve these" and the choice "fresh-patient check", 2026-11-10 |
 
+**v19, committed 2026-11-10, after P19's result, before any of the work below (DECISIONS A41).** One analysis, post hoc.
+On P19's 977 unused Icentia11k patients, Huang et al.'s SVEB stage lowered S F1 in five of six conditions against the
+ten-run ensembles alone (cVAE: S Se 0.303 to 0.629, S +P 0.408 to 0.157). Its threshold 0.8 is Huang et al.'s MIT-BIH
+value, and P16's veto threshold 0.95 came from MIT-BIH, INCART and SVDB annotations. P20 chooses the stage's threshold and
+the veto's threshold, including the choice of no stage at all, on a larger and more varied group of patients that none of
+P18's runs has seen, then scores the choice on P19's patients and, once, on DS2. The wish came after P19's result; P19's
+patients play no part in the choice.
+
+| item | rule |
+|---|---|
+| P20 `phase6_rule_tuning`, tuning patients | P14's 400 Icentia11k patients (seed 0), the first segment of each, built exactly as P19 built its patients (every usable N, S and V beat, no cap; each beat's AF probability from the segment's QRS annotation times). P18's sixty runs were trained on P13's data (DS1, INCART and SVDB patients) and never saw an Icentia11k beat |
+| evaluation patients | P19's patients, rebuilt the same way; the rebuilt beats must reproduce P19's `content_sha256`, else nothing is scored. They play no part in the choice |
+| models | P18's sixty runs (`members.json`), each condition's ten-run ensemble (mean probability); P16's AF detector and form "rule" |
+| settings | the ensemble alone; Huang's stage with threshold t in {0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90}, with no veto or with P16's veto at AF threshold a in {0.50, 0.60, 0.70, 0.80, 0.90, 0.95}: 50 settings |
+| choice | per condition, the setting with the highest S F1 over all the tuning patients' beats pooled. Ties: the ensemble alone first, then no veto, then the t nearest 0.80 (the lower when two are as near), then the higher a. Written to `choice.json` before any evaluation patient is scored |
+| measures | on Icentia11k S F1 (no F labels), with V F1, S Se, S +P and N recall; on DS2 rare-class macro-F1, with per-class F1. Patient-level bootstrap (each patient or record one cluster), 10,000 resamples, seed 0 |
+| confirmatory (Holm, 6) | on P19's patients, per condition, the ten-run ensemble with its chosen setting vs with P19's setting (t 0.8, a 0.95), on S F1 |
+| secondary (Holm, 6) | on P19's patients, per condition, the chosen setting vs the ensemble alone, on S F1 (a condition whose choice is the ensemble alone has difference 0 and p 1) |
+| DS2 (Holm, 6) | one posthoc read, logged: per condition, the ten-run ensemble with its chosen setting vs with P18's setting (t 0.8, a 0.95), on rare-class macro-F1; P18's values must reproduce exactly |
+| descriptive | S F1 of every setting on the tuning and on the evaluation patients (no intervals); the cVAE's ensemble vs each other condition's with the chosen settings on P19's patients (paired intervals, no correction); DS2 per-class F1, S Se and +P, the ensembles alone and without record 202; the difference from P19's own S F1 for P19's setting (GPU prediction may differ in the last digits; a difference above 0.001 stops the run) |
+| reporting | its own section, labelled post hoc; DS2 is read for the 15th time after the final evaluation and the primary results stay those of the final evaluation. Compute: the beats are built on a Kaggle CPU session (about 1.5 hours, 1,400 segments); prediction with the sixty runs on one T4 session, about 0.7 GPU-hours (P19 predicted about 3.7 million beats with them in about 20 minutes); the DS2 read on a CPU session. Requested: "do it", 2026-11-10, after the proposal to choose the stage and the veto on more varied patients |
+
 Each version is committed before the experiments it governs, tagged `prereg-vK` and pushed that day.
 
 ## 11. Deviations and amendments

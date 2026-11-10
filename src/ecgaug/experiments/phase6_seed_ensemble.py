@@ -292,6 +292,20 @@ def _rare(cms: np.ndarray) -> float:
     return float(np.mean(M.rare_macro_f1_from_cm(np.asarray(cms).sum(axis=1))))
 
 
+def ds2_inputs(cfg: dict, experiment: str) -> tuple[dict, np.ndarray]:
+    """DS2 in P13's form (one posthoc access, logged under ``experiment``) and each beat's AF probability from P16's detector."""
+    detector = af.load_detector()
+    half = cfg["rr"]["rg"]["mp"]["pt"]["half_window_s"]
+    spec = load_data(check_preconditions(), preview=False).spec
+    v1_test = pt.test_arrays(spec, experiment=experiment)
+    ratios = {}
+    for record in DS2:
+        ratios.update({(record, r): v for r, v in v5.record_ratios(record, half, access="posthoc").items()})
+    v3 = pt.relative(v5.substitute(v1_test, ratios), pt.mitbih_templates(v1_test, spec, half, access="posthoc"))
+    test = rr.normalize(v3, rr.mean_rr_by_record(np.asarray(v3["record"]), access="posthoc"))
+    return test, af.ds2_af_probability(detector, np.asarray(test["record"]), np.asarray(test["r_idx"]))
+
+
 def test_report(cfg: dict) -> dict:
     """DS2 in P13's form, one posthoc access. Each condition's ten runs predict; its ensemble is their mean probability.
     Confirmatory (Holm, 6 tests): per condition, the ten-run ensemble vs P16's single runs (seeds 0-2), both with Huang's
@@ -305,19 +319,11 @@ def test_report(cfg: dict) -> dict:
         raise PreconditionError("members.json must list ten runs for each of P16's six conditions")
     if {c: ids[: len(EXISTING_SEEDS)] for c, ids in m.items()} != existing_runs():
         raise PreconditionError("members.json's seeds 0-2 are not P13's and P15's selected runs")
-    detector, (af_t, form) = af.load_detector(), af.chosen_design()
+    af_t, form = af.chosen_design()
     t_rule = float(cfg["af"]["rule_threshold"])
     p13_s, p15_s, p16_s = _summary(rr.EXPERIMENT), _summary(dif.EXPERIMENT), _summary(af.EXPERIMENT)
-    half = cfg["rr"]["rg"]["mp"]["pt"]["half_window_s"]
-    spec = load_data(check_preconditions(), preview=False).spec
-    v1_test = pt.test_arrays(spec, experiment=EXPERIMENT)
-    ratios = {}
-    for record in DS2:
-        ratios.update({(record, r): v for r, v in v5.record_ratios(record, half, access="posthoc").items()})
-    v3 = pt.relative(v5.substitute(v1_test, ratios), pt.mitbih_templates(v1_test, spec, half, access="posthoc"))
-    test = rr.normalize(v3, rr.mean_rr_by_record(np.asarray(v3["record"]), access="posthoc"))
+    test, p_af = ds2_inputs(cfg, EXPERIMENT)
     y, records = test["y"], np.asarray(test["record"])
-    p_af = af.ds2_af_probability(detector, records, np.asarray(test["r_idx"]))
     single: dict[str, dict] = {k: {} for k in KINDS}  # [10 runs, records, C, C]
     ten: dict[str, dict] = {k: {} for k in KINDS}  # [1, records, C, C]
     three: dict[str, dict] = {k: {} for k in KINDS}
