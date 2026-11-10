@@ -1445,8 +1445,8 @@ loss at the last step: 1.87-1.89 (lambda 0.1), 1.49 (1), 1.08 (10). Figure `figu
 P22 DS2 read (`phase6-bigger-classifier-test`, CPU, 7cb6cda, exit code 0; the 17th read, logged; P20's DS2 values for
 the cnn reproduced exactly). Rare-class macro-F1 (95% record-level CI), ResNet vs cnn: none 0.270 (0.141-0.347) vs 0.214,
 +0.056 (-0.068 to 0.138), Holm p 0.479; cVAE 0.486 (0.149-0.529) vs 0.459, +0.027 (-0.004 to 0.096), Holm p 0.241;
-WGAN-GP 0.251 (0.116-0.291) vs 0.497, -0.246 (-0.325 to 0.034), Holm p 0.479. None detectable. S F1 rose for none-less
-conditions with augmentation (cVAE 0.469 vs 0.391) but the WGAN-GP ResNet lost F (F F1 0.035 vs 0.339). Within the ResNet
+WGAN-GP 0.251 (0.116-0.291) vs 0.497, -0.246 (-0.325 to 0.034), Holm p 0.479. None detectable. S F1 ResNet vs cnn:
+0.345 vs 0.428, 0.469 vs 0.391, 0.467 vs 0.654; F F1: 0.194 vs 0.000, 0.503 vs 0.527, 0.035 vs 0.339. Within the ResNet
 (descriptive) the cVAE adds +0.216 (-0.014 to 0.257) over no augmentation on DS2, through F (0.503 vs 0.194). Without
 record 202: 0.279/0.504/0.269 vs 0.238/0.475/0.531. So the larger model's S gain on P19's 977 patients (which carry no F
 label) does not show as a detectable change on the 22 test records, where F decides much of the score. P18's 0.587 stays
