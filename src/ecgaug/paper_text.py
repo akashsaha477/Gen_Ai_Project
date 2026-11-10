@@ -262,6 +262,10 @@ def notes(gate: dict | None, results: dict[str, dict]) -> str:
     return text + "\n"
 
 
+def _count_word(n: int) -> str:
+    return "none" if int(n) == 0 else f"{int(n):,}"
+
+
 def concentration(errors: dict | None) -> str:
     """Where the test S and F beats sit and how often each condition finds them (results/error_analysis/test.json, exploratory)."""
     if not errors:
@@ -1183,6 +1187,16 @@ def posthoc_rule_tuning() -> str:
         cv = tc["chosen"]["cnn/cvae"]
         text += (f" On the test records (one read), rare-class macro-F1 with the chosen settings: {rows}; for the cVAE S F1 {_n(cv['f1_S']['point'])}, "
                  f"F F1 {_n(cv['f1_F']['point'])} and V F1 {_n(cv['f1_V']['point'])}. Chosen vs P18's setting: {_family_sentence(test['families']['ds2'])}.")  # fmt: skip
+        data = _load(folder / "data.json")
+        errors = _load(paths.results_for("error_analysis") / "test.json")
+        if data is not None and errors:
+            support = {rec: v["S"]["support"] for rec, v in next(iter(errors.values()))["per_record"].items() if "S" in v}
+            top = max(support, key=support.get)
+            p18_s = tc["p18_setting"]["cnn/cvae"]["f1_S"]["point"]
+            text += (f" The setting that helps on the new patients lowers the test score through S F1 (cVAE {_n(p18_s)} with P18's setting, "
+                     f"{_n(cv['f1_S']['point'])} with the chosen one): record {top} holds {support[top]:,} of the {sum(support.values()):,} test S beats, "
+                     f"and {_count_word(data['tuning']['s_dominant_patients'])} of the {data['tuning']['segments_used']} tuning patients has more S than N beats. "
+                     "Choosing the stage for patients like record " + str(top) + " needs more such patients than these data hold.")  # fmt: skip
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
 
 

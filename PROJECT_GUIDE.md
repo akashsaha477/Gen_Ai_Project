@@ -307,7 +307,7 @@ Asks: does pretraining on a large ECG dataset help rare-beat detection on MIT-BI
   missing results show as red placeholders, so the draft always compiles. `scripts/reproduce.sh` lists
   the whole pipeline in order.
 
-### 5.15 After the final evaluation: post hoc analyses P1-P19 (`src/ecgaug/experiments/phase6_*.py`)
+### 5.15 After the final evaluation: post hoc analyses P1-P21 (`src/ecgaug/experiments/phase6_*.py`)
 
 The single final evaluation (2026-11-04) is the study's primary result and stays so: the cnn without augmentation
 reached a test rare-class macro-F1 of 0.088, and no generator was detectably better than the simpler options. The
@@ -337,10 +337,12 @@ result.
 | P17 | `phase6_diffusion_long` | P15's diffusion model trained five times longer |
 | P18 | `phase6_seed_ensemble` | each condition's class probabilities averaged over ten independently trained runs, with the SVEB rule and the AF veto on top |
 | P19 | `phase6_fresh_patients` | P18's frozen pipeline on 1,000 Icentia11k patients no analysis had used, with no test record read |
+| P20 | `phase6_rule_tuning` | the SVEB rule's and the veto's thresholds chosen on P14's 400 Icentia11k patients, scored on P19's patients and once on the test records |
+| P21 | `phase6_physics_prior` | McSharry et al.'s ECG simulator as a prior for the cVAE and WGAN-GP (SimGANs' Euler loss), and physiological fusion beats; running |
 
 The highest post hoc test score is the cVAE with Huang et al.'s SVEB rule and the atrial-fibrillation veto, its class
 probabilities averaged over ten runs (P18): rare-class macro-F1 0.587 (S F1 0.647, F F1 0.527). Against the same set-up with
-single runs (P16, 0.557) that is not a detectable change (Holm p 1.000). On 977 new Icentia11k patients (P19) the same pipeline reached S F1 0.294 and V F1 0.648, below its DS2 scores; there the ensemble alone (S F1 0.348) did better than with the SVEB rule and the veto on top. The result of every analysis is in the `README.md` checklist, the
+single runs (P16, 0.557) that is not a detectable change (Holm p 1.000). On 977 new Icentia11k patients (P19) the same pipeline reached S F1 0.294 and V F1 0.648, below its DS2 scores; there the ensemble alone (S F1 0.348) did better than with the SVEB rule and the veto on top. Choosing the two thresholds on 400 other Icentia11k patients (P20) raised S F1 on those 977 patients in all six conditions (cVAE 0.294 to 0.414, Holm p 0.001), but on the test records it lowered rare-class macro-F1 in five of six, none detectably (cVAE 0.587 to 0.459); the test records' S beats sit mostly in record 232, and none of the 388 tuning patients is like it. The result of every analysis is in the `README.md` checklist, the
 detail in `docs/PROGRESS.md`, and the before-and-after figures in `figures/phase6_*/`.
 
 ---
@@ -348,7 +350,7 @@ detail in `docs/PROGRESS.md`, and the before-and-after figures in `figures/phase
 ## 6. What has run
 
 Phases 1 to 5, the full grid, the single final evaluation (2026-11-04), the leakage audit and the post hoc
-analyses P1-P19 (section 5.15) have all run. The checklist in `README.md` gives the state of every item, including
+analyses P1-P20 (section 5.15) have all run; P21 is running. The checklist in `README.md` gives the state of every item, including
 any approval still open; `python -m ecgaug.workflow status` prints it.
 
 ---

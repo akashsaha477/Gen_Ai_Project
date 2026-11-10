@@ -1296,3 +1296,44 @@ no S-dominant patient, largest share of all S beats from one patient 9.7%. Evalu
 excluded, N 3,675,681, S 34,072, V 29,473 beats, `content_sha256` equal to P19's (`evaluation_matches_p19: true`).
 No access-log row (no DS2 read in the build). GPU prediction (`phase6-rule-tuning-run`, T4) pushed at af9a8fb with the
 build output attached as a kernel input.
+
+GPU run (`phase6-rule-tuning-run`, T4, af9a8fb, exit code 0; ingested in d804522). P18's values reproduced exactly (difference
+0.0 in all six conditions). Chosen on the 388 tuning patients: none stage 0.70 veto 0.80; class weighting 0.65/0.80; random
+oversampling 0.70/0.70; cVAE 0.70/0.80; WGAN-GP 0.75/0.80; diffusion 0.70/0.80 (tuning S F1 0.345-0.375). On P19's 977
+patients, S F1 chosen / P19's setting / ensemble alone: none 0.419 / 0.295 / 0.354; class weighting 0.409 / 0.291 / 0.382;
+random oversampling 0.415 / 0.294 / 0.365; cVAE 0.414 / 0.294 / 0.348; WGAN-GP 0.378 / 0.293 / 0.259; diffusion 0.393 / 0.286
+/ 0.343. Confirmatory (chosen vs P19's setting): +0.085 to +0.124, all Holm p 0.001. Secondary (chosen vs ensemble alone):
++0.027 to +0.119, Holm p 0.001-0.002. The tuning and evaluation surfaces peak at the same thresholds (figure
+`figures/phase6_rule_tuning/choice.png`).
+
+DS2 read (`phase6-rule-tuning-test`, CPU, d804522, the 15th posthoc read; access-log row ingested in 7cca5ee; its free-text
+description is the generic one `se.ds2_inputs` writes and names a `selection.json` P20 does not have). P18's values
+reproduced exactly. Rare-class macro-F1 chosen vs P18's setting: none 0.214 vs 0.316; class weighting 0.369 vs 0.515;
+random oversampling 0.449 vs 0.541; cVAE 0.459 vs 0.587 (S F1 0.391 vs 0.647, F F1 0.527 both); WGAN-GP 0.497 vs 0.474;
+diffusion 0.331 vs 0.433. DS2 family (Holm, 6): -0.146 to +0.023, Holm p 0.502-1.000, none detectable. Without record 202:
+0.238-0.531. Reading: the setting chosen on 400 Icentia11k patients transfers to 977 others but not to the test records,
+whose S beats sit mostly in record 232 (1,381 of 1,836); none of the 388 tuning patients is S-dominant, so these data hold
+too few patients like it to choose a setting that serves both. P18's cVAE score (0.587) stays the study's highest post
+hoc test score. Figure `figures/phase6_rule_tuning/results.png` (both data sets); paper section regenerated with a
+sentence on the disagreement; README P20 row, PROJECT_GUIDE and CODE_GUIDE (P1-P21) updated.
+
+**P21 (v20, A42), asked "can we do something like the simgans like adding physics", chose "All three".** SimGANs (Golany,
+Radinsky and Freedman, ICML 2020; read from the paper) add McSharry et al.'s (2003) ODE simulator to a GAN's generator
+loss (the Euler loss, with simulator parameters drawn from a per-class diagonal Gaussian fitted to real beats); they used
+MIT-BIH under de Chazal's partition without RR features and report points read from precision-recall curves. P21 adds
+the Euler loss to P12's cVAE and WGAN-GP (each generated patient-relative beat plus a real training patient's template,
+because the simulator describes whole beats; weight chosen on validation among 0.1, 1 and 10, with 0 run beside), and a
+third condition from physiology: P12's cVAE banks with every synthetic F beat replaced by alpha times a real training V
+deviation, alpha uniform over the 10th-90th percentile of what real training F beats show. Each condition goes through
+P18's ten-run pipeline, with the stage and the veto chosen on P14's patients by P20's rule; compared with P18's cVAE or
+WGAN-GP on P19's patients (Holm, 3) and once on DS2 (Holm, 3). Expectation written before any result: with parameters
+drawn independently of the generator's noise, the Euler loss pulls every beat of a class toward one simulated shape on
+average, so it may narrow the banks' spread over patients. Pre-registration committed and tagged `prereg-v20` (c68c150,
+pushed) before P20's DS2 result was fetched. Before committing it, the fitting code was checked on 60 DS1 training beats
+per class (local v1): median R^2 0.991-0.997; a 16-number model fits almost any smooth beat, so a good fit is not evidence
+that the physics is right. Code (f224baf): `generators/physics.py` (simulator, Euler distance, least-squares fit,
+`EulerPrior`), an optional `prior`/`prior_weight` in `BeatGenerator` used by the cVAE and WGAN-GP (unchanged without it),
+`experiments/phase6_physics_prior.py` (parts check, train, fusion, score, test), config, notebook, 11 new tests (all pass,
+with the generator, P12 and P20 tests). Compute estimate about 5 GPU-hours (offered at about 4; P12's measured fit times).
+CPU check session `phase6-physics-prior-check` pushed at f224baf.
+
