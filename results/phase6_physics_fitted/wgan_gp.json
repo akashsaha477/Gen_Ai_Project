@@ -1,0 +1,221 @@
+{
+  "experiment": "phase6_physics_fitted",
+  "post_hoc": true,
+  "rule": "PREREGISTRATION \u00a710 v21",
+  "family": "wgan_gp",
+  "condition": "wgan_gp_fitted",
+  "scale": 0.5697834419149064,
+  "strength": 0.25,
+  "lambda_choice": {
+    "rule": "highest mean validation S F1 of cnn seeds 0-2 (bank seed 0), ties to the smaller lambda; lambda 0 descriptive",
+    "table": {
+      "0": {
+        "mean": 0.7080527164322934,
+        "values": [
+          0.6581389064048284,
+          0.7258557758705731,
+          0.7401634670214788
+        ],
+        "run_ids": [
+          "phase6_physics_fitted-cnn.wgan_gp_l0_0.25-s0-5d12290-202611101900",
+          "phase6_physics_fitted-cnn.wgan_gp_l0_0.25-s1-5d12290-202611101901",
+          "phase6_physics_fitted-cnn.wgan_gp_l0_0.25-s2-5d12290-202611101902"
+        ]
+      },
+      "0.1": {
+        "mean": 0.7561208990780472,
+        "values": [
+          0.752297410192147,
+          0.754320634011267,
+          0.7617446530307276
+        ],
+        "run_ids": [
+          "phase6_physics_fitted-cnn.wgan_gp_l0.1_0.25-s0-5d12290-202611101903",
+          "phase6_physics_fitted-cnn.wgan_gp_l0.1_0.25-s1-5d12290-202611101904",
+          "phase6_physics_fitted-cnn.wgan_gp_l0.1_0.25-s2-5d12290-202611101905"
+        ]
+      },
+      "1": {
+        "mean": 0.7361815051770715,
+        "values": [
+          0.7265420560747664,
+          0.7420913483453369,
+          0.7399111111111111
+        ],
+        "run_ids": [
+          "phase6_physics_fitted-cnn.wgan_gp_l1_0.25-s0-5d12290-202611101906",
+          "phase6_physics_fitted-cnn.wgan_gp_l1_0.25-s1-5d12290-202611101907",
+          "phase6_physics_fitted-cnn.wgan_gp_l1_0.25-s2-5d12290-202611101908"
+        ]
+      },
+      "10": {
+        "mean": 0.7433742171186787,
+        "values": [
+          0.7616609783845278,
+          0.7183908045977011,
+          0.7500708683738071
+        ],
+        "run_ids": [
+          "phase6_physics_fitted-cnn.wgan_gp_l10_0.25-s0-5d12290-202611101909",
+          "phase6_physics_fitted-cnn.wgan_gp_l10_0.25-s1-5d12290-202611101909",
+          "phase6_physics_fitted-cnn.wgan_gp_l10_0.25-s2-5d12290-202611101910"
+        ]
+      }
+    },
+    "chosen": 0.1
+  },
+  "chosen_lambda": 0.1,
+  "banks": {
+    "0": "bb18d4fc0a8dbdd67477b97b4a319bdf25f3acf56f8c72c63da36b5e95d17998",
+    "1": "38b6f13875df7ff0afeffd3d3532f55a4d7438348d0aa17ea01aed7d94266d10",
+    "2": "f6bca817143a3819ac211960163e02f4a17b591da898b58a30ec771f8d8a52ee"
+  },
+  "members": [
+    "phase6_physics_fitted-cnn.wgan_gp_fitted_0.25-s0-5d12290-202611101959",
+    "phase6_physics_fitted-cnn.wgan_gp_fitted_0.25-s1-5d12290-202611102000",
+    "phase6_physics_fitted-cnn.wgan_gp_fitted_0.25-s2-5d12290-202611102000",
+    "phase6_physics_fitted-cnn.wgan_gp_fitted_0.25-s3-5d12290-202611102001",
+    "phase6_physics_fitted-cnn.wgan_gp_fitted_0.25-s4-5d12290-202611102002",
+    "phase6_physics_fitted-cnn.wgan_gp_fitted_0.25-s5-5d12290-202611102003",
+    "phase6_physics_fitted-cnn.wgan_gp_fitted_0.25-s6-5d12290-202611102004",
+    "phase6_physics_fitted-cnn.wgan_gp_fitted_0.25-s7-5d12290-202611102005",
+    "phase6_physics_fitted-cnn.wgan_gp_fitted_0.25-s8-5d12290-202611102006",
+    "phase6_physics_fitted-cnn.wgan_gp_fitted_0.25-s9-5d12290-202611102007"
+  ],
+  "describe": {
+    "real": {
+      "S": {
+        "physics": 1.023833990097046,
+        "roughness": 0.7344633563074409,
+        "median_corr": 0.5385778777762197
+      },
+      "V": {
+        "physics": 3.1950812339782715,
+        "roughness": 0.8261440606991135,
+        "median_corr": 0.8949026065684832
+      },
+      "F": {
+        "physics": 2.7484374046325684,
+        "roughness": 1.0,
+        "median_corr": 1.0
+      }
+    },
+    "templates_alone": {
+      "S": {
+        "physics": 0.7397493720054626
+      },
+      "V": {
+        "physics": 2.139671802520752
+      },
+      "F": {
+        "physics": 1.1102559566497803
+      }
+    },
+    "p12_seed0": {
+      "S": {
+        "physics": 1.240437626838684,
+        "roughness": 1.029039164145477,
+        "median_corr": 0.5120463601007552,
+        "nearest_patients": 28.99576741425433
+      },
+      "V": {
+        "physics": 3.7276158332824707,
+        "roughness": 0.9388663313751082,
+        "median_corr": 0.9950895920607108
+      },
+      "F": {
+        "physics": 2.624241590499878,
+        "roughness": 0.8757742915100006,
+        "median_corr": 0.98873803179171,
+        "nearest_patients": 3.164587880356108
+      }
+    },
+    "p21_seed0": {
+      "S": {
+        "physics": 1.273220419883728,
+        "roughness": 1.1565640811858067,
+        "median_corr": 0.6905772327062544,
+        "nearest_patients": 30.29948597953214
+      },
+      "V": {
+        "physics": 4.042007923126221,
+        "roughness": 1.0017559201122908,
+        "median_corr": 0.9891561537762151
+      },
+      "F": {
+        "physics": 3.0665905475616455,
+        "roughness": 1.029342944052381,
+        "median_corr": 0.9663022773031511,
+        "nearest_patients": 3.819544615108259
+      }
+    },
+    "lambda0.1_seed0": {
+      "S": {
+        "physics": 1.195016860961914,
+        "roughness": 1.0169893333192392,
+        "median_corr": 0.4772625478934648,
+        "nearest_patients": 31.440458156586818
+      },
+      "V": {
+        "physics": 3.697596311569214,
+        "roughness": 0.8847645478312437,
+        "median_corr": 0.9943325572772299
+      },
+      "F": {
+        "physics": 2.7387425899505615,
+        "roughness": 0.9545672218077975,
+        "median_corr": 0.9958733512883982,
+        "nearest_patients": 3.3488851737560466
+      }
+    },
+    "lambda1_seed0": {
+      "S": {
+        "physics": 1.180524230003357,
+        "roughness": 0.997296810269831,
+        "median_corr": 0.5068197505515682,
+        "nearest_patients": 29.44272625102604
+      },
+      "V": {
+        "physics": 3.5306386947631836,
+        "roughness": 0.9317510960936027,
+        "median_corr": 0.9900300080707081
+      },
+      "F": {
+        "physics": 2.2316439151763916,
+        "roughness": 0.8545452260840702,
+        "median_corr": 0.992538615494683,
+        "nearest_patients": 3.0726876644726167
+      }
+    },
+    "lambda10_seed0": {
+      "S": {
+        "physics": 0.8840247392654419,
+        "roughness": 0.4649331061351046,
+        "median_corr": 0.6398143093175289,
+        "nearest_patients": 28.71549401887738
+      },
+      "V": {
+        "physics": 1.8549836874008179,
+        "roughness": 0.38006709727550203,
+        "median_corr": 0.9736828251628566
+      },
+      "F": {
+        "physics": 0.9839920401573181,
+        "roughness": 0.43314090309189585,
+        "median_corr": 0.9658080602803178,
+        "nearest_patients": 3.157178440303964
+      }
+    }
+  },
+  "report": {
+    "selection": {
+      "done_before": 0,
+      "ran": 12
+    },
+    "final": {
+      "done_before": 0,
+      "ran": 10
+    }
+  },
+  "git_sha": "5d1229004a149d7a368443948c3902ce12e5fdd3"
+}

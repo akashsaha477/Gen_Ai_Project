@@ -1,0 +1,107 @@
+{
+  "experiment": "phase6_physics_fitted",
+  "rule": "PREREGISTRATION \u00a710 v21",
+  "family": "wgan_gp",
+  "fits": {
+    "0.1/0": {
+      "run_id": "phase6_physics_fitted-generator.wgan_gp.lambda0.1-s0-5d12290-202611101749",
+      "lambda": 0.1,
+      "seed": 0,
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "generator_seconds": 1416.3507748319998,
+      "final_losses": {
+        "step": 20000,
+        "critic_loss": -1.015039668083191,
+        "wasserstein": 1.243951301574707,
+        "gradient_penalty": 0.022891162950545548,
+        "generator_loss": 16.035622539520265,
+        "prior": 2.4204812383651735,
+        "elapsed_s": 1416.325431154
+      },
+      "checkpoint_sha256": "5dbc48a2cec9877162aa5fe6d0199ed9967d7fb1744e85f1775e8ecb375dbb5a",
+      "bank_sha256": "bb18d4fc0a8dbdd67477b97b4a319bdf25f3acf56f8c72c63da36b5e95d17998"
+    },
+    "1/0": {
+      "run_id": "phase6_physics_fitted-generator.wgan_gp.lambda1-s0-5d12290-202611101812",
+      "lambda": 1.0,
+      "seed": 0,
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "generator_seconds": 1411.066528411,
+      "final_losses": {
+        "step": 20000,
+        "critic_loss": -1.1581066626310348,
+        "wasserstein": 1.3874553442001343,
+        "gradient_penalty": 0.022934867925941946,
+        "generator_loss": -2.271398425102234,
+        "prior": 2.1968741178512574,
+        "elapsed_s": 1411.0615309469995
+      },
+      "checkpoint_sha256": "68bbfcac623ed7a3b165355701f553c424d6795ee0a74e42d81ef8f8f2402621",
+      "bank_sha256": "97f8a286cf22bb52faa2ddb0b8ffe5bb7b66c9cd3f10041d563eb87a98b33c53"
+    },
+    "10/0": {
+      "run_id": "phase6_physics_fitted-generator.wgan_gp.lambda10-s0-5d12290-202611101836",
+      "lambda": 10.0,
+      "seed": 0,
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "generator_seconds": 1408.976644712,
+      "final_losses": {
+        "step": 20000,
+        "critic_loss": -5.05146134853363,
+        "wasserstein": 6.085862112045288,
+        "gradient_penalty": 0.1034400776028633,
+        "generator_loss": 4.17050765991211,
+        "prior": 1.2200447535514831,
+        "elapsed_s": 1408.9717739519992
+      },
+      "checkpoint_sha256": "2ba5f41849c76e32d5b1a4c43c2069276cce18799da03b3556f91dfa28a6dd10",
+      "bank_sha256": "692cb16d712d7b85561b3fd1da71060f61a59e960f3c7c1fd8ae268c81defbb4"
+    },
+    "0.1/1": {
+      "run_id": "phase6_physics_fitted-generator.wgan_gp.lambda0.1-s1-5d12290-202611101910",
+      "lambda": 0.1,
+      "seed": 1,
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "generator_seconds": 1410.837998766001,
+      "final_losses": {
+        "step": 20000,
+        "critic_loss": -1.008237303495407,
+        "wasserstein": 1.226631282567978,
+        "gradient_penalty": 0.021839398499578236,
+        "generator_loss": -0.7118467280268669,
+        "prior": 2.4632807397842407,
+        "elapsed_s": 1410.8330971659998
+      },
+      "checkpoint_sha256": "3d5eacc9102b8ed91afc7f13aff47ae6e5f19a5b8a8c505823617dd112539785",
+      "bank_sha256": "38b6f13875df7ff0afeffd3d3532f55a4d7438348d0aa17ea01aed7d94266d10"
+    },
+    "0.1/2": {
+      "run_id": "phase6_physics_fitted-generator.wgan_gp.lambda0.1-s2-5d12290-202611101934",
+      "lambda": 0.1,
+      "seed": 2,
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "generator_seconds": 1410.4159086430009,
+      "final_losses": {
+        "step": 20000,
+        "critic_loss": -1.0106431993842124,
+        "wasserstein": 1.2218584442138671,
+        "gradient_penalty": 0.021121524441987276,
+        "generator_loss": 51.35225723266601,
+        "prior": 2.4287981176376343,
+        "elapsed_s": 1410.4110508369995
+      },
+      "checkpoint_sha256": "ea7a52096010628541628a07cee6f77426471d3aa5bc6a9ab27e96a419827a94",
+      "bank_sha256": "f6bca817143a3819ac211960163e02f4a17b591da898b58a30ec771f8d8a52ee"
+    }
+  }
+}

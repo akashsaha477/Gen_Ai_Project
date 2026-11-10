@@ -1,0 +1,20 @@
+{
+  "run_id": "phase6_physics_fitted-generator.wgan_gp.lambda0.1-s2-5d12290-202611101934",
+  "lambda": 0.1,
+  "seed": 2,
+  "steps_done": 20000,
+  "diverged": false,
+  "divergence": null,
+  "generator_seconds": 1410.4159086430009,
+  "final_losses": {
+    "step": 20000,
+    "critic_loss": -1.0106431993842124,
+    "wasserstein": 1.2218584442138671,
+    "gradient_penalty": 0.021121524441987276,
+    "generator_loss": 51.35225723266601,
+    "prior": 2.4287981176376343,
+    "elapsed_s": 1410.4110508369995
+  },
+  "checkpoint_sha256": "ea7a52096010628541628a07cee6f77426471d3aa5bc6a9ab27e96a419827a94",
+  "bank_sha256": "f6bca817143a3819ac211960163e02f4a17b591da898b58a30ec771f8d8a52ee"
+}

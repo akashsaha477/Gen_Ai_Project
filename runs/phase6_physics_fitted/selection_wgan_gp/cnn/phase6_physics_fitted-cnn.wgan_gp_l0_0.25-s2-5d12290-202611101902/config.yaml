@@ -1,0 +1,65 @@
+grid: configs/phase6_physics_fitted/physics_fitted.yaml
+grid_name: selection_wgan_gp
+cell:
+  condition: wgan_gp_l0
+  strength: 0.25
+  architecture: cnn
+  seed: 2
+cell_sha: a77157a230d3540e646eb582db5b881b5180aefa695409e5c68fd1fdc8f982cb
+policy:
+  kind: fraction_of_n
+condition_settings:
+  bank: phase6_relative_generators/phase3_wgan_gp-A
+  strengths:
+  - 0.25
+bank: phase6_relative_generators/phase3_wgan_gp-A
+classifier:
+  variant: A
+  config: configs/phase2_baseline_classifiers/A_shallow_cnn.yaml
+  model:
+    name: shallow_cnn
+    channels:
+    - 32
+    - 64
+    - 128
+    kernel: 7
+    side_hidden: 16
+  lr: 0.001
+  max_epochs: 40
+  patience: 5
+  min_epochs: 10
+  batch_size: 256
+  weight_decay: 0.01
+  run_ids:
+  - phase2_baseline_classifiers-A.lr1e-03-s0-a6ac8bf-202611010715
+  - phase2_baseline_classifiers-A.lr1e-03-s1-a6ac8bf-202611010715
+  - phase2_baseline_classifiers-A.lr1e-03-s2-a6ac8bf-202611010715
+  checkpoints:
+    phase2_baseline_classifiers-A.lr1e-03-s0-a6ac8bf-202611010715: 04e6f6f4c1fc4d0fcf3b6e16ff68e92e640fc99d25d84780b9781340976ef88c
+    phase2_baseline_classifiers-A.lr1e-03-s1-a6ac8bf-202611010715: 0235e139af9fe276d4455a2043c44fc5bc838d84f6842a7d6a64f273f8011416
+    phase2_baseline_classifiers-A.lr1e-03-s2-a6ac8bf-202611010715: f307abff674461fe3d4b7f3d7beec6e63eed913d8a1fb758b882ad10da1ce2dd
+class_weights: null
+n_added:
+  N: 0
+  S: 17016
+  V: 0
+  F: 26695
+run_id: phase6_physics_fitted-cnn.wgan_gp_l0_0.25-s2-5d12290-202611101902
+split:
+  name: V1
+  val:
+  - 115
+  - 118
+  - 201
+  - 205
+  - 223
+  selection_metric: s_f1
+dataset:
+  source: P11's data with rr_prev and rr_next over the recording's mean RR interval
+    (PREREGISTRATION v12)
+  representation: C_short_window_rr_features
+  content_sha256: ef3cecfaf85e757ccbb1d701adeca49273abdf1b0df4281ccd086360ca379a28
+  frozen: false
+  version: v4
+provisional: false
+provisional_reasons: []

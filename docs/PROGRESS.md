@@ -1479,3 +1479,11 @@ Chazal's 0.511 and below Zhu's 0.686; its F F1 0.527 is above Zhu's 0.477; the S
 pre-registered models reach 0.136 at best. The post-hoc table now covers P1-P22 in two parts; the conclusion has
 sentences for P21 and P22. The report (local) gained the P15-P23 subsections from the paper and a section "All results and
 the literature"; bib entry mousavi2019 added (local). Report and paper compile with no undefined references.
+
+P23 WGAN-GP (`phase6-physics-fitted-train-wgan-gp`, T4, 5d12290, exit code 0; first fit 17:49 UTC, bundle 20:07 UTC; five
+fits of 1,409-1,416 s, none diverged; 27 runs ingested from the run folders). Weight choice (validation S F1, cnn seeds
+0-2): lambda 0.1 0.756, 1 0.736, 10 0.743, lambda 0 (P12's bank) 0.708: chosen 0.1. Seed-0 bank, loss S/V/F (P12
+1.24/3.73/2.62): lambda 0.1 1.20/3.70/2.74, 1 1.18/3.53/2.23, 10 0.88/1.86/0.98; roughness (P12 1.03/0.94/0.88)
+1.02/0.89/0.96, 1.00/0.93/0.86, 0.47/0.38/0.43; S beats over 29.0 effective patients for P12's bank, 31.4/29.4/28.7 at
+lambda 0.1/1/10, F 3.2, 3.3/3.1/3.2. As with the cVAE, a large weight smooths the bank; the rule takes the weakest
+weight, close to P12's. Figure `figures/phase6_physics_fitted/banks.png` now has both families. Scoring next.
