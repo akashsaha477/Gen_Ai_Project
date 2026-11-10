@@ -1,0 +1,29 @@
+{
+  "cell_sha": "82a5889b946aa52b85c55d5e60f72406056c4ee90955366efdbd1858b26dfd04",
+  "cell": {
+    "condition": "cvae",
+    "strength": 0.1,
+    "architecture": "resnet",
+    "seed": 7
+  },
+  "condition": "cvae",
+  "strength": 0.1,
+  "architecture": "resnet",
+  "seed": 7,
+  "run_id": "phase6_bigger_classifier-resnet.cvae_0.1-s7-1889b7a-202611101415",
+  "status": "done",
+  "bank": "phase6_relative_generators/phase3_cvae-D",
+  "selection_metric": "s_f1",
+  "selection_value": 0.7573296354992076,
+  "tie_break_value": 0.8349775784753363,
+  "rare_macro_f1": 0.3951937433694385,
+  "n_recall": 0.9690056417489422,
+  "n_added": {
+    "N": 0,
+    "S": 626,
+    "V": 0,
+    "F": 10305
+  },
+  "wall_clock_s": 164.1,
+  "provisional": false
+}

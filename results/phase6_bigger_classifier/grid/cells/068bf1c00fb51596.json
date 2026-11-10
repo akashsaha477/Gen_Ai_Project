@@ -1,0 +1,29 @@
+{
+  "cell_sha": "068bf1c00fb51596b596fedaea981b9a818720d97d7c4a031f71616bc63742de",
+  "cell": {
+    "condition": "none",
+    "strength": null,
+    "architecture": "resnet",
+    "seed": 0
+  },
+  "condition": "none",
+  "strength": null,
+  "architecture": "resnet",
+  "seed": 0,
+  "run_id": "phase6_bigger_classifier-resnet.none-s0-1889b7a-202611101324",
+  "status": "done",
+  "bank": null,
+  "selection_metric": "s_f1",
+  "selection_value": 0.7549390500210172,
+  "tie_break_value": 0.8587105624142661,
+  "rare_macro_f1": 0.43629305442227334,
+  "n_recall": 0.9708744710860366,
+  "n_added": {
+    "N": 0,
+    "S": 0,
+    "V": 0,
+    "F": 0
+  },
+  "wall_clock_s": 150.1,
+  "provisional": false
+}

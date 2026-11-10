@@ -1417,3 +1417,17 @@ Euler loss 0.339 (0.102-0.398) vs 0.497 (0.098-0.613), difference -0.158 (-0.219
 detectable. The WGAN-GP's drop is in S F1 (0.423 vs 0.654): its stage threshold chosen on P14's patients is 0.70, P18's
 WGAN-GP's 0.75, the same record-232 effect P20 found. Without record 202: 0.499 vs 0.475 and 0.360 vs 0.531. P21 is done;
 figure `figures/phase6_physics_prior/results.png` now has the test panels; paper text says why the WGAN-GP fell.
+
+P22 run (`phase6-bigger-classifier-run`, T4, 1889b7a, exit code 0; about 2.8 GPU-hours, against 1.5 estimated: a ResNet
+run took a median 190 s, 30 runs 1.57 hours, plus data building and prediction). 30 ResNet runs ingested
+(`phase6_bigger_classifier-resnet*-f19dfdc`... run IDs in results/phase6_bigger_classifier/members.json); only the run
+folders and results were downloaded, not the 1.5 GB zip. Validation S F1 over ten runs, mean (SD), ResNet vs P18's cnn:
+none 0.759 (0.011) vs 0.759; cVAE 0.750 (0.012) vs 0.774; WGAN-GP 0.735 (0.015) vs 0.727. V F1 higher for the ResNet
+(0.85, 0.85, 0.83 vs 0.84, 0.82, 0.81), F F1 higher but still near zero (0.08, 0.08, 0.06 vs 0.01, 0.04, 0.02). Settings
+chosen on P14's patients: none stage 0.60 with veto 0.80, cVAE and WGAN-GP stage 0.70 with veto 0.70. P20's baseline S F1
+reproduced exactly. On P19's 977 patients, S F1 (95% patient-level CI), ResNet vs cnn: none 0.440 (0.367-0.504) vs
+0.419, difference +0.021 (-0.011 to 0.054), Holm p 0.209; cVAE 0.437 vs 0.414, +0.023 (0.009 to 0.038), Holm p 0.002;
+WGAN-GP 0.436 vs 0.378, +0.058 (0.033 to 0.084), Holm p 0.0006. Two of three secondary comparisons detect a gain. The
+ensembles alone (descriptive): +0.076, +0.049, +0.128. Within the ResNet, augmentation changes S F1 by -0.003 (cVAE) and
+-0.004 (WGAN-GP). The ResNet without augmentation (0.440) is the highest S F1 on P19's patients so far. Figures
+`figures/phase6_bigger_classifier/validation.png` and `results.png`. DS2 read next.

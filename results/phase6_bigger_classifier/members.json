@@ -1,0 +1,186 @@
+{
+  "experiment": "phase6_bigger_classifier",
+  "post_hoc": true,
+  "rule": "PREREGISTRATION \u00a710 v21",
+  "classifier": {
+    "variant": "B",
+    "config": "configs/phase2_baseline_classifiers/B_resnet1d.yaml",
+    "model": {
+      "name": "resnet1d",
+      "channels": [
+        32,
+        64,
+        128,
+        128
+      ],
+      "kernel": 7,
+      "side_hidden": 16
+    },
+    "lr": 0.001,
+    "max_epochs": 40,
+    "patience": 5,
+    "min_epochs": 10,
+    "batch_size": 256,
+    "weight_decay": 0.01,
+    "n_parameters_phase2": 488362
+  },
+  "members": {
+    "resnet/none": [
+      "phase6_bigger_classifier-resnet.none-s0-1889b7a-202611101324",
+      "phase6_bigger_classifier-resnet.none-s1-1889b7a-202611101327",
+      "phase6_bigger_classifier-resnet.none-s2-1889b7a-202611101330",
+      "phase6_bigger_classifier-resnet.none-s3-1889b7a-202611101332",
+      "phase6_bigger_classifier-resnet.none-s4-1889b7a-202611101335",
+      "phase6_bigger_classifier-resnet.none-s5-1889b7a-202611101338",
+      "phase6_bigger_classifier-resnet.none-s6-1889b7a-202611101340",
+      "phase6_bigger_classifier-resnet.none-s7-1889b7a-202611101343",
+      "phase6_bigger_classifier-resnet.none-s8-1889b7a-202611101347",
+      "phase6_bigger_classifier-resnet.none-s9-1889b7a-202611101350"
+    ],
+    "resnet/cvae": [
+      "phase6_bigger_classifier-resnet.cvae_0.1-s0-1889b7a-202611101354",
+      "phase6_bigger_classifier-resnet.cvae_0.1-s1-1889b7a-202611101356",
+      "phase6_bigger_classifier-resnet.cvae_0.1-s2-1889b7a-202611101359",
+      "phase6_bigger_classifier-resnet.cvae_0.1-s3-1889b7a-202611101403",
+      "phase6_bigger_classifier-resnet.cvae_0.1-s4-1889b7a-202611101406",
+      "phase6_bigger_classifier-resnet.cvae_0.1-s5-1889b7a-202611101410",
+      "phase6_bigger_classifier-resnet.cvae_0.1-s6-1889b7a-202611101412",
+      "phase6_bigger_classifier-resnet.cvae_0.1-s7-1889b7a-202611101415",
+      "phase6_bigger_classifier-resnet.cvae_0.1-s8-1889b7a-202611101418",
+      "phase6_bigger_classifier-resnet.cvae_0.1-s9-1889b7a-202611101421"
+    ],
+    "resnet/wgan_gp": [
+      "phase6_bigger_classifier-resnet.wgan_gp_0.25-s0-1889b7a-202611101424",
+      "phase6_bigger_classifier-resnet.wgan_gp_0.25-s1-1889b7a-202611101428",
+      "phase6_bigger_classifier-resnet.wgan_gp_0.25-s2-1889b7a-202611101431",
+      "phase6_bigger_classifier-resnet.wgan_gp_0.25-s3-1889b7a-202611101435",
+      "phase6_bigger_classifier-resnet.wgan_gp_0.25-s4-1889b7a-202611101439",
+      "phase6_bigger_classifier-resnet.wgan_gp_0.25-s5-1889b7a-202611101442",
+      "phase6_bigger_classifier-resnet.wgan_gp_0.25-s6-1889b7a-202611101445",
+      "phase6_bigger_classifier-resnet.wgan_gp_0.25-s7-1889b7a-202611101449",
+      "phase6_bigger_classifier-resnet.wgan_gp_0.25-s8-1889b7a-202611101452",
+      "phase6_bigger_classifier-resnet.wgan_gp_0.25-s9-1889b7a-202611101456"
+    ]
+  },
+  "validation": {
+    "resnet/none": {
+      "f1_S": [
+        0.7549390500210172,
+        0.7707070707070707,
+        0.7563708477937531,
+        0.7656976744186047,
+        0.7628585318424891,
+        0.7366111498952828,
+        0.7677551020408163,
+        0.7599918847636438,
+        0.7443879711986446,
+        0.7684288905435592
+      ],
+      "f1_V": [
+        0.8587105624142661,
+        0.8690389230929771,
+        0.8254254479882791,
+        0.8509842736170681,
+        0.8578199052132701,
+        0.817285648784961,
+        0.8576027470758665,
+        0.8475563706980257,
+        0.853941497273178,
+        0.8689856279941679
+      ],
+      "f1_F": [
+        0.11764705882352944,
+        0.036363636363636376,
+        0.015873015873015928,
+        0.038461538461538436,
+        0.02898550724637683,
+        0.09523809523809523,
+        0.10752688172043012,
+        0.07999999999999996,
+        0.16842105263157892,
+        0.1515151515151515
+      ]
+    },
+    "resnet/cvae": {
+      "f1_S": [
+        0.7585197574743885,
+        0.7562550443906376,
+        0.7398201475194504,
+        0.7496644988128419,
+        0.7678571428571429,
+        0.74426735218509,
+        0.7288059365864628,
+        0.7573296354992076,
+        0.7401015228426396,
+        0.7610601427115189
+      ],
+      "f1_V": [
+        0.8591823491239455,
+        0.825533797986503,
+        0.8389767540600785,
+        0.8573240329740013,
+        0.8613550135501356,
+        0.8412613575628006,
+        0.85809613179022,
+        0.8349775784753363,
+        0.8376160656445693,
+        0.8589947933269578
+      ],
+      "f1_F": [
+        0.054545454545454564,
+        0.036363636363636376,
+        0.15533980582524265,
+        0.09523809523809523,
+        0.04026845637583898,
+        0.036363636363636376,
+        0.11650485436893199,
+        0.03305785123966942,
+        0.09174311926605505,
+        0.130718954248366
+      ]
+    },
+    "resnet/wgan_gp": {
+      "f1_S": [
+        0.7285215874400349,
+        0.7256450763559769,
+        0.7521580663725302,
+        0.7084862640418196,
+        0.7603991700424859,
+        0.7377486159524298,
+        0.7347241342793603,
+        0.7339674746854864,
+        0.7395695195348363,
+        0.725283313794451
+      ],
+      "f1_V": [
+        0.842727096649235,
+        0.8493647912885662,
+        0.8181712559544557,
+        0.8262266980929933,
+        0.8611568433761387,
+        0.8299407646742057,
+        0.8483589530535937,
+        0.8321053806653271,
+        0.8462952947539211,
+        0.7817604888941121
+      ],
+      "f1_F": [
+        0.0,
+        0.07194244604316546,
+        0.020000000000000018,
+        0.10526315789473684,
+        0.09395973154362414,
+        0.045454545454545414,
+        0.025316455696202556,
+        0.04166666666666663,
+        0.0714285714285714,
+        0.08602150537634412
+      ]
+    }
+  },
+  "report": {
+    "done_before": 0,
+    "ran": 30
+  },
+  "git_sha": "1889b7ad381969aa0370534a11a2a6681a9f4b06"
+}

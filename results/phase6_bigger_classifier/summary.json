@@ -1,0 +1,2327 @@
+{
+  "experiment": "phase6_bigger_classifier",
+  "post_hoc": true,
+  "rule": "PREREGISTRATION \u00a710 v21",
+  "n_boot": 10000,
+  "boot_seed": 0,
+  "veto_form": "rule",
+  "chosen": {
+    "resnet/none": {
+      "rule_threshold": 0.6,
+      "veto_threshold": 0.8,
+      "label": "stage 0.60, veto 0.80",
+      "s_f1": 0.40189977071732724
+    },
+    "resnet/cvae": {
+      "rule_threshold": 0.7,
+      "veto_threshold": 0.7,
+      "label": "stage 0.70, veto 0.70",
+      "s_f1": 0.38617376217803284
+    },
+    "resnet/wgan_gp": {
+      "rule_threshold": 0.7,
+      "veto_threshold": 0.7,
+      "label": "stage 0.70, veto 0.70",
+      "s_f1": 0.3890784982935154
+    }
+  },
+  "baseline_settings": {
+    "cnn/cvae": "stage 0.70, veto 0.80",
+    "cnn/none": "stage 0.70, veto 0.80",
+    "cnn/wgan_gp": "stage 0.75, veto 0.80"
+  },
+  "patients": 977,
+  "beats": {
+    "N": 3675681,
+    "S": 34072,
+    "V": 29473,
+    "F": 0
+  },
+  "conditions": {
+    "chosen": {
+      "resnet/none": {
+        "f1_S": {
+          "point": 0.439743236781476,
+          "mean": 0.43838200098607105,
+          "se": 0.03501263511106575,
+          "ci_low": 0.3670512639746921,
+          "ci_high": 0.5038582451378747,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "f1_V": {
+          "point": 0.6566190347802642,
+          "mean": 0.6543687363401363,
+          "se": 0.034651842543467856,
+          "ci_low": 0.5827147143866204,
+          "ci_high": 0.718234985931595,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "se_S": {
+          "point": 0.44535102136651794,
+          "mean": 0.445289368997747,
+          "se": 0.034999008590088324,
+          "ci_low": 0.375728398449606,
+          "ci_high": 0.5130498984723317,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "ppv_S": {
+          "point": 0.43427492058040695,
+          "mean": 0.43408196707930763,
+          "se": 0.047421398991861034,
+          "ci_low": 0.3401163973414931,
+          "ci_high": 0.5249555822073585,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "n_recall": {
+          "point": 0.9902379994346626,
+          "mean": 0.9902362998126125,
+          "se": 0.0008749316557318585,
+          "ci_low": 0.988425870411537,
+          "ci_high": 0.9918800121269439,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        }
+      },
+      "resnet/cvae": {
+        "f1_S": {
+          "point": 0.4372293753661918,
+          "mean": 0.43611128641641805,
+          "se": 0.0345262135045628,
+          "ci_low": 0.3655537639049232,
+          "ci_high": 0.500675742040102,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "f1_V": {
+          "point": 0.6824963459364055,
+          "mean": 0.6803612568289833,
+          "se": 0.03270334065956487,
+          "ci_low": 0.6119010300443919,
+          "ci_high": 0.7406478492542138,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "se_S": {
+          "point": 0.4489903733270721,
+          "mean": 0.44944580434574016,
+          "se": 0.03762879817121412,
+          "ci_low": 0.37683638801406255,
+          "ci_high": 0.5231330997368409,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "ppv_S": {
+          "point": 0.4260687926472636,
+          "mean": 0.4260229623208261,
+          "se": 0.04514614798100549,
+          "ci_low": 0.335895730510973,
+          "ci_high": 0.5113450007981367,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "n_recall": {
+          "point": 0.9902690140956193,
+          "mean": 0.9902695345331642,
+          "se": 0.0007921104873960548,
+          "ci_low": 0.9886431320355653,
+          "ci_high": 0.9917479425869102,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        }
+      },
+      "resnet/wgan_gp": {
+        "f1_S": {
+          "point": 0.4358622301422687,
+          "mean": 0.4347155948927493,
+          "se": 0.03202261361201589,
+          "ci_low": 0.3703582111975515,
+          "ci_high": 0.4953475811058298,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "f1_V": {
+          "point": 0.7215983285453121,
+          "mean": 0.7196259535611418,
+          "se": 0.032296723060517785,
+          "ci_low": 0.6507710518215546,
+          "ci_high": 0.7775086620088264,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "se_S": {
+          "point": 0.43789621976989906,
+          "mean": 0.43860642774080916,
+          "se": 0.03655058143888411,
+          "ci_low": 0.3685012386261463,
+          "ci_high": 0.5103542429946496,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "ppv_S": {
+          "point": 0.4338470485606281,
+          "mean": 0.43331680945166406,
+          "se": 0.04199127368929678,
+          "ci_low": 0.34944688888121467,
+          "ci_high": 0.5129462753285108,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "n_recall": {
+          "point": 0.9917764898531728,
+          "mean": 0.991776640839904,
+          "se": 0.000661685705678218,
+          "ci_low": 0.9904369236605368,
+          "ci_high": 0.9930131575875364,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        }
+      },
+      "cnn/cvae": {
+        "f1_S": {
+          "point": 0.41414401280622015,
+          "mean": 0.41299790936107045,
+          "se": 0.035046240913897006,
+          "ci_low": 0.3420333420728472,
+          "ci_high": 0.47942450753791876,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "f1_V": {
+          "point": 0.6478351338254995,
+          "mean": 0.6453740757238394,
+          "se": 0.0369347996552739,
+          "ci_low": 0.5685766076880926,
+          "ci_high": 0.7134240778961203,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "se_S": {
+          "point": 0.42521718713312984,
+          "mean": 0.4256839550938139,
+          "se": 0.03843404191375899,
+          "ci_low": 0.3512662542645904,
+          "ci_high": 0.5008248858290566,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "ppv_S": {
+          "point": 0.403632919150833,
+          "mean": 0.4035452263935596,
+          "se": 0.04482370833965634,
+          "ci_low": 0.3150507077666837,
+          "ci_high": 0.48929376349064396,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "n_recall": {
+          "point": 0.9898323603163605,
+          "mean": 0.9898295519214402,
+          "se": 0.0008105449026454321,
+          "ci_low": 0.9881761650043615,
+          "ci_high": 0.9913484122759139,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        }
+      },
+      "cnn/none": {
+        "f1_S": {
+          "point": 0.41874964250986674,
+          "mean": 0.4176251023779254,
+          "se": 0.03439096055152657,
+          "ci_low": 0.34825469543146953,
+          "ci_high": 0.48268384532009534,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "f1_V": {
+          "point": 0.663979447200567,
+          "mean": 0.6615134295010705,
+          "se": 0.036375680455231055,
+          "ci_low": 0.5868899488286254,
+          "ci_high": 0.7275642748096347,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "se_S": {
+          "point": 0.4297370274712374,
+          "mean": 0.4303252071786535,
+          "se": 0.03821487092337201,
+          "ci_low": 0.3565923126079691,
+          "ci_high": 0.5045078994570273,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "ppv_S": {
+          "point": 0.40831009481316227,
+          "mean": 0.4080782825533986,
+          "se": 0.043822086582400104,
+          "ci_low": 0.32214888186394447,
+          "ci_high": 0.4920522040190403,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "n_recall": {
+          "point": 0.9914943652618385,
+          "mean": 0.9914949140261633,
+          "se": 0.0007162642603703165,
+          "ci_low": 0.9900290316367695,
+          "ci_high": 0.9928268888621047,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        }
+      },
+      "cnn/wgan_gp": {
+        "f1_S": {
+          "point": 0.37806652160397886,
+          "mean": 0.3770144430282552,
+          "se": 0.031767287003071715,
+          "ci_low": 0.31339610622644254,
+          "ci_high": 0.43740158655468386,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "f1_V": {
+          "point": 0.6831248659852762,
+          "mean": 0.6807768355283476,
+          "se": 0.03516618400896405,
+          "ci_low": 0.6079885283178573,
+          "ci_high": 0.7440135406640236,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "se_S": {
+          "point": 0.4462021601314863,
+          "mean": 0.447057264131254,
+          "se": 0.03908137580803177,
+          "ci_low": 0.3719398314889024,
+          "ci_high": 0.5241486302382341,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "ppv_S": {
+          "point": 0.3279830863158803,
+          "mean": 0.327811672110634,
+          "se": 0.036322011604646647,
+          "ci_low": 0.25626344709298776,
+          "ci_high": 0.39866299350711687,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "n_recall": {
+          "point": 0.9883129139879113,
+          "mean": 0.9883155483821996,
+          "se": 0.0007444153078958164,
+          "ci_low": 0.9868191196177114,
+          "ci_high": 0.9897374970576963,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        }
+      }
+    },
+    "ensemble_alone": {
+      "resnet/none": {
+        "f1_S": {
+          "point": 0.4302772420088635,
+          "mean": 0.42886770641874283,
+          "se": 0.03507967474024937,
+          "ci_low": 0.3577069966602668,
+          "ci_high": 0.4945084149151069,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "f1_V": {
+          "point": 0.6566190347802642,
+          "mean": 0.6543687363401363,
+          "se": 0.034651842543467856,
+          "ci_low": 0.5827147143866204,
+          "ci_high": 0.718234985931595,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "se_S": {
+          "point": 0.428856539093684,
+          "mean": 0.4287693007078911,
+          "se": 0.034923341983523995,
+          "ci_low": 0.3597995171697006,
+          "ci_high": 0.49611086274131044,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "ppv_S": {
+          "point": 0.43170738913345347,
+          "mean": 0.4313990175276982,
+          "se": 0.04769437916567987,
+          "ci_low": 0.3366465100471398,
+          "ci_high": 0.5215365623446544,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "n_recall": {
+          "point": 0.9903791977595444,
+          "mean": 0.9903759248003146,
+          "se": 0.0008605857741238479,
+          "ci_low": 0.9886106576914864,
+          "ci_high": 0.9919899504458949,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        }
+      },
+      "resnet/cvae": {
+        "f1_S": {
+          "point": 0.3967639583367942,
+          "mean": 0.395776128629242,
+          "se": 0.03475749530047349,
+          "ci_low": 0.32597552680003916,
+          "ci_high": 0.4621664659737827,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "f1_V": {
+          "point": 0.6824963459364055,
+          "mean": 0.6803612568289833,
+          "se": 0.03270334065956487,
+          "ci_low": 0.6119010300443919,
+          "ci_high": 0.7406478492542138,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "se_S": {
+          "point": 0.35049307349142994,
+          "mean": 0.35081840946653986,
+          "se": 0.03442193029841906,
+          "ci_low": 0.2842419512892143,
+          "ci_high": 0.420283912147331,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "ppv_S": {
+          "point": 0.45711004784688997,
+          "mean": 0.45747365474029683,
+          "se": 0.051579832268062155,
+          "ci_low": 0.353640354172215,
+          "ci_high": 0.5560055947259063,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "n_recall": {
+          "point": 0.9919446219625696,
+          "mean": 0.9919430352369191,
+          "se": 0.0007464079737091149,
+          "ci_low": 0.9904046776061666,
+          "ci_high": 0.9933324265237001,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        }
+      },
+      "resnet/wgan_gp": {
+        "f1_S": {
+          "point": 0.38623406240281954,
+          "mean": 0.38539755021999,
+          "se": 0.029406534671457242,
+          "ci_low": 0.3281640061984925,
+          "ci_high": 0.4415313783419676,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "f1_V": {
+          "point": 0.7215983285453121,
+          "mean": 0.7196259535611418,
+          "se": 0.032296723060517785,
+          "ci_low": 0.6507710518215546,
+          "ci_high": 0.7775086620088264,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "se_S": {
+          "point": 0.32806996947640293,
+          "mean": 0.3286626311299719,
+          "se": 0.02968702134555961,
+          "ci_low": 0.2726196883166766,
+          "ci_high": 0.387851273805412,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "ppv_S": {
+          "point": 0.46946661066778667,
+          "mean": 0.46910369889343817,
+          "se": 0.04546414510756485,
+          "ci_low": 0.3787643033041894,
+          "ci_high": 0.5562114036496595,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "n_recall": {
+          "point": 0.9935391564175455,
+          "mean": 0.993537189680439,
+          "se": 0.0005970847379949475,
+          "ci_low": 0.992329500297613,
+          "ci_high": 0.9946509703925696,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        }
+      },
+      "cnn/cvae": {
+        "f1_S": {
+          "point": 0.3481833181802876,
+          "mean": 0.34709815785564135,
+          "se": 0.036397437064280364,
+          "ci_low": 0.27530441077738693,
+          "ci_high": 0.41717058351017305,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "f1_V": {
+          "point": 0.6478351338254995,
+          "mean": 0.6453740757238394,
+          "se": 0.0369347996552739,
+          "ci_low": 0.5685766076880926,
+          "ci_high": 0.7134240778961203,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "se_S": {
+          "point": 0.3034749941300775,
+          "mean": 0.303739131732259,
+          "se": 0.03561754428638673,
+          "ci_low": 0.23529018557501602,
+          "ci_high": 0.376053428866303,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "ppv_S": {
+          "point": 0.40834057341442226,
+          "mean": 0.4085768263906146,
+          "se": 0.05180009277816646,
+          "ci_low": 0.3073985994620146,
+          "ci_high": 0.5092412479085586,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "n_recall": {
+          "point": 0.9914750491133479,
+          "mean": 0.9914713031632894,
+          "se": 0.0007675317002634064,
+          "ci_low": 0.9898848175894059,
+          "ci_high": 0.9929143828162245,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        }
+      },
+      "cnn/none": {
+        "f1_S": {
+          "point": 0.35427565307193526,
+          "mean": 0.3533079854226543,
+          "se": 0.034917734803151586,
+          "ci_low": 0.2848316247038064,
+          "ci_high": 0.4210021130256571,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "f1_V": {
+          "point": 0.663979447200567,
+          "mean": 0.6615134295010705,
+          "se": 0.036375680455231055,
+          "ci_low": 0.5868899488286254,
+          "ci_high": 0.7275642748096347,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "se_S": {
+          "point": 0.3070849964780465,
+          "mean": 0.3075188789797183,
+          "se": 0.034492779314852194,
+          "ci_low": 0.24172373051784607,
+          "ci_high": 0.37714451197638005,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "ppv_S": {
+          "point": 0.4186037207441488,
+          "mean": 0.4186725213241112,
+          "se": 0.049962358887001755,
+          "ci_low": 0.3197465512196459,
+          "ci_high": 0.5149344403937719,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "n_recall": {
+          "point": 0.9932007157313162,
+          "mean": 0.9932003437771715,
+          "se": 0.000665403114445249,
+          "ci_low": 0.9918151373051444,
+          "ci_high": 0.9944390108889061,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        }
+      },
+      "cnn/wgan_gp": {
+        "f1_S": {
+          "point": 0.258638983086109,
+          "mean": 0.25778732290312545,
+          "se": 0.031179071156839138,
+          "ci_low": 0.19768579292500418,
+          "ci_high": 0.32089278543333416,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "f1_V": {
+          "point": 0.6831248659852762,
+          "mean": 0.6807768355283476,
+          "se": 0.03516618400896405,
+          "ci_low": 0.6079885283178573,
+          "ci_high": 0.7440135406640236,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "se_S": {
+          "point": 0.18243719182906787,
+          "mean": 0.18256039733000037,
+          "se": 0.025191450610893083,
+          "ci_low": 0.13538199660770536,
+          "ci_high": 0.23502136937786863,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "ppv_S": {
+          "point": 0.4441586280814577,
+          "mean": 0.44417168384692507,
+          "se": 0.05716332727268985,
+          "ci_low": 0.33098461086407593,
+          "ci_high": 0.5549265307460495,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        },
+        "n_recall": {
+          "point": 0.9943806331398182,
+          "mean": 0.9943796457736022,
+          "se": 0.000530066207812485,
+          "ci_low": 0.9932864692137928,
+          "ci_high": 0.9953708228279196,
+          "level": 0.95,
+          "n_replicates": 10000,
+          "frac_undefined": 0.0,
+          "class_absent_frac": {
+            "N": 0.0,
+            "S": 0.0,
+            "V": 0.0,
+            "F": 1.0
+          },
+          "dominant_record": {
+            "N": {
+              "record": 19337,
+              "share_of_class": 0.0027271136967544247,
+              "absent_frac": 0.3655
+            },
+            "S": {
+              "record": 13614,
+              "share_of_class": 0.0761328950457854,
+              "absent_frac": 0.3593
+            },
+            "V": {
+              "record": 16405,
+              "share_of_class": 0.06999626777050182,
+              "absent_frac": 0.3588
+            }
+          }
+        }
+      }
+    }
+  },
+  "families": {
+    "secondary": {
+      "resnet/none vs cnn/none, chosen settings": {
+        "point": 0.02099359427160924,
+        "mean": 0.020756898608145606,
+        "se": 0.016464348067884323,
+        "ci_low": -0.010863891646021057,
+        "ci_high": 0.05383440387834006,
+        "level": 0.95,
+        "n_replicates": 10000,
+        "frac_undefined": 0.0,
+        "p_two_sided": 0.20877912208779123,
+        "p_holm": 0.20877912208779123,
+        "reject_holm": false
+      },
+      "resnet/cvae vs cnn/cvae, chosen settings": {
+        "point": 0.023085362559971623,
+        "mean": 0.02311337705534758,
+        "se": 0.007464511778304956,
+        "ci_low": 0.008873819796927406,
+        "ci_high": 0.03824230336494971,
+        "level": 0.95,
+        "n_replicates": 10000,
+        "frac_undefined": 0.0,
+        "p_two_sided": 0.000999900009999,
+        "p_holm": 0.001999800019998,
+        "reject_holm": true
+      },
+      "resnet/wgan_gp vs cnn/wgan_gp, chosen settings": {
+        "point": 0.05779570853828986,
+        "mean": 0.057701151864494135,
+        "se": 0.012995162437781307,
+        "ci_low": 0.03268652810380797,
+        "ci_high": 0.08360906431863524,
+        "level": 0.95,
+        "n_replicates": 10000,
+        "frac_undefined": 0.0,
+        "p_two_sided": 0.00019998000199980003,
+        "p_holm": 0.0005999400059994001,
+        "reject_holm": true
+      }
+    }
+  },
+  "versus_baseline_alone": {
+    "resnet/none vs cnn/none, ensembles alone": {
+      "point": 0.07600158893692827,
+      "mean": 0.07555972099608849,
+      "se": 0.02069364200057179,
+      "ci_low": 0.03603959515729345,
+      "ci_high": 0.11829835464788595,
+      "level": 0.95,
+      "n_replicates": 10000,
+      "frac_undefined": 0.0,
+      "p_two_sided": 0.00019998000199980003,
+      "p_holm": 0.0005999400059994001,
+      "reject_holm": true
+    },
+    "resnet/cvae vs cnn/cvae, ensembles alone": {
+      "point": 0.048580640156506594,
+      "mean": 0.04867797077360064,
+      "se": 0.011089692133465733,
+      "ci_low": 0.02746950418398568,
+      "ci_high": 0.0713035722512372,
+      "level": 0.95,
+      "n_replicates": 10000,
+      "frac_undefined": 0.0,
+      "p_two_sided": 0.00019998000199980003,
+      "p_holm": 0.0005999400059994001,
+      "reject_holm": true
+    },
+    "resnet/wgan_gp vs cnn/wgan_gp, ensembles alone": {
+      "point": 0.12759507931671055,
+      "mean": 0.12761022731686453,
+      "se": 0.02323301214748812,
+      "ci_low": 0.0823311997382932,
+      "ci_high": 0.17336911660650545,
+      "level": 0.95,
+      "n_replicates": 10000,
+      "frac_undefined": 0.0,
+      "p_two_sided": 0.00019998000199980003,
+      "p_holm": 0.0005999400059994001,
+      "reject_holm": true
+    }
+  },
+  "evaluation_surface": {
+    "resnet/none": {
+      "ensemble alone": 0.4302772420088635,
+      "stage 0.60": 0.4371290722001622,
+      "stage 0.65": 0.4370860927152318,
+      "stage 0.70": 0.4133330260853535,
+      "stage 0.75": 0.34708676294358964,
+      "stage 0.80": 0.26125041442007363,
+      "stage 0.85": 0.1804796415039854,
+      "stage 0.90": 0.11627841897169996,
+      "stage 0.60, veto 0.50": 0.43735928535115115,
+      "stage 0.60, veto 0.60": 0.43788202157469114,
+      "stage 0.60, veto 0.70": 0.43883264193089844,
+      "stage 0.60, veto 0.80": 0.439743236781476,
+      "stage 0.60, veto 0.90": 0.44098156668692307,
+      "stage 0.60, veto 0.95": 0.4418161337839009,
+      "stage 0.65, veto 0.50": 0.44421713620025854,
+      "stage 0.65, veto 0.60": 0.4453517053670154,
+      "stage 0.65, veto 0.70": 0.44669203457202267,
+      "stage 0.65, veto 0.80": 0.4479254868755292,
+      "stage 0.65, veto 0.90": 0.44911610129001434,
+      "stage 0.65, veto 0.95": 0.45027407987470636,
+      "stage 0.70, veto 0.50": 0.4452681786174552,
+      "stage 0.70, veto 0.60": 0.44607661822985467,
+      "stage 0.70, veto 0.70": 0.4470387393302692,
+      "stage 0.70, veto 0.80": 0.44798539574911983,
+      "stage 0.70, veto 0.90": 0.44736299427746556,
+      "stage 0.70, veto 0.95": 0.44690861924260533,
+      "stage 0.75, veto 0.50": 0.4034023503077784,
+      "stage 0.75, veto 0.60": 0.4031949376611021,
+      "stage 0.75, veto 0.70": 0.402900199033267,
+      "stage 0.75, veto 0.80": 0.402540682188265,
+      "stage 0.75, veto 0.90": 0.40047340779643464,
+      "stage 0.75, veto 0.95": 0.39800388477910487,
+      "stage 0.80, veto 0.50": 0.30914351579591165,
+      "stage 0.80, veto 0.60": 0.30823098470157295,
+      "stage 0.80, veto 0.70": 0.3075352256483561,
+      "stage 0.80, veto 0.80": 0.3070988799050516,
+      "stage 0.80, veto 0.90": 0.30608378765310695,
+      "stage 0.80, veto 0.95": 0.30418433023956737,
+      "stage 0.85, veto 0.50": 0.2043598380551712,
+      "stage 0.85, veto 0.60": 0.20423497267759563,
+      "stage 0.85, veto 0.70": 0.20433486207864793,
+      "stage 0.85, veto 0.80": 0.20476821654051414,
+      "stage 0.85, veto 0.90": 0.205286803354842,
+      "stage 0.85, veto 0.95": 0.20497295151124126,
+      "stage 0.90, veto 0.50": 0.12100818601523401,
+      "stage 0.90, veto 0.60": 0.12137196513354799,
+      "stage 0.90, veto 0.70": 0.1221207067708808,
+      "stage 0.90, veto 0.80": 0.12337990723749802,
+      "stage 0.90, veto 0.90": 0.1253901014966777,
+      "stage 0.90, veto 0.95": 0.12641032863204707
+    },
+    "resnet/cvae": {
+      "ensemble alone": 0.3967639583367942,
+      "stage 0.60": 0.41259173548479133,
+      "stage 0.65": 0.41847443714821764,
+      "stage 0.70": 0.4006817213463997,
+      "stage 0.75": 0.33747209696361175,
+      "stage 0.80": 0.2562022174610422,
+      "stage 0.85": 0.17918703146470005,
+      "stage 0.90": 0.11604599683427447,
+      "stage 0.60, veto 0.50": 0.41126659840395274,
+      "stage 0.60, veto 0.60": 0.412212748680471,
+      "stage 0.60, veto 0.70": 0.41361749059296743,
+      "stage 0.60, veto 0.80": 0.4148632888428146,
+      "stage 0.60, veto 0.90": 0.41638368746159565,
+      "stage 0.60, veto 0.95": 0.417634533488192,
+      "stage 0.65, veto 0.50": 0.4250862299781078,
+      "stage 0.65, veto 0.60": 0.426951824634131,
+      "stage 0.65, veto 0.70": 0.4289963989353374,
+      "stage 0.65, veto 0.80": 0.43079179800880124,
+      "stage 0.65, veto 0.90": 0.4325255755468277,
+      "stage 0.65, veto 0.95": 0.434040846547788,
+      "stage 0.70, veto 0.50": 0.4334280907350467,
+      "stage 0.70, veto 0.60": 0.43542488553575026,
+      "stage 0.70, veto 0.70": 0.4372293753661918,
+      "stage 0.70, veto 0.80": 0.4388799977339357,
+      "stage 0.70, veto 0.90": 0.43921722004162533,
+      "stage 0.70, veto 0.95": 0.4392663323486982,
+      "stage 0.75, veto 0.50": 0.39339012820666003,
+      "stage 0.75, veto 0.60": 0.3944890334594397,
+      "stage 0.75, veto 0.70": 0.39531693252104355,
+      "stage 0.75, veto 0.80": 0.39564436615690807,
+      "stage 0.75, veto 0.90": 0.3947477230820808,
+      "stage 0.75, veto 0.95": 0.3931782068305,
+      "stage 0.80, veto 0.50": 0.30092857026290454,
+      "stage 0.80, veto 0.60": 0.30129388541242097,
+      "stage 0.80, veto 0.70": 0.30174893973957967,
+      "stage 0.80, veto 0.80": 0.3020894881022721,
+      "stage 0.80, veto 0.90": 0.30221956951542506,
+      "stage 0.80, veto 0.95": 0.3014145101362362,
+      "stage 0.85, veto 0.50": 0.19919389760500983,
+      "stage 0.85, veto 0.60": 0.20005295109455487,
+      "stage 0.85, veto 0.70": 0.2010297108818829,
+      "stage 0.85, veto 0.80": 0.20210354479680964,
+      "stage 0.85, veto 0.90": 0.20356071834821274,
+      "stage 0.85, veto 0.95": 0.20412013281014185,
+      "stage 0.90, veto 0.50": 0.11764982791627002,
+      "stage 0.90, veto 0.60": 0.11863815261555706,
+      "stage 0.90, veto 0.70": 0.11998279210525661,
+      "stage 0.90, veto 0.80": 0.12169692611900054,
+      "stage 0.90, veto 0.90": 0.12433836201808438,
+      "stage 0.90, veto 0.95": 0.12594385285575993
+    },
+    "resnet/wgan_gp": {
+      "ensemble alone": 0.38623406240281954,
+      "stage 0.60": 0.40259313966847204,
+      "stage 0.65": 0.4131771639928431,
+      "stage 0.70": 0.4003052194995877,
+      "stage 0.75": 0.3366453940813744,
+      "stage 0.80": 0.2543014673706934,
+      "stage 0.85": 0.17732570224913735,
+      "stage 0.90": 0.11491112423517527,
+      "stage 0.60, veto 0.50": 0.4010387683175663,
+      "stage 0.60, veto 0.60": 0.4020017523758172,
+      "stage 0.60, veto 0.70": 0.4033918837068443,
+      "stage 0.60, veto 0.80": 0.4045770743018449,
+      "stage 0.60, veto 0.90": 0.4063448414628012,
+      "stage 0.60, veto 0.95": 0.4077134064757827,
+      "stage 0.65, veto 0.50": 0.41830447858245956,
+      "stage 0.65, veto 0.60": 0.420235606760326,
+      "stage 0.65, veto 0.70": 0.42254339927331447,
+      "stage 0.65, veto 0.80": 0.4247329128587978,
+      "stage 0.65, veto 0.90": 0.4269357469536572,
+      "stage 0.65, veto 0.95": 0.42907058001397624,
+      "stage 0.70, veto 0.50": 0.4316788169440691,
+      "stage 0.70, veto 0.60": 0.4336426572396524,
+      "stage 0.70, veto 0.70": 0.4358622301422687,
+      "stage 0.70, veto 0.80": 0.43805226546343295,
+      "stage 0.70, veto 0.90": 0.43909453302961277,
+      "stage 0.70, veto 0.95": 0.4402389045081337,
+      "stage 0.75, veto 0.50": 0.39052866644011847,
+      "stage 0.75, veto 0.60": 0.3915846380174383,
+      "stage 0.75, veto 0.70": 0.39296236064955575,
+      "stage 0.75, veto 0.80": 0.3939085118702953,
+      "stage 0.75, veto 0.90": 0.39406497363339693,
+      "stage 0.75, veto 0.95": 0.3935517169432151,
+      "stage 0.80, veto 0.50": 0.2966098908325661,
+      "stage 0.80, veto 0.60": 0.2969994368916419,
+      "stage 0.80, veto 0.70": 0.297992417375403,
+      "stage 0.80, veto 0.80": 0.29885837181157354,
+      "stage 0.80, veto 0.90": 0.29982484767736045,
+      "stage 0.80, veto 0.95": 0.2998069133723378,
+      "stage 0.85, veto 0.50": 0.1954215948111408,
+      "stage 0.85, veto 0.60": 0.19632803848766553,
+      "stage 0.85, veto 0.70": 0.1976676543838281,
+      "stage 0.85, veto 0.80": 0.19909289404079314,
+      "stage 0.85, veto 0.90": 0.2010638985204488,
+      "stage 0.85, veto 0.95": 0.20211259936839812,
+      "stage 0.90, veto 0.50": 0.11527901978318508,
+      "stage 0.90, veto 0.60": 0.11633028737578324,
+      "stage 0.90, veto 0.70": 0.11789286441848564,
+      "stage 0.90, veto 0.80": 0.11982716163201731,
+      "stage 0.90, veto 0.90": 0.12276087038503601,
+      "stage 0.90, veto 0.95": 0.12465667082265582
+    }
+  },
+  "reproduction_difference": {
+    "cnn/cvae": 0.0,
+    "cnn/none": 0.0,
+    "cnn/wgan_gp": 0.0
+  },
+  "note": "secondary family (Holm, 3) on S F1; the rest is descriptive",
+  "git_sha": "1889b7ad381969aa0370534a11a2a6681a9f4b06",
+  "within": {
+    "resnet/cvae vs resnet/none, chosen settings": {
+      "point": -0.002513861415284202,
+      "mean": -0.002270714569653031,
+      "se": 0.012897247918761491,
+      "ci_low": -0.027349734751798555,
+      "ci_high": 0.02287030180466686,
+      "level": 0.95,
+      "n_replicates": 10000,
+      "frac_undefined": 0.0,
+      "p_two_sided": 0.8631136886311369,
+      "p_holm": 1.0,
+      "reject_holm": false
+    },
+    "resnet/wgan_gp vs resnet/none, chosen settings": {
+      "point": -0.003881006639207263,
+      "mean": -0.003666406093321738,
+      "se": 0.017056226789593957,
+      "ci_low": -0.03741840770416742,
+      "ci_high": 0.029891411611901283,
+      "level": 0.95,
+      "n_replicates": 10000,
+      "frac_undefined": 0.0,
+      "p_two_sided": 0.831916808319168,
+      "p_holm": 1.0,
+      "reject_holm": false
+    }
+  }
+}

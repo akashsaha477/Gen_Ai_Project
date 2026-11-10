@@ -1,0 +1,29 @@
+{
+  "cell_sha": "8f319657f2fcb8306bdc702510bf5d77de04b10185991e8de7b5cf7af540c644",
+  "cell": {
+    "condition": "wgan_gp",
+    "strength": 0.25,
+    "architecture": "resnet",
+    "seed": 1
+  },
+  "condition": "wgan_gp",
+  "strength": 0.25,
+  "architecture": "resnet",
+  "seed": 1,
+  "run_id": "phase6_bigger_classifier-resnet.wgan_gp_0.25-s1-1889b7a-202611101428",
+  "status": "done",
+  "bank": "phase6_relative_generators/phase3_wgan_gp-A",
+  "selection_metric": "s_f1",
+  "selection_value": 0.7256450763559769,
+  "tie_break_value": 0.8493647912885662,
+  "rare_macro_f1": 0.39879376119957116,
+  "n_recall": 0.9667136812411847,
+  "n_added": {
+    "N": 0,
+    "S": 17016,
+    "V": 0,
+    "F": 26695
+  },
+  "wall_clock_s": 254.7,
+  "provisional": false
+}

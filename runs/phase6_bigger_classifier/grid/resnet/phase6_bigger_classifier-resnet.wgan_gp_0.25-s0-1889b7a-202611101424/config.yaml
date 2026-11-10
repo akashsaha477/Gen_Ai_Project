@@ -1,0 +1,59 @@
+grid: configs/phase6_bigger_classifier/bigger_classifier.yaml
+grid_name: grid
+cell:
+  condition: wgan_gp
+  strength: 0.25
+  architecture: resnet
+  seed: 0
+cell_sha: 53986492fdfdaee5bf9f3b3d06a641c316796b43346fb70e6596a0da8363f3a3
+policy:
+  kind: fraction_of_n
+condition_settings:
+  bank: phase6_relative_generators/phase3_wgan_gp-A
+  strengths:
+  - 0.25
+bank: phase6_relative_generators/phase3_wgan_gp-A
+classifier:
+  variant: B
+  config: configs/phase2_baseline_classifiers/B_resnet1d.yaml
+  model:
+    name: resnet1d
+    channels:
+    - 32
+    - 64
+    - 128
+    - 128
+    kernel: 7
+    side_hidden: 16
+  lr: 0.001
+  max_epochs: 40
+  patience: 5
+  min_epochs: 10
+  batch_size: 256
+  weight_decay: 0.01
+  n_parameters_phase2: 488362
+class_weights: null
+n_added:
+  N: 0
+  S: 17016
+  V: 0
+  F: 26695
+run_id: phase6_bigger_classifier-resnet.wgan_gp_0.25-s0-1889b7a-202611101424
+split:
+  name: V1
+  val:
+  - 115
+  - 118
+  - 201
+  - 205
+  - 223
+  selection_metric: s_f1
+dataset:
+  source: P11's data with rr_prev and rr_next over the recording's mean RR interval
+    (PREREGISTRATION v12)
+  representation: C_short_window_rr_features
+  content_sha256: ef3cecfaf85e757ccbb1d701adeca49273abdf1b0df4281ccd086360ca379a28
+  frozen: false
+  version: v4
+provisional: false
+provisional_reasons: []
