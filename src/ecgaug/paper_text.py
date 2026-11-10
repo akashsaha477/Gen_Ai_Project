@@ -352,7 +352,9 @@ def posthoc_physics_prior() -> str:
 
 PAIR_SHORT = {"cnn/none": "the cnn without augmentation", "cnn/cvae": "the cnn with the cVAE", "cnn/wgan_gp": "the cnn with the WGAN-GP",
               "resnet/none": "the ResNet without augmentation", "resnet/cvae": "the ResNet with the cVAE", "resnet/wgan_gp": "the ResNet with the WGAN-GP",
-              "cnn/cvae_fitted": "the cVAE with the fitted loss", "cnn/wgan_gp_fitted": "the WGAN-GP with the fitted loss"}
+              "cnn/cvae_fitted": "the cVAE with the fitted loss", "cnn/wgan_gp_fitted": "the WGAN-GP with the fitted loss",
+              "cnn/cvae_physics": "the cVAE with the Euler loss", "cnn/wgan_gp_physics": "the WGAN-GP with the Euler loss"}
+P18_KEYS = ("cnn/none", "cnn/class_weighted", "cnn/random_oversampling", "cnn/cvae", "cnn/wgan_gp", "cnn/diffusion")
 
 
 def _pairs_family(items: dict) -> str:
@@ -486,6 +488,138 @@ def architecture_section() -> str:
         text += ("\\begin{table}[htbp]\\centering\\footnotesize\n\\begin{tabular}{p{2.6cm}p{6.1cm}rp{4.6cm}}\n\\toprule\n"
                  "Model & Structure & Parameters & Where it ran; outcome \\\\\n\\midrule\n" + "\n".join(body)
                  + f"\n\\bottomrule\n\\end{{tabular}}\n\\caption{{{caption} Bold: chosen by a pre-registered rule.}}\\label{{{label}}}\n\\end{{table}}\n")  # fmt: skip
+    return text
+
+
+def _bold_best(table: list[list[float | None]], higher: bool = True) -> list[list[str]]:
+    """Format a numeric table (rows of values, None for missing) with the best value of each column in bold."""
+    cols = list(zip(*table))
+    best = [max((v for v in c if v is not None), default=None) if higher else min((v for v in c if v is not None), default=None) for c in cols]
+    return [["--" if v is None else (f"\\textbf{{{_n(v)}}}" if best[j] is not None and abs(v - best[j]) < 5e-4 else _n(v)) for j, v in enumerate(r)] for r in table]
+
+
+def _metric_table(header: list[str], names: list[str], values: list[list[float | None]], caption: str, label: str, best_row: int | None = None,
+                  spec: str | None = None) -> str:  # fmt: skip
+    cells = _bold_best(values)
+    body = "\n".join(" & ".join([f"\\textbf{{{n}}}" if i == best_row else n, *c]) + " \\\\" for i, (n, c) in enumerate(zip(names, cells)))
+    spec = spec or "l" + "r" * len(header)
+    return ("\\begin{table}[htbp]\\centering\\footnotesize\\setlength{\\tabcolsep}{3pt}\n\\adjustbox{max width=\\linewidth}{\\begin{tabular}{" + spec + "}\n\\toprule\n"
+            + " & ".join(["", *header]) + " \\\\\n\\midrule\n" + body + f"\n\\bottomrule\n\\end{{tabular}}}}\n\\caption{{{caption}}}\\label{{{label}}}\n\\end{{table}}\n")
+
+
+def _posthoc_pipelines() -> list[tuple[str, dict]]:
+    """The DS2 blocks of the ten-run pipelines (P18, P20, P21, P22, P23), each with its label."""
+    out = []
+    e = _load(paths.results_for("phase6_seed_ensemble") / "summary.json")
+    if e:
+        for c, v in e["ensemble"]["with_af_veto"].items():
+            out.append((f"P18: {SHORT[c.split('/')[1]]}, stage and veto (0.8, 0.95)", v))
+        out.append(("P18: cVAE, the cnn alone", e["ensemble"]["cnn_alone"]["cnn/cvae"]))
+    t = _load(paths.results_for("phase6_rule_tuning") / "test_summary.json")
+    if t:
+        for c, v in t["conditions"]["chosen"].items():
+            out.append((f"P20: {SHORT[c.split('/')[1]]}, setting chosen on Icentia11k", v))
+    for key, tag in (("phase6_physics_prior", "P21"), ("phase6_bigger_classifier", "P22"), ("phase6_physics_fitted", "P23")):
+        t = _load(paths.results_for(key) / "test_summary.json")
+        if t:
+            for c, v in t["conditions"]["chosen"].items():
+                if c not in P18_KEYS:
+                    out.append((f"{tag}: {PAIR_SHORT.get(c, c).removeprefix('the ')}", v))
+    return out
+
+
+def metrics_section() -> str:
+    """Every test metric of every model, the best ones in bold, and the published inter-patient results beside ours."""
+    from ecgaug import literature
+
+    final = _load(paths.results_for(FINAL_EVAL) / "summary.json")
+    cms = _load(paths.results_for("error_analysis") / "test.json")
+    if not final or not cms:
+        return _missing("metrics section: the final evaluation's summary and error analysis") + "\n"
+    text = ("This section gathers every test metric that was computed, in the units of the AAMI standard: sensitivity (Se, recall), "
+            "positive predictivity (+P, precision) and F1 per class, rare-class macro-F1 (the mean of S and F F1, the primary metric), "
+            "macro-F1 over N, S, V and F, and accuracy. Table~\\ref{tab:all-final} holds the twelve pre-registered models of the final evaluation, "
+            "Table~\\ref{tab:all-posthoc} the post-hoc ten-run pipelines and Table~\\ref{tab:literature} published inter-patient results beside ours. "
+            "The best value of each column is in bold.\n")  # fmt: skip
+    names, values = [], []
+    for k, c in final["conditions"].items():
+        cm = np.asarray(cms[k]["confusion_matrix"], dtype=float)
+        se, pp = np.diag(cm) / cm.sum(axis=1), np.diag(cm) / cm.sum(axis=0)
+        g = lambda m: c[m]["point"]  # noqa: E731
+        strength = f" ({c['strength']:g})" if c.get("strength") is not None else ""
+        names.append(f"{k.split('/')[0]}, {SHORT[k.split('/')[1]]}{strength}")
+        values.append([g("rare_macro_f1"), g("macro_f1"), float(np.trace(cm) / cm.sum()), g("n_recall"), float(pp[0]), g("se_S"), g("ppv_S"), g("f1_S"),
+                       g("se_V"), g("ppv_V"), g("f1_V"), float(se[3]), float(pp[3]), g("f1_F")])  # fmt: skip
+    best = int(np.argmax([v[0] for v in values]))
+    text += _metric_table(["Rare F1", "Macro F1", "Acc.", "N Se", "N +P", "S Se", "S +P", "S F1", "V Se", "V +P", "V F1", "F Se", "F +P", "F F1"], names, values,
+                          "The final evaluation on the 22 test records: every pre-registered model (mean of three seeds; strength in brackets). F Se, F +P, "
+                          "N +P and accuracy come from the seed-mean confusion matrix, the rest from the official summary.", "tab:all-final", best)  # fmt: skip
+    rows = _posthoc_pipelines()
+    if rows:
+        vals = [[v["rare_macro_f1"]["point"], v["se_S"]["point"], v["ppv_S"]["point"], v["f1_S"]["point"], v["f1_V"]["point"], v["f1_F"]["point"], v["n_recall"]["point"]]
+                for _, v in rows]  # fmt: skip
+        ci = [f"{_n(v['rare_macro_f1']['ci_low'])}--{_n(v['rare_macro_f1']['ci_high'])}" for _, v in rows]
+        best = int(np.argmax([v[0] for v in vals]))
+        cells = _bold_best(vals)
+        body = "\n".join(" & ".join([f"\\textbf{{{n}}}" if i == best else n, cells[i][0], ci[i], *cells[i][1:]]) + " \\\\" for i, (n, _) in enumerate(rows))
+        text += ("\\begin{table}[htbp]\\centering\\footnotesize\\setlength{\\tabcolsep}{3pt}\n\\adjustbox{max width=\\linewidth}{\\begin{tabular}{lrrrrrrrr}\n\\toprule\n"
+                 " & Rare F1 & 95\\% CI & S Se & S +P & S F1 & V F1 & F F1 & N Se \\\\\n\\midrule\n" + body + "\n\\bottomrule\n\\end{tabular}}\n"
+                 "\\caption{Post hoc, the test records: the ten-run pipelines (each read once; record-level 95\\% CI). These reads kept S Se and +P "
+                 "but only F1 for V and F.}\\label{tab:all-posthoc}\n\\end{table}\n")  # fmt: skip
+    lit = literature.rows()
+    names, vals, notes = [], [], []
+    for r in lit:
+        mark = "$^\\dagger$" if r["note"] else ""
+        proto = "" if r["protocol"] == "inter-patient" else " (intra-patient)"
+        names.append(f"{r['name']}~\\cite{{{r['key']}}}{mark}{proto}")
+        vals.append([r["se"].get("S"), r["ppv"].get("S"), r["f1"].get("S"), r["se"].get("V"), r["ppv"].get("V"), r["f1"].get("V"), r["f1"].get("F"), r["rare_macro_f1"]])
+    e = _load(paths.results_for("phase6_seed_ensemble") / "summary.json")
+    ours = []
+    if e:
+        ours.append(("Ours, P18 (post hoc)", e["ensemble"]["with_af_veto"]["cnn/cvae"]))
+    b = max(final["conditions"].items(), key=lambda kv: kv[1]["rare_macro_f1"]["point"])
+    ours.append((f"Ours, pre-registered best ({b[0].split('/')[0]}, {SHORT[b[0].split('/')[1]]})", b[1]))
+    ours.append(("Ours, pre-registered cVAE (cnn)", final["conditions"]["cnn/cvae"]))
+    for n, v in ours:
+        g = lambda m: v[m]["point"] if m in v else None  # noqa: E731
+        names.append(f"\\textbf{{{n}}}")
+        vals.append([g("se_S"), g("ppv_S"), g("f1_S"), g("se_V"), g("ppv_V"), g("f1_V"), g("f1_F"), g("rare_macro_f1")])
+    audit = _load(paths.results_for(PHASE4_LEAKAGE_AUDIT) / "summary.json")
+    if audit:
+        names.append("Ours, same patients in training and test (leakage audit, cnn, none)")
+        vals.append([None] * 7 + [audit["conditions"]["none"]["intra"]["mean"]])
+    inter = [i for i, n in enumerate(names) if "intra-patient" not in n and "leakage audit" not in n]
+    cells = _bold_best([vals[i] for i in inter])
+    full = {i: c for i, c in zip(inter, cells)}
+    body = "\n".join(" & ".join([n, *(full[i] if i in full else ["--" if v is None else _n(v) for v in vals[i]])]) + " \\\\" for i, n in enumerate(names))
+    computed = ", ".join("\\cite{" + k + "}" for k in sorted({r["key"] for r in lit if r["f1_computed"]}))
+    text += ("\\begin{table}[htbp]\\centering\\footnotesize\\setlength{\\tabcolsep}{3pt}\n\\adjustbox{max width=\\linewidth}{\\begin{tabular}{lrrrrrrrr}\n\\toprule\n"
+             " & S Se & S +P & S F1 & V Se & V +P & V F1 & F F1 & S, F mean \\\\\n\\midrule\n" + body + "\n\\bottomrule\n\\end{tabular}}\n"
+             "\\caption{Published results on MIT-BIH beside ours, on DS2 (inter-patient: trained on DS1) unless marked. F1 is computed from "
+             f"the reported Se and +P where a paper gives no F1 ({computed}). "
+             "Bold: the best inter-patient value of each column. $^\\dagger$Far above every other inter-patient report; its protocol was not "
+             "checked here. Intra-patient rows split beats at random, so the same patients are in training and test.}\\label{tab:literature}\n\\end{table}\n")  # fmt: skip
+    if e:
+        p18 = e["ensemble"]["with_af_veto"]["cnn/cvae"]
+        by = {r["key"]: r for r in lit}
+        z, h, d = by.get("zhu2022"), by.get("huang2014"), by.get("dechazal2004")
+        text += (f"Our best test result is post hoc: P18's ten-run cVAE ensemble with Huang et al.'s stage and the AF veto, rare-class macro-F1 "
+                 f"{_n(p18['rare_macro_f1']['point'])} (S F1 {_n(p18['f1_S']['point'])}, F F1 {_n(p18['f1_F']['point'])}). Its S sensitivity "
+                 f"({_n(p18['se_S']['point'])}) matches Huang et al.'s ({_n(h['se']['S'])}) with higher positive predictivity "
+                 f"({_n(p18['ppv_S']['point'])} against {_n(h['ppv']['S'])}), so its S F1 is above Huang et al.'s ({_n(h['f1']['S'])}) and de Chazal "
+                 f"et al.'s ({_n(d['f1']['S'])}) and below Zhu et al.'s ({_n(z['f1']['S'])}); its F F1 is above Zhu et al.'s ({_n(z['f1']['F'])}) "
+                 f"and the mean of the two is close to theirs ({_n(p18['rare_macro_f1']['point'])} against {_n(z['rare_macro_f1'])}). "
+                 f"The pre-registered models stay far below (best {_n(b[1]['rare_macro_f1']['point'])}), and P18 was designed after the test records "
+                 "had been read several times, so its score is optimistic: ")  # fmt: skip
+        r = _load(paths.results_for("phase6_rule_tuning") / "summary.json")
+        if r:
+            text += (f"on {r['patients']:,} new Icentia11k patients the same pipeline's S F1 was {_n(r['conditions']['p19_setting']['cnn/cvae']['f1_S']['point'])} "
+                     f"with its own setting and {_n(r['conditions']['chosen']['cnn/cvae']['f1_S']['point'])} with the setting chosen on other patients. ")  # fmt: skip
+        if audit:
+            text += (f"With the same patients in training and test, the cnn reaches {_n(audit['conditions']['none']['intra']['mean'])}, nearer to "
+                     "intra-patient reports such as \\cite{kwak2024diffusion}; only the inter-patient scores compare with this project's. ")  # fmt: skip
+        text += ("Closing the gap needs more training patients with S and F beats rather than a different model: the training F beats come "
+                 "from about five patients, and one test record holds most of the test S beats.\n")
     return text
 
 
@@ -1427,6 +1561,52 @@ def posthoc_rule_tuning() -> str:
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
 
 
+def _posthoc_rows_p15_p23(verdicts) -> list[tuple[str, str, str]]:
+    """Rows P15-P23 of the post-hoc table, from the summaries that exist."""
+    rows = []
+    rare = lambda block, key: _n(block[key]["rare_macro_f1"]["point"])  # noqa: E731
+    d = _load(paths.results_for("phase6_diffusion") / "summary.json")
+    if d:
+        rows.append(("P15", "A diffusion model as the generator?", f"diffusion {rare(d['conditions'], 'cnn/diffusion')}; vs none and cVAE: "
+                     + verdicts(d["families"]["confirmatory"]) + "; vs class weights and oversampling: " + verdicts(d["families"]["secondary"])))
+    a = _load(paths.results_for("phase6_af_rule") / "summary.json")
+    if a:
+        rows.append(("P16", "An AF veto on the SVEB stage?", f"cVAE with the stage and veto {rare(a['with_af_veto'], 'cnn/cvae')}; veto vs stage alone: "
+                     + verdicts(a["families"]["confirmatory"])))
+    dl = _load(paths.results_for("phase6_diffusion_long") / "summary.json")
+    if dl:
+        rows.append(("P17", "Diffusion trained five times longer?", f"{rare(dl['conditions'], 'cnn/diffusion_long')}; vs P15 and none: " + verdicts(dl["families"]["confirmatory"])))
+    e = _load(paths.results_for("phase6_seed_ensemble") / "summary.json")
+    if e:
+        rows.append(("P18", "Ten runs averaged per condition?", f"cVAE ensemble with the stage and veto {rare(e['ensemble']['with_af_veto'], 'cnn/cvae')} (best test score); "
+                     "ensemble vs single runs: " + verdicts(e["families"]["confirmatory"]) + "; cVAE vs the others: " + verdicts(e["families"]["secondary"])))
+    f = _load(paths.results_for("phase6_fresh_patients") / "summary.json")
+    if f:
+        sf = [v["f1_S"]["point"] for v in f["ensemble"]["with_af_veto"].values()]
+        rows.append(("P19", f"The same pipeline on {f['patients']:,} new patients?", f"S F1 {_n(min(sf))}--{_n(max(sf))} (no F label); ensemble vs single runs: "
+                     + verdicts(f["families"]["confirmatory"]) + "; cVAE vs the others: " + verdicts(f["families"]["secondary"])))
+    r, rt_test = _load(paths.results_for("phase6_rule_tuning") / "summary.json"), _load(paths.results_for("phase6_rule_tuning") / "test_summary.json")
+    if r:
+        sf = [v["f1_S"]["point"] for v in r["conditions"]["chosen"].values()]
+        text = f"P19's patients S F1 {_n(min(sf))}--{_n(max(sf))} with the chosen settings; chosen vs P19's setting: " + verdicts(r["families"]["confirmatory"])
+        if rt_test:
+            text += f"; test cVAE {rare(rt_test['conditions']['chosen'], 'cnn/cvae')}, chosen vs P18's setting: " + verdicts(rt_test["families"]["ds2"])
+        rows.append(("P20", "Stage and veto chosen on other patients?", text))
+    for key, label, question in (("phase6_physics_prior", "P21", "A physics loss in the generators (SimGANs)?"),
+                                 ("phase6_bigger_classifier", "P22", "A larger classifier (ResNet1D)?"),
+                                 ("phase6_physics_fitted", "P23", "A physics loss fitted to each beat?")):  # fmt: skip
+        sm, tm = _load(paths.results_for(key) / "summary.json"), _load(paths.results_for(key) / "test_summary.json")
+        if not sm:
+            continue
+        text = "P19's patients: " + verdicts(sm["families"]["secondary"])
+        if tm:
+            new = {k: v for k, v in tm["conditions"]["chosen"].items() if k not in P18_KEYS}
+            best_key, best = max(new.items(), key=lambda kv: kv[1]["rare_macro_f1"]["point"])
+            text += f"; test: " + verdicts(tm["families"]["confirmatory"]) + f"; best {PAIR_SHORT.get(best_key, best_key)} {_n(best['rare_macro_f1']['point'])}"
+        rows.append((label, question, text))
+    return rows
+
+
 def posthoc_table() -> str:
     """One row per post-hoc analysis (P1-P8): what it asked and what it found, from the summaries."""
     from ecgaug.names import (PHASE6_AUDIT_CHECK, PHASE6_AUGMENTATION_MECHANISM, PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS,
@@ -1512,12 +1692,17 @@ def posthoc_table() -> str:
         rows.append(("P14", "Many more training patients (Icentia11k)?", f"none {_n(p14['before']['cnn/none']['rare_macro_f1']['point'])} to "
                      f"{_n(p14['conditions']['cnn/none']['rare_macro_f1']['point'])}; best {SHORT[best_key.split('/')[1]]} {_n(best['rare_macro_f1']['point'])}; "
                      "vs P13: " + verdicts(p14["families"]["confirmatory"]) + "; cVAE vs the others: " + verdicts(p14["families"]["secondary"])))
+    rows += _posthoc_rows_p15_p23(verdicts)
     if not rows:
         return _missing("post-hoc table: no summaries yet") + "\n"
-    body = "\n".join(f"{a} & {b} & {c} \\\\" for a, b, c in rows)
-    return ("\\begin{table}[htbp]\\centering\\small\n\\caption{The post-hoc analyses (pre-registration versions 4 to 13), each reported apart from the primary "
-            "results. Numbers are test rare-class macro-F1 unless stated.}\\label{tab:posthoc}\n"
-            "\\begin{tabular}{@{}lp{0.3\\linewidth}p{0.55\\linewidth}@{}}\n\\toprule\n & question & finding \\\\\n\\midrule\n" + body + "\n\\bottomrule\n\\end{tabular}\n\\end{table}\n")
+    out = []
+    for part, chunk in enumerate([rows[i : i + 12] for i in range(0, len(rows), 12)]):
+        body = "\n".join(f"{a} & {b} & {c} \\\\" for a, b, c in chunk)
+        caption = ("The post-hoc analyses (pre-registration versions 4 to 21), each reported apart from the primary results. Numbers are test "
+                   "rare-class macro-F1 unless stated.}\\label{tab:posthoc}") if part == 0 else "The post-hoc analyses, continued.}"
+        out.append("\\begin{table}[htbp]\\centering\\small\n\\caption{" + caption + "\n"
+                   "\\begin{tabular}{@{}lp{0.3\\linewidth}p{0.55\\linewidth}@{}}\n\\toprule\n & question & finding \\\\\n\\midrule\n" + body + "\n\\bottomrule\n\\end{tabular}\n\\end{table}\n")
+    return "".join(out)
 
 
 def _model_sizes() -> dict[str, int]:
@@ -1914,6 +2099,34 @@ def discussion() -> str:
     return "\n\n".join(paras) + "\n"
 
 
+def _late_sentences() -> list[str]:
+    """Conclusion sentences for P21-P23, from their summaries (each only once its test read exists)."""
+    out = []
+
+    def verdict(family: dict) -> str:
+        ups = sum(c["reject_holm"] and c["point"] > 0 for c in family.values())
+        downs = sum(c["reject_holm"] and c["point"] < 0 for c in family.values())
+        return "did not detectably change" if not ups and not downs else (f"improved in {ups} of {len(family)} comparisons" if ups else f"fell in {downs} of {len(family)} comparisons")
+
+    def pairs(test: dict) -> str:
+        return "; ".join(f"{PAIR_SHORT[a]} {_n(test['conditions']['chosen'][a]['rare_macro_f1']['point'])} against {_n(test['conditions']['chosen'][b]['rare_macro_f1']['point'])}"
+                         for a, b in (n.replace(', chosen settings', '').split(' vs ') for n in test["families"]["confirmatory"]))  # fmt: skip
+
+    p21s, p21t = _load(paths.results_for("phase6_physics_prior") / "summary.json"), _load(paths.results_for("phase6_physics_prior") / "test_summary.json")
+    if p21s and p21t:
+        renamed = {k.replace("cnn: ", "").replace(" vs ", " vs cnn/").replace("cvae_physics", "cnn/cvae_physics").replace("wgan_gp_physics", "cnn/wgan_gp_physics"): v
+                   for k, v in p21t["families"]["confirmatory"].items()}  # fmt: skip
+        out.append("Adding SimGANs' physics loss to the generators barely moved them: S F1 on P19's patients "
+                   + verdict(p21s["families"]["secondary"]) + " and the test score " + verdict(p21t["families"]["confirmatory"])
+                   + " (" + pairs({"conditions": p21t["conditions"], "families": {"confirmatory": renamed}}) + ").")  # fmt: skip
+    for key, lead in (("phase6_bigger_classifier", "A ResNet with about 6.7 times the cnn's parameters"), ("phase6_physics_fitted", "A physics loss fitted to each generated beat")):
+        sm, tm = _load(paths.results_for(key) / "summary.json"), _load(paths.results_for(key) / "test_summary.json")
+        if sm and tm:
+            out.append(f"{lead}: S F1 on P19's patients {verdict(sm['families']['secondary'])} and the test score {verdict(tm['families']['confirmatory'])} "
+                       f"({pairs(tm)}).")  # fmt: skip
+    return out
+
+
 def conclusion() -> str:
     """Two or three sentences, each conditional on the result files."""
     from ecgaug.names import PHASE6_AUGMENTATION_MECHANISM, PHASE6_EXTRA_SEEDS, PHASE6_PATIENT_TRANSFER, PHASE6_RELATIVE_CNN, PHASE6_RR_BASELINE
@@ -1968,7 +2181,7 @@ def conclusion() -> str:
             text += " " + rr
         if (ic := _icentia_sentence()) is not None:
             text += " " + ic
-        for extra in (_diffusion_sentence(), _af_sentence(), _ensemble_sentence(), _fresh_sentence(), _tuning_sentence()):
+        for extra in (_diffusion_sentence(), _af_sentence(), _ensemble_sentence(), _fresh_sentence(), _tuning_sentence(), *_late_sentences()):
             if extra is not None:
                 text += " " + extra
     p7 = _load(paths.results_for(PHASE6_RELATIVE_CNN) / "summary.json")
@@ -2143,6 +2356,7 @@ def build() -> dict[str, str]:
     files["results_bigger_classifier"] = posthoc_bigger_classifier()
     files["results_physics_fitted"] = posthoc_physics_fitted()
     files["architecture"] = architecture_section()
+    files["metrics"] = metrics_section()
     files["table_posthoc"] = posthoc_table()
     files["outlook"] = outlook(heading=False)
     files["discussion"] = discussion()

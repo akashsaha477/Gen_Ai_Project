@@ -42,3 +42,19 @@ def test_the_flow_figure_and_the_report_section_build(monkeypatch):
     assert text.count("\\begin{table}") == 3 and text.count("{") == text.count("}") and "fig:architecture" in text
     assert "_" not in text.replace("\\_", "") and "%" not in text.replace("\\%", "")
     assert "73,226" in text and "488,362" in text and "\\textbf{cVAE D}" in text
+
+
+def test_literature_values_and_the_metrics_section(monkeypatch):
+    monkeypatch.delenv("ECGAUG_ROOT")
+    from ecgaug import literature, paper_text
+
+    rows = {r["key"]: r for r in literature.rows()}
+    assert abs(rows["dechazal2004"]["f1"]["S"] - 2 * 0.759 * 0.385 / (0.759 + 0.385)) < 1e-12 and rows["dechazal2004"]["f1_computed"] == ["S", "V"]
+    assert rows["zhu2022"]["f1"]["F"] == 0.4775 and abs(rows["zhu2022"]["rare_macro_f1"] - (0.6861 + 0.4775) / 2) < 1e-12 and rows["zhu2022"]["f1_computed"] == []
+    assert rows["kwak2024diffusion"]["protocol"] == "intra-patient" and rows["mousavi2019"]["note"]
+    text = paper_text.metrics_section()
+    assert text.count("\\begin{table}") == 3 and text.count("{") == text.count("}") and "tab:literature" in text
+    assert "\\textbf{cnn, random oversampling (0.1)}" in text and "\\textbf{P18: cVAE, stage and veto (0.8, 0.95)}" in text
+    assert "_" not in text.replace("\\_", "").replace("tab:all-final", "").replace("tab:all-posthoc", "") and "%" not in text.replace("\\%", "")
+    table = paper_text.posthoc_table()
+    assert table.count("\\begin{table}") == 2 and "P22 &" in table and "tab:posthoc" in table

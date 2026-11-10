@@ -1462,3 +1462,20 @@ the result files. `paper_text.architecture_section()` writes three tables (paper
 `figures.architecture_flow_figure()` draws `figures/architecture/flow.png`: the pre-registered system, P18's pipeline
 (the best test score, 0.587) and what else was tested at each stage, in a portrait layout readable at page width. The
 report (local) has a new section 4, Architecture; it compiles. 2 tests in tests/test_architecture.py pass.
+
+2026-11-11. Report: every result and the literature, asked "give all the metrics ... highlight the best models ... compare
+with existing literature" and "add all these run results and everything in the report". `paper_text.metrics_section()`
+(paper/generated/metrics.tex) writes three tables with the best value of each column in bold: all twelve pre-registered
+models with Se, +P and F1 per class, rare-class and macro-F1 and accuracy (F Se, F +P, N +P and accuracy from the
+seed-mean confusion matrices in results/error_analysis/test.json); the post-hoc ten-run pipelines on DS2 (P18, P20, P21,
+P22; their reads stored S Se and +P but only F1 for V and F); and published results beside ours. `src/ecgaug/literature.py`
+holds the published numbers that were checked against the papers this session: de Chazal et al. 2004 (S Se 75.9, +P 38.5;
+V 77.7, 81.9; abstract), Huang et al. 2014 (S 91.1, 42.2; V 93.9, 90.9; abstract), Zhu et al. 2022 (F1 N 98.26, S 68.61,
+V 95.99, F 47.75; abstract), Mousavi et al. 2019 (S 88.94, 92.57; V 99.94, 99.50; arXiv abstract; flagged as far above
+other inter-patient reports, protocol unchecked) and Kwak and Jung 2024 (intra-patient, Table 4 of the local PDF); F1 is
+computed where a paper gives only Se and +P. Mondejar-Guerra 2019, Llamedo 2011, Sellami 2019 and Saenz 2020 could not be
+checked (no per-class numbers retrievable) and are left out. Comparison: P18's S F1 0.647 is above Huang's 0.577 and de
+Chazal's 0.511 and below Zhu's 0.686; its F F1 0.527 is above Zhu's 0.477; the S-F mean 0.587 against Zhu's 0.582; the
+pre-registered models reach 0.136 at best. The post-hoc table now covers P1-P22 in two parts; the conclusion has
+sentences for P21 and P22. The report (local) gained the P15-P23 subsections from the paper and a section "All results and
+the literature"; bib entry mousavi2019 added (local). Report and paper compile with no undefined references.
