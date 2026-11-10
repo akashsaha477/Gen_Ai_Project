@@ -1434,9 +1434,9 @@ ensembles alone (descriptive): +0.076, +0.049, +0.128. Within the ResNet, augmen
 
 P23 cVAE (`phase6-physics-fitted-train-cvae`, T4, 5d12290, exit code 0; first fit 14:21 UTC, bundle 16:30 UTC, about 2.4 GPU-hours; five
 generator fits of 1,323-1,351 s, none diverged; 27 runs ingested from the run folders and results, not the 2.8 GB zip).
-Weight choice (validation S F1, cnn seeds 0-2): lambda 0.1 0.771, 1 0.767, 10 0.766, lambda 0 (P12's bank) 0.766: chosen
+Weight choice (validation S F1, cnn seeds 0-2): lambda 0.1 0.770, 1 0.767, 10 0.766, lambda 0 (P12's bank) 0.766: chosen
 0.1. Unlike P21's loss, the fitted loss moves the generator, as the check predicted: seed-0 bank, loss S/V/F (P12's bank
-0.93/2.87/1.82) lambda 0.1 0.92/2.91/1.76, lambda 1 0.87/2.21/1.24, lambda 10 0.77/1.61/0.88; roughness over the real
+0.93/2.87/1.81) lambda 0.1 0.92/2.91/1.76, lambda 1 0.87/2.21/1.24, lambda 10 0.77/1.61/0.88; roughness over the real
 beats' (P12 0.32/0.61/0.61) 0.30/0.56/0.57, 0.23/0.37/0.38, 0.11/0.25/0.18; S beats over 31.1 effective training patients
 for P12's bank, 29.2/30.4/24.9 at lambda 0.1/1/10, F over 3.5, 3.8/2.6/2.6. Larger weights make smoother, less varied
 banks without changing validation S F1; the rule takes the weakest weight, whose bank is close to P12's. The logged
@@ -1483,8 +1483,8 @@ the literature"; bib entry mousavi2019 added (local). Report and paper compile w
 P23 WGAN-GP (`phase6-physics-fitted-train-wgan-gp`, T4, 5d12290, exit code 0; first fit 17:49 UTC, bundle 20:07 UTC; five
 fits of 1,409-1,416 s, none diverged; 27 runs ingested from the run folders). Weight choice (validation S F1, cnn seeds
 0-2): lambda 0.1 0.756, 1 0.736, 10 0.743, lambda 0 (P12's bank) 0.708: chosen 0.1. Seed-0 bank, loss S/V/F (P12
-1.24/3.73/2.62): lambda 0.1 1.20/3.70/2.74, 1 1.18/3.53/2.23, 10 0.88/1.86/0.98; roughness (P12 1.03/0.94/0.88)
-1.02/0.89/0.96, 1.00/0.93/0.86, 0.47/0.38/0.43; S beats over 29.0 effective patients for P12's bank, 31.4/29.4/28.7 at
+1.24/3.73/2.62): lambda 0.1 1.20/3.70/2.74, 1 1.18/3.53/2.23, 10 0.88/1.85/0.98; roughness (P12 1.03/0.94/0.88)
+1.02/0.88/0.95, 1.00/0.93/0.85, 0.46/0.38/0.43; S beats over 29.0 effective patients for P12's bank, 31.4/29.4/28.7 at
 lambda 0.1/1/10, F 3.2, 3.3/3.1/3.2. As with the cVAE, a large weight smooths the bank; the rule takes the weakest
 weight, close to P12's. Figure `figures/phase6_physics_fitted/banks.png` now has both families. Scoring next.
 
@@ -1496,3 +1496,6 @@ reproduced exactly. On P19's 977 patients, S F1 (95% patient-level CI), fitted v
 Holm p 0.066. One of two secondary comparisons detects a gain, a small one. S Se/+P: cVAE 0.419/0.421 vs 0.425/0.404,
 WGAN-GP 0.349/0.462 vs 0.446/0.328 (the fitted WGAN-GP trades sensitivity for precision). Ensembles alone (descriptive):
 +0.002 (-0.003 to 0.008) and -0.006 (-0.015 to 0.003). Figure `figures/phase6_physics_fitted/results.png`. DS2 read next.
+Correction: six values in the two P23 training entries above were rounded wrongly by hand and now match
+cvae.json and wgan_gp.json (cVAE weight 0.1 validation 0.770, not 0.771; P12's F loss 1.81, not 1.82; WGAN-GP roughness
+1.02/0.88/0.95 and 0.85, loss 1.85, roughness 0.46). No decision used them.
