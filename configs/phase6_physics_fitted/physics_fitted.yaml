@@ -1,0 +1,5 @@
+# P23 (PREREGISTRATION §10 v21): P21 with the simulator fitted to each generated beat (class mean wave positions and widths
+# from P21's physics.json, heights and baseline solved per beat). Post hoc.
+experiment: phase6_physics_fitted
+physics_prior_config: configs/phase6_physics_prior/physics_prior.yaml
+lambdas: [0.1, 1.0, 10.0]

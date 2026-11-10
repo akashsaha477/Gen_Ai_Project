@@ -1,0 +1,6 @@
+# P22 (PREREGISTRATION §10 v21): phase 2's ResNet1D (variant B, its chosen learning rate, the shared budget) in P18's
+# pipeline for no augmentation, the cVAE and the WGAN-GP, seeds 0-9; compared with P18's cnn ensembles. Post hoc.
+experiment: phase6_bigger_classifier
+seed_ensemble_config: configs/phase6_seed_ensemble/seed_ensemble.yaml
+classifier_variant: B
+conditions: [none, cvae, wgan_gp]

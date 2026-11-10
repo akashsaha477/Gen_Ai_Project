@@ -2329,6 +2329,164 @@ def physics_results_figure(summary: dict, test: dict | None) -> list[Path]:
                + "Second panel: the secondary family on P19's 977 patients (Holm over three). Post hoc (PREREGISTRATION v20, P21).")  # fmt: skip
     return [_save(fig, paths.figures_for("phase6_physics_prior") / "results.png", "Before and after: physics in the generators", caption)]
 
+PAIR_NAMES = {"cnn/none": "cnn, no augmentation", "cnn/cvae": "cnn, cVAE", "cnn/wgan_gp": "cnn, WGAN-GP",
+              "resnet/none": "ResNet, no augmentation", "resnet/cvae": "ResNet, cVAE", "resnet/wgan_gp": "ResNet, WGAN-GP",
+              "cnn/cvae_fitted": "cVAE + fitted physics loss", "cnn/wgan_gp_fitted": "WGAN-GP + fitted physics loss"}
+
+
+def _pair_name(name: str) -> str:
+    """``resnet/cvae vs cnn/cvae, chosen settings`` -> ``ResNet, cVAE vs cnn, cVAE``."""
+    out = name.replace(", chosen settings", "")
+    for key in sorted(PAIR_NAMES, key=len, reverse=True):
+        out = out.replace(key, PAIR_NAMES[key])
+    return out
+
+
+def ensemble_pairs_figure(summary: dict, test: dict | None, pairs: dict[str, str], experiment: str, title: str, caption: str) -> list[Path]:
+    """Before and after for P22 and P23: each new ten-run ensemble against the P18 ensemble it is compared with (before:
+    P18's with P20's setting; after: the new one with its chosen setting), on P19's patients (S F1) and on the test
+    records (rare-class macro-F1), with the registered comparisons."""
+    plt = _plt()
+    present = {c: b for c, b in pairs.items() if c in summary["conditions"]["chosen"]}
+    panels = 2 + (2 if test is not None else 0)
+    fig, axes = plt.subplots(1, panels, figsize=(4.8 * panels, 0.45 * 2 * len(present) + 2.4))
+    rows = [(key, color, marker, f"{PAIR_NAMES[key]} ({when})") for c, b in present.items()
+            for key, color, marker, when in ((b, ENSEMBLE_COLOR, "s", "before"), (c, TUNED_COLOR, "*", "after"))]  # fmt: skip
+
+    def intervals(ax, block: dict, stat: str, xlabel: str, head: str) -> None:
+        for i, (key, color, marker, _) in enumerate(reversed(rows)):
+            _interval(ax, block[key][stat], i, color, marker=marker)
+        ax.set_yticks(range(len(rows)), [r[3] for r in reversed(rows)], fontsize=7)
+        ax.set_xlim(0, 1)
+        ax.set_xlabel(xlabel)
+        ax.set_title(head, loc="left")
+
+    intervals(axes[0], summary["conditions"]["chosen"], "f1_S", "S F1 on P19's patients (95% patient-level CI)", "P19's patients, chosen settings")
+    _comparisons_panel(axes[1], {"secondary": {_pair_name(k): v for k, v in summary["families"]["secondary"].items()}}, "after vs before, P19's patients")
+    axes[1].set_xlabel("difference in S F1 (95% CI)")
+    if test is not None:
+        intervals(axes[2], test["conditions"]["chosen"], "rare_macro_f1", "rare-class macro-F1 on the test records (95% record-level CI)", "the test records, one read")
+        _comparisons_panel(axes[3], {"confirmatory": {_pair_name(k): v for k, v in test["families"]["confirmatory"].items()}}, "after vs before, test records")
+    return [_save(fig, paths.figures_for(experiment) / "results.png", title, caption)]
+
+
+def bigger_classifier_validation_figure(members: dict, cnn: dict | None) -> list[Path]:
+    """P22 before and after on validation: each of the ten runs' validation S, V and F F1 (its kept epoch) for the cnn
+    (P18's runs) and the ResNet, per condition."""
+    plt = _plt()
+    conds = [c.split("/", 1)[1] for c in members["validation"]]
+    fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.2))
+    for ax, stat in zip(axes, ("f1_S", "f1_V", "f1_F")):
+        for j, c in enumerate(conds):
+            for k, (arch, values, color, marker) in enumerate((("cnn", (cnn or {}).get(f"cnn/{c}", {}).get(stat), ENSEMBLE_COLOR, "s"),
+                                                               ("ResNet", members["validation"][f"resnet/{c}"][stat], TUNED_COLOR, "*"))):  # fmt: skip
+                if values is None:
+                    continue
+                x = j + (k - 0.5) * 0.3
+                ax.plot([x] * len(values), values, marker, color=color, alpha=0.45, markersize=5)
+                ax.plot([x - 0.1, x + 0.1], [np.mean(values)] * 2, color=color, linewidth=2.5, label=f"{arch} (bar: mean of ten runs)" if j == 0 else None)
+        ax.set_xticks(range(len(conds)), [CONDITION_NAMES[c] for c in conds], fontsize=8)
+        ax.set_ylim(0, 1)
+        ax.set_ylabel(f"validation {stat.split('_')[1]} F1")
+        ax.set_title(f"{stat.split('_')[1]} F1, each run's kept epoch", loc="left", fontsize=9)
+    axes[0].legend(fontsize=7, frameon=False, loc="lower left")
+    p = members.get("classifier", {})
+    caption = (f"Validation F1 of the ten runs per condition: P18's cnn (squares) and phase 2's ResNet1D (stars; {p.get('n_parameters_phase2', 0):,} "
+               "parameters in phase 2's count against the cnn's 73,226), same data, banks, seeds and budget. Validation patients only. "
+               "Post hoc (PREREGISTRATION v21, P22).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_bigger_classifier") / "validation.png", "Before and after on validation: the cnn and the ResNet", caption)]
+
+
+FITTED_BANKS = {"real": "real", "templates_alone": "templates\nalone", "p12_seed0": "P12", "p21_seed0": "P21",
+                "lambda0.1_seed0": "λ 0.1", "lambda1_seed0": "λ 1", "lambda10_seed0": "λ 10"}
+
+
+def physics_fitted_check_figure(check: dict) -> list[Path]:
+    """P23's check: how much of real training beats the simulator explains with the class's positions and fitted heights
+    (P21's fit, with every parameter fitted, beside), and the loss of the banks that exist before P23 trains anything."""
+    plt = _plt()
+    classes = list(check["classes"])
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.0))
+    ax = axes[0]
+    for j, c in enumerate(classes):
+        q = check["classes"][c]["r2_quantiles"]
+        ax.plot([j, j], [q["q10"], q["q90"]], color=CLASS_COLORS[c], linewidth=3, alpha=0.5)
+        ax.plot(j, q["q50"], "o", color=CLASS_COLORS[c], markersize=9, label=f"{c}: median {q['q50']:.2f} (P21's full fit {check['classes'][c]['p21_median_r2']:.2f})")
+        ax.plot(j + 0.15, check["classes"][c]["p21_median_r2"], "s", color=INK_2, markersize=6)
+    ax.axhline(check.get("r2_stop", 0.5), color=INK_2, linewidth=1, dashes=(2, 2))
+    ax.set_xticks(range(len(classes)), classes)
+    ax.set_ylim(min(0, min(check["classes"][c]["r2_quantiles"]["q10"] for c in classes)), 1.02)
+    ax.set_ylabel("R² of real training beats")
+    ax.set_title("the simulator with the class's wave timing (dashed: stop rule)", loc="left", fontsize=9)
+    ax.legend(fontsize=7, frameon=False, loc="lower right")
+    ax = axes[1]
+    d = check["describe"]
+    names = list(d)
+    for c in classes:
+        ax.plot(range(len(names)), [d[n][c]["physics"] for n in names], "o-", color=CLASS_COLORS[c], label=c)
+    ax.axhline(1.0, color=INK_2, linewidth=1, dashes=(2, 2))
+    ax.set_xticks(range(len(names)), [n.replace("_seed0", "").replace("_", " ").replace("p12", "P12").replace("p21", "P21").replace("wgan gp", "WGAN-GP").replace("cvae", "cVAE") for n in names], fontsize=7)
+    ax.set_ylabel("fitted physics loss (real beats about 1)")
+    ax.set_title("the loss before any P23 training", loc="left", fontsize=9)
+    ax.legend(fontsize=7, frameon=False)
+    caption = ("Left: R² of P21's fitted real training beats when the simulator keeps the class's mean wave positions and widths and fits only "
+               "heights and baseline (bar: 10th-90th percentile; grey squares: P21's fit of every parameter). Right: the fitted physics loss of "
+               "real relative beats, of the templates alone (a zero deviation), and of P12's and P21's seed-0 banks (each beat plus a random "
+               "training template of its class). Training beats only. Post hoc (PREREGISTRATION v21, P23).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_physics_fitted") / "check.png", "The fitted simulator on real beats", caption)]
+
+
+def physics_fitted_banks_figure(families: dict[str, dict]) -> list[Path]:
+    """P23's weight choice and the seed-0 banks before (P12, P21) and after: fitted physics loss, roughness and spread."""
+    plt = _plt()
+    fams = [f for f in ("cvae", "wgan_gp") if f in families]
+    fig, axes = plt.subplots(2, 1 + len(fams), figsize=(4.6 * (1 + len(fams)), 8.2), squeeze=False)
+    ax = axes[0][0]
+    for f in fams:
+        table = families[f]["lambda_choice"]["table"]
+        lams = list(table)
+        ax.plot(range(len(lams)), [table[k]["mean"] for k in lams], "o-", color=FAMILY_COLORS[f], label=CONDITION_NAMES[f])
+        for i, k in enumerate(lams):
+            ax.plot([i] * len(table[k]["values"]), table[k]["values"], ".", color=FAMILY_COLORS[f], alpha=0.5)
+        chosen = lams.index(f"{families[f]['chosen_lambda']:g}")
+        ax.plot(chosen, table[lams[chosen]]["mean"], "*", color=TUNED_COLOR, markersize=15, markeredgecolor=SURFACE, zorder=5)
+        ax.set_xticks(range(len(lams)), [f"λ {k}" for k in lams])
+    ax.set_ylabel("validation S F1 (cnn seeds 0-2)")
+    ax.set_title("the weight choice (star: chosen; λ 0 beside)", loc="left", fontsize=9)
+    ax.legend(fontsize=7, frameon=False)
+    ax = axes[1][0]
+    rows = []
+    for f in fams:
+        d, lam = families[f]["describe"], f"lambda{families[f]['chosen_lambda']:g}_seed0"
+        for name, label in (("p12_seed0", "P12 (before)"), ("p21_seed0", "P21"), (lam, "fitted loss (after)")):
+            rows.append((f"{CONDITION_NAMES[f]}, {label}", d[name]["S"].get("nearest_patients"), d[name]["F"].get("nearest_patients")))
+    for i, (_, s_eff, f_eff) in enumerate(reversed(rows)):
+        ax.plot(s_eff, i, "o", color=CLASS_COLORS["S"], label="S" if i == 0 else None)
+        ax.plot(f_eff, i, "s", color=CLASS_COLORS["F"], label="F" if i == 0 else None)
+    ax.set_yticks(range(len(rows)), [r[0] for r in reversed(rows)], fontsize=7)
+    ax.set_xlabel("effective number of training patients (nearest real beat)")
+    ax.set_title("spread over patients", loc="left", fontsize=9)
+    ax.legend(fontsize=7, frameon=False)
+    for j, f in enumerate(fams):
+        d = families[f]["describe"]
+        names = [n for n in FITTED_BANKS if n in d]
+        for r, (key, ylabel) in enumerate((("physics", "fitted physics loss (real about 1)"), ("roughness", "roughness over the real beats'"))):
+            ax = axes[r][j + 1]
+            shown = [n for n in names if key in d[n]["S"]]
+            for c in ("S", "V", "F"):
+                ax.plot(range(len(shown)), [d[n][c][key] for n in shown], "o-", color=CLASS_COLORS[c], label=c)
+            ax.axhline(1.0, color=INK_2, linewidth=1, dashes=(2, 2))
+            ax.set_xticks(range(len(shown)), [FITTED_BANKS[n] for n in shown], fontsize=7)
+            ax.set_ylabel(ylabel)
+            ax.set_title(f"{CONDITION_NAMES[f]}: {'physics loss' if r == 0 else 'roughness'}, before and after", loc="left", fontsize=9)
+            ax.legend(fontsize=7, frameon=False)
+    caption = ("Top left: mean validation S F1 of three cnn runs per weight λ of the fitted physics loss (dots: the runs; star: the chosen λ; λ 0 is "
+               "P12's bank). Right: the seed-0 banks' fitted physics loss and roughness (mean squared first difference) per class, before (P12, "
+               "P21) and after (λ 0.1, 1, 10); real relative beats and the templates alone beside; dashed: the real beats' level. Bottom left: over "
+               "how many training patients the synthetic S and F beats spread. Training beats only. Post hoc (PREREGISTRATION v21, P23).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_physics_fitted") / "banks.png", "The weight choice and the banks, before and after", caption)]
+
+
 def posthoc_figures() -> list[Path]:
     """Every post-hoc figure whose summary exists (PREREGISTRATION v4, P1-P4); nothing is re-run."""
     final, written = _summary("final_eval"), []
@@ -2417,7 +2575,34 @@ def posthoc_figures() -> list[Path]:
         written += physics_banks_figure(fams, _summary("phase6_physics_prior", "fusion.json"))
     if (s := _summary("phase6_physics_prior")) is not None:
         written += physics_results_figure(s, _summary("phase6_physics_prior", "test_summary.json"))
+    if (m := _summary("phase6_bigger_classifier", "members.json")) is not None:
+        from ecgaug.experiments.phase6_bigger_classifier import cnn_validation
+
+        written += bigger_classifier_validation_figure(m, cnn_validation())
+    if (s := _summary("phase6_bigger_classifier")) is not None:
+        from ecgaug.experiments.phase6_bigger_classifier import PAIRS as P22_PAIRS
+
+        written += ensemble_pairs_figure(s, _summary("phase6_bigger_classifier", "test_summary.json"), P22_PAIRS, "phase6_bigger_classifier",
+                                         "Before and after: a larger classifier", BIGGER_CAPTION)  # fmt: skip
+    if (c := _summary("phase6_physics_fitted", "physics.json")) is not None:
+        written += physics_fitted_check_figure(c)
+    fitted = {f: d for f in ("cvae", "wgan_gp") if (d := _summary("phase6_physics_fitted", f"{f}.json")) is not None}
+    if fitted:
+        written += physics_fitted_banks_figure(fitted)
+    if (s := _summary("phase6_physics_fitted")) is not None:
+        from ecgaug.experiments.phase6_physics_fitted import PAIRS as P23_PAIRS
+
+        written += ensemble_pairs_figure(s, _summary("phase6_physics_fitted", "test_summary.json"), P23_PAIRS, "phase6_physics_fitted",
+                                         "Before and after: the fitted physics loss", FITTED_CAPTION)  # fmt: skip
     return written
+
+
+BIGGER_CAPTION = ("Squares: P18's cnn ensemble (ten runs) with the setting P20 chose for it; stars: phase 2's ResNet1D (ten runs, same data, banks, "
+                  "seeds and budget) with the setting chosen for it on P14's patients by P20's rule. Comparisons: the ResNet against the cnn per "
+                  "condition, Holm over three (secondary on P19's 977 patients, confirmatory on the test records). Post hoc (PREREGISTRATION v21, P22).")
+FITTED_CAPTION = ("Squares: P18's ten-run ensemble of the generator a condition changes, with the setting P20 chose for it; stars: the generator "
+                  "trained with the fitted physics loss (ten runs) with the setting chosen for it on P14's patients by P20's rule. Comparisons: "
+                  "Holm over two (secondary on P19's 977 patients, confirmatory on the test records). Post hoc (PREREGISTRATION v21, P23).")
 
 
 def quality_vs_gain_figure(summary: dict, rows: list[dict]) -> list[Path]:

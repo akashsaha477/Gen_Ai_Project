@@ -91,6 +91,35 @@ def euler_distance(beats: torch.Tensor, eta: torch.Tensor, omega: torch.Tensor) 
     return (residual**2).sum(dim=1)
 
 
+def simulation_fit(beats: torch.Tensor, omega: torch.Tensor, positions: torch.Tensor, widths: torch.Tensor) -> dict[str, torch.Tensor]:
+    """The simulator's beat closest to each beat for given wave positions and widths (P23, PREREGISTRATION §10 v21).
+
+    For given positions and widths the simulated beat (explicit Euler steps from the beat's first sample) is linear in the
+    heights and the baseline, so they are solved exactly per beat by least squares, differentiably. ``positions`` and
+    ``widths`` are [5] (the same for every beat) or [B, 5]. Returns ``distance`` [B] (summed squared difference between
+    the beat and its simulated beat) and ``r2`` [B] (1 - distance over the beat's sum of squares about its mean), in
+    float64."""
+    x = beats.to(torch.float64)
+    b, n = x.shape
+    decay, m = euler_matrices(n, torch.float64, x.device)
+    w = omega.to(device=x.device, dtype=torch.float64).reshape(-1)
+    pos = positions.to(device=x.device, dtype=torch.float64).reshape(-1, len(WAVES)).expand(b, -1)
+    wid = widths.to(device=x.device, dtype=torch.float64).reshape(-1, len(WAVES)).expand(b, -1).clamp_min(MIN_WIDTH)
+    design = _design(phase(w, n), pos, wid, m)
+    start = decay * x[:, :1]
+    coef = _solve(design, x - start)
+    distance = ((x - start - (design @ coef[:, :, None])[:, :, 0]) ** 2).sum(dim=1)
+    sst = ((x - x.mean(dim=1, keepdim=True)) ** 2).sum(dim=1)
+    return {"distance": distance, "r2": 1.0 - distance / sst.clamp_min(1e-30)}
+
+
+def class_shape(distribution: dict[str, list[float]]) -> tuple[torch.Tensor, torch.Tensor]:
+    """A class's mean wave positions and widths [5] each, from its fitted parameter distribution (``physics.json``)."""
+    mean = torch.tensor(distribution["mean"], dtype=torch.float64)
+    positions, _, widths, _ = split_eta(mean[None])
+    return positions[0], widths[0]
+
+
 def _design(theta: torch.Tensor, positions: torch.Tensor, widths: torch.Tensor, m: torch.Tensor) -> torch.Tensor:
     """Columns [B, L, 6] of the simulated beat's linear part: -M @ bump_i for the five heights, M @ 1 for the baseline."""
     waves = -(bumps(theta, positions, widths) @ m.T)  # [B, 5, L]
@@ -215,3 +244,49 @@ class EulerPrior:
             whole = beats[mask] * self.scale + entry["templates"][pick]
             terms.append(euler_distance(whole, eta, entry["omega"][pick]) / entry["kappa"])
         return torch.cat(terms).mean() if terms else None
+
+
+class FittedPrior:
+    """P23's physics loss for generated patient-relative beats (PREREGISTRATION §10 v21).
+
+    A generated beat of class c (in the generator's scaled units) is multiplied back by ``scale`` and gets the template
+    and omega of a training beat of class c drawn at random, as in P21. The simulator, with class c's mean wave positions
+    and widths and the heights and baseline fitted to this whole beat, explains part of it; the loss is the rest (summed
+    squared difference) over the class's ``kappa`` (real whole beats score 1 on average). Classes without a pool (N) get
+    no loss. Random draws come from torch's global generator, which ``BeatGenerator.fit`` seeds."""
+
+    def __init__(self, classes: dict[int, dict], scale: float) -> None:
+        self.scale = float(scale)
+        self.classes = classes  # class index -> {"templates", "omega", "positions", "widths", "kappa"} (tensors except kappa)
+
+    def to(self, device: torch.device | str) -> FittedPrior:
+        self.classes = {c: {k: (v.to(device) if isinstance(v, torch.Tensor) else v) for k, v in entry.items()} for c, entry in self.classes.items()}
+        return self
+
+    @classmethod
+    def build(cls, pools: dict[int, tuple[np.ndarray, np.ndarray]], shapes: dict[int, dict], scale: float) -> FittedPrior:
+        """``pools[c] = (templates [n, L], omega [n])``; ``shapes[c] = {"mean": P21's fitted parameter means, "kappa": kappa'_c}``."""
+        classes = {}
+        for c, (templates, omega) in pools.items():
+            positions, widths = class_shape(shapes[c])
+            classes[int(c)] = {"templates": torch.as_tensor(np.asarray(templates, dtype=np.float32)),
+                               "omega": torch.as_tensor(np.asarray(omega, dtype=np.float32)),
+                               "positions": positions, "widths": widths, "kappa": float(shapes[c]["kappa"])}  # fmt: skip
+        return cls(classes, scale)
+
+    def per_beat(self, beats: torch.Tensor, labels: torch.Tensor) -> dict[int, torch.Tensor]:
+        """Each class's per-beat loss (float64) for the beats of that class."""
+        out = {}
+        for c, entry in self.classes.items():
+            mask = labels == c
+            n = int(mask.sum())
+            if n == 0:
+                continue
+            pick = torch.randint(entry["templates"].shape[0], (n,), device=beats.device)
+            whole = beats[mask] * self.scale + entry["templates"][pick]
+            out[c] = simulation_fit(whole, entry["omega"][pick], entry["positions"], entry["widths"])["distance"] / entry["kappa"]
+        return out
+
+    def __call__(self, beats: torch.Tensor, labels: torch.Tensor) -> torch.Tensor | None:
+        terms = self.per_beat(beats, labels)
+        return torch.cat(list(terms.values())).mean().to(beats.dtype) if terms else None

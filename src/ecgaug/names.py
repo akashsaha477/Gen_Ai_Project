@@ -73,12 +73,15 @@ PHASE6_SEED_ENSEMBLE = "phase6_seed_ensemble"  # the cnn's probabilities average
 PHASE6_FRESH_PATIENTS = "phase6_fresh_patients"  # P18's frozen pipeline on 1,000 unused Icentia11k patients (v18)
 PHASE6_RULE_TUNING = "phase6_rule_tuning"  # Huang's stage and the AF veto chosen on 400 Icentia11k patients (v19)
 PHASE6_PHYSICS_PRIOR = "phase6_physics_prior"  # a physics prior for the generators and physiological fusion beats (v20)
+PHASE6_BIGGER_CLASSIFIER = "phase6_bigger_classifier"  # phase 2's ResNet1D in P18's pipeline (v21)
+PHASE6_PHYSICS_FITTED = "phase6_physics_fitted"  # P21 with the simulator fitted to each generated beat (v21)
 POST_HOC: tuple[str, ...] = (PHASE6_RR_REFERENCE, PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS, PHASE6_AUDIT_CHECK, PHASE6_RR_BASELINE,
                              PHASE6_PATIENT_TEMPLATE, PHASE6_RELATIVE_CNN, PHASE6_AUGMENTATION_MECHANISM,
                              PHASE6_PATIENT_TRANSFER, PHASE6_PATIENT_ADAPTATION, PHASE6_MORE_PATIENTS, PHASE6_RELATIVE_GENERATORS,
                              PHASE6_RECORD_RR, PHASE6_ICENTIA, PHASE6_DIFFUSION,
                              PHASE6_AF_RULE, PHASE6_DIFFUSION_LONG, PHASE6_SEED_ENSEMBLE,
-                             PHASE6_FRESH_PATIENTS, PHASE6_RULE_TUNING, PHASE6_PHYSICS_PRIOR)
+                             PHASE6_FRESH_PATIENTS, PHASE6_RULE_TUNING, PHASE6_PHYSICS_PRIOR,
+                             PHASE6_BIGGER_CLASSIFIER, PHASE6_PHYSICS_FITTED)
 
 # Result folders that travel back from Kaggle: every experiment's, plus the full grid's ledger.
 RESULT_FOLDERS: tuple[str, ...] = (*EXPERIMENTS, PHASE4_FULL_GRID, *POST_HOC)

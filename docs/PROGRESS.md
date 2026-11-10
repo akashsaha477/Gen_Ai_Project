@@ -1368,3 +1368,24 @@ template, so a generator that outputs nearly nothing already gets a real beat's 
 unchanged (S about 29-31 effective patients, F about 3-4, before and after). Figure
 `figures/phase6_physics_prior/banks.png` (Euler panels on a linear scale; caption says what kappa and the 'real' point
 mean). No figure was replaced by the ingest. Next: the score session on P14's and P19's patients, then the DS2 read.
+
+P21 scoring (`phase6-physics-prior-score`, T4, cb40777, exit code 0; P20's baseline values reproduced, or the run would
+have refused). Both new conditions chose stage 0.70 with veto 0.80 on P14's patients. On P19's 977 patients (printed by
+the session; the result files are still to be downloaded, the Kaggle listing endpoint rate-limited the download): S F1
+difference against P18's ensemble -0.002 for the cVAE with the Euler loss (Holm p 1.0) and +0.022 for the WGAN-GP with it
+(Holm p 0.116). Neither is detectable.
+
+P22 and P23 (v21, A43), asked "do these things and then also try with a bigger model and also try with changing the model
+a bit", chose "Bigger classifier" and "Fix the physics loss". P22 `phase6_bigger_classifier`: phase 2's ResNet1D (488,362
+parameters in phase 2's count, the cnn 73,226; validation S F1 0.231 against the cnn's 0.349 at phase 2) in P18's
+pipeline for none, cVAE and WGAN-GP, seeds 0-9, compared with P18's cnn ensembles (Holm 3). P23 `phase6_physics_fitted`:
+P21's design with the simulator's heights and baseline fitted to each generated beat at the class's mean wave timing, the
+loss what the simulator cannot explain (Holm 2). Before committing v21, two forms were checked on 60 DS1 training beats
+per class (v1 read directly; training split only): the derivative (Euler) form explained median 0.28/0.35/0.47/0.82
+(N/S/V/F) and smoothing cut its distance to 16-48% of the real beat's, so it mostly measures roughness; the signal form
+explained 0.72/0.72/0.93/0.97, noise of 0.05 SD raised it 1-6% and smoothing cut it to 53-82%. The signal form is
+registered. v21 committed and tagged `prereg-v21` (4315d21, pushed) before P21's DS2 read. Code: `generators/physics.py`
+(`simulation_fit`, `class_shape`, `FittedPrior`), `experiments/ensemble_compare.py` (choose on P14's patients, score
+P19's, the DS2 read, shared by P22 and P23), `experiments/phase6_bigger_classifier.py`, `experiments/phase6_physics_fitted.py`,
+configs, notebooks, figures (`ensemble_pairs_figure`, P22's validation figure, P23's check and bank figures), paper text;
+14 new tests pass with P21's. Compute about 1.5 (P22) and 5.5 (P23) GPU-hours.

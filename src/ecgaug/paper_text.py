@@ -345,6 +345,96 @@ def posthoc_physics_prior() -> str:
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
 
 
+PAIR_SHORT = {"cnn/none": "the cnn without augmentation", "cnn/cvae": "the cnn with the cVAE", "cnn/wgan_gp": "the cnn with the WGAN-GP",
+              "resnet/none": "the ResNet without augmentation", "resnet/cvae": "the ResNet with the cVAE", "resnet/wgan_gp": "the ResNet with the WGAN-GP",
+              "cnn/cvae_fitted": "the cVAE with the fitted loss", "cnn/wgan_gp_fitted": "the WGAN-GP with the fitted loss"}
+
+
+def _pairs_family(items: dict) -> str:
+    out = []
+    for name, c in items.items():
+        a, b = name.replace(", chosen settings", "").split(" vs ")
+        out.append(f"{PAIR_SHORT[a]} against {PAIR_SHORT[b]} {_ci(c, signed=True)}, {_p(c)} ({_changed(c)})")
+    return "; ".join(out)
+
+
+def _pairs_results(s: dict | None, test: dict | None, pairs: dict, label: str, missing: str) -> str:
+    """P19's patients and the test read for a P22- or P23-style comparison of new ensembles with P18's."""
+    if s is None:
+        return " " + _missing(f"{missing}: the scoring session on Kaggle")
+    sc = s["conditions"]["chosen"]
+    rows = "; ".join(f"{PAIR_SHORT[c]} {_n(sc[c]['f1_S']['point'])} ({PAIR_SHORT[b]} {_n(sc[b]['f1_S']['point'])})" for c, b in pairs.items())
+    text = (f" On P19's {s['patients']:,} patients, S F1 with the chosen settings: {rows} (Figure~\\ref{{{label}}}). Secondary: "
+            f"{_pairs_family(s['families']['secondary'])}.")  # fmt: skip
+    if test is None:
+        return text + " " + _missing(f"{missing}: --part test on Kaggle")
+    tc = test["conditions"]["chosen"]
+    rows = "; ".join(f"{PAIR_SHORT[c]} {_n(tc[c]['rare_macro_f1']['point'])} (S F1 {_n(tc[c]['f1_S']['point'])}, F F1 {_n(tc[c]['f1_F']['point'])}; "
+                     f"{PAIR_SHORT[b]} {_n(tc[b]['rare_macro_f1']['point'])})" for c, b in pairs.items())  # fmt: skip
+    return text + f" On the test records (one read), rare-class macro-F1: {rows}. Confirmatory: {_pairs_family(test['families']['confirmatory'])}."
+
+
+def posthoc_bigger_classifier() -> str:
+    """P22: phase 2's ResNet1D in P18's pipeline."""
+    from ecgaug.experiments.phase6_bigger_classifier import PAIRS, cnn_validation
+    from ecgaug.names import PHASE6_BIGGER_CLASSIFIER
+
+    folder = paths.results_for(PHASE6_BIGGER_CLASSIFIER)
+    m, s, test = (_load(folder / n) for n in ("members.json", "summary.json", "test_summary.json"))
+    text = ("\\paragraph{A larger classifier (P22).} The rare classes might need more capacity than the P7 cnn has. Phase 2's ResNet1D (a stem "
+            "convolution and four residual stages, about 6.7 times the cnn's parameters), which lost to the cnn at phase 2 before the pipeline "
+            "had patient-relative beats, RR features and the banks, was trained in P18's pipeline with phase 2's learning rate for it and the "
+            "budget every phase 2 classifier shared, for no augmentation, the cVAE and the WGAN-GP, ten seeds each; Huang's stage and the veto "
+            "were chosen for each ResNet ensemble on P14's patients by P20's rule.")  # fmt: skip
+    if m is None:
+        return text + " " + _missing("P22: --part run on Kaggle") + "\n"
+    cnn = cnn_validation() or {}
+    rows = []
+    for c in m["validation"]:
+        r = m["validation"][c]["f1_S"]
+        base = cnn.get(c.replace("resnet/", "cnn/"), {}).get("f1_S")
+        rows.append(f"{PAIR_SHORT[c]} {_n(float(np.mean(r)))} (SD {_n(float(np.std(r, ddof=1)))})"
+                    + (f" against {_n(float(np.mean(base)))} (SD {_n(float(np.std(base, ddof=1)))}) for the cnn" if base else ""))  # fmt: skip
+    text += " Validation S F1 over the ten runs: " + "; ".join(rows) + " (Figure~\\ref{fig:p22-val})."
+    text += _pairs_results(s, test, PAIRS, "fig:p22", "P22")
+    return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
+
+
+def posthoc_physics_fitted() -> str:
+    """P23: P21 with the simulator fitted to each generated beat."""
+    from ecgaug.experiments.phase6_physics_fitted import PAIRS
+    from ecgaug.names import PHASE6_PHYSICS_FITTED
+
+    folder = paths.results_for(PHASE6_PHYSICS_FITTED)
+    check, s, test = (_load(folder / n) for n in ("physics.json", "summary.json", "test_summary.json"))
+    fams = {f: d for f in ("cvae", "wgan_gp") if (d := _load(folder / f"{f}.json")) is not None}
+    text = ("\\paragraph{A fitted physics loss (P23).} P21's loss drew the simulator's parameters at random, so its value was set by the draw. "
+            "P23 keeps P21's design and changes only the loss: each generated beat, with a real training template added, is compared with the "
+            "simulator's beat that fits it best for the class's mean wave timing (heights and baseline solved exactly per beat), and the loss is "
+            "what the simulator cannot explain, scaled so real training beats score 1. In SimGANs' derivative form this loss mostly measured "
+            "roughness on 60 training beats per class checked before the pre-registration, so the signal form was registered.")  # fmt: skip
+    if check is None:
+        return text + " " + _missing("P23: --part check on Kaggle") + "\n"
+    c = check["classes"]
+    text += (" With the class's wave timing the simulator explained a median R$^2$ of "
+             + ", ".join(f"{_n(c[k]['median_r2'], 2)} ({k})" for k in c)
+             + " of the real training beats (Figure~\\ref{fig:p23-check}).")  # fmt: skip
+    if not check["physics_passed"]:
+        return text + " This fell below the pre-registered stop rule (median R$^2$ 0.5), so neither condition was run.\n"
+    if len(fams) < 2:
+        return text + " " + _missing("P23: --part train (both families) on Kaggle") + "\n"
+    parts = []
+    for f, d in fams.items():
+        t, lam = d["lambda_choice"]["table"], f"{d['chosen_lambda']:g}"
+        before, after = d["describe"]["p12_seed0"], d["describe"][f"lambda{lam}_seed0"]
+        parts.append(f"{SHORT[f]}: weight {lam} (validation S F1 {_n(t[lam]['mean'])}, weight 0 {_n(t['0']['mean'])}); fitted loss of the "
+                     "seed-0 bank " + ", ".join(f"{k} {_n(after[k]['physics'], 2)} ({_n(before[k]['physics'], 2)})" for k in ("S", "V", "F"))
+                     + ", roughness " + ", ".join(f"{k} {_n(after[k]['roughness'], 2)} ({_n(before[k]['roughness'], 2)})" for k in ("S", "V", "F")))  # fmt: skip
+    text += " Chosen on validation, with P12's banks in brackets: " + "; ".join(parts) + " (Figure~\\ref{fig:p23-banks})."
+    text += _pairs_results(s, test, PAIRS, "fig:p23", "P23")
+    return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
+
+
 def _count_word(n: int) -> str:
     return "none" if int(n) == 0 else f"{int(n):,}"
 
@@ -1996,6 +2086,8 @@ def build() -> dict[str, str]:
     files["results_fresh_patients"] = posthoc_fresh_patients()
     files["results_rule_tuning"] = posthoc_rule_tuning()
     files["results_physics_prior"] = posthoc_physics_prior()
+    files["results_bigger_classifier"] = posthoc_bigger_classifier()
+    files["results_physics_fitted"] = posthoc_physics_fitted()
     files["table_posthoc"] = posthoc_table()
     files["outlook"] = outlook(heading=False)
     files["discussion"] = discussion()
