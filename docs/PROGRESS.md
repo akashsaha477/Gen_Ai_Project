@@ -1397,3 +1397,15 @@ reproduced exactly (difference 0.0). S F1 on P19's 977 patients (95% patient-lev
 three). V F1 fell for both (0.648 to 0.621; 0.683 to 0.634). Ensembles alone (descriptive): WGAN-GP 0.259 to 0.303. Since
 the Euler loss left the banks at P12's level, the WGAN-GP difference more likely comes from training three more WGAN-GPs
 and keeping the best on validation than from physics. Figure `figures/phase6_physics_prior/results.png`.
+
+P23 check (`phase6-physics-fitted-check`, CPU, 1889b7a, exit code 0). With each class's mean wave timing from P21 and the
+heights and baseline fitted, the simulator explains median R^2 0.834 (S; 10th-90th percentile 0.52-0.96), 0.939 (V;
+0.78-0.98) and 0.958 (F; 0.78-0.98) of P21's fitted real whole training beats (P21's full fits 0.986, 0.995, 0.996):
+above the stop rule, so both conditions go ahead. kappa' S 39.3, V 17.6, F 14.7. Descriptive, loss over kappa' with a
+random training template of the class as in training: real relative beats S 1.02, V 3.20, F 2.75 (a beat's own template
+gives 1 by construction; another patient's template does not fit a V or F deviation as well); templates alone (a zero
+deviation) 0.74, 2.14, 1.11; P12's cVAE bank 0.93, 2.87, 1.82 and WGAN-GP bank 1.24, 3.73, 2.62; P21's banks 0.93,
+3.03, 1.81 and 1.27, 4.04, 3.07. The cVAE banks are smoother than real beats (roughness 0.32-0.61 of the real) and already
+score below them; the WGAN-GP banks are as rough as real beats and score higher. Expectation from this, before training:
+the loss will mostly push the WGAN-GP toward smoother beats. Only physics.json was downloaded (the 2.3 GB zip holds the
+attached banks). Figure `figures/phase6_physics_fitted/check.png`.

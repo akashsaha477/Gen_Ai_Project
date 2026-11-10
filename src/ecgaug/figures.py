@@ -2426,13 +2426,14 @@ def physics_fitted_check_figure(check: dict) -> list[Path]:
         ax.plot(range(len(names)), [d[n][c]["physics"] for n in names], "o-", color=CLASS_COLORS[c], label=c)
     ax.axhline(1.0, color=INK_2, linewidth=1, dashes=(2, 2))
     ax.set_xticks(range(len(names)), [n.replace("_seed0", "").replace("_", " ").replace("p12", "P12").replace("p21", "P21").replace("wgan gp", "WGAN-GP").replace("cvae", "cVAE") for n in names], fontsize=7)
-    ax.set_ylabel("fitted physics loss (real beats about 1)")
+    ax.set_ylabel("fitted physics loss over κ′ (dashed: 1)")
     ax.set_title("the loss before any P23 training", loc="left", fontsize=9)
     ax.legend(fontsize=7, frameon=False)
     caption = ("Left: R² of P21's fitted real training beats when the simulator keeps the class's mean wave positions and widths and fits only "
                "heights and baseline (bar: 10th-90th percentile; grey squares: P21's fit of every parameter). Right: the fitted physics loss of "
                "real relative beats, of the templates alone (a zero deviation), and of P12's and P21's seed-0 banks (each beat plus a random "
-               "training template of its class). Training beats only. Post hoc (PREREGISTRATION v21, P23).")  # fmt: skip
+               "training template of its class, as in training). κ′ makes real whole beats with their own templates average 1 (dashed); with a "
+               "random template of their class real V and F beats score higher. Training beats only. Post hoc (PREREGISTRATION v21, P23).")  # fmt: skip
     return [_save(fig, paths.figures_for("phase6_physics_fitted") / "check.png", "The fitted simulator on real beats", caption)]
 
 
@@ -2470,7 +2471,7 @@ def physics_fitted_banks_figure(families: dict[str, dict]) -> list[Path]:
     for j, f in enumerate(fams):
         d = families[f]["describe"]
         names = [n for n in FITTED_BANKS if n in d]
-        for r, (key, ylabel) in enumerate((("physics", "fitted physics loss (real about 1)"), ("roughness", "roughness over the real beats'"))):
+        for r, (key, ylabel) in enumerate((("physics", "fitted physics loss over κ′ (dashed: 1)"), ("roughness", "roughness over the real beats'"))):
             ax = axes[r][j + 1]
             shown = [n for n in names if key in d[n]["S"]]
             for c in ("S", "V", "F"):
@@ -2482,7 +2483,8 @@ def physics_fitted_banks_figure(families: dict[str, dict]) -> list[Path]:
             ax.legend(fontsize=7, frameon=False)
     caption = ("Top left: mean validation S F1 of three cnn runs per weight λ of the fitted physics loss (dots: the runs; star: the chosen λ; λ 0 is "
                "P12's bank). Right: the seed-0 banks' fitted physics loss and roughness (mean squared first difference) per class, before (P12, "
-               "P21) and after (λ 0.1, 1, 10); real relative beats and the templates alone beside; dashed: the real beats' level. Bottom left: over "
+               "P21) and after (λ 0.1, 1, 10); real relative beats and the templates alone beside; dashed: 1, real whole beats with their own "
+               "templates (loss) and the real beats' roughness. Bottom left: over "
                "how many training patients the synthetic S and F beats spread. Training beats only. Post hoc (PREREGISTRATION v21, P23).")  # fmt: skip
     return [_save(fig, paths.figures_for("phase6_physics_fitted") / "banks.png", "The weight choice and the banks, before and after", caption)]
 
