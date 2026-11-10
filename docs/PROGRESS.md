@@ -1518,3 +1518,8 @@ figure never read test data; the label now says "test: the other 22 records". Su
 GPU time by Kaggle session clock (setup and bundling included, so above the training-only figures given earlier): P21
 5.75 hours (cVAE 2.24, WGAN-GP 2.40, scoring 1.11); P22 3.0 (estimated 1.5); P23 6.7 (cVAE 2.77, WGAN-GP 2.91, scoring
 1.05; estimated 5.5).
+
+Full test suite on Kaggle at f90f7df (`phase6-suite-p23b`, CPU): exit code 0; 426 passed, 2 skipped, 0 failed (852
+progress marks and 4 skip marks halved, against the 428 collected locally). Pushed f90f7df to main (fast-forward from
+94bdb48, 32 commits: P21's results, P22, P23, the architecture section, the metrics and literature section). P21, P22 and
+P23 are done. This note goes out with the next suite-tested push.
