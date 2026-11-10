@@ -2746,7 +2746,7 @@ def architecture_flow_figure() -> list[Path]:
     score = best["score"]["point"] if best["score"] else None
     columns = ["Data", "Beat", "Augmentation", "Classifier", "Decision", "Explanation", "Note"]
     top = [
-        "MIT-BIH Arrhythmia Database\nlead MLII, 360 Hz, paced excluded\nDS1: training + validation\nDS2: 22 test records",
+        "MIT-BIH Arrhythmia Database\nlead MLII, 360 Hz, paced excluded\nDS1: training + validation\ntest: the other 22 records",
         "window ±0.25 s (180 samples)\nper-beat z-score\nRR: previous, next and ratio\n(representation C)",
         "frozen banks: cVAE D, WGAN-GP A\nSMOTE · random oversampling\nclass-weighted loss\npolicy D (screened, fraction of N)",
         f"cnn: shallow CNN ({p['Shallow CNN (the cnn)']})\nrnn: BiLSTM ({p['BiLSTM (the rnn)']})\n3 seeds, early stopping\non validation S F1",

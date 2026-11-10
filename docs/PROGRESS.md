@@ -1510,3 +1510,11 @@ ensemble almost never predicts F on the test records). Without record 202: 0.484
 records only as a non-detectable +0.006; for the WGAN-GP the F score, which depends on very few test patients, drops.
 More seeds per weight and more patients with F beats are needed to tell. P18's 0.587 stays the highest test score.
 Figure `figures/phase6_physics_fitted/results.png` with the test panels. P23 is done.
+
+Full test suite on Kaggle at d2e4113 (`phase6-suite-p23`, CPU): 425 passed, 2 skipped, 1 failed (850 progress marks
+halved, against the 428 collected locally). The failure was `test_figure_code_reads_no_test_data`: the architecture flow
+figure (9dbb6f5) wrote "DS2: 22 test records" in a box label, and the guard forbids the string in the figure code. The
+figure never read test data; the label now says "test: the other 22 records". Suite to be re-run before pushing main.
+GPU time by Kaggle session clock (setup and bundling included, so above the training-only figures given earlier): P21
+5.75 hours (cVAE 2.24, WGAN-GP 2.40, scoring 1.11); P22 3.0 (estimated 1.5); P23 6.7 (cVAE 2.77, WGAN-GP 2.91, scoring
+1.05; estimated 5.5).
