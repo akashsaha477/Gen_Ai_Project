@@ -1287,5 +1287,12 @@ on DS1, INCART and SVDB only). The choice goes to `choice.json` before P19's pat
 rebuilt and must reproduce P19's `content_sha256`. Confirmatory (Holm, 6): chosen vs P19's setting on S F1; secondary
 (Holm, 6): chosen vs the ensemble alone; DS2 (Holm, 6, one logged read, the 15th): chosen vs P18's setting on rare-class
 macro-F1, P18's values reproduced exactly. Code: P19's build split into `build_set` (P19's output unchanged) and P18's
-DS2 construction into `ds2_inputs` (P18's test read unchanged); 8 new tests. Plan on Kaggle: build on CPU (1,400
+DS2 construction into `ds2_inputs` (P18's test read unchanged); 9 new tests. Plan on Kaggle: build on CPU (1,400
 segments), predict on one T4 session with the build output attached as a kernel input (about 0.7 GPU-hours), DS2 on CPU.
+
+Build on Kaggle CPU at 39ffbe9 (`phase6-rule-tuning-build`, about 1 h, exit code 0; ingested in af9a8fb). Tuning set
+(P14's 400 patients): 388 segments used, 12 excluded; N 1,437,032, S 15,646, V 7,357 beats; S in 200 patients, V in 152;
+no S-dominant patient, largest share of all S beats from one patient 9.7%. Evaluation set (P19's draw): 977 used, 23
+excluded, N 3,675,681, S 34,072, V 29,473 beats, `content_sha256` equal to P19's (`evaluation_matches_p19: true`).
+No access-log row (no DS2 read in the build). GPU prediction (`phase6-rule-tuning-run`, T4) pushed at af9a8fb with the
+build output attached as a kernel input.
