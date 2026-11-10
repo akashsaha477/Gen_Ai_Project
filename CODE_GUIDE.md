@@ -438,6 +438,8 @@ convolutional, `last_conv` (for Grad-CAM). `build_model` builds any of them from
 - `physics.py` (P21): McSharry et al.'s ECG simulator (`simulate`, `euler_distance`, `fit` by least squares) and
   `EulerPrior`, SimGANs' Euler loss for generated patient-relative beats. A generator's optional `prior` and
   `prior_weight` add it to the cVAE's and WGAN-GP's objectives; without them training is unchanged.
+  P23 adds `simulation_fit` (the simulator's best beat for given wave positions and widths, heights and baseline
+  solved exactly per beat), `class_shape` and `FittedPrior`, the loss of what the simulator cannot explain.
 
 ### `experiments/generator_runs.py` — the runner of both phase 3 experiments
 
@@ -482,7 +484,7 @@ precondition before the first test byte, predicts the test set with every frozen
 - `demo.py`: `explain_beat` classifies, explains and describes one beat and saves the figure.
 - `paper.py`: `build()` writes the paper's tables and numbers from the result files.
 
-### `experiments/phase6_*.py` — the post hoc analyses P1-P21
+### `experiments/phase6_*.py` — the post hoc analyses P1-P23
 
 Each file runs one post hoc analysis (`PROJECT_GUIDE.md` section 5.15 says what each asks), listed in `names.POST_HOC`;
 most have a config folder `configs/<experiment>/` and a notebook `kaggle/<experiment>.ipynb`. The command line runs one
@@ -491,7 +493,7 @@ analysis's one read of the test records: it needs `ALLOW_TEST_POSTHOC=1` and is 
 P2 and P8 read no test records; P4 reads them once under the audit permission (`ALLOW_TEST_AUDIT=1`). Results go to
 `results/<experiment>/`: `selection.json` from validation, `summary.json` from the test read. Later analyses reuse
 earlier ones' code: P17, for example, calls P15's `train_generators`, `diffusion_grid` and `select` under its own
-experiment name, and P18 trains new seeds of P13's grid and averages them with the existing runs (`--part check` writes the run IDs to `members.json` before the test read). P19 reads no test records: `--part build` downloads and builds the Icentia11k patients, `--part evaluate` scores P18's frozen runs on them, and `--part run` does both. P20 builds Icentia11k patients on a CPU session (`--part build`) and predicts them on a GPU session that takes the build session's output as an input (`--part run`); the choice is written to `choice.json` before the evaluation patients are scored. P21 (`phase6_physics_prior`) fits McSharry et al.'s simulator to training beats (`--part check`, with pre-registered stop rules), trains P12's generators with the Euler loss (`--part train --family`), makes fusion banks (`--part fusion`) and reuses P20's choice and scoring code (`--part score`, `--part test`). From P9 on, each test report also recomputes the earlier test scores it compares against and records
+experiment name, and P18 trains new seeds of P13's grid and averages them with the existing runs (`--part check` writes the run IDs to `members.json` before the test read). P19 reads no test records: `--part build` downloads and builds the Icentia11k patients, `--part evaluate` scores P18's frozen runs on them, and `--part run` does both. P20 builds Icentia11k patients on a CPU session (`--part build`) and predicts them on a GPU session that takes the build session's output as an input (`--part run`); the choice is written to `choice.json` before the evaluation patients are scored. P21 (`phase6_physics_prior`) fits McSharry et al.'s simulator to training beats (`--part check`, with pre-registered stop rules), trains P12's generators with the Euler loss (`--part train --family`), makes fusion banks (`--part fusion`) and reuses P20's choice and scoring code (`--part score`, `--part test`). P22 (`phase6_bigger_classifier`) trains phase 2's ResNet1D in P18's grid and scores it in one GPU session (`--part run`); P23 (`phase6_physics_fitted`) follows P21's parts with `FittedPrior`. Both use `ensemble_compare.py`, which chooses Huang's stage and the veto for new ten-run ensembles on P14's patients, compares them with P18's on P19's patients and reads DS2 once. From P9 on, each test report also recomputes the earlier test scores it compares against and records
 the difference (`reproduction_difference` in its summary). `figures.posthoc_figures()` draws every post hoc figure whose
 result file exists, and `paper_text.py` writes the paper's post hoc paragraphs from the same files.
 
