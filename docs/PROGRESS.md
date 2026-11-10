@@ -1337,3 +1337,17 @@ that the physics is right. Code (f224baf): `generators/physics.py` (simulator, E
 with the generator, P12 and P20 tests). Compute estimate about 5 GPU-hours (offered at about 4; P12's measured fit times).
 CPU check session `phase6-physics-prior-check` pushed at f224baf.
 
+P21 check (`phase6-physics-prior-check`, CPU, f224baf, exit code 0). Whole training beats matched for every P11 training
+beat (all z-scored windows). Simulator fit, median R^2 (10th-90th percentile): S 0.986 (0.914-0.994; 5,000 of 10,300 beats),
+V 0.995 (0.972-0.999; 5,000 of 28,957), F 0.996 (0.978-0.998; all 621): the generator conditions go ahead. kappa (the mean
+Euler distance of real beats with parameters drawn from their class distribution): S 1.25e8, V 1.59e7, F 6.08e6; with each
+beat's own fitted parameters the distance is 0.1%, 0.5% and 1.9% of that. So most of the Euler loss, as SimGANs define it,
+comes from the spread of the drawn parameters, which no generated beat can reduce, and the weights 0.1-10 may move the
+generators little; the bank checks will show it (descriptive). Fusion model: median R^2 0.387 (10th-90th percentile -0.01
+to 0.82) over 621 F beats in 31 recordings, alpha-hat 10th-90th percentile -0.06 to 0.99: below the stop rule, so
+`cvae_fusion` is not run (real F beats here are not a fraction of the recording's mean V deviation; figure
+`figures/phase6_physics_prior/physics_fit.png`). The families keep Holm for three (DECISIONS A42 addendum, written before
+training). Code: `active()` drops stopped conditions, `registered_holm` keeps m = 3; 13 P21 tests pass. The ingest replaced
+`figures/phase6_rule_tuning/results.png` with the kernel's render; restored. The check zip was 849 MB (the attached banks
+travel back in it).
+

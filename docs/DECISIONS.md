@@ -554,3 +554,8 @@ first fitted to real training beats on a CPU session, and pre-registered stop ru
 the fusion model) explains less than half of the real beats' variance. Offered at about 4 GPU-hours and chosen; the
 estimate became about 5 while writing the pre-registration (P12's measured fit times). The physics generators get two
 fits more than P12's (the weight choice); the paper says so.
+
+Addendum, 2026-11-10, after P21's check and before any P21 model was trained: the fusion model fell below its stop rule
+(median R^2 0.387 over 621 training F beats in 31 recordings), so `cvae_fusion` is not run. The confirmatory and secondary
+families keep Holm's adjustment for the three registered comparisons (the stricter reading; Holm over the two that remain
+would be looser), so a stop rule cannot make the remaining comparisons easier to call.

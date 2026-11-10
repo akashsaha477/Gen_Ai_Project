@@ -536,9 +536,32 @@ def run_fusion(cfg: dict, device: torch.device) -> dict:
 # --------------------------------------------------------------------------------------------------
 
 
+def active() -> dict[str, str]:
+    """The new conditions no stop rule ended (physics.json), with the P18 condition each is compared with."""
+    record = load_physics("any")
+    stopped = set() if record["physics_passed"] else {"cvae_physics", "wgan_gp_physics"}
+    if not record["fusion"]["passed"]:
+        stopped.add(FUSION_CONDITION)
+    out = {c: b for c, b in NEW.items() if c not in stopped}
+    if not out:
+        raise PreconditionError("Every P21 condition was stopped by its stop rule; nothing to score")
+    return out
+
+
+def registered_holm(family: dict, m: int = len(NEW), alpha: float = 0.05) -> dict:
+    """Holm over the pre-registered family size ``m`` (three comparisons; one ended by a stop rule is not run, which
+    makes the adjustment of the others as strict as with all three)."""
+    names = sorted(family, key=lambda k: family[k]["p_two_sided"])
+    running, out = 0.0, {}
+    for rank, name in enumerate(names):
+        running = max(running, min(1.0, (m - rank) * float(family[name]["p_two_sided"])))
+        out[name] = {**family[name], "p_holm": running, "reject_holm": bool(running < alpha), "holm_family_size": m}
+    return {name: out[name] for name in family}
+
+
 def new_members() -> dict[str, list[str]]:
     out = {}
-    for c, family in NEW.items():
+    for c, family in active().items():
         name = "fusion.json" if c == FUSION_CONDITION else f"{family}.json"
         out[c] = list(_read(name, f"run the part that makes {c} and ingest it first")["members"])
         if len(out[c]) != len(SEEDS):
@@ -548,7 +571,7 @@ def new_members() -> dict[str, list[str]]:
 
 def baseline_members() -> dict[str, list[str]]:
     frozen = fp.frozen_members()
-    return {b: frozen[b] for b in sorted(set(NEW.values()))}
+    return {b: frozen[b] for b in sorted(set(active().values()))}
 
 
 def ensemble_probs(members: dict[str, list[str]], arrays: dict, predict_fn) -> dict[str, np.ndarray]:
@@ -565,7 +588,7 @@ def ensemble_probs(members: dict[str, list[str]], arrays: dict, predict_fn) -> d
 
 def choose(probs: dict[str, np.ndarray], arrays: dict) -> dict:
     """P20's rule for the new conditions on P14's patients."""
-    choice = rt.choose({c: probs[c] for c in NEW}, arrays)
+    choice = rt.choose({c: probs[c] for c in active()}, arrays)
     return {**choice, "experiment": EXPERIMENT, "rule": f"{RULE} (P20's rule, PREREGISTRATION v19)"}
 
 
@@ -574,28 +597,31 @@ def score(choice: dict, probs: dict[str, np.ndarray], arrays: dict) -> dict:
     ensembles alone beside. P20's S F1 for the baselines' chosen settings must reproduce within 0.001."""
     form = choice["veto_form"]
     p20 = rt.load_choice()
-    settings = {**rt.chosen_settings(choice), **{b: s for b, s in rt.chosen_settings(p20).items() if b in NEW.values()}}
+    pairs = active()
+    settings = {**rt.chosen_settings(choice), **{b: s for b, s in rt.chosen_settings(p20).items() if b in pairs.values()}}
     y, records = np.asarray(arrays["y"]), np.asarray(arrays["record"])
     rr_prev, p_af = np.asarray(arrays["rr_prev"]), np.asarray(arrays["p_af"])
     tables: dict[str, dict[str, np.ndarray]] = {"chosen": {}, "alone": {}}
     unique = None
-    for c, p in probs.items():
+    for c in (*pairs, *sorted(set(pairs.values()))):
+        p = probs[c]
         for k, s in (("chosen", settings[c]), ("alone", (None, None))):
             unique, cm = M.confusion_by_record(y, rt.decide(p, rr_prev, p_af, s, form), records)
             tables[k][c] = cm[None]
     p20_summary = json.loads((paths.results_for(rt.EXPERIMENT) / "summary.json").read_text())
     reproduction = {f"cnn/{b}": float(fp._stat("f1_S")(tables["chosen"][b].sum(axis=1))[0]) - p20_summary["conditions"]["chosen"][f"cnn/{b}"]["f1_S"]["point"]
-                    for b in sorted(set(NEW.values()))}  # fmt: skip
+                    for b in sorted(set(pairs.values()))}  # fmt: skip
     off = {k: d for k, d in reproduction.items() if abs(d) > ICENTIA_TOLERANCE}
     if off:
         raise PreconditionError(f"P20's S F1 for the baselines does not reproduce: {off}")
     return {"experiment": EXPERIMENT, "post_hoc": True, "rule": RULE, "n_boot": ref.N_BOOT, "boot_seed": ref.BOOT_SEED, "veto_form": form,
-            "chosen": choice["chosen"], "baseline_settings": {b: p20["chosen"][b] for b in sorted(set(NEW.values()))},
+            "chosen": choice["chosen"], "baseline_settings": {b: p20["chosen"][b] for b in sorted(set(pairs.values()))},
+            "stopped": sorted(set(NEW) - set(pairs)),
             "patients": int(unique.size), "beats": {k: int((y == i).sum()) for i, k in enumerate(CLASSES)},
             "conditions": {"chosen": fp._block(tables["chosen"], unique), "ensemble_alone": fp._block(tables["alone"], unique)},
-            "families": {"secondary": fp._family({f"cnn: {c} vs {b}, chosen settings": (tables["chosen"][c], tables["chosen"][b]) for c, b in NEW.items()})},
-            "versus_baseline_alone": fp._family({f"cnn: {c} vs {b}, ensembles alone": (tables["alone"][c], tables["alone"][b]) for c, b in NEW.items()}),
-            "evaluation_surface": rt.surface({c: probs[c] for c in NEW}, arrays, form), "reproduction_difference": reproduction,
+            "families": {"secondary": registered_holm(fp._family({f"cnn: {c} vs {b}, chosen settings": (tables["chosen"][c], tables["chosen"][b]) for c, b in pairs.items()}))},
+            "versus_baseline_alone": fp._family({f"cnn: {c} vs {b}, ensembles alone": (tables["alone"][c], tables["alone"][b]) for c, b in pairs.items()}),
+            "evaluation_surface": rt.surface({c: probs[c] for c in pairs}, arrays, form), "reproduction_difference": reproduction,
             "note": "secondary family (Holm, 3) on S F1; the ensembles alone and the surface are descriptive (Holm within that block only)",
             "git_sha": runs.git_sha()}  # fmt: skip
 
@@ -629,7 +655,8 @@ def test_report(cfg: dict) -> dict:
     p20 = rt.load_choice()
     p20_test = json.loads((paths.results_for(rt.EXPERIMENT) / "test_summary.json").read_text())
     form = choice["veto_form"]
-    settings = {**rt.chosen_settings(choice), **{b: s for b, s in rt.chosen_settings(p20).items() if b in NEW.values()}}
+    pairs = active()
+    settings = {**rt.chosen_settings(choice), **{b: s for b, s in rt.chosen_settings(p20).items() if b in pairs.values()}}
     members = {**new_members(), **baseline_members()}
     test, p_af = se.ds2_inputs(cfg["se"], EXPERIMENT)
     y, records, rr_prev = test["y"], np.asarray(test["record"]), test["rr_prev"]
@@ -640,7 +667,7 @@ def test_report(cfg: dict) -> dict:
         for k, s in (("chosen", settings[c]), ("alone", (None, None))):
             pred = rt.decide(p, rr_prev, p_af, s, form)
             unique, tables[k][c] = final_eval.per_record_cms([np.eye(p.shape[1], dtype=np.float32)[pred]], y, records)
-    checks = {f"cnn/{b}": se._rare(tables["chosen"][b]) - p20_test["conditions"]["chosen"][f"cnn/{b}"]["rare_macro_f1"]["point"] for b in sorted(set(NEW.values()))}
+    checks = {f"cnn/{b}": se._rare(tables["chosen"][b]) - p20_test["conditions"]["chosen"][f"cnn/{b}"]["rare_macro_f1"]["point"] for b in sorted(set(pairs.values()))}
     off = {k: d for k, d in checks.items() if abs(d) > DS2_TOLERANCE}
     if off:
         raise PreconditionError(f"P20's DS2 scores do not reproduce: {off}")
@@ -655,8 +682,9 @@ def test_report(cfg: dict) -> dict:
                "boot_seed": ref.BOOT_SEED, "veto_form": form, "settings": {c: rt.label(s) for c, s in settings.items()},
                "conditions": {"chosen": block(tables["chosen"]), "ensemble_alone": block(tables["alone"])},
                "without_202": {"chosen": block(tables["chosen"], keep)},
-               "families": {"confirmatory": mp._family({f"cnn: {c} vs {b}, chosen settings": (tables["chosen"][c], tables["chosen"][b]) for c, b in NEW.items()})},
-               "versus_baseline_alone": mp._family({f"cnn: {c} vs {b}, ensembles alone": (tables["alone"][c], tables["alone"][b]) for c, b in NEW.items()}),
+               "families": {"confirmatory": registered_holm(mp._family({f"cnn: {c} vs {b}, chosen settings": (tables["chosen"][c], tables["chosen"][b]) for c, b in pairs.items()}))},
+               "versus_baseline_alone": mp._family({f"cnn: {c} vs {b}, ensembles alone": (tables["alone"][c], tables["alone"][b]) for c, b in pairs.items()}),
+               "stopped": sorted(set(NEW) - set(pairs)),
                "note": "confirmatory family (Holm, 3) on rare-class macro-F1; the rest is descriptive",
                "reproduction_difference": checks, "run_ids": members, "git_sha": runs.git_sha()}  # fmt: skip
     _write("test_summary.json", summary)

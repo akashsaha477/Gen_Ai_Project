@@ -202,8 +202,27 @@ def _fake_p20(a: dict, probs: dict) -> dict:
     return p20
 
 
+def _physics(physics_passed: bool = True, fusion_passed: bool = True) -> None:
+    pp._write("physics.json", {"physics_passed": physics_passed, "fusion": {"passed": fusion_passed}})
+
+
+def test_holm_keeps_the_registered_family_size():
+    fam = {"a": {"p_two_sided": 0.01}, "b": {"p_two_sided": 0.04}}
+    out = pp.registered_holm(fam)
+    assert out["a"]["p_holm"] == pytest.approx(0.03) and out["b"]["p_holm"] == pytest.approx(0.08) and out["a"]["reject_holm"] and not out["b"]["reject_holm"]
+    assert pp.registered_holm(fam, m=2)["b"]["p_holm"] == pytest.approx(0.04) and out["a"]["holm_family_size"] == 3
+    _physics(fusion_passed=False)
+    assert set(pp.active()) == {"cvae_physics", "wgan_gp_physics"}
+    _physics(physics_passed=False)
+    assert set(pp.active()) == {"cvae_fusion"}
+    _physics(False, False)
+    with pytest.raises(PreconditionError):
+        pp.active()
+
+
 def test_scoring_on_p19s_patients_compares_with_p20s_baselines_and_checks_their_values(monkeypatch):
     monkeypatch.setattr(af, "chosen_design", lambda: (0.95, "rule"))
+    _physics()
     a = _arrays()
     probs = _probs(a)
     _fake_p20(a, probs)
@@ -219,12 +238,20 @@ def test_scoring_on_p19s_patients_compares_with_p20s_baselines_and_checks_their_
     path.write_text(json.dumps(bad))
     with pytest.raises(PreconditionError):
         pp.score(choice, probs, a)
+    _physics(fusion_passed=False)  # the fusion condition stopped: two comparisons, Holm still over three
+    path.write_text(json.dumps(json.loads(path.read_text()) | {"conditions": {"chosen": {k: {"f1_S": {"point": v["f1_S"]["point"] + (0.01 if k == "cnn/wgan_gp" else 0)}}
+                                                                                       for k, v in bad["conditions"]["chosen"].items()}}}))  # fmt: skip
+    choice = pp.choose(probs, a)
+    s = pp.score(choice, probs, a)
+    assert set(choice["chosen"]) == {"cvae_physics", "wgan_gp_physics"} and s["stopped"] == ["cvae_fusion"]
+    assert all(v["holm_family_size"] == 3 for v in s["families"]["secondary"].values()) and len(s["families"]["secondary"]) == 2
 
 
 def test_the_ds2_read_checks_p20s_values_and_compares_with_the_baselines(monkeypatch):
     from ecgaug import final_eval
 
     monkeypatch.setattr(af, "chosen_design", lambda: (0.95, "rule"))
+    _physics()
     a = _arrays()
     y = np.asarray(a["y"]).copy()
     y[np.flatnonzero(y == 2)[::3]] = 3
@@ -234,7 +261,7 @@ def test_the_ds2_read_checks_p20s_values_and_compares_with_the_baselines(monkeyp
     choice = pp.choose(probs, a)
     pp._write("choice.json", choice)
     members = {c: [f"{c}-s{s}" for s in range(10)] for c in probs}
-    monkeypatch.setattr(pp, "new_members", lambda: {c: members[c] for c in pp.NEW})
+    monkeypatch.setattr(pp, "new_members", lambda: {c: members[c] for c in pp.active()})
     monkeypatch.setattr(pp, "baseline_members", lambda: {b: members[b] for b in ("cvae", "wgan_gp")})
     test = {"y": y, "record": (100 + np.asarray(a["record"]) - 10_000).astype(np.int16), "rr_prev": a["rr_prev"], "r_idx": a["r_idx"]}
     monkeypatch.setattr(se, "ds2_inputs", lambda cfg, experiment: (test, a["p_af"]))

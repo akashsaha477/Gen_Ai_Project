@@ -2205,7 +2205,8 @@ def physics_check_figure(physics: dict) -> list[Path]:
         ax.plot(t, ex["vbar"], color=SINGLE_RUN_COLOR, linewidth=1.2, label="the recording's mean V deviation")
         ax.plot(t, ex["real"], color=INK, linewidth=1.6)
         ax.plot(t, ex["fitted"], color=FRESH_COLOR, linewidth=2, linestyle="--", label="alpha-hat x mean V deviation")
-        ax.set_title(f"fusion model, record {ex['record']}: alpha-hat {ex['alpha']:.2f}\nmedian R² over {fu['f_beats']:,} F beats: {fu['median_r2']:.3f}", loc="left", fontsize=8)
+        stop = "" if fu["passed"] else ": below the stop rule, not run"
+        ax.set_title(f"fusion model, record {ex['record']}: alpha-hat {ex['alpha']:.2f}\nmedian R² over {fu['f_beats']:,} F beats {fu['median_r2']:.3f}{stop}", loc="left", fontsize=8)
         ax.set_ylabel("patient-relative beat")
     ax = axes[1][-1]
     q = fu.get("alpha_quantiles", {})
@@ -2298,7 +2299,7 @@ def physics_results_figure(summary: dict, test: dict | None) -> list[Path]:
     """P21 before and after: each new condition against the P18 condition it changes (before: P18's ensemble with P20's
     setting; after: the new one with its chosen setting), on P19's patients (S F1) and on the test records."""
     plt = _plt()
-    pairs = list(PHYSICS_NAMES)
+    pairs = [c for c in PHYSICS_NAMES if f"cnn/{c}" in summary["conditions"]["chosen"]]
     panels = 2 + (2 if test is not None else 0)
     fig, axes = plt.subplots(1, panels, figsize=(4.6 * panels, 0.45 * 2 * len(pairs) + 2.4))
     rows = [(c, key, color, marker, label) for c in pairs for key, color, marker, label in

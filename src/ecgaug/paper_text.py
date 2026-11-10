@@ -299,10 +299,13 @@ def posthoc_physics_prior() -> str:
              + f"; the fusion model explained a median R$^2$ of {_n(fu['median_r2'])} of {fu['f_beats']:,} real training F beats in "
              f"{len(fu['recordings'])} recordings, with alpha from {_n(fu['alpha_low'], 2)} to {_n(fu['alpha_high'], 2)} "
              "(Figure~\\ref{fig:p21-fit}). Sixteen numbers fit almost any smooth beat, so a good fit does not show that the physics is right.")  # fmt: skip
-    if not physics["physics_passed"] or not fu["passed"]:
-        text += " A pre-registered stop rule ended " + ("the generator conditions" if not physics["physics_passed"] else "the fusion condition") + "."
-    if len(fams) < 2 or fusion is None:
-        return text + " " + _missing("P21: --part train (both families) and --part fusion on Kaggle") + "\n"
+    if not physics["physics_passed"]:
+        return text + " The simulator fell below the pre-registered stop rule (median R$^2$ 0.5), so the generator conditions were not run.\n"
+    if not fu["passed"]:
+        text += (" The fusion model fell below its pre-registered stop rule (median R$^2$ 0.5): real F beats here are not a fraction of their "
+                 "recording's mean V deviation, so the fusion condition was not run, and each family below keeps Holm's adjustment for three.")  # fmt: skip
+    if len(fams) < 2 or (fu["passed"] and fusion is None):
+        return text + " " + _missing("P21: --part train (both families)" + (" and --part fusion" if fu["passed"] else "") + " on Kaggle") + "\n"
     parts = []
     for f, d in fams.items():
         t = d["lambda_choice"]["table"]
@@ -312,20 +315,23 @@ def posthoc_physics_prior() -> str:
                      f"{_n(t['0']['mean'])}); S beats over {_n(chosen['S']['nearest_patients'], 1)} effective training patients "
                      f"(P12's bank {_n(p12['S']['nearest_patients'], 1)}), F beats over {_n(chosen['F']['nearest_patients'], 1)} "
                      f"({_n(p12['F']['nearest_patients'], 1)})")  # fmt: skip
-    nf = fusion["nearest_patients_F"]
-    text += (" Chosen on validation: " + "; ".join(parts) + f". The fusion F beats spread over {_n(nf['fusion_seed0'], 1)} effective training "
-             f"patients (P12's cVAE F beats {_n(nf['p12_seed0'], 1)}) (Figure~\\ref{{fig:p21-banks}}).")  # fmt: skip
+    text += " Chosen on validation: " + "; ".join(parts)
+    if fusion is not None:
+        nf = fusion["nearest_patients_F"]
+        text += f". The fusion F beats spread over {_n(nf['fusion_seed0'], 1)} effective training patients (P12's cVAE F beats {_n(nf['p12_seed0'], 1)})"
+    text += " (Figure~\\ref{fig:p21-banks})."
     if s is None:
         return text + " " + _missing("P21: --part score on Kaggle") + "\n"
     sc = s["conditions"]["chosen"]
-    rows = "; ".join(f"{PHYSICS_SHORT[k]} {_n(sc[f'cnn/{k}']['f1_S']['point'])} ({SHORT[b]} {_n(sc[f'cnn/{b}']['f1_S']['point'])})" for k, b in PHYSICS_BASE.items())
+    present = {k: b for k, b in PHYSICS_BASE.items() if f"cnn/{k}" in sc}
+    rows = "; ".join(f"{PHYSICS_SHORT[k]} {_n(sc[f'cnn/{k}']['f1_S']['point'])} ({SHORT[b]} {_n(sc[f'cnn/{b}']['f1_S']['point'])})" for k, b in present.items())
     text += (f" On P19's {s['patients']:,} patients, S F1 with the chosen settings: {rows} (Figure~\\ref{{fig:p21}}). Secondary: "
              f"{_physics_family(s['families']['secondary'])}.")  # fmt: skip
     if test is None:
         return text + " " + _missing("P21: --part test on Kaggle") + "\n"
     tc = test["conditions"]["chosen"]
     rows = "; ".join(f"{PHYSICS_SHORT[k]} {_n(tc[f'cnn/{k}']['rare_macro_f1']['point'])} (S F1 {_n(tc[f'cnn/{k}']['f1_S']['point'])}, "
-                     f"F F1 {_n(tc[f'cnn/{k}']['f1_F']['point'])}; {SHORT[b]} {_n(tc[f'cnn/{b}']['rare_macro_f1']['point'])})" for k, b in PHYSICS_BASE.items())  # fmt: skip
+                     f"F F1 {_n(tc[f'cnn/{k}']['f1_F']['point'])}; {SHORT[b]} {_n(tc[f'cnn/{b}']['rare_macro_f1']['point'])})" for k, b in present.items())  # fmt: skip
     text += (f" On the test records (one read), rare-class macro-F1: {rows}. Confirmatory: {_physics_family(test['families']['confirmatory'])}.")
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
 
