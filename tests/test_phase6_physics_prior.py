@@ -252,3 +252,43 @@ def test_the_ds2_read_checks_p20s_values_and_compares_with_the_baselines(monkeyp
     (paths.results_for(rt.EXPERIMENT) / "test_summary.json").write_text(json.dumps({"conditions": {"chosen": chosen}}))
     with pytest.raises(PreconditionError):
         pp.test_report({"se": {}})
+
+
+def test_figures_and_paper_text_come_from_the_result_files():
+    from ecgaug import figures, paper_text
+
+    assert "\\missing{P21: --part check" in paper_text.posthoc_physics_prior()
+    wave = np.sin(np.linspace(0, 6, 180)).tolist()
+    ex = {"real": wave, "fitted": wave, "r2": 0.99}
+    physics = {"r2_stop": 0.5, "physics_passed": True,
+               "classes": {c: {"beats": 5000, "median_r2": 0.99} for c in ("S", "V", "F")},
+               "fusion": {"f_beats": 400, "recordings": [208, 800, 1], "median_r2": 0.8, "alpha_low": 0.3, "alpha_high": 0.7, "passed": True,
+                          "alpha_quantiles": {"q10": 0.3, "q25": 0.4, "q50": 0.5, "q75": 0.6, "q90": 0.7}},
+               "examples": {**{c: {"q10": ex, "q50": ex, "q90": ex} for c in ("S", "V", "F")},
+                            "fusion": {"record": 208, "n": 300, "real": wave, "fitted": wave, "vbar": wave, "alpha": 0.5}}}  # fmt: skip
+    folder = paths.results_for(pp.EXPERIMENT)
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "physics.json").write_text(json.dumps(physics))
+    assert "\\missing{P21: --part train" in paper_text.posthoc_physics_prior()
+    bank = {c: {"euler": 1.5, "median_corr": 0.9, "nearest_patients": 20.0} for c in ("S", "V", "F")}
+    for f in ("cvae", "wgan_gp"):
+        table = {k: {"mean": 0.7, "values": [0.69, 0.7, 0.71], "run_ids": ["a", "b", "c"]} for k in ("0", "0.1", "1", "10")}
+        d = {"lambda_choice": {"table": table}, "chosen_lambda": 1.0,
+             "describe": {"real": bank, "p12_seed0": bank, **{f"lambda{k}_seed0": bank for k in ("0.1", "1", "10")}}}  # fmt: skip
+        (folder / f"{f}.json").write_text(json.dumps(d))
+    (folder / "fusion.json").write_text(json.dumps({"nearest_patients_F": {"fusion_seed0": 30.0, "p12_seed0": 3.4}}))
+    e = {"point": 0.4, "ci_low": 0.3, "ci_high": 0.5}
+    block = {f"cnn/{c}": {"f1_S": e, "f1_F": e, "rare_macro_f1": e} for c in (*pp.NEW, "cvae", "wgan_gp")}
+    comp = {"point": 0.02, "ci_low": -0.01, "ci_high": 0.05, "p_holm": 0.5, "reject_holm": False}
+    names = [f"cnn: {c} vs {b}, chosen settings" for c, b in pp.NEW.items()]
+    summary = {"patients": 977, "conditions": {"chosen": block, "ensemble_alone": block}, "families": {"secondary": {n: comp for n in names}}}
+    (folder / "summary.json").write_text(json.dumps(summary))
+    assert "\\missing{P21: --part test" in paper_text.posthoc_physics_prior()
+    test = {"conditions": {"chosen": block, "ensemble_alone": block}, "families": {"confirmatory": {n: comp for n in names}}}
+    (folder / "test_summary.json").write_text(json.dumps(test))
+    out = figures.physics_check_figure(physics) + figures.physics_banks_figure({f: json.loads((folder / f"{f}.json").read_text()) for f in ("cvae", "wgan_gp")},
+                                                                               json.loads((folder / "fusion.json").read_text())) + figures.physics_results_figure(summary, test)  # fmt: skip
+    assert len(out) == 3 and all(p.is_file() for p in out)
+    text = paper_text.posthoc_physics_prior()
+    assert "\\missing" not in text and "WGAN-GP with the Euler loss" in text and "cite{golany2020simgans}" in text and text.count("{") == text.count("}")
+    assert "fig:p21-fit" in text and "fig:p21-banks" in text and "fig:p21}" in text and "_" not in text.replace("\\_", "")

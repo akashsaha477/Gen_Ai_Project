@@ -2171,6 +2171,162 @@ def rule_tuning_results_figure(summary: dict, test: dict | None) -> list[Path]:
     return [_save(fig, paths.figures_for("phase6_rule_tuning") / "results.png", "Before and after: the stage and the veto chosen on other patients", caption)]
 
 
+PHYSICS_NAMES = {"cvae_physics": "cVAE + Euler loss", "wgan_gp_physics": "WGAN-GP + Euler loss", "cvae_fusion": "cVAE, fusion F beats"}
+PHYSICS_BASE = {"cvae_physics": "cvae", "wgan_gp_physics": "wgan_gp", "cvae_fusion": "cvae"}
+
+
+def _beat_axis(n: int = 180) -> np.ndarray:
+    return (np.arange(n) - n // 2) / 360 * 1000
+
+
+def physics_check_figure(physics: dict) -> list[Path]:
+    """P21's check, before and after the fit: real training beats and McSharry et al.'s simulator fitted to them (median
+    and 10th-percentile R^2 per class), and the fusion model on a real F beat with the spread of alpha-hat."""
+    plt = _plt()
+    classes = [c for c in ("S", "V", "F") if c in physics["classes"]]
+    fig, axes = plt.subplots(2, len(classes) + 1, figsize=(3.9 * (len(classes) + 1), 6.6), squeeze=False)
+    for j, c in enumerate(classes):
+        entry = physics["classes"][c]
+        for r, q in enumerate(("q50", "q10")):
+            ex, ax = physics["examples"][c][q], axes[r][j]
+            t = _beat_axis(len(ex["real"]))
+            ax.plot(t, ex["real"], color=INK, linewidth=1.6, label="real training beat")
+            ax.plot(t, ex["fitted"], color=TUNED_COLOR, linewidth=2, linestyle="--", label="simulator fitted to it")
+            head = f"{c}: {'median' if q == 'q50' else '10th-percentile'} fit, R² {ex['r2']:.3f}"
+            ax.set_title(head + (f"\nmedian R² over {entry['beats']:,} beats: {entry['median_r2']:.3f}" if r == 0 else ""), loc="left", fontsize=8)
+            if r == 1:
+                ax.set_xlabel("ms from the R peak")
+            if j == 0:
+                ax.set_ylabel("whole beat (z-scored)")
+    fu, ex = physics["fusion"], physics["examples"].get("fusion")
+    ax = axes[0][-1]
+    if ex:
+        t = _beat_axis(len(ex["real"]))
+        ax.plot(t, ex["vbar"], color=SINGLE_RUN_COLOR, linewidth=1.2, label="the recording's mean V deviation")
+        ax.plot(t, ex["real"], color=INK, linewidth=1.6)
+        ax.plot(t, ex["fitted"], color=FRESH_COLOR, linewidth=2, linestyle="--", label="alpha-hat x mean V deviation")
+        ax.set_title(f"fusion model, record {ex['record']}: alpha-hat {ex['alpha']:.2f}\nmedian R² over {fu['f_beats']:,} F beats: {fu['median_r2']:.3f}", loc="left", fontsize=8)
+        ax.set_ylabel("patient-relative beat")
+    ax = axes[1][-1]
+    q = fu.get("alpha_quantiles", {})
+    if q:
+        ax.axvspan(fu["alpha_low"], fu["alpha_high"], color=BLUES[2], alpha=0.6, label="range the fusion beats draw from")
+        keys = sorted(q)
+        ax.plot([q[k] for k in keys], [0] * len(keys), "o-", color=INK)
+        for k in keys:
+            ax.annotate(k.replace("q", "")[:2] + "%", (q[k], 0), xytext=(0, 8), textcoords="offset points", ha="center", fontsize=7, color=INK_2)
+        ax.set_yticks([])
+        ax.set_xlabel("alpha-hat of real training F beats")
+        ax.set_title(f"{len(fu['recordings'])} recordings, alpha {fu['alpha_low']:.2f} to {fu['alpha_high']:.2f}", loc="left", fontsize=8)
+    handles = [h for a in (axes[0][0], axes[0][-1], axes[1][-1]) for h in a.get_legend_handles_labels()[0]]
+    labels = [lab for a in (axes[0][0], axes[0][-1], axes[1][-1]) for lab in a.get_legend_handles_labels()[1]]
+    fig.legend(handles, labels, loc="upper right", ncol=5, fontsize=7, frameon=False, bbox_to_anchor=(0.995, 1.0))
+    caption = ("Real training beats (black) and McSharry et al.'s simulator fitted to each (green, dashed), at the median and the 10th-percentile R² "
+               "of each class; whole beats (the patient's template plus the patient-relative beat). Right: a real F beat against alpha-hat times "
+               "its recording's mean V deviation (orange, dashed), and the spread of alpha-hat (shaded: the 10th-90th percentile range the fusion "
+               f"beats draw from). Stop rule: median R² below {physics.get('r2_stop', 0.5)}. Training beats only. Post hoc (PREREGISTRATION v20, P21).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_physics_prior") / "physics_fit.png", "Before and after the fit: real beats and the simulator", caption)]
+
+
+def physics_banks_figure(families: dict[str, dict], fusion: dict | None) -> list[Path]:
+    """P21's weight choice (validation S F1 per lambda, 0 beside) and the seed-0 banks: Euler loss per class and how many
+    training patients the synthetic S and F beats spread over (P12's bank before, the physics banks after)."""
+    plt = _plt()
+    fams = [f for f in ("cvae", "wgan_gp") if f in families]
+    fig, axes = plt.subplots(1, 1 + len(fams) + 1, figsize=(4.4 * (2 + len(fams)), 4.4), squeeze=False)
+    axes = axes[0]
+    ax = axes[0]
+    for f in fams:
+        table = families[f]["lambda_choice"]["table"]
+        lams = list(table)
+        x = np.arange(len(lams))
+        ax.plot(x, [table[k]["mean"] for k in lams], "o-", color=FAMILY_COLORS[f], label=CONDITION_NAMES[f])
+        for i, k in enumerate(lams):
+            ax.plot([i] * len(table[k]["values"]), table[k]["values"], ".", color=FAMILY_COLORS[f], alpha=0.5)
+        chosen = lams.index(f"{families[f]['chosen_lambda']:g}")
+        ax.plot(chosen, table[lams[chosen]]["mean"], "*", color=TUNED_COLOR, markersize=15, markeredgecolor=SURFACE, zorder=5)
+        ax.set_xticks(x, [f"λ {k}" for k in lams])
+    ax.set_ylabel("validation S F1 (cnn seeds 0-2)")
+    ax.set_title("the weight choice (star: chosen; λ 0 beside)", loc="left", fontsize=9)
+    ax.legend(fontsize=7, frameon=False)
+    for ax, f in zip(axes[1 : 1 + len(fams)], fams):
+        d = families[f]["describe"]
+        names = list(d)
+        for c in ("S", "V", "F"):
+            ax.plot(range(len(names)), [d[n][c]["euler"] for n in names], "o-", color=CLASS_COLORS[c], label=c)
+        ax.set_yscale("log")
+        ax.set_xticks(range(len(names)), [n.replace("_seed0", "").replace("lambda", "λ ").replace("p12", "P12") for n in names], fontsize=7)
+        ax.set_ylabel("Euler loss (training loss value)")
+        ax.set_title(f"{CONDITION_NAMES[f]}: physics error, before (P12) and after", loc="left", fontsize=9)
+        ax.legend(fontsize=7, frameon=False)
+    ax = axes[-1]
+    rows = []
+    for f in fams:
+        d, lam = families[f]["describe"], f"lambda{families[f]['chosen_lambda']:g}_seed0"
+        for name, label in (("p12_seed0", f"{CONDITION_NAMES[f]}, P12 (before)"), (lam, f"{CONDITION_NAMES[f]} + Euler loss (after)")):
+            rows.append((label, d[name]["S"].get("nearest_patients"), d[name]["F"].get("nearest_patients")))
+    if fusion is not None:
+        rows.append(("cVAE, P12 F beats (before)", None, fusion["nearest_patients_F"]["p12_seed0"]))
+        rows.append(("cVAE, fusion F beats (after)", None, fusion["nearest_patients_F"]["fusion_seed0"]))
+    seen: set[str] = set()
+    for i, (_, s_eff, f_eff) in enumerate(reversed(rows)):
+        for cls, value, marker in (("S", s_eff, "o"), ("F", f_eff, "s")):
+            if value is not None:
+                ax.plot(value, i, marker, color=CLASS_COLORS[cls], label=None if cls in seen else cls)
+                seen.add(cls)
+    ax.set_yticks(range(len(rows)), [r[0] for r in reversed(rows)], fontsize=7)
+    ax.set_xlabel("effective number of training patients (nearest real beat)")
+    ax.set_title("spread over patients", loc="left", fontsize=9)
+    ax.legend(fontsize=7, frameon=False)
+    caption = ("Left: mean validation S F1 of three cnn runs per weight λ of the Euler loss (dots: the runs; star: the chosen λ; λ 0 is P12's own "
+               "bank, beside). Middle: the seed-0 banks' Euler loss per class, the value the generators were trained on (real training beats "
+               "scored the same way first; log scale). Right: over how many training patients the synthetic S and F beats spread, by the patient "
+               "of each beat's nearest real training beat. Training beats only. Post hoc (PREREGISTRATION v20, P21).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_physics_prior") / "banks.png", "The weight choice and the banks, before and after", caption)]
+
+
+def _physics_family(items: dict) -> dict:
+    out = {}
+    for name, v in items.items():
+        for c, label in PHYSICS_NAMES.items():
+            name = name.replace(c, label)
+        out[name.replace("cnn: ", "")] = v
+    return out
+
+
+def physics_results_figure(summary: dict, test: dict | None) -> list[Path]:
+    """P21 before and after: each new condition against the P18 condition it changes (before: P18's ensemble with P20's
+    setting; after: the new one with its chosen setting), on P19's patients (S F1) and on the test records."""
+    plt = _plt()
+    pairs = list(PHYSICS_NAMES)
+    panels = 2 + (2 if test is not None else 0)
+    fig, axes = plt.subplots(1, panels, figsize=(4.6 * panels, 0.45 * 2 * len(pairs) + 2.4))
+    rows = [(c, key, color, marker, label) for c in pairs for key, color, marker, label in
+            ((PHYSICS_BASE[c], ENSEMBLE_COLOR, "s", f"{CONDITION_NAMES[PHYSICS_BASE[c]]} (before)"), (c, TUNED_COLOR, "*", f"{PHYSICS_NAMES[c]} (after)"))]  # fmt: skip
+    ax = axes[0]
+    for i, (_, key, color, marker, _) in enumerate(reversed(rows)):
+        _interval(ax, summary["conditions"]["chosen"][f"cnn/{key}"]["f1_S"], i, color, marker=marker)
+    ax.set_yticks(range(len(rows)), [r[4] for r in reversed(rows)], fontsize=7)
+    ax.set_xlim(0, 1)
+    ax.set_xlabel("S F1 on P19's patients (95% patient-level CI)")
+    ax.set_title("P19's patients, chosen settings", loc="left")
+    _comparisons_panel(axes[1], {"secondary": _physics_family(summary["families"]["secondary"])}, "after vs before, P19's patients")
+    axes[1].set_xlabel("difference in S F1 (95% CI)")
+    if test is not None:
+        ax = axes[2]
+        for i, (_, key, color, marker, _) in enumerate(reversed(rows)):
+            _interval(ax, test["conditions"]["chosen"][f"cnn/{key}"]["rare_macro_f1"], i, color, marker=marker)
+        ax.set_yticks(range(len(rows)), [r[4] for r in reversed(rows)], fontsize=7)
+        ax.set_xlim(0, 1)
+        ax.set_xlabel("rare-class macro-F1 on the test records (95% record-level CI)")
+        ax.set_title("the test records, one read", loc="left")
+        _comparisons_panel(axes[3], {"confirmatory": _physics_family(test["families"]["confirmatory"])}, "after vs before, test records")
+    caption = ("Squares: P18's ten-run ensemble of the generator a condition changes, with the setting P20 chose for it; stars: the new condition "
+               "(ten runs) with the setting chosen for it on P14's patients by P20's rule. "
+               + ("Right: the confirmatory family on the test records (Holm over three). " if test is not None else "")
+               + "Second panel: the secondary family on P19's 977 patients (Holm over three). Post hoc (PREREGISTRATION v20, P21).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_physics_prior") / "results.png", "Before and after: physics in the generators", caption)]
+
 def posthoc_figures() -> list[Path]:
     """Every post-hoc figure whose summary exists (PREREGISTRATION v4, P1-P4); nothing is re-run."""
     final, written = _summary("final_eval"), []
@@ -2252,6 +2408,13 @@ def posthoc_figures() -> list[Path]:
         written += rule_tuning_choice_figure(c, _summary("phase6_rule_tuning"))
     if (s := _summary("phase6_rule_tuning")) is not None:
         written += rule_tuning_results_figure(s, _summary("phase6_rule_tuning", "test_summary.json"))
+    if (ph := _summary("phase6_physics_prior", "physics.json")) is not None:
+        written += physics_check_figure(ph)
+    fams = {f: d for f in ("cvae", "wgan_gp") if (d := _summary("phase6_physics_prior", f"{f}.json")) is not None}
+    if fams:
+        written += physics_banks_figure(fams, _summary("phase6_physics_prior", "fusion.json"))
+    if (s := _summary("phase6_physics_prior")) is not None:
+        written += physics_results_figure(s, _summary("phase6_physics_prior", "test_summary.json"))
     return written
 
 

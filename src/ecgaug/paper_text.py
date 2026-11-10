@@ -262,6 +262,74 @@ def notes(gate: dict | None, results: dict[str, dict]) -> str:
     return text + "\n"
 
 
+PHYSICS_SHORT = {"cvae_physics": "cVAE with the Euler loss", "wgan_gp_physics": "WGAN-GP with the Euler loss", "cvae_fusion": "cVAE with fusion F beats"}
+PHYSICS_BASE = {"cvae_physics": "cvae", "wgan_gp_physics": "wgan_gp", "cvae_fusion": "cvae"}
+
+
+def _physics_family(items: dict) -> str:
+    renamed = {}
+    for name, v in items.items():
+        for c, label in PHYSICS_SHORT.items():
+            name = name.replace(c, label)
+        renamed[name.replace("cnn: ", "").replace("wgan_gp", "WGAN-GP").replace("cvae", "cVAE")] = v
+    return "; ".join(f"{name} {_ci(c, signed=True)}, {_p(c)} ({_changed(c)})" for name, c in renamed.items())
+
+
+def posthoc_physics_prior() -> str:
+    """P21: McSharry et al.'s simulator as a prior for the generators (SimGANs' Euler loss) and physiological fusion beats."""
+    from ecgaug.names import PHASE6_PHYSICS_PRIOR
+
+    folder = paths.results_for(PHASE6_PHYSICS_PRIOR)
+    physics, s, test, fusion = (_load(folder / n) for n in ("physics.json", "summary.json", "test_summary.json", "fusion.json"))
+    fams = {f: d for f in ("cvae", "wgan_gp") if (d := _load(folder / f"{f}.json")) is not None}
+    text = ("\\paragraph{Physics in the generators (P21).} SimGANs \\cite{golany2020simgans} add McSharry et al.'s ECG simulator "
+            "\\cite{mcsharry2003dynamical}, three differential equations, to a GAN's generator objective: the Euler loss measures how far a generated "
+            "beat is from satisfying the simulator's equation for the ECG, for simulator parameters drawn from the beat's class. P21 adds it to "
+            "P12's cVAE and WGAN-GP, applied to whole beats (each generated patient-relative beat plus a real training patient's template), with "
+            "its weight chosen on validation among 0.1, 1 and 10, and makes a third condition from physiology: P12's cVAE banks with every "
+            "synthetic F beat replaced by a fraction of a real training patient's V deviation, since a fusion beat is a ventricular and a "
+            "conducted activation meeting. Each condition goes through P18's ten-run pipeline, with the stage and the veto chosen on P14's "
+            "patients by P20's rule.")  # fmt: skip
+    if physics is None:
+        return text + " " + _missing("P21: --part check on Kaggle") + "\n"
+    c = physics["classes"]
+    fu = physics["fusion"]
+    text += (" Fitted to real training beats, the simulator explained a median R$^2$ of "
+             + ", ".join(f"{_n(c[k]['median_r2'])} ({k}, {c[k]['beats']:,} beats)" for k in c)
+             + f"; the fusion model explained a median R$^2$ of {_n(fu['median_r2'])} of {fu['f_beats']:,} real training F beats in "
+             f"{len(fu['recordings'])} recordings, with alpha from {_n(fu['alpha_low'], 2)} to {_n(fu['alpha_high'], 2)} "
+             "(Figure~\\ref{fig:p21-fit}). Sixteen numbers fit almost any smooth beat, so a good fit does not show that the physics is right.")  # fmt: skip
+    if not physics["physics_passed"] or not fu["passed"]:
+        text += " A pre-registered stop rule ended " + ("the generator conditions" if not physics["physics_passed"] else "the fusion condition") + "."
+    if len(fams) < 2 or fusion is None:
+        return text + " " + _missing("P21: --part train (both families) and --part fusion on Kaggle") + "\n"
+    parts = []
+    for f, d in fams.items():
+        t = d["lambda_choice"]["table"]
+        lam = f"{d['chosen_lambda']:g}"
+        p12, chosen = d["describe"]["p12_seed0"], d["describe"][f"lambda{lam}_seed0"]
+        parts.append(f"{SHORT[f]}: weight {lam} (validation S F1 {_n(t[lam]['mean'])}, weight 0 "
+                     f"{_n(t['0']['mean'])}); S beats over {_n(chosen['S']['nearest_patients'], 1)} effective training patients "
+                     f"(P12's bank {_n(p12['S']['nearest_patients'], 1)}), F beats over {_n(chosen['F']['nearest_patients'], 1)} "
+                     f"({_n(p12['F']['nearest_patients'], 1)})")  # fmt: skip
+    nf = fusion["nearest_patients_F"]
+    text += (" Chosen on validation: " + "; ".join(parts) + f". The fusion F beats spread over {_n(nf['fusion_seed0'], 1)} effective training "
+             f"patients (P12's cVAE F beats {_n(nf['p12_seed0'], 1)}) (Figure~\\ref{{fig:p21-banks}}).")  # fmt: skip
+    if s is None:
+        return text + " " + _missing("P21: --part score on Kaggle") + "\n"
+    sc = s["conditions"]["chosen"]
+    rows = "; ".join(f"{PHYSICS_SHORT[k]} {_n(sc[f'cnn/{k}']['f1_S']['point'])} ({SHORT[b]} {_n(sc[f'cnn/{b}']['f1_S']['point'])})" for k, b in PHYSICS_BASE.items())
+    text += (f" On P19's {s['patients']:,} patients, S F1 with the chosen settings: {rows} (Figure~\\ref{{fig:p21}}). Secondary: "
+             f"{_physics_family(s['families']['secondary'])}.")  # fmt: skip
+    if test is None:
+        return text + " " + _missing("P21: --part test on Kaggle") + "\n"
+    tc = test["conditions"]["chosen"]
+    rows = "; ".join(f"{PHYSICS_SHORT[k]} {_n(tc[f'cnn/{k}']['rare_macro_f1']['point'])} (S F1 {_n(tc[f'cnn/{k}']['f1_S']['point'])}, "
+                     f"F F1 {_n(tc[f'cnn/{k}']['f1_F']['point'])}; {SHORT[b]} {_n(tc[f'cnn/{b}']['rare_macro_f1']['point'])})" for k, b in PHYSICS_BASE.items())  # fmt: skip
+    text += (f" On the test records (one read), rare-class macro-F1: {rows}. Confirmatory: {_physics_family(test['families']['confirmatory'])}.")
+    return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
+
+
 def _count_word(n: int) -> str:
     return "none" if int(n) == 0 else f"{int(n):,}"
 
@@ -1912,6 +1980,7 @@ def build() -> dict[str, str]:
     files["results_seed_ensemble"] = posthoc_seed_ensemble()
     files["results_fresh_patients"] = posthoc_fresh_patients()
     files["results_rule_tuning"] = posthoc_rule_tuning()
+    files["results_physics_prior"] = posthoc_physics_prior()
     files["table_posthoc"] = posthoc_table()
     files["outlook"] = outlook(heading=False)
     files["discussion"] = discussion()
