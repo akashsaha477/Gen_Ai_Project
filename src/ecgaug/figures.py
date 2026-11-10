@@ -2323,6 +2323,7 @@ def physics_results_figure(summary: dict, test: dict | None) -> list[Path]:
         ax.set_xlabel("rare-class macro-F1 on the test records (95% record-level CI)")
         ax.set_title("the test records, one read", loc="left")
         _comparisons_panel(axes[3], {"confirmatory": _physics_family(test["families"]["confirmatory"])}, "after vs before, test records")
+        axes[3].locator_params(axis="x", nbins=4)
     caption = ("Squares: P18's ten-run ensemble of the generator a condition changes, with the setting P20 chose for it; stars: the new condition "
                "(ten runs) with the setting chosen for it on P14's patients by P20's rule. "
                + ("Right: the confirmatory family on the test records (Holm over three). " if test is not None else "")
@@ -2367,6 +2368,7 @@ def ensemble_pairs_figure(summary: dict, test: dict | None, pairs: dict[str, str
     if test is not None:
         intervals(axes[2], test["conditions"]["chosen"], "rare_macro_f1", "rare-class macro-F1 on the test records (95% record-level CI)", "the test records, one read")
         _comparisons_panel(axes[3], {"confirmatory": {_pair_name(k): v for k, v in test["families"]["confirmatory"].items()}}, "after vs before, test records")
+        axes[3].locator_params(axis="x", nbins=4)
     return [_save(fig, paths.figures_for(experiment) / "results.png", title, caption)]
 
 

@@ -1409,3 +1409,11 @@ deviation) 0.74, 2.14, 1.11; P12's cVAE bank 0.93, 2.87, 1.82 and WGAN-GP bank 1
 score below them; the WGAN-GP banks are as rough as real beats and score higher. Expectation from this, before training:
 the loss will mostly push the WGAN-GP toward smoother beats. Only physics.json was downloaded (the 2.3 GB zip holds the
 attached banks). Figure `figures/phase6_physics_fitted/check.png`.
+
+P21 DS2 read (`phase6-physics-prior-test`, CPU, ed3927b, exit code 0; the 16th read, logged in TEST_ACCESS_LOG.md;
+P20's DS2 values for the baselines reproduced exactly). Rare-class macro-F1 (95% record-level CI): cVAE + Euler loss
+0.481 (0.106-0.529) vs P18's cVAE 0.459 (0.110-0.500), difference +0.022 (-0.006 to 0.033), Holm p 0.620; WGAN-GP +
+Euler loss 0.339 (0.102-0.398) vs 0.497 (0.098-0.613), difference -0.158 (-0.219 to 0.003), Holm p 0.485. Neither is
+detectable. The WGAN-GP's drop is in S F1 (0.423 vs 0.654): its stage threshold chosen on P14's patients is 0.70, P18's
+WGAN-GP's 0.75, the same record-232 effect P20 found. Without record 202: 0.499 vs 0.475 and 0.360 vs 0.531. P21 is done;
+figure `figures/phase6_physics_prior/results.png` now has the test panels; paper text says why the WGAN-GP fell.

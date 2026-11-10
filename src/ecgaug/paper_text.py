@@ -342,6 +342,11 @@ def posthoc_physics_prior() -> str:
     rows = "; ".join(f"{PHYSICS_SHORT[k]} {_n(tc[f'cnn/{k}']['rare_macro_f1']['point'])} (S F1 {_n(tc[f'cnn/{k}']['f1_S']['point'])}, "
                      f"F F1 {_n(tc[f'cnn/{k}']['f1_F']['point'])}; {SHORT[b]} {_n(tc[f'cnn/{b}']['rare_macro_f1']['point'])})" for k, b in present.items())  # fmt: skip
     text += (f" On the test records (one read), rare-class macro-F1: {rows}. Confirmatory: {_physics_family(test['families']['confirmatory'])}.")
+    st = test.get("settings", {})
+    differ = [(k, b) for k, b in present.items() if k in st and b in st and st[k] != st[b]]
+    if differ:
+        text += " " + " ".join(f"{PHYSICS_SHORT[k]} was given {st[k]} on P14's patients, against {st[b]} for {SHORT[b]}, and its test S F1 differs "
+                               f"accordingly ({_n(tc[f'cnn/{k}']['f1_S']['point'])} against {_n(tc[f'cnn/{b}']['f1_S']['point'])}), as in P20." for k, b in differ)  # fmt: skip
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
 
 
