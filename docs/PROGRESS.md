@@ -1420,7 +1420,7 @@ figure `figures/phase6_physics_prior/results.png` now has the test panels; paper
 
 P22 run (`phase6-bigger-classifier-run`, T4, 1889b7a, exit code 0; about 2.8 GPU-hours, against 1.5 estimated: a ResNet
 run took a median 190 s, 30 runs 1.57 hours, plus data building and prediction). 30 ResNet runs ingested
-(`phase6_bigger_classifier-resnet*-f19dfdc`... run IDs in results/phase6_bigger_classifier/members.json); only the run
+(run IDs `phase6_bigger_classifier-resnet.*-1889b7a-*`, listed in results/phase6_bigger_classifier/members.json); only the run
 folders and results were downloaded, not the 1.5 GB zip. Validation S F1 over ten runs, mean (SD), ResNet vs P18's cnn:
 none 0.759 (0.011) vs 0.759; cVAE 0.750 (0.012) vs 0.774; WGAN-GP 0.735 (0.015) vs 0.727. V F1 higher for the ResNet
 (0.85, 0.85, 0.83 vs 0.84, 0.82, 0.81), F F1 higher but still near zero (0.08, 0.08, 0.06 vs 0.01, 0.04, 0.02). Settings

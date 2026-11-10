@@ -371,6 +371,12 @@ def _pairs_results(s: dict | None, test: dict | None, pairs: dict, label: str, m
     rows = "; ".join(f"{PAIR_SHORT[c]} {_n(sc[c]['f1_S']['point'])} ({PAIR_SHORT[b]} {_n(sc[b]['f1_S']['point'])})" for c, b in pairs.items())
     text = (f" On P19's {s['patients']:,} patients, S F1 with the chosen settings: {rows} (Figure~\\ref{{{label}}}). Secondary: "
             f"{_pairs_family(s['families']['secondary'])}.")  # fmt: skip
+    if s.get("within"):
+        parts = []
+        for name, c in s["within"].items():
+            a, b = name.replace(", chosen settings", "").split(" vs ")
+            parts.append(f"{PAIR_SHORT[a]} against {PAIR_SHORT[b]} {_ci(c, signed=True)}")
+        text += " Augmentation within the larger model (descriptive): " + "; ".join(parts) + "."
     if test is None:
         return text + " " + _missing(f"{missing}: --part test on Kaggle")
     tc = test["conditions"]["chosen"]
