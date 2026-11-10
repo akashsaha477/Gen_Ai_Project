@@ -187,3 +187,33 @@ def test_ds2_read_checks_p18s_values_and_compares_with_p18s_setting(monkeypatch)
     (paths.results_for(se.EXPERIMENT) / "summary.json").write_text(json.dumps({"ensemble": {"with_af_veto": p18}}))
     with pytest.raises(PreconditionError):
         rt.test_report({})
+
+
+def test_figures_and_paper_text_come_from_the_result_files():
+    from ecgaug import figures, paper_text
+
+    assert "\\missing{P20: --part build" in paper_text.posthoc_rule_tuning() and paper_text._tuning_sentence() is None
+    surface = {c: {rt.label(s): 0.3 for s in rt.settings()} for c in se.CONDITIONS}
+    chosen = {c: {"rule_threshold": 0.7, "veto_threshold": None, "label": "stage 0.70", "s_f1": 0.3} for c in se.CONDITIONS}
+    choice = {"chosen": chosen, "tuning_surface": surface, "patients": 388, "beats": {"N": 1, "S": 15_000, "V": 1, "F": 0}}
+    e = {"point": 0.4, "ci_low": 0.3, "ci_high": 0.5}
+    block = {f"cnn/{c}": {"f1_S": e, "f1_V": e, "f1_F": e, "rare_macro_f1": e} for c in se.CONDITIONS}
+    comp = {"point": 0.02, "ci_low": -0.01, "ci_high": 0.05, "p_holm": 0.5, "reject_holm": False}
+    summary = {"patients": 977, "chosen": chosen, "evaluation_surface": surface,
+               "conditions": {"chosen": block, "p19_setting": block, "ensemble_alone": block},
+               "families": {"confirmatory": {f"cnn: {c}, chosen vs P19's setting": comp for c in se.CONDITIONS},
+                            "secondary": {f"cnn: {c}, chosen vs ensemble alone": comp for c in se.CONDITIONS}}}  # fmt: skip
+    test = {"conditions": {"chosen": block, "p18_setting": block, "ensemble_alone": block},
+            "families": {"ds2": {f"cnn: {c}, chosen vs P18's setting": comp for c in se.CONDITIONS}}}
+    folder = paths.results_for(rt.EXPERIMENT)
+    folder.mkdir(parents=True, exist_ok=True)
+    for name, d in (("choice.json", choice), ("summary.json", summary)):
+        (folder / name).write_text(json.dumps(d))
+    assert "\\missing{P20: --part test" in paper_text.posthoc_rule_tuning()
+    (folder / "test_summary.json").write_text(json.dumps(test))
+    out = figures.rule_tuning_choice_figure(choice, summary) + figures.rule_tuning_results_figure(summary, test)
+    assert len(out) == 2 and all(p.is_file() for p in out)
+    text = paper_text.posthoc_rule_tuning()
+    assert "\\missing" not in text and "cVAE: stage 0.70" in text and "On P19's 977 patients" in text and text.count("{") == text.count("}")
+    assert "fig:p20-choice" in text and "fig:p20}" in text and "sec:rule-tuning" in paper_text._tuning_sentence(with_section=True)
+    assert paper_text._best_test_score() >= 0.4

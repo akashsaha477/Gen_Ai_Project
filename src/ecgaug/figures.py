@@ -2089,6 +2089,88 @@ def fresh_patients_figure(summary: dict, p18: dict | None) -> list[Path]:
     return [_save(fig, paths.figures_for("phase6_fresh_patients") / "results.png", f"Before and after: the same pipeline on {summary['patients']:,} new patients", caption)]
 
 
+TUNED_COLOR = "#1f9e6e"
+RULE_GRID = (0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90)
+VETO_GRID = (0.50, 0.60, 0.70, 0.80, 0.90, 0.95)
+
+
+def _setting_label(t: float | None, a: float | None) -> str:
+    return "ensemble alone" if t is None else f"stage {t:.2f}" + ("" if a is None else f", veto {a:.2f}")
+
+
+def rule_tuning_choice_figure(choice: dict, summary: dict | None) -> list[Path]:
+    """P20's choice: per condition, pooled S F1 of every setting against the stage's threshold, on the 400 tuning patients
+    (top) and on P19's patients (bottom, after the choice); the chosen setting and P19's setting marked."""
+    plt = _plt()
+    conditions = list(choice["chosen"])
+    rows = [("tuning patients (P14's 400): the choice", choice["tuning_surface"])]
+    if summary is not None and "evaluation_surface" in summary:
+        rows.append(("P19's patients: after the choice", summary["evaluation_surface"]))
+    fig, axes = plt.subplots(len(rows), len(conditions), figsize=(2.9 * len(conditions), 3.0 * len(rows) + 1.0), squeeze=False, sharey="row")
+    shades = BLUES[2:]  # light to dark: low to high veto threshold
+    for r, (row_title, table) in enumerate(rows):
+        for j, c in enumerate(conditions):
+            ax, scores = axes[r][j], table[c]
+            ax.axhline(scores["ensemble alone"], color=SINGLE_RUN_COLOR, linestyle="--", linewidth=1.5, label="ensemble alone")
+            ax.plot(RULE_GRID, [scores[_setting_label(t, None)] for t in RULE_GRID], color=INK, linewidth=2, label="stage, no veto")
+            for a, shade in zip(VETO_GRID, shades):
+                ax.plot(RULE_GRID, [scores[_setting_label(t, a)] for t in RULE_GRID], color=shade, linewidth=1.5, label=f"stage, veto {a:.2f}")
+            ax.plot(0.80, scores[_setting_label(0.80, 0.95)], "o", color=FRESH_COLOR, markersize=8, label="P19's setting", zorder=4)
+            ch = choice["chosen"][c]
+            x = 0.80 if ch["rule_threshold"] is None else ch["rule_threshold"]
+            ax.plot(x, scores[ch["label"]], "*", color=TUNED_COLOR, markersize=14, markeredgecolor=SURFACE, label="chosen", zorder=5)
+            ax.set_title(f"{CONDITION_NAMES[c]}\nchosen: {ch['label']}" if r == 0 else CONDITION_NAMES[c], loc="left", fontsize=8)
+            ax.set_xticks(RULE_GRID[::2])
+            if j == 0:
+                ax.set_ylabel(f"S F1, {row_title}", fontsize=8)
+            if r == len(rows) - 1:
+                ax.set_xlabel("stage threshold t")
+    handles, labels = axes[0][0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper right", ncol=5, fontsize=7, frameon=False, bbox_to_anchor=(0.995, 1.0))
+    caption = ("Pooled S F1 of each condition's ten-run ensemble for the 50 settings: the ensemble alone (dashed), Huang et al.'s stage at threshold t "
+               "with no veto (black) and with P16's AF veto at six thresholds (light to dark: 0.50 to 0.95). Green star: the setting chosen on the "
+               "tuning patients; orange: P19's setting (t 0.80, veto 0.95). Bottom row: the same settings on P19's patients, which played no part in "
+               "the choice. Post hoc (PREREGISTRATION v19, P20).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_rule_tuning") / "choice.png", "The choice: S F1 of every setting, per condition", caption)]
+
+
+def rule_tuning_results_figure(summary: dict, test: dict | None) -> list[Path]:
+    """P20 before and after: per condition, S F1 on P19's patients with P19's setting, the chosen setting and the ensemble
+    alone; rare-class macro-F1 on the test records with P18's setting and the chosen one; the pre-registered comparisons."""
+    plt = _plt()
+    keys = list(summary["conditions"]["chosen"])
+    panels = 2 + (2 if test is not None else 0)
+    fig, axes = plt.subplots(1, panels, figsize=(4.6 * panels, 0.3 * 3 * len(keys) + 2.2))
+    rows = [(k, kind, color, marker) for k in keys for kind, color, marker in
+            (("p19_setting", FRESH_COLOR, "o"), ("chosen", TUNED_COLOR, "*"), ("ensemble_alone", SINGLE_RUN_COLOR, "o"))]  # fmt: skip
+    names = {"p19_setting": "P19's setting", "chosen": "chosen", "ensemble_alone": "ensemble alone"}
+    ax = axes[0]
+    for i, (k, kind, color, marker) in enumerate(reversed(rows)):
+        _interval(ax, summary["conditions"][kind][k]["f1_S"], i, color, marker=marker)
+    ax.set_yticks(range(len(rows)), [f"{CONDITION_NAMES[k.split('/')[1]]}: {names[kind]}" for k, kind, _, _ in reversed(rows)], fontsize=7)
+    ax.set_xlim(0, 1)
+    ax.set_xlabel("S F1 on P19's patients (95% patient-level CI)")
+    ax.set_title("after: P19's patients", loc="left")
+    _comparisons_panel(axes[1], summary["families"], "pre-registered comparisons on P19's patients")
+    axes[1].set_xlabel("difference in S F1 (95% CI)")
+    if test is not None:
+        rows2 = [(k, kind, color, marker) for k in keys for kind, color, marker in (("p18_setting", ENSEMBLE_COLOR, "s"), ("chosen", TUNED_COLOR, "*"))]
+        names2 = {"p18_setting": "P18's setting", "chosen": "chosen"}
+        ax = axes[2]
+        for i, (k, kind, color, marker) in enumerate(reversed(rows2)):
+            _interval(ax, test["conditions"][kind][k]["rare_macro_f1"], i, color, marker=marker)
+        ax.set_yticks(range(len(rows2)), [f"{CONDITION_NAMES[k.split('/')[1]]}: {names2[kind]}" for k, kind, _, _ in reversed(rows2)], fontsize=7)
+        ax.set_xlim(0, 1)
+        ax.set_xlabel("rare-class macro-F1 on the test records (95% record-level CI)")
+        ax.set_title("the test records, one read", loc="left")
+        _comparisons_panel(axes[3], {"confirmatory": test["families"]["ds2"]}, "test records: chosen vs P18's setting")
+    caption = (f"{summary['patients']:,} Icentia11k patients from P19 (no F labels). Orange: P19's setting (Huang et al.'s stage at 0.80, P16's veto at 0.95); "
+               "green star: the setting chosen per condition on P14's 400 patients; grey: the ten-run ensemble alone. "
+               + ("Third panel: the test records, P18's setting (squares) and the chosen one; right, chosen vs P18's setting, Holm over six. " if test is not None else "")
+               + "Second panel, black: confirmatory (chosen vs P19's setting); grey: secondary (chosen vs the ensemble alone). Post hoc (PREREGISTRATION v19, P20).")  # fmt: skip
+    return [_save(fig, paths.figures_for("phase6_rule_tuning") / "results.png", "Before and after: the stage and the veto chosen on other patients", caption)]
+
+
 def posthoc_figures() -> list[Path]:
     """Every post-hoc figure whose summary exists (PREREGISTRATION v4, P1-P4); nothing is re-run."""
     final, written = _summary("final_eval"), []
@@ -2166,6 +2248,10 @@ def posthoc_figures() -> list[Path]:
         written += seed_ensemble_results_figure(s)
     if (s := _summary("phase6_fresh_patients")) is not None:
         written += fresh_patients_figure(s, _summary("phase6_seed_ensemble"))
+    if (c := _summary("phase6_rule_tuning", "choice.json")) is not None:
+        written += rule_tuning_choice_figure(c, _summary("phase6_rule_tuning"))
+    if (s := _summary("phase6_rule_tuning")) is not None:
+        written += rule_tuning_results_figure(s, _summary("phase6_rule_tuning", "test_summary.json"))
     return written
 
 

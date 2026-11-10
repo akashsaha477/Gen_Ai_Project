@@ -1152,6 +1152,40 @@ def posthoc_fresh_patients() -> str:
     return text + " Post hoc; Icentia11k comes from a different device and annotation process, and the primary results stay those of Table~\\ref{tab:test}.\n"
 
 
+def posthoc_rule_tuning() -> str:
+    """P20: Huang's stage and P16's veto chosen on 400 Icentia11k patients, scored on P19's patients and the test records,
+    from results/phase6_rule_tuning/."""
+    from ecgaug.names import PHASE6_RULE_TUNING
+
+    folder = paths.results_for(PHASE6_RULE_TUNING)
+    choice, s, test = (_load(folder / name) for name in ("choice.json", "summary.json", "test_summary.json"))
+    text = ("\\paragraph{The stage and the veto chosen on other patients (P20).} On P19's patients Huang et al.'s stage lowered S F1 against "
+            "the ensembles alone. Its threshold 0.8 is Huang et al.'s MIT-BIH value, and P16's veto threshold came from MIT-BIH, INCART and SVDB "
+            "annotations. P20 chooses, per condition, one of 50 settings (the ten-run ensemble alone, or the stage at a threshold from 0.60 to 0.90 "
+            "with no veto or with the veto at a threshold from 0.50 to 0.95) by S F1 on P14's 400 Icentia11k patients, which none of P18's runs "
+            "has seen, then scores the choice on P19's patients, which played no part in it, and once on the test records.")  # fmt: skip
+    if choice is None or s is None:
+        return text + " " + _missing("P20: --part build, then --part run on Kaggle") + "\n"
+    picks = "; ".join(f"{SHORT[c]}: {v['label']}" for c, v in choice["chosen"].items())
+    text += f" Chosen on {choice['patients']:,} tuning patients ({choice['beats']['S']:,} S beats): {picks} (Figure~\\ref{{fig:p20-choice}})."
+    cond = s["conditions"]
+    rows = "; ".join(f"{SHORT[k.split('/')[1]]} {_n(e['f1_S']['point'])} (P19's setting {_n(cond['p19_setting'][k]['f1_S']['point'])}, "
+                     f"alone {_n(cond['ensemble_alone'][k]['f1_S']['point'])})" for k, e in cond["chosen"].items())  # fmt: skip
+    text += (f" On P19's {s['patients']:,} patients, S F1 with the chosen setting: {rows} (Figure~\\ref{{fig:p20}}). Confirmatory, chosen vs "
+             f"P19's setting: {_family_sentence(s['families']['confirmatory'])}. Secondary, chosen vs the ensemble alone: "
+             f"{_family_sentence(s['families']['secondary'])}.")  # fmt: skip
+    if test is None:
+        text += " " + _missing("P20: --part test on Kaggle")
+    else:
+        tc = test["conditions"]
+        rows = "; ".join(f"{SHORT[k.split('/')[1]]} {_n(e['rare_macro_f1']['point'])} (P18's setting {_n(tc['p18_setting'][k]['rare_macro_f1']['point'])})"
+                         for k, e in tc["chosen"].items())  # fmt: skip
+        cv = tc["chosen"]["cnn/cvae"]
+        text += (f" On the test records (one read), rare-class macro-F1 with the chosen settings: {rows}; for the cVAE S F1 {_n(cv['f1_S']['point'])}, "
+                 f"F F1 {_n(cv['f1_F']['point'])} and V F1 {_n(cv['f1_V']['point'])}. Chosen vs P18's setting: {_family_sentence(test['families']['ds2'])}.")  # fmt: skip
+    return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
+
+
 def posthoc_table() -> str:
     """One row per post-hoc analysis (P1-P8): what it asked and what it found, from the summaries."""
     from ecgaug.names import (PHASE6_AUDIT_CHECK, PHASE6_AUGMENTATION_MECHANISM, PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS,
@@ -1357,7 +1391,7 @@ def patient_variation_paragraph() -> str | None:
     if (ic := _icentia_sentence(with_section=True)) is not None:
         text += " " + ic
     for extra in (_diffusion_sentence(with_section=True), _af_sentence(with_section=True), _ensemble_sentence(with_section=True),
-                  _fresh_sentence(with_section=True)):
+                  _fresh_sentence(with_section=True), _tuning_sentence(with_section=True)):
         if extra is not None:
             text += " " + extra
     return text + (" The evidence points to how much patients differ as the main obstacle here; on DS1's patients, normalizing the input for the "
@@ -1508,6 +1542,26 @@ def _fresh_sentence(with_section: bool = False) -> str | None:
             f"{_n(alone['f1_S']['point'])} for the ensemble alone.")
 
 
+def _tuning_sentence(with_section: bool = False) -> str | None:
+    """One sentence on P20 (the stage and the veto chosen on 400 other Icentia11k patients), or None before it ran."""
+    from ecgaug.names import PHASE6_RULE_TUNING
+
+    folder = paths.results_for(PHASE6_RULE_TUNING)
+    s, test = _load(folder / "summary.json"), _load(folder / "test_summary.json")
+    if s is None:
+        return None
+    cond, conf = s["conditions"], s["families"]["confirmatory"]["cnn: cvae, chosen vs P19's setting"]
+    where = " (Section~\\ref{sec:rule-tuning})" if with_section else ""
+    text = (f"Choosing the stage and the veto on 400 other Icentia11k patients{where} picked \\emph{{{s['chosen']['cvae']['label']}}} for the cVAE, "
+            f"which took its S F1 on P19's patients from {_n(cond['p19_setting']['cnn/cvae']['f1_S']['point'])} to "
+            f"{_n(cond['chosen']['cnn/cvae']['f1_S']['point'])} ({_changed(conf)}, {_p(conf)})")  # fmt: skip
+    if test is not None:
+        tc = test["conditions"]
+        text += (f"; on the test records its rare-class macro-F1 went from {_n(tc['p18_setting']['cnn/cvae']['rare_macro_f1']['point'])} with "
+                 f"P18's setting to {_n(tc['chosen']['cnn/cvae']['rare_macro_f1']['point'])}")
+    return text + "."
+
+
 def _best_test_score() -> float:
     """The highest test rare-class macro-F1 of any condition in any summary written so far (final evaluation and post hoc,
     P13's descriptive SVEB-rule results included)."""
@@ -1515,6 +1569,9 @@ def _best_test_score() -> float:
 
     best = 0.0
     for experiment in (FINAL_EVAL, *POST_HOC):
+        tuned = _load(paths.results_for(experiment) / "test_summary.json") or {}  # P20's test read: one block per setting
+        for block in tuned.get("conditions", {}).values():
+            best = max([best, *(float(e["rare_macro_f1"]["point"]) for e in block.values() if "rare_macro_f1" in e)])
         s = _load(paths.results_for(experiment) / "summary.json") or {}
         ensembles = [e for block in s.get("ensemble", {}).values() for e in block.values()]  # P18's ensembles, stage and veto included
         for entry in [*s.get("conditions", {}).values(), *s.get("sveb_rule", {}).values(), *s.get("with_af_veto", {}).values(), *ensembles]:
@@ -1670,7 +1727,7 @@ def conclusion() -> str:
             text += " " + rr
         if (ic := _icentia_sentence()) is not None:
             text += " " + ic
-        for extra in (_diffusion_sentence(), _af_sentence(), _ensemble_sentence(), _fresh_sentence()):
+        for extra in (_diffusion_sentence(), _af_sentence(), _ensemble_sentence(), _fresh_sentence(), _tuning_sentence()):
             if extra is not None:
                 text += " " + extra
     p7 = _load(paths.results_for(PHASE6_RELATIVE_CNN) / "summary.json")
@@ -1754,7 +1811,7 @@ def abstract_posthoc() -> str:
         text += " " + rr
     if (ic := _icentia_sentence()) is not None:
         text += " " + ic
-    for extra in (_diffusion_sentence(), _af_sentence(), _ensemble_sentence(), _fresh_sentence()):
+    for extra in (_diffusion_sentence(), _af_sentence(), _ensemble_sentence(), _fresh_sentence(), _tuning_sentence()):
         if extra is not None:
             text += " " + extra
     sizes = _model_sizes()
@@ -1840,6 +1897,7 @@ def build() -> dict[str, str]:
     files["results_diffusion_long"] = posthoc_diffusion_long()
     files["results_seed_ensemble"] = posthoc_seed_ensemble()
     files["results_fresh_patients"] = posthoc_fresh_patients()
+    files["results_rule_tuning"] = posthoc_rule_tuning()
     files["table_posthoc"] = posthoc_table()
     files["outlook"] = outlook(heading=False)
     files["discussion"] = discussion()
