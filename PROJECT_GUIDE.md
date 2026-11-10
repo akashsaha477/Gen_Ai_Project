@@ -339,7 +339,7 @@ result.
 | P19 | `phase6_fresh_patients` | P18's frozen pipeline on 1,000 Icentia11k patients no analysis had used, with no test record read |
 | P20 | `phase6_rule_tuning` | the SVEB rule's and the veto's thresholds chosen on P14's 400 Icentia11k patients, scored on P19's patients and once on the test records |
 | P21 | `phase6_physics_prior` | McSharry et al.'s ECG simulator as a prior for the cVAE and WGAN-GP (SimGANs' Euler loss), and physiological fusion beats; the loss barely moved the generators, no detectable change on P19's patients or DS2 |
-| P22 | `phase6_bigger_classifier` | phase 2's ResNet1D (6.7 times the cnn's parameters) in P18's pipeline against P18's cnn ensembles; running |
+| P22 | `phase6_bigger_classifier` | phase 2's ResNet1D (6.7 times the cnn's parameters) in P18's pipeline against P18's cnn ensembles; better S F1 on P19's patients with augmentation, no detectable change on DS2 |
 | P23 | `phase6_physics_fitted` | P21 with the simulator fitted to each generated beat (the loss is what it cannot explain); running |
 
 The highest post hoc test score is the cVAE with Huang et al.'s SVEB rule and the atrial-fibrillation veto, its class
@@ -352,7 +352,7 @@ detail in `docs/PROGRESS.md`, and the before-and-after figures in `figures/phase
 ## 6. What has run
 
 Phases 1 to 5, the full grid, the single final evaluation (2026-11-04), the leakage audit and the post hoc
-analyses P1-P21 (section 5.15) have all run; P22 and P23 are running. The checklist in `README.md` gives the state of every item, including
+analyses P1-P22 (section 5.15) have all run; P23 is running. The checklist in `README.md` gives the state of every item, including
 any approval still open; `python -m ecgaug.workflow status` prints it.
 
 ---
