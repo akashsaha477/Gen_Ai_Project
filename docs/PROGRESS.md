@@ -1351,3 +1351,20 @@ training). Code: `active()` drops stopped conditions, `registered_holm` keeps m 
 `figures/phase6_rule_tuning/results.png` with the kernel's render; restored. The check zip was 849 MB (the attached banks
 travel back in it).
 
+
+P21 training (`phase6-physics-prior-train-cvae` and `-wgan-gp`, GPU T4, f19dfdc, both exit code 0; sessions 07:38-09:50
+and 07:44-10:06 UTC, about 4.6 GPU-hours together). Per family five generator fits (lambda 0.1, 1, 10 at seed 0; seeds 1
+and 2 at the chosen lambda; 20,000 steps each, about 21 minutes, none diverged), 12 selection cnn runs and 10 final ones;
+54 runs ingested (run IDs `phase6_physics_prior-*-f19dfdc-20261110*`), 10 banks under
+`data/synthetic/phase6_physics_prior/`. Weight choice (validation S F1, mean of cnn seeds 0-2, rule applied as written):
+cVAE lambda 0.1 0.753, 1 0.761, 10 0.759, chosen 1; lambda 0 (P12's bank) 0.766 beside. WGAN-GP lambda 0.1 0.728,
+1 0.740, 10 0.728, chosen 1; lambda 0 0.708 beside (its seed 0 at 0.658). Ten final runs, validation S F1 mean (SD):
+cVAE + Euler loss 0.767 (0.012) vs P18's cVAE 0.774 (0.010); WGAN-GP + Euler loss 0.736 (0.015) vs P18's WGAN-GP 0.727
+(0.028); V and F F1 alike within one SD. The physics loss barely moved the generators, as the check's kappa suggested: the
+logged Euler term over kappa stays between 0.94 and 1.07 from the first logged step to the last in all ten fits, and the
+seed-0 banks score S 0.899-0.902 and V 0.97-0.99 at every lambda, P12's banks included (F moves between 0.91 and 1.01).
+The reason is structural: the generators make patient-relative beats and the loss scores them after adding a real
+template, so a generator that outputs nearly nothing already gets a real beat's score. Spread over training patients is
+unchanged (S about 29-31 effective patients, F about 3-4, before and after). Figure
+`figures/phase6_physics_prior/banks.png` (Euler panels on a linear scale; caption says what kappa and the 'real' point
+mean). No figure was replaced by the ingest. Next: the score session on P14's and P19's patients, then the DS2 read.

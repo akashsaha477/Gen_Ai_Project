@@ -1,0 +1,29 @@
+{
+  "cell_sha": "1cabdfe1985a6bb53e888743687cc2a7bc4803aa220a96d84758c07234d74739",
+  "cell": {
+    "condition": "wgan_gp_l1",
+    "strength": 0.25,
+    "architecture": "cnn",
+    "seed": 0
+  },
+  "condition": "wgan_gp_l1",
+  "strength": 0.25,
+  "architecture": "cnn",
+  "seed": 0,
+  "run_id": "phase6_physics_prior-cnn.wgan_gp_l1_0.25-s0-f19dfdc-202611100907",
+  "status": "done",
+  "bank": "phase6_physics_prior/wgan_gp-lambda1",
+  "selection_metric": "s_f1",
+  "selection_value": 0.751155691234191,
+  "tie_break_value": 0.7114809517617995,
+  "rare_macro_f1": 0.3844352415426934,
+  "n_recall": 0.9383286318758816,
+  "n_added": {
+    "N": 0,
+    "S": 17016,
+    "V": 0,
+    "F": 26695
+  },
+  "wall_clock_s": 68.4,
+  "provisional": false
+}

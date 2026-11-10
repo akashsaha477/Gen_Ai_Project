@@ -1,0 +1,107 @@
+{
+  "experiment": "phase6_physics_prior",
+  "rule": "PREREGISTRATION \u00a710 v20",
+  "family": "wgan_gp",
+  "fits": {
+    "0.1/0": {
+      "run_id": "phase6_physics_prior-generator.wgan_gp.lambda0.1-s0-f19dfdc-202611100755",
+      "lambda": 0.1,
+      "seed": 0,
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "generator_seconds": 1309.202559801,
+      "final_losses": {
+        "step": 20000,
+        "critic_loss": -0.9106719863414764,
+        "wasserstein": 1.1189797973632813,
+        "gradient_penalty": 0.02083078071475029,
+        "generator_loss": 14.54732078552246,
+        "prior": 0.9771117866039276,
+        "elapsed_s": 1309.191054081
+      },
+      "checkpoint_sha256": "f2e4c108010826cfaf00790673a262bab8fb0b61fa683fb3cc71a9d5f280cf35",
+      "bank_sha256": "8508870c7785697ee484453881d720a8b53cb08479d04144b53b437e40ed06af"
+    },
+    "1/0": {
+      "run_id": "phase6_physics_prior-generator.wgan_gp.lambda1-s0-f19dfdc-202611100817",
+      "lambda": 1.0,
+      "seed": 0,
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "generator_seconds": 1315.1220585209999,
+      "final_losses": {
+        "step": 20000,
+        "critic_loss": -1.0036627173423767,
+        "wasserstein": 1.2233210754394532,
+        "gradient_penalty": 0.02196583556011319,
+        "generator_loss": 18.362231369018556,
+        "prior": 0.9777710413932801,
+        "elapsed_s": 1315.116695576
+      },
+      "checkpoint_sha256": "35b02a297599a898e629cc325e95a1e0b1f9b02355130d0084a3c96bf62d550c",
+      "bank_sha256": "6718b34484bfd493f9323a7d0e8a0d87392c2c665417d7609abe4a1ab30c954a"
+    },
+    "10/0": {
+      "run_id": "phase6_physics_prior-generator.wgan_gp.lambda10-s0-f19dfdc-202611100839",
+      "lambda": 10.0,
+      "seed": 0,
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "generator_seconds": 1316.5383769799996,
+      "final_losses": {
+        "step": 20000,
+        "critic_loss": -0.9241782683134079,
+        "wasserstein": 1.1470078706741333,
+        "gradient_penalty": 0.022282960042357445,
+        "generator_loss": 15.825487480163574,
+        "prior": 0.9706167542934417,
+        "elapsed_s": 1316.5333982810002
+      },
+      "checkpoint_sha256": "6a8fe30d5deebacc3aad5ad021d9e0b13c092147bda4ad85c184adbe25a5620f",
+      "bank_sha256": "9dc2a9dbfc3b816474443882588bf81138d4a7301bc32753a41cdbfe5f1e9ab5"
+    },
+    "1/1": {
+      "run_id": "phase6_physics_prior-generator.wgan_gp.lambda1-s1-f19dfdc-202611100913",
+      "lambda": 1.0,
+      "seed": 1,
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "generator_seconds": 1315.8744306549997,
+      "final_losses": {
+        "step": 20000,
+        "critic_loss": -1.008815272450447,
+        "wasserstein": 1.2440251541137695,
+        "gradient_penalty": 0.023520988412201405,
+        "generator_loss": 17.12781446456909,
+        "prior": 1.0146321654319763,
+        "elapsed_s": 1315.869464601
+      },
+      "checkpoint_sha256": "e30279773b697607169f2621b736fe6b88910df3e1ff6359819ff1a8fc4c4524",
+      "bank_sha256": "cb6dc1941baf69a2654b2a01e4529cb10564ee10ec3d843a79a4b53fa3d9260d"
+    },
+    "1/2": {
+      "run_id": "phase6_physics_prior-generator.wgan_gp.lambda1-s2-f19dfdc-202611100935",
+      "lambda": 1.0,
+      "seed": 2,
+      "steps_done": 20000,
+      "diverged": false,
+      "divergence": null,
+      "generator_seconds": 1318.2462521160005,
+      "final_losses": {
+        "step": 20000,
+        "critic_loss": -1.0382339996099472,
+        "wasserstein": 1.269142608642578,
+        "gradient_penalty": 0.023090861178934573,
+        "generator_loss": 24.00424850463867,
+        "prior": 0.9879907023906708,
+        "elapsed_s": 1318.2411183180002
+      },
+      "checkpoint_sha256": "2fdd0ef30246035263fff09874ba37c1b4f1165468e8dbea2ea064f7479819f0",
+      "bank_sha256": "b1cae7509ba284bf200f6103f54f523bb9ad6b2e1b61313ed60b5d2b277cb3a3"
+    }
+  }
+}

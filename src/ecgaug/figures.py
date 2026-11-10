@@ -2255,9 +2255,9 @@ def physics_banks_figure(families: dict[str, dict], fusion: dict | None) -> list
         names = list(d)
         for c in ("S", "V", "F"):
             ax.plot(range(len(names)), [d[n][c]["euler"] for n in names], "o-", color=CLASS_COLORS[c], label=c)
-        ax.set_yscale("log")
+        ax.axhline(1.0, color=INK_2, linewidth=1, dashes=(2, 2))
         ax.set_xticks(range(len(names)), [n.replace("_seed0", "").replace("lambda", "λ ").replace("p12", "P12") for n in names], fontsize=7)
-        ax.set_ylabel("Euler loss (training loss value)")
+        ax.set_ylabel("Euler loss over κ (dashed: 1)")
         ax.set_title(f"{CONDITION_NAMES[f]}: physics error, before (P12) and after", loc="left", fontsize=9)
         ax.legend(fontsize=7, frameon=False)
     ax = axes[-1]
@@ -2280,8 +2280,9 @@ def physics_banks_figure(families: dict[str, dict], fusion: dict | None) -> list
     ax.set_title("spread over patients", loc="left", fontsize=9)
     ax.legend(fontsize=7, frameon=False)
     caption = ("Left: mean validation S F1 of three cnn runs per weight λ of the Euler loss (dots: the runs; star: the chosen λ; λ 0 is P12's own "
-               "bank, beside). Middle: the seed-0 banks' Euler loss per class, the value the generators were trained on (real training beats "
-               "scored the same way first; log scale). Right: over how many training patients the synthetic S and F beats spread, by the patient "
+               "bank, beside). Middle: the seed-0 banks' Euler loss per class, the value the generators were trained on, over κ (κ: real "
+               "whole training beats with their own templates average 1, dashed); 'real': real relative training beats scored as in "
+               "training, with a random template of their class. Right: over how many training patients the synthetic S and F beats spread, by the patient "
                "of each beat's nearest real training beat. Training beats only. Post hoc (PREREGISTRATION v20, P21).")  # fmt: skip
     return [_save(fig, paths.figures_for("phase6_physics_prior") / "banks.png", "The weight choice and the banks, before and after", caption)]
 

@@ -1,0 +1,36 @@
+experiment: phase6_physics_prior
+family: wgan_gp
+lambda: 1.0
+prior: Euler loss (physics.json)
+scale: 0.5697834419149064
+seed: 1
+settings:
+  adam_betas:
+  - 0.0
+  - 0.9
+  auxiliary_weight: 1.0
+  batch_size: 128
+  classes:
+  - N
+  - S
+  - V
+  - F
+  conditioning: concat
+  critic_channels:
+  - 32
+  - 64
+  - 128
+  embed_dim: 16
+  final_steps: 20000
+  generator_channels:
+  - 128
+  - 64
+  - 32
+  gradient_penalty: 10.0
+  kernel: 7
+  log_every: 50
+  lr: 0.0001
+  n_critic: 5
+  noise_dim: 64
+  pilot_steps: 5000
+steps: 20000
