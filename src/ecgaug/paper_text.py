@@ -320,6 +320,15 @@ def posthoc_physics_prior() -> str:
         nf = fusion["nearest_patients_F"]
         text += f". The fusion F beats spread over {_n(nf['fusion_seed0'], 1)} effective training patients (P12's cVAE F beats {_n(nf['p12_seed0'], 1)})"
     text += " (Figure~\\ref{fig:p21-banks})."
+    euler = []
+    for f, d in fams.items():
+        p12, chosen = d["describe"]["p12_seed0"], d["describe"][f"lambda{d['chosen_lambda']:g}_seed0"]
+        euler.append(f"{SHORT[f]} " + ", ".join(f"{k} {_n(chosen[k]['euler'], 2)} ({_n(p12[k]['euler'], 2)})" for k in ("S", "V", "F")))
+    text += (" The Euler loss over its scale (real whole training beats average 1) of the chosen seed-0 banks, P12's banks in brackets: "
+             + "; ".join(euler) + ". The loss barely moved the generators: they make patient-relative beats and the loss scores them after a "
+             "real training template is added, so a beat near zero already scores about as a real one does. More of the loss has to come "
+             "from the generated part itself, for example by drawing the simulator's parameters with the generator's noise, before physics "
+             "can shape these banks.")  # fmt: skip
     if s is None:
         return text + " " + _missing("P21: --part score on Kaggle") + "\n"
     sc = s["conditions"]["chosen"]
