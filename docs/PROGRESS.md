@@ -1432,7 +1432,7 @@ ensembles alone (descriptive): +0.076, +0.049, +0.128. Within the ResNet, augmen
 -0.004 (WGAN-GP). The ResNet without augmentation (0.440) is the highest S F1 on P19's patients so far. Figures
 `figures/phase6_bigger_classifier/validation.png` and `results.png`. DS2 read next.
 
-P23 cVAE (`phase6-physics-fitted-train-cvae`, T4, 5d12290, exit code 0; 07:00-16:30 UTC including a queue, five
+P23 cVAE (`phase6-physics-fitted-train-cvae`, T4, 5d12290, exit code 0; first fit 14:21 UTC, bundle 16:30 UTC, about 2.4 GPU-hours; five
 generator fits of 1,323-1,351 s, none diverged; 27 runs ingested from the run folders and results, not the 2.8 GB zip).
 Weight choice (validation S F1, cnn seeds 0-2): lambda 0.1 0.771, 1 0.767, 10 0.766, lambda 0 (P12's bank) 0.766: chosen
 0.1. Unlike P21's loss, the fitted loss moves the generator, as the check predicted: seed-0 bank, loss S/V/F (P12's bank
