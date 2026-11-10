@@ -24,6 +24,7 @@ Folder names match `results/` and follow `docs/NAMING.md`.
 | `phase3a_gate/` | phase 3a gate | `variants.png`: pilot score per variant, hollow if a hard gate fails |
 | `phase4_gate/` | phase 4 gate | `strength_curves.png`: validation score against augmentation strength |
 | `final_eval/` | the final evaluation | `forest.png` (pre-registered differences with CIs), `per_record_S_F.png` |
+| `architecture/` | the whole system (`python -m ecgaug.figures architecture`) | `flow.png`: the pre-registered system, the post-hoc pipeline with the best test score and every model tested at each stage, with parameter counts computed from the configs |
 | `phase5_explainability/<letter>/` | phase 5: saliency | `class_average_saliency.png`: where the models look, none versus augmented |
 | `error_analysis/` | phase 5: errors | confusion matrices and the RR context of N/S confusions |
 | `demo/` | the demo | one beat with its saliency and probabilities |

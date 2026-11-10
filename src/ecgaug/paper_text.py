@@ -446,6 +446,49 @@ def posthoc_physics_fitted() -> str:
     return text + " Post hoc; the primary results stay those of Table~\\ref{tab:test}.\n"
 
 
+def _tex(text: str) -> str:
+    """Plain text for a table cell: LaTeX's special characters escaped."""
+    out = str(text)
+    for a, b in (("\\", "\\textbackslash{}"), ("&", "\\&"), ("%", "\\%"), ("_", "\\_"), ("#", "\\#"), ("$", "\\$")):
+        out = out.replace(a, b)
+    return out.replace("→", "$\\rightarrow$").replace("×", "$\\times$").replace("−", "$-$").replace("±", "$\\pm$")
+
+
+ARCH_TABLES = (("classifier", "tab:arch-classifiers", "Classifiers and other models fitted to beats."),
+               ("generator", "tab:arch-generators", "Generators, generator objectives and augmentation without a learned model."),
+               (("decision", "explanation", "note"), "tab:arch-other", "Decision rules, explanation and note generation."))  # fmt: skip
+
+
+def architecture_section() -> str:
+    """The report's architecture section: the flow figure and every model tested, from ``ecgaug.architecture``
+    (parameter counts computed from the configs, choices from the gate records, scores from the result files)."""
+    from ecgaug import architecture as arch
+
+    rows = arch.inventory()
+    deep = [r for r in rows if r["parameters"] is not None]
+    text = ("Figure~\\ref{fig:architecture} shows the whole system as one flow. The top row is the system as pre-registered and frozen at the "
+            "phase gates: a beat window from lead MLII with its RR features, an optional synthetic bank, a classifier, argmax, a saliency map "
+            "and a note checked against the model output. The middle row is the post-hoc pipeline with the highest test score so far (P18), "
+            "and the bottom row lists what else was tried at each stage. "
+            f"Tables~\\ref{{tab:arch-classifiers}} to~\\ref{{tab:arch-other}} list every model that was trained or tested, {len(rows)} entries "
+            f"in all, {len(deep)} of them neural networks with their trainable parameters counted from their configurations (with the "
+            "three RR side features where the model takes them). Every choice among them was made on validation patients by a rule written "
+            "down before the comparison.\n")  # fmt: skip
+    for groups, label, caption in ARCH_TABLES:
+        groups = (groups,) if isinstance(groups, str) else groups
+        body = []
+        for r in rows:
+            if r["group"] not in groups:
+                continue
+            name = f"\\textbf{{{_tex(r['name'])}}}" if r["chosen"] else _tex(r["name"])
+            params = f"{r['parameters']:,}" if r["parameters"] is not None else "--"
+            body.append(f"{name} & {_tex(r['structure'])} & {params} & {_tex(r['where'])}; {_tex(r['outcome'])} \\\\")
+        text += ("\\begin{table}[htbp]\\centering\\footnotesize\n\\begin{tabular}{p{2.6cm}p{6.1cm}rp{4.6cm}}\n\\toprule\n"
+                 "Model & Structure & Parameters & Where it ran; outcome \\\\\n\\midrule\n" + "\n".join(body)
+                 + f"\n\\bottomrule\n\\end{{tabular}}\n\\caption{{{caption} Bold: chosen by a pre-registered rule.}}\\label{{{label}}}\n\\end{{table}}\n")  # fmt: skip
+    return text
+
+
 def _count_word(n: int) -> str:
     return "none" if int(n) == 0 else f"{int(n):,}"
 
@@ -2099,6 +2142,7 @@ def build() -> dict[str, str]:
     files["results_physics_prior"] = posthoc_physics_prior()
     files["results_bigger_classifier"] = posthoc_bigger_classifier()
     files["results_physics_fitted"] = posthoc_physics_fitted()
+    files["architecture"] = architecture_section()
     files["table_posthoc"] = posthoc_table()
     files["outlook"] = outlook(heading=False)
     files["discussion"] = discussion()

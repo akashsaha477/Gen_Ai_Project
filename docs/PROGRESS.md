@@ -1451,3 +1451,14 @@ WGAN-GP 0.251 (0.116-0.291) vs 0.497, -0.246 (-0.325 to 0.034), Holm p 0.479. No
 record 202: 0.279/0.504/0.269 vs 0.238/0.475/0.531. So the larger model's S gain on P19's 977 patients (which carry no F
 label) does not show as a detectable change on the 22 test records, where F decides much of the score. P18's 0.587 stays
 the highest test score. Figure `figures/phase6_bigger_classifier/results.png` with the test panels. P22 is done.
+
+2026-11-11. Architecture section for the course report, asked "make a architecture section in the report mention all the
+models that we tested also make a full architecture flow". `src/ecgaug/architecture.py` lists 30 models and components
+(9 classifier entries, 13 generator and augmentation entries, 8 decision, explanation and note entries); the 15 neural
+networks' trainable parameters are counted by building each from its config (shallow CNN 73,226 and ResNet1D 488,362
+match phase 2's records; BiLSTM 134,794; CNN-BiLSTM 82,570; probe CNN 18,762; cVAE A-C 415,905, D 803,841; WGAN-GP A
+501,362, B 512,194, C 512,198, D 1,359,750; diffusion U-Net 2,250,497), choices read from the gate records and scores from
+the result files. `paper_text.architecture_section()` writes three tables (paper/generated/architecture.tex) and
+`figures.architecture_flow_figure()` draws `figures/architecture/flow.png`: the pre-registered system, P18's pipeline
+(the best test score, 0.587) and what else was tested at each stage, in a portrait layout readable at page width. The
+report (local) has a new section 4, Architecture; it compiles. 2 tests in tests/test_architecture.py pass.

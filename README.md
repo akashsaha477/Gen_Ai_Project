@@ -87,6 +87,8 @@ again. (If the push did not happen: download the zip from the notebook's Output 
 confusion matrices, before and after pretraining). They travel back from Kaggle in the zip.
 `python -m ecgaug.figures all` redraws everything; `figures/README.md` lists what each folder shows.
 
+**Architecture:** `figures/architecture/flow.png` (`python -m ecgaug.figures architecture`) shows the whole flow and every model tested; `src/ecgaug/architecture.py` lists the models with parameter counts computed from their configs, and the report's architecture section is generated from it (`python -m ecgaug.paper`).
+
 **Current state (2026-10-16, Day 10):** all four `phase1_input_representation` variants have run.
 The phase 1 gate report picks **variant C** (short window + RR features), with validation S F1
 0.296 ± 0.038 against 0.164 for A, the next best. It is waiting for the team's approval. The full

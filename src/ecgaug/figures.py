@@ -2721,9 +2721,97 @@ def results_figures() -> list[Path]:
     return written
 
 
+def _count(n: int | None) -> str:
+    if n is None:
+        return ""
+    return f"{n / 1e6:.2f}M" if n >= 1e6 else f"{n / 1e3:.0f}k"
+
+
+def architecture_flow_figure() -> list[Path]:
+    """The whole system as a flow: the pre-registered system of phases 1-5 (top), the post-hoc pipeline with the best
+    test score (middle) and what else was tested at each stage (bottom). Parameter counts are computed from the configs
+    (``ecgaug.architecture``); choices come from the gate records and scores from the result files."""
+    from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
+
+    from ecgaug import architecture as arch
+    from ecgaug.experiments import phase6_record_rr as rr
+
+    rows = {r["name"]: r for r in arch.inventory()}
+    best = arch.best_pipeline()
+    p = {k: _count(rows[k]["parameters"]) for k in rows}
+    try:
+        strength = rr.strengths()["cvae"]
+    except Exception:  # noqa: BLE001 - the strength is only a label here
+        strength = None
+    score = best["score"]["point"] if best["score"] else None
+    columns = ["Data", "Beat", "Augmentation", "Classifier", "Decision", "Explanation", "Note"]
+    top = [
+        "MIT-BIH Arrhythmia Database\nlead MLII, 360 Hz, paced excluded\nDS1: training + validation\nDS2: 22 test records",
+        "window ±0.25 s (180 samples)\nper-beat z-score\nRR: previous, next and ratio\n(representation C)",
+        "frozen banks: cVAE D, WGAN-GP A\nSMOTE · random oversampling\nclass-weighted loss\npolicy D (screened, fraction of N)",
+        f"cnn: shallow CNN ({p['Shallow CNN (the cnn)']})\nrnn: BiLSTM ({p['BiLSTM (the rnn)']})\n3 seeds, early stopping\non validation S F1",
+        "argmax over\nN, S, V, F",
+        "Grad-CAM (cnn)\nocclusion (rnn)\nsaliency shares in the\nP, QRS, ST, T windows",
+        "JSON: class, probabilities,\nlow confidence, segments\n→ LLM note (variant C)\n→ fact checker; template fallback",
+    ]
+    middle = [
+        "+ INCART and SVDB\npatients in training\n(P11)",
+        "patient-relative beat:\nbeat − patient template (P6)\nRR over the recording's\nmean (P13)",
+        "cVAE D retrained on\npatient-relative beats (P12)" + (f"\nstrength {strength:g}" if strength is not None else ""),
+        "the cnn × 10 seeds\nmean probability\n(P18)",
+        f"Huang's SVEB stage: N → S if\nRR < {best['rule_threshold']:g} × recording mean (P13)\n+ AF veto at {best['af_threshold']:g}: logistic\nregression on RR irregularity (P16)"
+        if best["rule_threshold"] is not None else "Huang's SVEB stage (P13)\n+ AF veto (P16)",
+        "as above", "as above",
+    ]
+    bottom = [
+        "Icentia11k: 400 training\npatients (P14); unseen\npatients for evaluation\n(P19, P20)",
+        "long window + band-pass,\n125 Hz, no RR (phase 1)\nlocal RR ratio (P5)",
+        f"cVAE A-C, WGAN-GP B-D (phase 3)\ndiffusion U-Net, {p['Diffusion (1D U-Net)']} (P15, P17)\nphysics losses (P21, P23)\npatient transfer (P9)",
+        f"ResNet1D, {p['ResNet1D']} (phase 2, P22)\nCNN-BiLSTM, {p['CNN-BiLSTM']} (phase 2)\nPTB-XL pretraining (phase 2)\nper-patient batch norm (P10)\nRR discriminants (P1)",
+        "stage and veto\nthresholds chosen on\nIcentia11k patients\n(P20)",
+        "integrated gradients\nSmoothGrad\n(phase 5)",
+        "template only (A)\nconstrained LLM (B)\nfact-check loop (D)\n(phase 5)",
+    ]
+    lanes = [("Pre-registered system\n(phases 1-5, chosen on validation,\nread once on the test records)", top, BLUES[1], INK),
+             ("Post-hoc pipeline with the best\ntest score (P18" + (f": rare-class\nmacro-F1 {score:.3f})" if score is not None else ")"), middle, "#d7efe4", INK),
+             ("Also tested at each stage\n(not in either pipeline)", bottom, "#efeeea", INK_2)]  # fmt: skip
+    plt = _plt()
+    fig, ax = plt.subplots(figsize=(10.5, 12.2))
+    n = len(columns)
+    ax.set_xlim(0, 3.55)
+    ax.set_ylim(-0.05, n + 0.78)
+    ax.axis("off")
+    width, height, left = 0.98, 0.8, 0.55
+    x0 = [left + k * 1.0 for k in range(3)]
+    y0 = [n - 1 - i + 0.1 for i in range(n)]
+    for i, name in enumerate(columns):
+        ax.text(0.02, y0[i] + height / 2, name, ha="left", va="center", fontsize=11, fontweight="bold", color=INK)
+    for k, (title, texts, face, ink) in enumerate(lanes):
+        ax.text(x0[k] + width / 2, n + 0.05, title, ha="center", va="bottom", fontsize=10, fontweight="bold", color=ink, linespacing=1.3)
+        for i, text in enumerate(texts):
+            dashed = text == "as above"
+            ax.add_patch(FancyBboxPatch((x0[k], y0[i]), width, height, boxstyle="round,pad=0.0,rounding_size=0.05", linewidth=1.0,
+                                        edgecolor=GRID if dashed else INK_2, facecolor=SURFACE if dashed else face, linestyle="--" if dashed else "-"))  # fmt: skip
+            ax.text(x0[k] + width / 2, y0[i] + height / 2, text, ha="center", va="center", fontsize=9 if text.count("\n") < 4 else 8.6,
+                    color=INK_2 if dashed else ink, linespacing=1.3)  # fmt: skip
+            if k == 2 or i == n - 1 or dashed or texts[i + 1] == "as above":
+                continue
+            ax.add_patch(FancyArrowPatch((x0[k] + width / 2, y0[i]), (x0[k] + width / 2, y0[i + 1] + height), arrowstyle="-|>", mutation_scale=12,
+                                         color=INK, linewidth=1.2))  # fmt: skip
+    # the post-hoc decision feeds the same explanation and note
+    i = columns.index("Decision")
+    ax.add_patch(FancyArrowPatch((x0[1] + width / 2, y0[i]), (x0[0] + width, y0[i + 1] + height * 0.75), arrowstyle="-|>", mutation_scale=12,
+                                 color=TUNED_COLOR, linewidth=1.3, connectionstyle="arc3,rad=-0.2"))  # fmt: skip
+    caption = ("Left: the system as pre-registered and frozen at the phase gates (phases 1-5); every choice was made on validation patients. Middle: "
+               "the post-hoc changes that give the highest test score so far (P18), each tested under its own pre-registration; its predictions "
+               "feed the same saliency and note (green arrow). Right: the other models and settings tested at each stage. Parameter counts are trainable "
+               "parameters with the RR side input, computed from the configs. P-numbers are the post-hoc analyses (Section on post-hoc analyses).")  # fmt: skip
+    return [_save(fig, paths.figures_for("architecture") / "flow.png", "Architecture: the full flow and every model tested", caption)]
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Before-and-after figures for each phase.")
-    parser.add_argument("what", choices=["phase1_data", "phase2_ptbxl_data", "results", "final_eval", "leakage_audit", "posthoc", "all"])
+    parser.add_argument("what", choices=["phase1_data", "phase2_ptbxl_data", "results", "final_eval", "leakage_audit", "posthoc", "architecture", "all"])
     parser.add_argument("--ptbxl-root", default=None, help="folder with PTB-XL recordings (default data/raw/ptbxl)")
     args = parser.parse_args(argv)
     written = []
@@ -2739,6 +2827,8 @@ def main(argv: list[str] | None = None) -> int:
         written += leakage_audit_figure(json.loads((paths.results_for("phase4_leakage_audit") / "summary.json").read_text()))
     if args.what == "posthoc":  # from the saved post-hoc summaries; nothing is re-run
         written += posthoc_figures()
+    if args.what in ("architecture", "all"):  # from the configs and result files; nothing is trained
+        written += architecture_flow_figure()
     for path in written:
         print(path.relative_to(paths.repo_root()))
     return 0
