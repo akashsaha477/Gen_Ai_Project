@@ -1487,3 +1487,12 @@ fits of 1,409-1,416 s, none diverged; 27 runs ingested from the run folders). We
 1.02/0.89/0.96, 1.00/0.93/0.86, 0.47/0.38/0.43; S beats over 29.0 effective patients for P12's bank, 31.4/29.4/28.7 at
 lambda 0.1/1/10, F 3.2, 3.3/3.1/3.2. As with the cVAE, a large weight smooths the bank; the rule takes the weakest
 weight, close to P12's. Figure `figures/phase6_physics_fitted/banks.png` now has both families. Scoring next.
+
+P23 score (`phase6-physics-fitted-score`, T4, e450380, exit code 0; about 1.1 GPU-hours, results at 3,627 s; only
+choice.json and summary.json downloaded, not the 3.2 GB zip). Settings chosen on P14's patients: stage 0.70 with veto 0.80
+for both fitted conditions (P20's for P18's: cVAE stage 0.70 veto 0.80, WGAN-GP stage 0.75 veto 0.80). P20's baseline S F1
+reproduced exactly. On P19's 977 patients, S F1 (95% patient-level CI), fitted vs P18's: cVAE 0.420 (0.348-0.485) vs
+0.414, difference +0.006 (0.002 to 0.010), Holm p 0.009; WGAN-GP 0.398 (0.332-0.457) vs 0.378, +0.020 (-0.001 to 0.041),
+Holm p 0.066. One of two secondary comparisons detects a gain, a small one. S Se/+P: cVAE 0.419/0.421 vs 0.425/0.404,
+WGAN-GP 0.349/0.462 vs 0.446/0.328 (the fitted WGAN-GP trades sensitivity for precision). Ensembles alone (descriptive):
++0.002 (-0.003 to 0.008) and -0.006 (-0.015 to 0.003). Figure `figures/phase6_physics_fitted/results.png`. DS2 read next.
