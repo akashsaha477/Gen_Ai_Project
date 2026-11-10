@@ -540,3 +540,17 @@ both were set on few patients. Proposed and accepted: choose both thresholds, an
 setting and with the ensemble alone) and once on DS2. P20 is `phase6_rule_tuning`. The beats are built on a Kaggle CPU
 session and only the prediction runs on a T4 (about 0.7 GPU-hours), to keep GPU use low; the CPU session's output (the
 built beats) is attached to the GPU session as a kernel input.
+
+## 2026-11-10 (Day 35) — A42: a physics prior for the generators and physiological fusion beats (pre-registration v20) — Akash Saha ("can we do something like the simgans like adding physics"; chose "All three")
+
+SimGANs add McSharry et al.'s ECG simulator to a GAN's generator objective (the Euler loss). P21 (`phase6_physics_prior`)
+adds the same loss to P12's cVAE and WGAN-GP, applied to whole beats (each generated patient-relative beat plus a real
+training patient's template, since the simulator describes whole beats), with its weight chosen on validation among three
+values, and makes a third condition from physiology rather than a learned model: P12's cVAE banks with every synthetic F
+beat replaced by a fraction of a real training patient's V deviation, the fraction drawn from the range real training F
+beats show. Each condition goes through P18's ten-run pipeline with the stage and the veto chosen on P14's 400 Icentia11k
+patients by P20's rule, then is compared with P18's cVAE or WGAN-GP on P19's patients and, once, on DS2. The simulator is
+first fitted to real training beats on a CPU session, and pre-registered stop rules end a condition if the simulator (or
+the fusion model) explains less than half of the real beats' variance. Offered at about 4 GPU-hours and chosen; the
+estimate became about 5 while writing the pre-registration (P12's measured fit times). The physics generators get two
+fits more than P12's (the weight choice); the paper says so.
