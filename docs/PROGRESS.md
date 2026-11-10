@@ -1431,3 +1431,13 @@ WGAN-GP 0.436 vs 0.378, +0.058 (0.033 to 0.084), Holm p 0.0006. Two of three sec
 ensembles alone (descriptive): +0.076, +0.049, +0.128. Within the ResNet, augmentation changes S F1 by -0.003 (cVAE) and
 -0.004 (WGAN-GP). The ResNet without augmentation (0.440) is the highest S F1 on P19's patients so far. Figures
 `figures/phase6_bigger_classifier/validation.png` and `results.png`. DS2 read next.
+
+P23 cVAE (`phase6-physics-fitted-train-cvae`, T4, 5d12290, exit code 0; 07:00-16:30 UTC including a queue, five
+generator fits of 1,323-1,351 s, none diverged; 27 runs ingested from the run folders and results, not the 2.8 GB zip).
+Weight choice (validation S F1, cnn seeds 0-2): lambda 0.1 0.771, 1 0.767, 10 0.766, lambda 0 (P12's bank) 0.766: chosen
+0.1. Unlike P21's loss, the fitted loss moves the generator, as the check predicted: seed-0 bank, loss S/V/F (P12's bank
+0.93/2.87/1.82) lambda 0.1 0.92/2.91/1.76, lambda 1 0.87/2.21/1.24, lambda 10 0.77/1.61/0.88; roughness over the real
+beats' (P12 0.32/0.61/0.61) 0.30/0.56/0.57, 0.23/0.37/0.38, 0.11/0.25/0.18; S beats over 31.1 effective training patients
+for P12's bank, 29.2/30.4/24.9 at lambda 0.1/1/10, F over 3.5, 3.8/2.6/2.6. Larger weights make smoother, less varied
+banks without changing validation S F1; the rule takes the weakest weight, whose bank is close to P12's. The logged
+loss at the last step: 1.87-1.89 (lambda 0.1), 1.49 (1), 1.08 (10). Figure `figures/phase6_physics_fitted/banks.png`.

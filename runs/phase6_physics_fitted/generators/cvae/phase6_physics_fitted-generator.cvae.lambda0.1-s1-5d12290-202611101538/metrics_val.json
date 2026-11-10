@@ -1,0 +1,20 @@
+{
+  "run_id": "phase6_physics_fitted-generator.cvae.lambda0.1-s1-5d12290-202611101538",
+  "lambda": 0.1,
+  "seed": 1,
+  "steps_done": 20000,
+  "diverged": false,
+  "divergence": null,
+  "generator_seconds": 1348.0204276389995,
+  "final_losses": {
+    "step": 20000,
+    "reconstruction": 8.638513441085815,
+    "kl": 8.57541771888733,
+    "kl_weight": 1.0,
+    "prior": 1.8851679635047913,
+    "loss": 17.402448139190675,
+    "elapsed_s": 1348.006039371
+  },
+  "checkpoint_sha256": "932aea38c185685549ba500965f1c5835eae4edf6fc2dd833239551fc7516278",
+  "bank_sha256": "7408096ece614f5dbfd194ed40ea1a7e7613140d17a1e4d1ada9cbddf011cf5a"
+}

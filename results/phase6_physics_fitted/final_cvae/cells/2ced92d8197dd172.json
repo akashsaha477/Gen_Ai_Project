@@ -1,0 +1,29 @@
+{
+  "cell_sha": "2ced92d8197dd172345391326f118d52657e5e22ba25692ad77d8eac54e340dd",
+  "cell": {
+    "condition": "cvae_fitted",
+    "strength": 0.1,
+    "architecture": "cnn",
+    "seed": 8
+  },
+  "condition": "cvae_fitted",
+  "strength": 0.1,
+  "architecture": "cnn",
+  "seed": 8,
+  "run_id": "phase6_physics_fitted-cnn.cvae_fitted_0.1-s8-5d12290-202611101629",
+  "status": "done",
+  "bank": "phase6_physics_fitted/cvae-lambda0.1",
+  "selection_metric": "s_f1",
+  "selection_value": 0.7497706842781141,
+  "tie_break_value": 0.7854761022600963,
+  "rare_macro_f1": 0.39197935923307414,
+  "n_recall": 0.9667489421720733,
+  "n_added": {
+    "N": 0,
+    "S": 626,
+    "V": 0,
+    "F": 10305
+  },
+  "wall_clock_s": 41.3,
+  "provisional": false
+}
