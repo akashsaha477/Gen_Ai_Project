@@ -1,0 +1,226 @@
+% Course report, 20-page version (the full 30-page version is report.tex). python -m ecgaug.paper writes everything this file
+% inputs into report/generated/; generated/report_posthoc_short.tex is the follow-up text without the three follow-up figures,
+% which only the full version shows. Never type a result by hand; a red [bracket] is a result that does not exist yet.
+% Build: cd report && tectonic report_short.tex (figures come from ../figures/).
+\documentclass[11pt]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\usepackage{graphicx}
+\usepackage{adjustbox}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+\graphicspath{{../figures/}}
+\usepackage[section]{placeins}  % a section's floats are placed before the next section starts
+\renewcommand{\topfraction}{0.9}\renewcommand{\bottomfraction}{0.8}\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.75}\setcounter{topnumber}{3}\setcounter{totalnumber}{5}
+\newcommand{\missing}[1]{\textcolor{red}{[#1]}}
+\input{generated/numbers.tex}
+
+\title{Rare-Arrhythmia Detection with Generative ECG Augmentation\\\large Course project report}
+\author{\missing{team members}}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{generated/report_summary.tex}
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+Most heartbeats are normal, and the beats that matter clinically are rare. A day-long ECG recording holds about a hundred thousand
+beats, of which usually only a small share come too early from the atria or the ventricles; software has to find those so that a
+clinician can review them. Machine-learning models learn the common normal beat well and the rare classes poorly, and a popular remedy is to
+train them on synthetic examples of the rare classes made by a generative model.
+
+This project builds a complete system and uses it to test that remedy honestly. The system takes one ECG beat and returns a
+predicted class, a saliency map showing which parts of the beat drove the prediction, and a short note for a clinician that is
+checked against the model output. The research question is whether class-conditional generative augmentation, with a conditional
+VAE~\cite{sohn2015cvae} or a WGAN-GP~\cite{gulrajani2017wgangp}, improves detection of the rare classes S and F compared with no
+augmentation, class-weighted loss, random oversampling and SMOTE~\cite{chawla2002smote}, when the model is tested on patients it has
+never seen~\cite{dechazal2004}.
+
+Section~\ref{sec:medical} explains the medical background: what the beat classes are, why they matter and why new patients make
+them hard. Section~\ref{sec:protocol} gives the data and the evaluation rules, Section~\ref{sec:system} the system and every model
+tested, Section~\ref{sec:results} the pre-registered results, Section~\ref{sec:posthoc} the follow-up analyses, and
+Section~\ref{sec:all-results} every metric beside published results.
+
+\section{Medical background}\label{sec:medical}
+
+\paragraph{The heartbeat and the ECG.} Each heartbeat starts in the sinoatrial node, a small group of pacemaker cells in the right
+atrium. The impulse spreads across both atria, which contract; on the ECG this is the P wave. It is then delayed in the
+atrioventricular (AV) node, which gives the atria time to empty into the ventricles, runs down the His bundle and the left and right
+bundle branches, and spreads through both ventricles within a few hundredths of a second: the QRS complex, normally narrower than
+120~ms. The recovery of the ventricles (repolarisation) is the T wave. The time between two consecutive beats, measured between their
+R peaks, is the RR interval; a normal resting (sinus) rhythm of 60 to 100 beats per minute has RR intervals of 0.6 to
+1~s~\cite{goldberger2017}. Figure~\ref{fig:medical} shows these waves on real recordings.
+
+\paragraph{The beat classes.} The AAMI standard for testing arrhythmia algorithms~\cite{aami2012ec57} groups the beat labels of the
+annotators into five classes (Table~\ref{tab:classes}). The first four are used here; Q holds paced and unclassifiable beats and is
+excluded, as are the four records of patients with pacemakers.
+
+\begin{table}[tbp]\centering\footnotesize\setlength{\tabcolsep}{4pt}
+\caption{The AAMI beat classes, the MIT-BIH labels in each, and what they mean clinically~\cite{goldberger2017,aami2012ec57}.}\label{tab:classes}
+\begin{tabular}{@{}L{0.2\linewidth}L{0.2\linewidth}L{0.28\linewidth}L{0.26\linewidth}@{}}
+\toprule
+Class (MIT-BIH labels) & Where it starts & How it looks on the ECG & Why it matters \\
+\midrule
+\textbf{N}, normal (normal; left and right bundle branch block; atrial and junctional escape) & the sinus node, through the normal
+conduction path (in bundle branch block one branch conducts late) & a P wave before every QRS and a regular rhythm; the QRS is narrow, or
+wide in bundle branch block & the reference every other beat is judged against \\ \addlinespace
+\textbf{S}, supraventricular ectopic (atrial, aberrated atrial, junctional and supraventricular premature beats) & an early impulse in
+the atria or the AV junction, outside the sinus node & comes early (a short RR interval before it); the QRS is usually like the patient's
+normal one; the P wave is different or hidden & frequent S beats go with later atrial fibrillation and stroke~\cite{binici2010}; runs
+of them are supraventricular tachycardia \\ \addlinespace
+\textbf{V}, ventricular ectopic (premature ventricular contractions; ventricular escape beats) & an impulse in the ventricle muscle,
+spreading cell to cell rather than through the conduction system & comes early; a wide, bizarre QRS (120~ms or more) with no P wave
+before it and a T wave pointing the other way; usually a full pause after it & a high burden of V beats goes with a weakened left
+ventricle~\cite{baman2010}; three or more in a row are ventricular tachycardia, which can be life-threatening \\ \addlinespace
+\textbf{F}, fusion (fusion of a ventricular and a normal beat) & a ventricular and a normal impulse that activate the ventricles at the
+same moment & a QRS whose shape lies between the patient's normal and ventricular beats & harmless in itself, but a sign of ventricular
+ectopic activity; rare and different in every patient \\ \addlinespace
+\textbf{Q}, other (paced; fusion of paced and normal; unclassifiable) & a pacemaker, or unknown & --- & excluded here \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{How the beats are used in the clinic.} An ambulatory (Holter) monitor records the ECG for one or more days while the
+patient goes about daily life~\cite{steinberg2017}; at 70 beats per minute a day holds about 100,000 beats. No one reads them one by
+one: software detects and classifies every beat, counts the ectopic beats and flags runs and pauses, and a technician or cardiologist
+reviews what it flags. The software must therefore find the rare beats (high sensitivity) without burying the reader in false alarms
+(high positive predictivity, the share of its calls that are right). The AAMI standard asks for both, for every
+class~\cite{aami2012ec57}; this report gives both and their harmonic mean, the F1 score.
+
+\paragraph{Why new patients are hard.} Every patient's ECG looks different: the position and axis of the heart, the build of the
+body, where the electrodes sit and any disease of the conduction system all change the shape of the same kind of beat. A patient with
+bundle branch block has normal beats as wide as another patient's V beats, and an S beat in one patient can look exactly like a normal
+beat in another (Figure~\ref{fig:medical}C). What identifies an S beat is mostly its timing: it comes earlier than this patient's own
+rhythm predicts. Cardiologists therefore judge prematurity against the patient's underlying rhythm, and they do not call S beats during
+atrial fibrillation, where the atria quiver without organised activity, there are no P waves and the ventricular rhythm is irregular,
+so early beats are expected. A model tested on beats of patients it has seen can recognise the patient instead of the arrhythmia; a
+model tested on new patients has to learn these patient-relative cues. Software meets a new patient every time it is used, so this
+project trains and tests on different patients, the inter-patient protocol of de Chazal et al.~\cite{dechazal2004}. Several of the
+follow-up analyses (Section~\ref{sec:posthoc}) build exactly these clinical cues into the system.
+
+\paragraph{The database.} The MIT-BIH Arrhythmia Database~\cite{moody2001,goldberger2000} holds 48 half-hour excerpts of two-lead
+Holter recordings from 47 patients of Boston's Beth Israel Hospital, recorded between 1975 and 1979 and digitised at 360 samples per
+second. Twenty-three recordings were chosen at random and 25 to include less common but clinically important arrhythmias, so the rare
+classes sit in a few patients each; two or more cardiologists labelled every beat independently and resolved their disagreements. This
+project uses lead MLII, a modified limb lead with the electrodes on the chest.
+
+\begin{figure}[htbp]\centering\includegraphics[width=\linewidth]{report/medical_background.png}
+\caption{The beat classes on real MIT-BIH training recordings. A: eight seconds of one patient with the cardiologists' labels and the
+RR intervals; the S and V beats come early. B: the waves of a normal beat and the four windows over which the saliency maps are
+summarised. C--E: the median S, V and F beats of the training patients with most of each, beside the same patient's normal beats.}
+\label{fig:medical}\end{figure}
+
+\paragraph{What this system is not.} It is a course project and not a medical device. It has not been validated clinically, and its
+notes are machine-written summaries of the model output for a clinician to check, never a diagnosis.
+
+\section{Data and evaluation protocol}\label{sec:protocol}
+The records are split by patient as de Chazal et al.\ proposed~\cite{dechazal2004}: the 22 DS1 records give training and validation
+and the 22 DS2 records the test set, so no patient is in two splits (Table~\ref{tab:data}); the validation records were chosen from
+DS1 by their class counts and fixed at the first gate. One subject appears as record 201 in DS1 and record 202 in DS2; the split is kept
+for comparability, and the test results are also reported without record 202. Each beat is a window around its annotated R peak,
+z-scored, with its RR intervals as side input (representation \PhaseOneWinner, chosen on validation).
+
+\begin{table}[htbp]\centering\small\input{generated/table_dataset.tex}\caption{Records and beats per split.}\label{tab:data}\end{table}
+
+\paragraph{Metrics.} For each class, sensitivity is the share of its beats that the model finds and positive predictivity the share
+of the model's calls of that class that are right; F1 is their harmonic mean. The primary metric is the rare-class macro-F1, the mean of
+the S and F F1 scores on the test records. Model choices use validation S F1, because the validation records hold too few F beats.
+Uncertainty comes from resampling the test records (10,000 bootstrap resamples of patients), and the four confirmatory comparisons,
+each generator against no augmentation for each of the two classifiers, are corrected with Holm's method~\cite{holm1979}.
+
+\paragraph{Rules fixed in advance.} The project ran in five phases with a human-approved gate after each. At every phase four variants
+were compared on validation: four input representations, four classifiers, four families of synthetic-quality metrics, four cVAE and
+four WGAN-GP designs, four augmentation policies, four saliency methods and four note generators, each chosen by a rule written in the
+pre-registration before the comparison ran. The final grid trains six conditions at three strengths for two classifiers and three
+seeds. The test records sit in a separate file that only a guarded loader can read; every read is logged, and the pre-registered test
+was read once, after every choice had been fixed.
+
+\section{The system and its architecture}\label{sec:system}
+\begin{enumerate}
+\item \textbf{Beat extraction}: a window around the reference R peak (representation \PhaseOneWinner), z-scored per beat, with the RR
+features as side input.
+\item \textbf{Classifier}: the cnn chosen at the phase 2 gate, trained with the augmentation condition chosen on validation.
+\item \textbf{Saliency}: the method chosen per classifier at the phase 5 gate (Grad-CAM~\cite{selvaraju2016gradcam} for the cnn,
+occlusion for the rnn), summarised as the share of saliency in the P, QRS, ST and T windows around the R peak
+(Figure~\ref{fig:medical}B).
+\item \textbf{Note}: a generator writes a note from a JSON object holding only the prediction, the probabilities, a low-confidence flag
+and the two segments with the most saliency; a fact checker rejects any claim not in that object, and a template note replaces any note
+that fails the check (Figure~\ref{fig:example}).
+\end{enumerate}
+The command \texttt{python -m ecgaug.demo --record <validation record> --beat <index>} runs it end to end; it prints the prediction,
+the probabilities and the note, and saves a figure of the beat with its saliency.
+
+\begin{figure}[p]\centering\includegraphics[width=0.92\linewidth]{architecture/flow.png}\caption{The full flow: the pre-registered
+system (left), the post-hoc pipeline with the best test score (middle) and what else was tested at each stage (right).}
+\label{fig:architecture}\end{figure}
+
+\input{generated/report_example.tex}
+
+\input{generated/report_architecture.tex}
+
+\section{Pre-registered results}\label{sec:results}
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_hypotheses.tex}}\caption{Pre-registered
+hypotheses and their verdicts.}\label{tab:hypotheses}\end{table}
+
+\paragraph{Generative augmentation.} \input{generated/results_rq1.tex}
+
+\begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/final_eval_conditions.tex}}\caption{Test results
+per condition (95\% record-level CI).}\label{tab:test}\end{table}
+
+\paragraph{Where the errors are.} \input{generated/results_concentration.tex} In clinical terms the models miss most of the early
+atrial beats of one patient and most of the fusion beats of another.
+\begin{figure}[htbp]\centering\includegraphics[width=\linewidth]{final_eval/per_record_S_F.png}\caption{S and F recall per test
+record and model (seed means).}\label{fig:per-record}\end{figure}
+
+\paragraph{Leakage.} \input{generated/results_rq2.tex}
+\begin{figure}[htbp]\centering\includegraphics[width=\linewidth]{phase4_leakage_audit/intra_vs_inter.png}\caption{The cnn with and
+without patient overlap between training and test.}\label{fig:leakage}\end{figure}
+
+\paragraph{Quality of the synthetic beats.} \input{generated/results_rq3.tex}
+
+\paragraph{Explanations.} \input{generated/results_rq4.tex}
+\begin{figure}[htbp]\centering\includegraphics[width=\linewidth]{phase5_explainability/A/class_average_saliency.png}\caption{Where
+the cnn looks (Grad-CAM, validation beats): the mean saliency of each class without augmentation and with each generator.}
+\label{fig:saliency}\end{figure}
+
+\paragraph{Notes.} \input{generated/results_notes.tex} The LLM variants use Gemini 3.5 Flash-Lite on Google's free tier (decisions
+A21 and A23 in \texttt{docs/DECISIONS.md}).
+
+\section{Follow-up analyses}\label{sec:posthoc}
+\input{generated/report_posthoc_short.tex}
+\begin{figure}[htbp]\centering\includegraphics[width=\linewidth]{report/progress.png}\caption{How the test score developed through
+the main follow-up analyses, and how far the best pipeline carries to new patients.}\label{fig:progress}\end{figure}
+\input{generated/table_posthoc.tex}
+
+\section{All results and the literature}\label{sec:all-results}
+\input{generated/metrics.tex}
+
+\section{Conclusion}
+\input{generated/report_conclusion.tex}
+
+\section{Limitations and outlook}
+Twenty-two test patients, with the rare classes in few of them, give wide intervals; the pre-registered test uses one database and one
+lead (the external databases were added post hoc and differ in sampling rate, lead and annotation); beats are cut at the reference R
+peaks rather than detected ones; synthetic beats get RR features copied from real beats; and no person rated the notes, so their
+readability is untested.
+
+\paragraph{What better results need.} \input{generated/outlook.tex}
+
+\section{Team contributions}
+\missing{who did what: from docs/ASSIGNMENTS.md once the draws are recorded}
+
+\bibliographystyle{plain}
+\bibliography{refs}
+\end{document}

@@ -15,7 +15,8 @@ def test_report_texts_come_from_the_result_files(monkeypatch):
     from ecgaug import report_text as rt
 
     texts = rt.build()
-    assert set(texts) == {"report_summary", "report_example", "report_architecture", "report_posthoc", "report_discussion", "report_conclusion"}
+    assert set(texts) == {"report_summary", "report_example", "report_architecture", "report_posthoc", "report_posthoc_short", "report_discussion",
+                          "report_conclusion"}  # fmt: skip
     for name, text in texts.items():
         assert "\\missing" not in text and text.count("{") == text.count("}"), name
         assert "_" not in text.replace("\\_", ""), name
@@ -27,8 +28,10 @@ def test_report_texts_come_from_the_result_files(monkeypatch):
     story = texts["report_posthoc"]
     assert f"{rt.posthoc_reads()} reads after the final evaluation" in story and rt.posthoc_reads() >= 18
     assert "\\ref{tab:posthoc}" in story and "\\ref{fig:progress}" in story and story.count("\\paragraph{") == 5
+    short = texts["report_posthoc_short"]  # the 20-page version: the same story without the three follow-up figures
     for label in ("fig:relative", "fig:synthetic-patients", "fig:rr-reference"):
-        assert f"\\ref{{{label}}}" in story, label
+        assert f"\\ref{{{label}}}" in story and f"\\ref{{{label}}}" not in short, label
+    assert short.count("\\paragraph{") == 5 and "(P6," not in short and "training S beats (P8)" in short
 
 
 def test_the_report_discussion_refers_only_to_report_sections(monkeypatch):
@@ -116,3 +119,5 @@ def test_the_report_inputs_the_report_texts():
     assert "report/medical_background.png" in tex and "report/progress.png" in tex
     for label in ("fig:relative", "fig:synthetic-patients", "fig:rr-reference", "sec:posthoc", "sec:medical"):
         assert f"\\label{{{label}}}" in tex, label
+    short = (REPO / "report" / "report_short.tex").read_text()  # the 20-page version
+    assert "\\input{generated/report_posthoc_short.tex}" in short and "\\input{generated/report_posthoc.tex}" not in short

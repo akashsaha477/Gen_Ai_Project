@@ -134,8 +134,11 @@ def example_output() -> str:
             "P, QRS, ST and T windows of Figure~\\ref{fig:medical}; the two largest are passed on.}\\label{fig:example}\n\\end{figure}\n")  # fmt: skip
 
 
-def posthoc_story() -> str:
-    """The follow-up analyses (P1-P23) by theme rather than in order, with their key numbers; the post-hoc table has the rest."""
+def posthoc_story(figures: bool = True) -> str:
+    """The follow-up analyses (P1-P23) by theme rather than in order, with their key numbers; the post-hoc table has the rest.
+
+    ``figures`` refers to the three follow-up figures of the full report (P6, P8, P13); the 20-page version has none of them.
+    """
     final = _load(FINAL_EVAL)
     if final is None:
         return pt._missing("follow-up analyses: after the final evaluation") + "\n"
@@ -175,11 +178,12 @@ def posthoc_story() -> str:
         up, down, total = _tally([p9["families"]["confirmatory"], p10["families"]["adaptation"], p11["families"]["confirmatory"], p14["families"]["confirmatory"]])
         same_patients = syn >= real - 0.05
         paras.append("\\paragraph{The patient limits the model more than the class balance.} Giving the cnn each beat relative to the patient's own "
-                     "median beat (P6, Figure~\\ref{fig:relative}), with nothing else changed, raised its test score without augmentation from "
+                     + ("median beat (P6, Figure~\\ref{fig:relative}), " if figures else "median beat, ")
+                     + "with nothing else changed, raised its test score without augmentation from "
                      f"{pt._n(base)} to {pt._n(rel)} (P7)"
                      + (", more than any rebalancing method did" if rel - base > rebal else "") + ". The synthetic S beats came from the same few "
                      f"patients as the real ones: {pt._n(syn, 2)} of them were nearest to a beat of record {top}, against {pt._n(real, 2)} of the real "
-                     "training S beats (P8, Figure~\\ref{fig:synthetic-patients})"
+                     + ("training S beats (P8, Figure~\\ref{fig:synthetic-patients})" if figures else "training S beats (P8)")
                      + (", so the generators added beats but not patients" if same_patients else "") + ". Methods that act on the patient were then tested: moving "
                      "the deviation of each rare beat onto other patients' normal beats (P9), normalising each patient inside the network (P10), and "
                      f"adding the INCART and SVDB patients (P11) or {len(p14_data['patients'])} Icentia11k patients (P14) to training. Of their "
@@ -188,8 +192,9 @@ def posthoc_story() -> str:
     rr, af = pt._record_rr_sentence(), pt._af_sentence()
     if rr and af:
         paras.append("\\paragraph{Timing identifies S beats, as it does for a cardiologist.} An S beat is recognised mainly by coming early for the "
-                     f"patient's own rhythm (Section~\\ref{{sec:medical}}). In P13, {_first_lower(rr)} Figure~\\ref{{fig:rr-reference}} shows what "
-                     f"each reference makes of the training-side recordings. In P16, {_first_lower(af)}")  # fmt: skip
+                     f"patient's own rhythm (Section~\\ref{{sec:medical}}). In P13, {_first_lower(rr)}"
+                     + (" Figure~\\ref{fig:rr-reference} shows what each reference makes of the training-side recordings." if figures else "")
+                     + f" In P16, {_first_lower(af)}")  # fmt: skip
 
     gens = {"P15": _load("phase6_diffusion"), "P17": _load("phase6_diffusion_long"), "P21": _load("phase6_physics_prior", "test_summary.json"),
             "P23": _load("phase6_physics_fitted", "test_summary.json")}  # fmt: skip
@@ -289,4 +294,5 @@ def conclusion() -> str:
 def build() -> dict[str, str]:
     """Every report text: name -> LaTeX (written as ``paper/generated/<name>.tex``)."""
     return {"report_summary": summary(), "report_example": example_output(), "report_architecture": pt.architecture_section(flowing=True),
-            "report_posthoc": posthoc_story(), "report_discussion": discussion(), "report_conclusion": conclusion()}
+            "report_posthoc": posthoc_story(), "report_posthoc_short": posthoc_story(figures=False),  # the 20-page version has no follow-up figures
+            "report_discussion": discussion(), "report_conclusion": conclusion()}

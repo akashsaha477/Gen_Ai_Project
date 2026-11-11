@@ -42,18 +42,21 @@ def test_a_caption_splits_into_a_title_and_a_note():
     assert report_folder.split_caption("Post hoc, the test records: the ten-run pipelines.") == ("Post hoc, the test records", "The ten-run pipelines.")
 
 
-def test_the_report_folder_holds_what_the_report_inputs_and_cites_its_own_references():
+def test_the_report_folder_holds_what_both_versions_input_and_cite_their_own_references():
     folder = REPO / "report"
-    tex = (folder / "report.tex").read_text()
-    names = _closure(folder / "generated", tex)
+    assert report_folder.SOURCES == ("report.tex", "report_short.tex") and (folder / "report_short.pdf").is_file()
+    texts = {s: (folder / s).read_text() for s in report_folder.SOURCES}
+    names = _closure(folder / "generated", "".join(texts.values()))
     assert sorted(names) == sorted(p.name for p in (folder / "generated").glob("*.tex")), "stale or missing generated files"
     keys = set(re.findall(r"@\w+\{([^,]+),", (folder / "refs.bib").read_text()))
-    cited = {k.strip() for group in re.findall(r"\\cite\{([^}]*)\}", tex) for k in group.split(",")}
-    for name in names:
-        cited |= {k.strip() for group in re.findall(r"\\cite\{([^}]*)\}", (folder / "generated" / name).read_text()) for k in group.split(",")}
-    assert cited and cited <= keys, f"cited but not in report/refs.bib: {cited - keys}"
-    for figure in re.findall(r"\\includegraphics(?:\[[^\]]*\])?\{([^}]*)\}", tex):
-        assert (REPO / "figures" / figure).is_file(), figure
+    for source, tex in texts.items():
+        full = tex + "".join((folder / "generated" / n).read_text() for n in _closure(folder / "generated", tex))
+        cited = {k.strip() for group in re.findall(r"\\cite\{([^}]*)\}", full) for k in group.split(",")}
+        assert cited and cited <= keys, f"{source} cites what report/refs.bib lacks: {cited - keys}"
+        refs, labels = set(re.findall(r"\\ref\{([^}]*)\}", full)), set(re.findall(r"\\label\{([^}]*)\}", full))
+        assert refs <= labels, f"{source} refers to what it does not have: {refs - labels}"
+        for figure in re.findall(r"\\includegraphics(?:\[[^\]]*\])?\{([^}]*)\}", tex):
+            assert (REPO / "figures" / figure).is_file(), figure
     results = (folder / "results.md").read_text()
     assert "\\" not in results.replace("\\|", "") and "$" not in results, "LaTeX left in the results page"
     assert results.count("\n### ") >= 10 and "---: |" in results
@@ -63,14 +66,15 @@ def test_the_generator_writes_the_report_folder(tmp_root):
     shutil.copytree(REPO / "configs", paths.configs_dir())  # the architecture inventory counts parameters from the configs
     folder = report_folder.folder()
     (folder / "generated").mkdir(parents=True)
-    shutil.copy2(REPO / "report" / "report.tex", folder / "report.tex")
+    for source in report_folder.SOURCES:
+        shutil.copy2(REPO / "report" / source, folder / source)
     (folder / "generated" / "stale.tex").write_text("an input the report no longer has\n")
     (folder / "generated" / "numbers_final_eval.tex").write_text("\\newcommand{\\TestKept}{0.5}\n")  # a fresh clone keeps only this copy
     report = paper.build()
     generated = paths.repo_root() / "paper" / "generated"
     assert "\\input{generated/numbers_final_eval.tex}" in (generated / "numbers.tex").read_text()
-    names = _closure(generated, (folder / "report.tex").read_text())
-    assert "numbers_final_eval.tex" in names and not (folder / "generated" / "stale.tex").exists()
+    names = _closure(generated, "".join((folder / s).read_text() for s in report_folder.SOURCES))
+    assert {"numbers_final_eval.tex", "report_posthoc.tex", "report_posthoc_short.tex"} <= set(names) and not (folder / "generated" / "stale.tex").exists()
     assert sorted(report["report"]) == sorted([f"report/generated/{n}" for n in names] + ["report/results.md"])
     assert all((folder / "generated" / n).read_text() == (generated / n).read_text() for n in names)
     results = (folder / "results.md").read_text()

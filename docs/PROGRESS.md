@@ -1581,3 +1581,13 @@ Tests: `tests/test_report_folder.py` (4: the converter, caption splitting, the c
 report's inputs and cites only `report/refs.bib`, the generator fills the folder); the report-file test of
 `tests/test_report_text.py` now reads `report/report.tex` and is no longer skipped; the paper draft test reads only
 `paper/main.tex`. Open: team member names and contributions (still red placeholders in the report).
+
+2026-11-12. Both versions of the course report kept, asked "also keep both 20 and 30 page version of the report":
+`report/report.tex` / `report.pdf` (30 pages) and `report/report_short.tex` / `report_short.pdf` (20 pages, the version of
+2026-11-11 before the expansion; its text is unchanged, checked by comparing the extracted text of the two PDFs). The
+30-page change had added references to the three follow-up figures to `report_posthoc`, which the 20-page version does
+not have, so `report_text.posthoc_story(figures=False)` writes `report_posthoc_short.tex` without them and the short
+version inputs it. `report_folder.SOURCES` names both versions; `report/generated/` holds what either inputs (29 files);
+`results.md` follows the full version. Both compile with no undefined references and no overfull lines. Tests: the
+folder test now covers both versions and checks that every `\ref` of each has its `\label`; the report-text tests check
+the short follow-up text has no figure references.
