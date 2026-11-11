@@ -1543,3 +1543,7 @@ beside the same patient's N beats) and `figures.report_progress_figure()`; `figu
 the architecture section (9dbb6f5) it failed locally (it is skipped on Kaggle, where paper/ is absent). Report and paper
 compile with no undefined references and no overfull lines. Open: team member names and contributions (the author line and
 section 10 are still red placeholders; docs/ASSIGNMENTS.md has no draws recorded).
+
+Full test suite on Kaggle at 496fb3e (`phase6-suite-report`, CPU): exit code 0; 432 passed, 3 skipped, 0 failed (864
+progress marks and 6 skip marks halved, against the 435 collected locally; the third skip is the new report-file test,
+which needs paper/). Pushed 496fb3e to main (fast-forward from f90f7df). This note goes out with the next suite-tested push.
