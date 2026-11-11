@@ -1523,3 +1523,23 @@ Full test suite on Kaggle at f90f7df (`phase6-suite-p23b`, CPU): exit code 0; 42
 progress marks and 4 skip marks halved, against the 428 collected locally). Pushed f90f7df to main (fast-forward from
 94bdb48, 32 commits: P21's results, P22, P23, the architecture section, the metrics and literature section). P21, P22 and
 P23 are done. This note goes out with the next suite-tested push.
+
+2026-11-11. Course report made shorter and given a medical background, asked "make the report perfect and smaller .also
+add a part in the begining explaining the medical aspects". `paper/report.tex` (local) went from 50 to 20 pages: the 23
+post-hoc subsections (each with two or three figures) are replaced by the follow-up analyses told by theme (the answer
+holds; the patient limits the model; timing identifies S beats; better generators and a larger classifier; the best
+pipeline and how far to trust it), one figure of how the test score developed and the post-hoc table; the paper keeps the
+full account. New section 2, Medical background: the heartbeat and the ECG waves, the AAMI classes (table: labels, origin,
+look on the ECG, clinical meaning), Holter use and why sensitivity and positive predictivity both matter, why new patients
+are hard (patient variation; prematurity judged against the patient's rhythm; no S calls in atrial fibrillation), the
+database, and that the system is not a medical device. Four references added after checking them (Goldberger's textbook,
+9th ed.; Binici et al. 2010; Baman et al. 2010; Steinberg et al. 2017). New code: `src/ecgaug/report_text.py` (summary,
+an example of the system's output for the first confident correct S and V validation cases, the themed follow-up text and
+the conclusion; numbers from the result files), `paper_text.architecture_section(flowing=True)` (the three model tables as
+longtables), `figures.medical_background_figure()` (training records only: an 8-second strip of record 208, the stretch with
+the most classes, a normal beat of record 215 with the saliency windows, the median S/V/F beats of records 209 and 208
+beside the same patient's N beats) and `figures.report_progress_figure()`; `figures/report/`. Tests:
+`tests/test_report_text.py` (7). `tests/test_paper.py`'s draft test now copies the configs into its temporary root: since
+the architecture section (9dbb6f5) it failed locally (it is skipped on Kaggle, where paper/ is absent). Report and paper
+compile with no undefined references and no overfull lines. Open: team member names and contributions (the author line and
+section 10 are still red placeholders; docs/ASSIGNMENTS.md has no draws recorded).

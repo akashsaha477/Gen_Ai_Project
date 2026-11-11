@@ -241,9 +241,10 @@ def build() -> dict:
         else:
             (out / tex).write_text(_todo("test results: written by /final-eval") + "\n")
             missing.append(tex)
-    from ecgaug import paper_text
+    from ecgaug import paper_text, report_text
 
-    for name, tex in paper_text.build().items():  # results sentences and hypothesis verdicts, from the same files
+    texts = {**paper_text.build(), **report_text.build()}  # the course report's short texts come from the same files
+    for name, tex in texts.items():  # results sentences and hypothesis verdicts, from the same files
         (out / f"{name}.tex").write_text(tex)
         written.append(f"paper/generated/{name}.tex")
         if "\\missing" in tex:

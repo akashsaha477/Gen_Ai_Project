@@ -461,9 +461,10 @@ ARCH_TABLES = (("classifier", "tab:arch-classifiers", "Classifiers and other mod
                (("decision", "explanation", "note"), "tab:arch-other", "Decision rules, explanation and note generation."))  # fmt: skip
 
 
-def architecture_section() -> str:
+def architecture_section(flowing: bool = False) -> str:
     """The report's architecture section: the flow figure and every model tested, from ``ecgaug.architecture``
-    (parameter counts computed from the configs, choices from the gate records, scores from the result files)."""
+    (parameter counts computed from the configs, choices from the gate records, scores from the result files).
+    ``flowing`` writes the three tables as longtables that break across pages instead of floats (the course report)."""
     from ecgaug import architecture as arch
 
     rows = arch.inventory()
@@ -485,8 +486,13 @@ def architecture_section() -> str:
             name = f"\\textbf{{{_tex(r['name'])}}}" if r["chosen"] else _tex(r["name"])
             params = f"{r['parameters']:,}" if r["parameters"] is not None else "--"
             body.append(f"{name} & {_tex(r['structure'])} & {params} & {_tex(r['where'])}; {_tex(r['outcome'])} \\\\")
-        text += ("\\begin{table}[htbp]\\centering\\footnotesize\n\\begin{tabular}{p{2.6cm}p{6.1cm}rp{4.6cm}}\n\\toprule\n"
-                 "Model & Structure & Parameters & Where it ran; outcome \\\\\n\\midrule\n" + "\n".join(body)
+        head = "\\toprule\nModel & Structure & Parameters & Where it ran; outcome \\\\\n\\midrule\n"
+        if flowing:
+            text += ("\\begingroup\\footnotesize\n\\begin{longtable}{p{2.6cm}p{6.1cm}rp{4.6cm}}\n"
+                     f"\\caption{{{caption} Bold: chosen by a pre-registered rule.}}\\label{{{label}}}\\\\\n" + head + "\\endfirsthead\n"
+                     + head + "\\endhead\n\\bottomrule\n\\endfoot\n" + "\n".join(body) + "\n\\end{longtable}\n\\endgroup\n")  # fmt: skip
+            continue
+        text += ("\\begin{table}[htbp]\\centering\\footnotesize\n\\begin{tabular}{p{2.6cm}p{6.1cm}rp{4.6cm}}\n" + head + "\n".join(body)
                  + f"\n\\bottomrule\n\\end{{tabular}}\n\\caption{{{caption} Bold: chosen by a pre-registered rule.}}\\label{{{label}}}\n\\end{{table}}\n")  # fmt: skip
     return text
 

@@ -2809,9 +2809,228 @@ def architecture_flow_figure() -> list[Path]:
     return [_save(fig, paths.figures_for("architecture") / "flow.png", "Architecture: the full flow and every model tested", caption)]
 
 
+# --------------------------------------------------------------------------------------------------
+# The course report: the medical background and how the test score developed
+# --------------------------------------------------------------------------------------------------
+
+DISPLAY_BAND_HZ = (0.5, 40.0)  # display filter for the rhythm strip (a monitoring band); no model sees this signal
+BEAT_WINDOW_S = (-0.30, 0.40)  # around the annotated beat: the P wave before, the T wave after (the windows of the saliency segments)
+AAMI = ("N", "S", "V", "F")
+
+
+def _strip_start(beats: dict, fs: int) -> tuple[int, int]:
+    """The SEGMENT_SECONDS stretch of a training record holding the most AAMI classes, then one with S, then one with F;
+    the first record and the earliest start win ties."""
+    span, lead = int(SEGMENT_SECONDS * fs), int(0.4 * fs)
+    best, found = None, None
+    for rec, b in beats.items():
+        b = b[b["aami"].isin(AAMI)]
+        r, cls = b["r_idx"].to_numpy(), b["aami"].to_numpy()
+        for i in range(r.size):
+            start = int(r[i]) - lead
+            present = set(cls[i : int(np.searchsorted(r, start + span - lead))].tolist())
+            score = (len(present), "S" in present, "F" in present)
+            if start >= 0 and (best is None or score > best):
+                best, found = score, (rec, start)
+    return found
+
+
+def _median_beat(signal: np.ndarray, r: np.ndarray, fs: int) -> tuple[np.ndarray, int]:
+    lo, hi = int(BEAT_WINDOW_S[0] * fs), int(BEAT_WINDOW_S[1] * fs)
+    r = r[(r + lo >= 0) & (r + hi <= signal.size)]
+    return np.median(np.stack([signal[i + lo : i + hi] for i in r]), axis=0), int(r.size)
+
+
+def medical_background_figure() -> list[Path]:
+    """The medical background in one figure, from MIT-BIH training records only: an 8-second rhythm strip with the
+    cardiologists' beat labels and the RR intervals; a normal beat with its waves and the four windows the saliency maps are
+    summarised over; and the median S, V and F beat of the training record with most of each class beside that patient's own
+    median N beat. Nothing here is learned; the signal is band-passed for display only."""
+    from ecgaug.data import raw
+    from ecgaug.data.beats import extract_beats
+    from ecgaug.data.records import FS
+    from ecgaug.data.representation import bandpass
+
+    train = _train_records()
+    if not all((paths.raw_dir() / f"{r}.dat").is_file() for r in train):
+        return []
+    contract = paths.processed_dir() / "v1" / "contract.json"
+    windows = json.loads(contract.read_text())["segment_windows_ms"] if contract.is_file() else {}
+    beats = {r: extract_beats(r) for r in train}
+    signals: dict[int, np.ndarray] = {}
+
+    def signal(rec: int) -> np.ndarray:
+        if rec not in signals:
+            signals[rec] = bandpass(raw.read_signal(rec), DISPLAY_BAND_HZ, 2)
+        return signals[rec]
+
+    plt = _plt()
+    fig = plt.figure(figsize=(11, 6.8))
+    grid = fig.add_gridspec(2, 4, height_ratios=[1.1, 1])
+
+    # the rhythm strip
+    rec, start = _strip_start(beats, FS)
+    stop = start + int(SEGMENT_SECONDS * FS)
+    ax = fig.add_subplot(grid[0, :])
+    y = signal(rec)[start:stop]
+    ax.plot(np.arange(y.size) / FS, y, color=INK, linewidth=0.9)
+    seg = beats[rec][(beats[rec]["r_idx"] >= start) & (beats[rec]["r_idx"] < stop)]
+    top, bottom = float(y.max()), float(y.min())
+    r_s = seg["r_idx"].to_numpy()
+    for r_i, cls in zip(r_s, seg["aami"]):
+        ax.text((r_i - start) / FS, top + 0.12 * (top - bottom), cls, ha="center", va="bottom", fontsize=10, fontweight="bold",
+                color=CLASS_COLORS.get(cls, INK_2))  # fmt: skip
+    for a, b in zip(r_s[:-1], r_s[1:]):
+        ax.annotate("", xy=((b - start) / FS, bottom - 0.08 * (top - bottom)), xytext=((a - start) / FS, bottom - 0.08 * (top - bottom)),
+                    arrowprops={"arrowstyle": "<->", "color": INK_2, "linewidth": 0.7})  # fmt: skip
+        ax.text((a + b) / 2 / FS - start / FS, bottom - 0.12 * (top - bottom), f"{(b - a) / FS * 1000:.0f}", ha="center", va="top", fontsize=7, color=INK_2)
+    ax.set_ylim(bottom - 0.32 * (top - bottom), top + 0.3 * (top - bottom))
+    ax.set_xlim(0, SEGMENT_SECONDS)
+    ax.set_xticks(np.arange(0, SEGMENT_SECONDS + 0.01, 1.0))
+    ax.set_xticks(np.arange(0, SEGMENT_SECONDS + 0.01, 0.2), minor=True)
+    ax.grid(True, which="minor", color=GRID, linewidth=0.4)
+    ax.set_xlabel(f"seconds (training record {rec}); numbers under the arrows are RR intervals in ms")
+    ax.set_ylabel("mV")
+    ax.set_title("A: eight seconds of one patient's ECG with the cardiologists' beat labels", loc="left")
+
+    ms = np.arange(int(BEAT_WINDOW_S[0] * FS), int(BEAT_WINDOW_S[1] * FS)) / FS * 1000  # the same offsets as _median_beat
+
+    # a normal beat: the training record with most beats labelled N (not bundle branch block), its median beat
+    counts = {r: int((b["symbol"] == "N").sum()) for r, b in beats.items()}  # plain normal beats, not bundle branch block
+    n_rec = max(counts, key=counts.get)
+    n_r = beats[n_rec].loc[beats[n_rec]["symbol"] == "N", "r_idx"].to_numpy()
+    med, n = _median_beat(signal(n_rec), n_r, FS)
+    ax = fig.add_subplot(grid[1, 0])
+    shades = {"P": "#eef4fc", "QRS": "#fdece4", "ST": "#f2f1ee", "T": "#e8f6f0"}
+    for name, (a, b) in windows.items():
+        ax.axvspan(a, b, color=shades.get(name, GRID), zorder=0)
+        ax.text((a + b) / 2, 0.02, name, transform=ax.get_xaxis_transform(), ha="center", va="bottom", fontsize=7, color=INK_2)
+    ax.plot(ms, med, color=CLASS_COLORS["N"], linewidth=1.6)
+    peaks = {"P": (-250, -100), "T": (150, 400)}
+    for name, (a, b) in peaks.items():
+        m = (ms >= a) & (ms <= b)
+        i = int(np.flatnonzero(m)[np.argmax(med[m])])  # P and T are upright in lead MLII
+        ax.annotate(f"{name} wave", (ms[i], med[i]), xytext=(0, 14), textcoords="offset points", ha="center", fontsize=8, color=INK,
+                    arrowprops={"arrowstyle": "-", "color": INK_2, "linewidth": 0.6})  # fmt: skip
+    i0 = int(np.argmax(med))
+    ax.annotate("QRS complex", (ms[i0], med[i0]), xytext=(-6, -2), textcoords="offset points", ha="right", va="top", fontsize=8, color=INK)
+    ax.text(0.97, 0.12, f"median of\n{n:,} beats", transform=ax.transAxes, ha="right", va="bottom", fontsize=7, color=INK_2)
+    ax.set_title(f"B: a normal beat (record {n_rec})", loc="left", fontsize=9)
+    ax.set_xlabel("ms from the R peak")
+    ax.set_ylabel("mV")
+
+    # S, V and F beside the same patient's normal beats
+    for col, cls in enumerate(("S", "V", "F"), start=1):
+        per = {r: int((b["aami"] == cls).sum()) for r, b in beats.items()}
+        c_rec = max(per, key=per.get)
+        b = beats[c_rec]
+        ax = fig.add_subplot(grid[1, col])
+        if per[c_rec] == 0:  # no training record holds this class
+            ax.set_axis_off()
+            continue
+        c_med, c_n = _median_beat(signal(c_rec), b.loc[b["aami"] == cls, "r_idx"].to_numpy(), FS)
+        if (b["aami"] == "N").any():
+            n_med, n_n = _median_beat(signal(c_rec), b.loc[b["aami"] == "N", "r_idx"].to_numpy(), FS)
+            ax.plot(ms, n_med, color=CLASS_COLORS["N"], linewidth=1.2, label=f"N ({n_n:,})")
+        if cls == "F" and (b["aami"] == "V").sum() >= 5:
+            v_med, v_n = _median_beat(signal(c_rec), b.loc[b["aami"] == "V", "r_idx"].to_numpy(), FS)
+            ax.plot(ms, v_med, color=CLASS_COLORS["V"], linewidth=1.2, linestyle="--", label=f"V ({v_n:,})")
+        ax.plot(ms, c_med, color=CLASS_COLORS[cls], linewidth=1.8, label=f"{cls} ({c_n:,})")
+        shown = f"{cls}, V and N" if cls == "F" and (b["aami"] == "V").sum() >= 5 else f"{cls} and N"
+        ax.set_title(f"{'CDE'[col - 1]}: {shown} beats, record {c_rec}", loc="left", fontsize=9)
+        ax.set_xlabel("ms from the R peak")
+        ax.legend(fontsize=7, loc="upper left")
+    caption = ("MIT-BIH training records only; the cardiologists' labels; band-passed 0.5-40 Hz for display. A: every beat's class above it and "
+               "the RR interval between beats below (the stretch of a training record with the most classes); the RR interval before an S or V "
+               "beat is shorter than between two normal beats, and a single V beat is followed by a longer pause. B: the waves of a normal beat; "
+               "the shaded windows are the P, QRS, ST and T segments the saliency maps are summarised over. C-E: the median beat of each rare class "
+               "in the training record with most of them, beside that patient's own median N beat (numbers of beats in brackets): the S beat's QRS "
+               "is almost the patient's normal one, the V beat is wide and different, and the F beat, where a normal and a ventricular impulse "
+               "meet, differs from both the patient's N and V beats.")  # fmt: skip
+    return [_save(fig, paths.figures_for("report") / "medical_background.png", "How the beat classes look on the ECG", caption)]
+
+
+def report_progress_figure() -> list[Path]:
+    """How the test score developed: rare-class macro-F1 on the test records of the cnn without augmentation and with the cVAE,
+    from the pre-registered system through the main post-hoc changes (left), and the best pipeline's S F1 on the test records and
+    on Icentia11k patients no analysis had used (right). From the saved summaries; nothing is re-run."""
+    from ecgaug import literature
+
+    s = {k: _summary(e) for k, e in {"final": "final_eval", "p7": "phase6_relative_cnn", "p11": "phase6_more_patients", "p12": "phase6_relative_generators",
+                                     "p13": "phase6_record_rr", "p16": "phase6_af_rule", "p18": "phase6_seed_ensemble",
+                                     "p19": "phase6_fresh_patients", "p20": "phase6_rule_tuning"}.items()}  # fmt: skip
+    p20t = _summary("phase6_rule_tuning", "test_summary.json")
+    if any(v is None for v in s.values()) or p20t is None:
+        return []
+    rows = [("pre-registered system (read once)", s["final"]["conditions"]),
+            ("P7: each beat relative to the patient's own beat", s["p7"]["conditions"]),
+            ("P11: + INCART and SVDB patients in training", s["p11"]["conditions"]),
+            ("P12: generators retrained on that input", {"cnn/cvae": s["p12"]["conditions"]["cnn/cvae"]}),
+            ("P13: RR intervals over the recording's mean", s["p13"]["conditions"]),
+            ("P13: + Huang et al.'s SVEB stage", s["p13"]["sveb_rule"]),
+            ("P16: + no S calls in atrial fibrillation", s["p16"]["with_af_veto"]),
+            ("P18: ten runs averaged", s["p18"]["ensemble"]["with_af_veto"]),
+            ("P20: stage and veto chosen on other patients", p20t["conditions"]["chosen"])]  # fmt: skip
+    plt = _plt()
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(11.5, 5.4), gridspec_kw={"width_ratios": [1.75, 1]})
+    series = (("cnn/none", "no augmentation", FAMILY_COLORS["cvae"], "o", 0.17), ("cnn/cvae", "cVAE", FAMILY_COLORS["wgan_gp"], "s", -0.17))
+    for k, (label, block) in enumerate(rows):
+        y = len(rows) - 1 - k
+        for key, name, color, marker, dy in series:
+            if key in block:
+                e = block[key]["rare_macro_f1"]
+                ax.plot([e["ci_low"], e["ci_high"]], [y + dy] * 2, color=color, linewidth=1.4)
+                ax.plot(e["point"], y + dy, marker=marker, color=color, markersize=6, linestyle="none", markeredgecolor=SURFACE,
+                        label=name if k == 0 else None)  # fmt: skip
+                ax.text(e["ci_high"] + 0.012, y + dy, f"{e['point']:.3f}", va="center", fontsize=7, color=INK_2)
+    ax.axhline(len(rows) - 1.5, color=INK_2, linewidth=0.8, linestyle=":")
+    zhu = next(r for r in literature.rows() if r["key"] == "zhu2022")["rare_macro_f1"]
+    ax.axvline(zhu, color=INK_2, linewidth=0.9, linestyle="--")
+    ax.text(zhu + 0.006, len(rows) - 0.2, f"Zhu et al. 2022\n(published) {zhu:.3f}", fontsize=7, color=INK_2, va="top", ha="left")
+    ax.set_yticks(range(len(rows)))
+    ax.set_yticklabels([label for label, _ in reversed(rows)], fontsize=8)
+    ax.set_ylim(-0.6, len(rows) - 0.1)
+    ax.set_xlim(0, 0.85)
+    ax.set_xlabel("rare-class macro-F1 on the 22 test records (95% record-level CI)")
+    ax.set_title("Test score after each main change (all but the first post hoc)", loc="left")
+    ax.legend(loc="upper right", bbox_to_anchor=(1.0, 0.8), fontsize=8)
+    ax.grid(axis="y", visible=False)
+
+    best = s["p18"]["ensemble"]["with_af_veto"]["cnn/cvae"]["f1_S"]
+    p19 = s["p19"]
+    checks = [("test records (P18)", best, INK),
+              (f"{p19['patients']:,} unused patients, same setting (P19)", p19["ensemble"]["with_af_veto"]["cnn/cvae"]["f1_S"], INK_2),
+              ("same patients, ensemble alone (P19)", p19["ensemble"]["cnn_alone"]["cnn/cvae"]["f1_S"], INK_2),
+              ("same patients, setting chosen elsewhere (P20)", s["p20"]["conditions"]["chosen"]["cnn/cvae"]["f1_S"], INK_2)]  # fmt: skip
+    for k, (label, e, color) in enumerate(checks):
+        y = len(checks) - 1 - k
+        ax2.plot([e["ci_low"], e["ci_high"]], [y, y], color=color, linewidth=1.4)
+        ax2.plot(e["point"], y, marker="D", color=color, markersize=6, linestyle="none", markeredgecolor=SURFACE)
+        ax2.text(e["ci_high"] + 0.015, y, f"{e['point']:.3f}", va="center", fontsize=7, color=INK_2)
+    ax2.set_yticks(range(len(checks)))
+    ax2.set_yticklabels([label for label, _, _ in reversed(checks)], fontsize=8)
+    ax2.set_ylim(-0.6, len(checks) - 0.4)
+    ax2.set_xlim(0, 1.0)
+    ax2.set_xlabel("S F1 of P18's cVAE pipeline (95% CI)")
+    ax2.set_title("The best pipeline on new patients", loc="left")
+    ax2.grid(axis="y", visible=False)
+    caption = ("Left: the cnn without augmentation (circles) and with the cVAE (squares); the first row is the pre-registered system, every row "
+               "below the dotted line a post-hoc analysis registered before it ran. P12 retrains only the generators, so it has no row without "
+               "augmentation. All rows are read on the same 22 test records, so the later rows are optimistic. Dashed: the mean of S and F F1 "
+               "reported by Zhu et al. (2022). Right: S F1 of P18's best pipeline (the cVAE's ten-run ensemble with the SVEB stage and the AF veto) "
+               "on the test records (record-level CI) and on Icentia11k patients that no analysis had used (patient-level CI); those patients "
+               "have no F labels.")  # fmt: skip
+    return [_save(fig, paths.figures_for("report") / "progress.png", "How the test score developed, and how far it carries to new patients", caption)]
+
+
+def report_figures() -> list[Path]:
+    """The course report's two own figures."""
+    return medical_background_figure() + report_progress_figure()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Before-and-after figures for each phase.")
-    parser.add_argument("what", choices=["phase1_data", "phase2_ptbxl_data", "results", "final_eval", "leakage_audit", "posthoc", "architecture", "all"])
+    parser.add_argument("what", choices=["phase1_data", "phase2_ptbxl_data", "results", "final_eval", "leakage_audit", "posthoc", "architecture", "report", "all"])
     parser.add_argument("--ptbxl-root", default=None, help="folder with PTB-XL recordings (default data/raw/ptbxl)")
     args = parser.parse_args(argv)
     written = []
@@ -2829,6 +3048,8 @@ def main(argv: list[str] | None = None) -> int:
         written += posthoc_figures()
     if args.what in ("architecture", "all"):  # from the configs and result files; nothing is trained
         written += architecture_flow_figure()
+    if args.what in ("report", "all"):  # training records and saved summaries; nothing is trained
+        written += report_figures()
     for path in written:
         print(path.relative_to(paths.repo_root()))
     return 0
