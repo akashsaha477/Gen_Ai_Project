@@ -1591,3 +1591,8 @@ version inputs it. `report_folder.SOURCES` names both versions; `report/generate
 `results.md` follows the full version. Both compile with no undefined references and no overfull lines. Tests: the
 folder test now covers both versions and checks that every `\ref` of each has its `\label`; the report-text tests check
 the short follow-up text has no figure references.
+
+Full test suite on Kaggle at 05d9a6a (`phase6-suite-two-reports`, CPU): exit code 0; 438 passed, 2 skipped, 0 failed (876
+progress marks and 4 skip marks halved, against the 440 collected locally; the report-file test now runs, since report/
+is in the repository). An earlier run at 9e9af1a (`phase6-suite-report`, before the 20-page version was added) gave the
+same counts. Pushed 05d9a6a to main (fast-forward from 496fb3e). This note goes out with the next suite-tested push.
