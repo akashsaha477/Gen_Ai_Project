@@ -1,0 +1,76 @@
+Figure~\ref{fig:architecture} shows the whole system as one flow. The top row is the system as pre-registered and frozen at the phase gates: a beat window from lead MLII with its RR features, an optional synthetic bank, a classifier, argmax, a saliency map and a note checked against the model output. The middle row is the post-hoc pipeline with the highest test score so far (P18), and the bottom row lists what else was tried at each stage. Tables~\ref{tab:arch-classifiers} to~\ref{tab:arch-other} list every model that was trained or tested, 30 entries in all, 15 of them neural networks with their trainable parameters counted from their configurations (with the three RR side features where the model takes them). Every choice among them was made on validation patients by a rule written down before the comparison.
+\begingroup\footnotesize
+\begin{longtable}{p{2.6cm}p{6.1cm}rp{4.6cm}}
+\caption{Classifiers and other models fitted to beats. Bold: chosen by a pre-registered rule.}\label{tab:arch-classifiers}\\
+\toprule
+Model & Structure & Parameters & Where it ran; outcome \\
+\midrule
+\endfirsthead
+\toprule
+Model & Structure & Parameters & Where it ran; outcome \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Probe CNN & 3 conv blocks (16, 32, 64 channels, kernel 7), global average pooling, RR side branch, linear head & 18,762 & phase 1 (input choice); quality metrics (TSTR, feature network); a measuring instrument, not a candidate \\
+\textbf{Shallow CNN (the cnn)} & 3 conv-BN-ReLU-max-pool blocks (32, 64, 128, kernel 7), global average pooling; RR side branch (batch norm, 16 units); linear head & 73,226 & phase 2 variant A; every later experiment; validation S F1 0.349 (SD 0.045) at phase 2; chosen as the cnn \\
+ResNet1D & stem conv, 4 residual stages (32, 64, 128, 128, kernel 7, two conv-BN each with a shortcut), global average pooling, RR side branch, linear head & 488,362 & phase 2 variant B; P22; validation S F1 0.231 (SD 0.097) at phase 2; not chosen; re-tested in P18's pipeline as P22: against the cnn, S F1 on P19's patients no augmentation +0.021, cVAE +0.023 (detectable), WGAN-GP +0.058 (detectable); test rare-class macro-F1 no augmentation +0.056, cVAE +0.027, WGAN-GP $-$0.246 \\
+\textbf{BiLSTM (the rnn)} & 2-layer bidirectional LSTM (64 units), last states and mean output concatenated, RR side branch, linear head & 134,794 & phase 2 variant C; full grid; P5, P13; validation S F1 0.315 (SD 0.020) at phase 2; chosen as the rnn \\
+CNN-BiLSTM & 2 conv blocks (32, 64, kernel 7), 1 bidirectional LSTM layer (64 units), RR side branch, linear head & 82,570 & phase 2 variant D; validation S F1 0.252 (SD 0.029) at phase 2; not chosen \\
+PTB-XL pretraining & the probe CNN pretrained on PTB-XL beats with their recording's five diagnostic superclasses, then fine-tuned on MIT-BIH & 18,762 & phase 2 (two arms: RR features, 125 Hz); from-scratch training kept in both arms \\
+Per-patient batch norm & frozen cnn or rnn whose batch-norm statistics are recomputed from each patient's beats & -- & P10; no new parameters; post hoc \\
+RR linear discriminants & LDA on the three RR features, and on them plus every 10th sample of the beat (de Chazal-style) & -- & P1; fixed references beside the cnn; post hoc \\
+Logistic regression, gradient boosting & models of the RR intervals compared with rules on training-side patients & -- & P14; descriptive check only \\
+\end{longtable}
+\endgroup
+\begingroup\footnotesize
+\begin{longtable}{p{2.6cm}p{6.1cm}rp{4.6cm}}
+\caption{Generators, generator objectives and augmentation without a learned model. Bold: chosen by a pre-registered rule.}\label{tab:arch-generators}\\
+\toprule
+Model & Structure & Parameters & Where it ran; outcome \\
+\midrule
+\endfirsthead
+\toprule
+Model & Structure & Parameters & Where it ran; outcome \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+cVAE A & conv encoder and decoder, class one-hot concatenated to the input and the latent code, latent 16, KL weight annealed over 30\% of steps & 415,905 & phase 3; pilots; not chosen at the phase 3 gate \\
+cVAE B & as A with a smaller KL weight (0.1 and 0.25) & 415,905 & phase 3; pilots; not chosen at the phase 3 gate \\
+cVAE C & as A plus an L1 loss between FFT magnitudes & 415,905 & phase 3; pilots; not chosen at the phase 3 gate \\
+\textbf{cVAE D} & residual encoder and decoder with FiLM class conditioning in every block & 803,841 & phase 3; P12 (retrained on patient-relative beats), P21, P23; chosen at the phase 3 gate \\
+\textbf{WGAN-GP A} & label embedding concatenated to the noise (64) and as a class channel to the critic; 5 critic steps, gradient penalty 10 & 501,362 & phase 3; P12 (retrained on patient-relative beats), P21, P23; chosen at the phase 3 gate \\
+WGAN-GP B & projection critic & 512,194 & phase 3; pilots; not chosen at the phase 3 gate \\
+WGAN-GP C & auxiliary class head on the critic (AC-WGAN-GP) & 512,198 & phase 3; pilots; not chosen at the phase 3 gate \\
+WGAN-GP D & one unconditional WGAN-GP per class S, V, F & 1,359,750 & phase 3; pilots; not chosen at the phase 3 gate \\
+Diffusion (1D U-Net) & 1D U-Net (64, 128, 256 channels, kernel 5), 1,000-step cosine schedule, DDIM sampling in 50 steps, classifier-free guidance 1.5, EMA weights & 2,250,497 & P15; P17 (five times longer); post hoc; one of P18's six conditions \\
+Physics loss, drawn parameters & McSharry et al.'s ECG equation, Euler residual with 16 parameters drawn from the class (SimGANs) & -- & P21; barely moved the generators; post hoc \\
+Physics loss, fitted heights & the simulator's best fit with the class's wave timing, heights and baseline solved per beat & -- & P23; moved the generators (large weights smooth the banks); small S gain on P19's patients for the cVAE; post hoc \\
+SMOTE, random oversampling, class weights & interpolation between same-class beats; repeated real beats; class-weighted cross-entropy & -- & phase 4 grid; P5-P18; the pre-registered comparison conditions \\
+Patient transfer, fusion beats & a real deviation placed on other patients' templates (P9); a fraction of a real V deviation as F (P21) & -- & P9; P21; fusion beats stopped by their pre-registered rule \\
+\end{longtable}
+\endgroup
+\begingroup\footnotesize
+\begin{longtable}{p{2.6cm}p{6.1cm}rp{4.6cm}}
+\caption{Decision rules, explanation and note generation. Bold: chosen by a pre-registered rule.}\label{tab:arch-other}\\
+\toprule
+Model & Structure & Parameters & Where it ran; outcome \\
+\midrule
+\endfirsthead
+\toprule
+Model & Structure & Parameters & Where it ran; outcome \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Ten-run ensemble & mean class probability of ten cnn runs, then argmax & -- & P18; post hoc \\
+Huang's SVEB stage & a beat called N becomes S when its RR interval is below 0.8 of the recording's mean & -- & P13; P20 (threshold chosen on Icentia11k patients); post hoc \\
+AF veto & logistic regression on five RR-irregularity features of the 64 intervals around a beat, fitted on the MIT-BIH Atrial Fibrillation Database; vetoes the stage & -- & P16; P20; post hoc \\
+\textbf{Saliency} & Grad-CAM, integrated gradients, SmoothGrad, occlusion; shares of saliency in the P, QRS, ST and T windows & -- & phase 5; chosen per architecture: Grad-CAM (cnn), occlusion (rnn) \\
+Note generator A & deterministic template & -- & phase 5; the fallback whenever the fact check fails \\
+Note generator B & LLM restating the JSON input under a constrained prompt; Gemini 3.5 Flash-Lite & -- & phase 5; not chosen \\
+\textbf{Note generator C} & B plus two examples and a fixed JSON schema; Gemini 3.5 Flash-Lite & -- & phase 5; chosen at the phase 5 gate \\
+Note generator D & B plus the fact checker and up to two regenerations; Gemini 3.5 Flash-Lite & -- & phase 5; not chosen \\
+\end{longtable}
+\endgroup

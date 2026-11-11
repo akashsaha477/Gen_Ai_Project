@@ -1,0 +1,41 @@
+\begin{table}[htbp]\centering\small
+\caption{The post-hoc analyses (pre-registration versions 4 to 21), each reported apart from the primary results. Numbers are test rare-class macro-F1 unless stated.}\label{tab:posthoc}
+\begin{tabular}{@{}lp{0.3\linewidth}p{0.55\linewidth}@{}}
+\toprule
+ & question & finding \\
+\midrule
+P1 & Is the cnn simply weak? & RR-only LDA 0.022 vs cnn 0.088 \\
+P2 & Does it hold on other databases? & INCART: generative vs none lowered in 1, did not detectably change in 3 of 4; SVDB: generative vs none did not detectably change in 3, improved in 1 of 4 \\
+P3 & Are three seeds enough? & five seeds: 0 verdicts changed \\
+P4 & Does the audit depend on its split? & intra-patient 0.777--0.837 vs 0.088 inter-patient \\
+P5 & A better RR feature? & test v2 $-$ v1 $-$0.042 to +0.046; generative vs none did not detectably change in 4 of 4 \\
+P6 & Patient-relative beats? & validation S F1 v3 $-$ v2: cnn +0.122, rnn $-$0.125; not adopted \\
+P7 & A stronger cnn? & test cnn none 0.371 (v1 0.088); generative vs none did not detectably change in 2 of 2 \\
+P8 & Do synthetic beats add patients? & synthetic S beats nearest to record 209: 0.61 (real 0.60) \\
+P9 & Augmentation that adds patients? & generative transfer vs none did not detectably change in 4 of 4 \\
+P10 & Per-patient normalization in the network? & v1/cnn +0.162; v1/rnn $-$0.067; p7/cnn $-$0.031 validation S F1; test: adaptation did not detectably change in 1 of 1, generative vs none did not detectably change in 2 of 2 \\
+P11 & More training patients? & cnn none 0.147 vs DS1 only: did not detectably change in 1 of 1; each condition vs none: did not detectably change in 4 of 4; best class-weighted loss 0.407 \\
+P12 & Generators trained on what the cnn sees? & cVAE 0.368, WGAN-GP 0.243; vs the same generator in P11: did not detectably change in 2 of 2; vs P11 none and oversampling: did not detectably change in 4 of 4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{table}[htbp]\centering\small
+\caption{The post-hoc analyses, continued.}
+\begin{tabular}{@{}lp{0.3\linewidth}p{0.55\linewidth}@{}}
+\toprule
+ & question & finding \\
+\midrule
+P13 & RR intervals over the recording's mean? & none 0.147 to 0.216; best class-weighted loss 0.380; vs before: did not detectably change in 5 of 5; generative vs the others: did not detectably change in 6 of 6 \\
+P14 & Many more training patients (Icentia11k)? & none 0.216 to 0.121; best cVAE 0.304; vs P13: did not detectably change in 4 of 4; cVAE vs the others: did not detectably change in 3 of 3 \\
+P15 & A diffusion model as the generator? & diffusion 0.280; vs none and cVAE: did not detectably change in 2 of 2; vs class weights and oversampling: did not detectably change in 2 of 2 \\
+P16 & An AF veto on the SVEB stage? & cVAE with the stage and veto 0.557; veto vs stage alone: improved in 2, did not detectably change in 4 of 6 \\
+P17 & Diffusion trained five times longer? & 0.267; vs P15 and none: did not detectably change in 2 of 2 \\
+P18 & Ten runs averaged per condition? & cVAE ensemble with the stage and veto 0.587 (best test score); ensemble vs single runs: did not detectably change in 5, improved in 1 of 6; cVAE vs the others: did not detectably change in 5 of 5 \\
+P19 & The same pipeline on 977 new patients? & S F1 0.286--0.295 (no F label); ensemble vs single runs: did not detectably change in 1, improved in 5 of 6; cVAE vs the others: did not detectably change in 5 of 5 \\
+P20 & Stage and veto chosen on other patients? & P19's patients S F1 0.378--0.419 with the chosen settings; chosen vs P19's setting: improved in 6 of 6; test cVAE 0.459, chosen vs P18's setting: did not detectably change in 6 of 6 \\
+P21 & A physics loss in the generators (SimGANs)? & P19's patients: did not detectably change in 2 of 2; test: did not detectably change in 2 of 2; best the cVAE with the Euler loss 0.481 \\
+P22 & A larger classifier (ResNet1D)? & P19's patients: did not detectably change in 1, improved in 2 of 3; test: did not detectably change in 3 of 3; best the ResNet with the cVAE 0.486 \\
+P23 & A physics loss fitted to each beat? & P19's patients: improved in 1, did not detectably change in 1 of 2; test: did not detectably change in 2 of 2; best the cVAE with the fitted loss 0.465 \\
+\bottomrule
+\end{tabular}
+\end{table}

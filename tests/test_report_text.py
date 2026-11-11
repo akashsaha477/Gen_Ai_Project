@@ -4,7 +4,6 @@ selection rule, the architecture tables can flow across pages, and the medical f
 import json
 import shutil
 
-import pytest
 from conftest import REPO
 
 from ecgaug import paths
@@ -110,9 +109,8 @@ def test_the_medical_figure_is_skipped_without_raw_records(tmp_root):
     assert figures.medical_background_figure() == []
 
 
-@pytest.mark.skipif(not (REPO / "paper" / "report.tex").is_file(), reason="the report is kept out of the repository")
 def test_the_report_inputs_the_report_texts():
-    tex = (REPO / "paper" / "report.tex").read_text()
+    tex = (REPO / "report" / "report.tex").read_text()
     for name in ("report_summary", "report_example", "report_architecture", "report_posthoc", "report_discussion", "report_conclusion"):
         assert f"\\input{{generated/{name}.tex}}" in tex
     assert "report/medical_background.png" in tex and "report/progress.png" in tex

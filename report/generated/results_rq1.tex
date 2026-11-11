@@ -1,0 +1,13 @@
+For the cnn (shallow cnn), training without augmentation reached a test rare-class macro-F1 of 0.088 (95\% CI 0.037 to 0.194). cVAE augmentation (strength 0.25) did not detectably change it: difference +0.025 (95\% CI $-$0.018 to +0.047), Holm-adjusted $p=1.000$. WGAN-GP augmentation (strength 0.1) did not detectably change it: difference $-$0.009 (95\% CI $-$0.045 to +0.015), Holm-adjusted $p=1.000$.
+
+In the secondary family for the cnn (best generative condition on validation: cVAE), cVAE was not detectably different from WGAN-GP (+0.034 (95\% CI $-$0.002 to +0.068), Holm-adjusted $p=0.550$); cVAE was not detectably different from SMOTE (+0.044 (95\% CI $-$0.029 to +0.072), Holm-adjusted $p=1.000$); cVAE was not detectably different from class-weighted loss (+0.001 (95\% CI $-$0.041 to +0.042), Holm-adjusted $p=1.000$); cVAE was not detectably different from random oversampling ($-$0.022 (95\% CI $-$0.074 to +0.010), Holm-adjusted $p=1.000$).
+
+For the rnn (bilstm), training without augmentation reached a test rare-class macro-F1 of 0.075 (95\% CI 0.014 to 0.232). cVAE augmentation (strength 0.1) did not detectably change it: difference $-$0.002 (95\% CI $-$0.100 to +0.032), Holm-adjusted $p=1.000$. WGAN-GP augmentation (strength 0.5) did not detectably change it: difference $-$0.006 (95\% CI $-$0.138 to +0.035), Holm-adjusted $p=1.000$.
+
+In the secondary family for the rnn (best generative condition on validation: cVAE), cVAE was not detectably different from WGAN-GP (+0.004 (95\% CI $-$0.027 to +0.065), Holm-adjusted $p=1.000$); cVAE was not detectably different from SMOTE ($-$0.013 (95\% CI $-$0.067 to +0.016), Holm-adjusted $p=1.000$); cVAE was not detectably different from class-weighted loss (+0.012 (95\% CI $-$0.047 to +0.039), Holm-adjusted $p=1.000$); cVAE was not detectably different from random oversampling ($-$0.016 (95\% CI $-$0.059 to +0.016), Holm-adjusted $p=1.000$).
+
+H1 (confirmatory) is not supported: no generative condition improved the primary metric after Holm correction.
+
+Without record 202 (the DS2 record of the subject of DS1 record 201) the confirmatory conclusions are unchanged.
+
+Per class (exploratory, H1b; differences of test F1 point estimates against no augmentation): cVAE with the cnn: F +0.025, S +0.025; WGAN-GP with the cnn: F $-$0.027, S +0.008; cVAE with the rnn: F +0.007, S $-$0.011; WGAN-GP with the rnn: F +0.013, S $-$0.025.

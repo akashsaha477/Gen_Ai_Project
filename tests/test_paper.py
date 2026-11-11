@@ -38,7 +38,7 @@ def test_the_draft_cites_only_verified_entries_and_inputs_only_generated_files()
 
     from ecgaug import paper
 
-    tex = (REPO / "paper" / "main.tex").read_text() + (REPO / "paper" / "report.tex").read_text()
+    tex = (REPO / "paper" / "main.tex").read_text()  # the course report has its own test (tests/test_report_folder.py)
     keys = set(re.findall(r"@\w+\{([^,]+),", (REPO / "paper" / "refs.bib").read_text()))
     cited = {k.strip() for group in re.findall(r"\\cite\{([^}]*)\}", tex) for k in group.split(",")}
     assert cited and cited <= keys, f"cited but not in refs.bib: {cited - keys}"

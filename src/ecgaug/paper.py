@@ -1,6 +1,7 @@
 """Phase 6: the paper's tables and numbers, generated from the result files (PLAN Phase 6, /paper).
 
-    python -m ecgaug.paper      # writes paper/generated/*.tex, paper/generated/numbers.tex and paper/claims_vs_evidence.md
+    python -m ecgaug.paper      # writes paper/generated/*.tex, paper/generated/numbers.tex and paper/claims_vs_evidence.md,
+                                # then the course report's inputs into report/generated/ and report/results.md
 
 Every table cell and every number macro is computed here from a result file, and each table lists the
 files it came from; nothing is typed by hand (docs/RULES.md rule 5). A result that does not exist yet is
@@ -15,7 +16,7 @@ import csv
 import json
 import shutil
 
-from ecgaug import paths, workflow
+from ecgaug import paths, report_folder, workflow
 from ecgaug.data.records import CLASSES
 from ecgaug.names import (
     FINAL_EVAL,
@@ -250,6 +251,9 @@ def build() -> dict:
         if "\\missing" in tex:
             missing.append(name)
     final_numbers = out / "numbers_final_eval.tex"
+    kept = report_folder.folder() / "generated" / final_numbers.name
+    if not final_numbers.is_file() and kept.is_file():  # a fresh clone: /final-eval wrote it once, the report folder keeps it
+        shutil.copy2(kept, final_numbers)
     if final_numbers.is_file():
         lines.append("\\input{generated/numbers_final_eval.tex}")
     (out / "numbers.tex").write_text("\n".join(lines) + "\n")
@@ -264,13 +268,15 @@ def build() -> dict:
         "Add each claim of the paper below with the table or figure that supports it, before submission:\n\n" + header + "\n|---|---|---|\n"
         + "".join(f"{row}\n" for row in kept if row.strip())
     )  # fmt: skip
-    return {"written": written, "missing": missing, "final_evaluation": (paths.results_for(FINAL_EVAL) / "summary.json").is_file()}
+    return {"written": written, "missing": missing, "report": report_folder.write(out),
+            "final_evaluation": (paths.results_for(FINAL_EVAL) / "summary.json").is_file()}
 
 
 def main(argv: list[str] | None = None) -> int:
     argparse.ArgumentParser(description="Generate the paper's tables and numbers from the result files.").parse_args(argv)
     report = build()
-    print(f"written {len(report['written'])} files under paper/generated/; still waiting for: {', '.join(report['missing']) or 'nothing'}")
+    print(f"written {len(report['written'])} files under paper/generated/ and {len(report['report'])} under report/; "
+          f"still waiting for: {', '.join(report['missing']) or 'nothing'}")
     return 0
 
 

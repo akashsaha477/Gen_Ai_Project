@@ -1,0 +1,25 @@
+\begin{figure}[htbp]\centering
+\fbox{\begin{minipage}[t]{0.46\linewidth}\footnotesize
+\textbf{Input} (validation beat labelled S by the cardiologists)\par\smallskip
+\begin{tabular}{@{}p{0.3\linewidth}p{0.64\linewidth}@{}}
+predicted class & S \\
+probabilities & N 0.00, S 0.93, V 0.06, F 0.00 \\
+low confidence & no \\
+saliency share & P 0.55, ST 0.26
+\end{tabular}\par\medskip
+\textbf{Note} (generator C; 0 unsupported claims)\par\smallskip
+\emph{The beat is classified as a supraventricular ectopic beat (S) with a probability of 0.93. The top segments are the P wave with a mass of 0.55 and the ST segment with a mass of 0.26. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.}
+\end{minipage}}\hfill
+\fbox{\begin{minipage}[t]{0.46\linewidth}\footnotesize
+\textbf{Input} (validation beat labelled V by the cardiologists)\par\smallskip
+\begin{tabular}{@{}p{0.3\linewidth}p{0.64\linewidth}@{}}
+predicted class & V \\
+probabilities & N 0.04, S 0.00, V 0.95, F 0.01 \\
+low confidence & no \\
+saliency share & QRS 0.63, ST 0.35
+\end{tabular}\par\medskip
+\textbf{Note} (generator C; 0 unsupported claims)\par\smallskip
+\emph{The heartbeat classifier predicts the beat is a ventricular ectopic beat (V) with a probability of 0.95. The top segments contributing to this prediction are the QRS complex with a mass of 0.63 and the ST segment with a mass of 0.35. This note was generated automatically by a research model. It is not a diagnosis and must be reviewed by a clinician.}
+\end{minipage}}
+\caption{The system's output for two validation beats, the first S and the first V beat of the note cases that the model classified correctly with confidence. The note generator receives only the input object, never the signal; the fact checker compares every claim of the note with it, and a template note replaces any note that fails. Saliency shares are the fractions of the saliency map inside the P, QRS, ST and T windows of Figure~\ref{fig:medical}; the two largest are passed on.}\label{fig:example}
+\end{figure}

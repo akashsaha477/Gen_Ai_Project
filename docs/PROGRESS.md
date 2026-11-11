@@ -1566,3 +1566,18 @@ reader, on the test records (P18) and on P19's new patients; every number from t
 now refers to the three new figures. Tests: `tests/test_report_text.py` 8 (one new: the report discussion refers only to
 sections the report has and its numbers come from the P18 and P19 summaries). Report compiles with no undefined
 references and no overfull lines. Open: team member names and contributions (still red placeholders).
+
+2026-11-12. Course report moved to its own folder and committed, asked "make a different folder for report and results
+and push it dont put the paper". New folder `report/`: `report.pdf` (30 pages), `report.tex`, `refs.bib` (a copy of the
+paper's verified references), `generated/` (only the 28 files the report inputs, among them `numbers_final_eval.tex`,
+which `numbers.tex` inputs) and `results.md` (every results table of the report as Markdown, under the report's section
+titles, with the result files each table lists as its sources). The paper (`paper/main.tex`) stays local; `/paper/` is
+now also in `.gitignore`. New code: `src/ecgaug/report_folder.py`, called by `paper.build()` after it writes
+`paper/generated/`; it copies only what `report/report.tex` inputs (and what those files input), removes stale files,
+and converts the tables (the caption's first sentence becomes the title, the rest a note under the table). On a fresh
+clone `paper.build()` takes `numbers_final_eval.tex` from `report/generated/`, since `/final-eval` wrote it once. The
+report compiles from `report/` (figures from `../figures/`): 30 pages, no undefined references, no overfull lines.
+Tests: `tests/test_report_folder.py` (4: the converter, caption splitting, the committed folder holds exactly the
+report's inputs and cites only `report/refs.bib`, the generator fills the folder); the report-file test of
+`tests/test_report_text.py` now reads `report/report.tex` and is no longer skipped; the paper draft test reads only
+`paper/main.tex`. Open: team member names and contributions (still red placeholders in the report).

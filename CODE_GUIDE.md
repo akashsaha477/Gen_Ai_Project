@@ -482,7 +482,7 @@ precondition before the first test byte, predicts the test set with every frozen
 - `report/notes.py`: `note_input` (the note's input JSON), `template_note`, `generate` (variants A-D),
   `check_note` (the fact checker), `LLMClient` / `client_from_env`; `report/error_analysis.py`: `analyse`.
 - `demo.py`: `explain_beat` classifies, explains and describes one beat and saves the figure.
-- `paper.py`: `build()` writes the paper's tables and numbers from the result files.
+- `paper.py`: `build()` writes the paper's tables and numbers from the result files. It then calls `report_folder.write()`, which copies only the files `report/report.tex` inputs into `report/generated/` (stale ones are removed, so none of the paper's own texts land there) and writes `report/results.md`: every results table of the report, converted from the same LaTeX tables to Markdown under the report's section titles, with each caption's first sentence as the title and the files each table was built from.
 
 ### `experiments/phase6_*.py` — the post hoc analyses P1-P23
 
@@ -563,6 +563,7 @@ result file exists, and `paper_text.py` writes the paper's post hoc paragraphs f
 | `test_phase4.py` | policies and the DTW screen; the phase 4a and 4 gates; the statistics; the final evaluation on fake data runs once |
 | `test_phase5.py` | saliency finds what a model uses; faithfulness; the fact checker; LLM variants with a fake client; demo; error analysis; the phase 5 gate |
 | `test_paper.py` | tables and numbers come from result files; missing results are marked |
+| `test_report_folder.py` | `report/` holds exactly what the report inputs and cites only `report/refs.bib`; the Markdown converter; the generator fills the folder |
 
 `conftest.py` makes every test run in a temporary folder with the test lock closed.
 
