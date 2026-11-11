@@ -1571,8 +1571,8 @@ references and no overfull lines. Open: team member names and contributions (sti
 and push it dont put the paper". New folder `report/`: `report.pdf` (30 pages), `report.tex`, `refs.bib` (a copy of the
 paper's verified references), `generated/` (only the 28 files the report inputs, among them `numbers_final_eval.tex`,
 which `numbers.tex` inputs) and `results.md` (every results table of the report as Markdown, under the report's section
-titles, with the result files each table lists as its sources). The paper (`paper/main.tex`) stays local; `/paper/` is
-now also in `.gitignore`. New code: `src/ecgaug/report_folder.py`, called by `paper.build()` after it writes
+titles, with the result files each table lists as its sources). The paper (`paper/main.tex`) stays local (ignored through
+`.git/info/exclude` as before; `.gitignore` gains only the report's LaTeX logs). New code: `src/ecgaug/report_folder.py`, called by `paper.build()` after it writes
 `paper/generated/`; it copies only what `report/report.tex` inputs (and what those files input), removes stale files,
 and converts the tables (the caption's first sentence becomes the title, the rest a note under the table). On a fresh
 clone `paper.build()` takes `numbers_final_eval.tex` from `report/generated/`, since `/final-eval` wrote it once. The

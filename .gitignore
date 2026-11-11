@@ -20,11 +20,10 @@ __pycache__/
 /runs/**/*.npz
 /runs/**/checkpoints/
 
-# LaTeX build logs; the paper draft is kept out of the repository (the course report is in report/)
+# LaTeX build logs of the course report
 /report/*.log
 /report/*.blg
 /report/*.aux
-/paper/
 
 # Secrets and local settings
 .env
