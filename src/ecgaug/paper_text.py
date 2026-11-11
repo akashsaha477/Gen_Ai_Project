@@ -2013,8 +2013,10 @@ def _best_test_score() -> float:
     return best
 
 
-def discussion() -> str:
-    """The discussion, every number from the result files; claims follow the numbers (nothing is asserted that a file does not show)."""
+def discussion(brief: bool = False) -> str:
+    """The discussion, every number from the result files; claims follow the numbers (nothing is asserted that a file does not show).
+    ``brief`` is the course report's form: it refers to the follow-ups by name inside one section and leaves out the paragraphs the
+    report gives elsewhere (patient variation, relation to earlier reports, outlook)."""
     from ecgaug.names import (PHASE6_AUDIT_CHECK, PHASE6_AUGMENTATION_MECHANISM, PHASE6_EXTERNAL_VALIDATION, PHASE6_EXTRA_SEEDS,
                               PHASE6_PATIENT_TEMPLATE, PHASE6_RELATIVE_CNN, PHASE6_RR_BASELINE)  # fmt: skip
 
@@ -2077,15 +2079,18 @@ def discussion() -> str:
         from ecgaug.names import PHASE6_RELATIVE_GENERATORS
 
         tested = _load(paths.results_for(PHASE6_RELATIVE_GENERATORS) / "summary.json") is not None
-        paras.append("\\paragraph{Why.} The analyses of Sections~\\ref{sec:patient-template} and~\\ref{sec:mechanism} point to the patients rather than the "
+        where = ("The follow-up analyses P6 and P8 (Section~\\ref{sec:posthoc})" if brief
+                 else "The analyses of Sections~\\ref{sec:patient-template} and~\\ref{sec:mechanism}")
+        paras.append(f"\\paragraph{{Why.}} {where} point to the patients rather than the "
                      "beats: " + "; ".join(why) + ". With so few training patients, a generator can add beats of those patients but not new ones; generators trained "
                      "on more patients, or conditioned on the patient, are what this points to."
-                     + (" Section~\\ref{sec:relative-generators} tests the first of these; its result is in the next paragraphs." if tested else ""))  # fmt: skip
+                     + (" Section~\\ref{sec:relative-generators} tests the first of these; its result is in the next paragraphs." if tested and not brief else ""))  # fmt: skip
     if p9_helped:
+        where = "P9 (Section~\\ref{sec:posthoc})" if brief else "Section~\\ref{sec:patient-transfer}"
         paras.append("\\paragraph{Augmentation that adds patients.} Moving the deviations of rare beats onto other patients' templates improved the "
-                     "primary metric over no augmentation in the registered comparison (Section~\\ref{sec:patient-transfer}), where class-conditional "
+                     f"primary metric over no augmentation in the registered comparison ({where}), where class-conditional "
                      "generation alone did not: what new patients need is the arrhythmia seen against many patients' normal beats.")
-    if (pv := patient_variation_paragraph()) is not None:
+    if not brief and (pv := patient_variation_paragraph()) is not None:
         paras.append(pv)
     dom = final["conditions"]["cnn/none"]["rare_macro_f1"]["dominant_record"]
     train_f = ""
@@ -2096,6 +2101,8 @@ def discussion() -> str:
                  f"beats and record {dom['F']['record']} {_n(dom['F']['share_of_class'], 2)} of the F beats, so the rare-class metrics largely measure two "
                  f"patients{train_f}. A method that is good on average and poor on these patients scores low here, which is a property of the benchmark "
                  "as much as of the method.")  # fmt: skip
+    if brief:
+        return "\n\n".join(paras) + "\n"
     audit = _load(paths.results_for(PHASE6_AUDIT_CHECK) / "summary.json")
     if audit is not None:
         paras.append(f"\\paragraph{{Relation to earlier reports.}} With beats split at random, the same pipeline reached {_n(audit['audit_split0']['none']['mean'])} "

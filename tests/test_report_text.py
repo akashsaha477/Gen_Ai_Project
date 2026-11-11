@@ -16,7 +16,7 @@ def test_report_texts_come_from_the_result_files(monkeypatch):
     from ecgaug import report_text as rt
 
     texts = rt.build()
-    assert set(texts) == {"report_summary", "report_example", "report_architecture", "report_posthoc", "report_conclusion"}
+    assert set(texts) == {"report_summary", "report_example", "report_architecture", "report_posthoc", "report_discussion", "report_conclusion"}
     for name, text in texts.items():
         assert "\\missing" not in text and text.count("{") == text.count("}"), name
         assert "_" not in text.replace("\\_", ""), name
@@ -28,6 +28,27 @@ def test_report_texts_come_from_the_result_files(monkeypatch):
     story = texts["report_posthoc"]
     assert f"{rt.posthoc_reads()} reads after the final evaluation" in story and rt.posthoc_reads() >= 18
     assert "\\ref{tab:posthoc}" in story and "\\ref{fig:progress}" in story and story.count("\\paragraph{") == 5
+    for label in ("fig:relative", "fig:synthetic-patients", "fig:rr-reference"):
+        assert f"\\ref{{{label}}}" in story, label
+
+
+def test_the_report_discussion_refers_only_to_report_sections(monkeypatch):
+    monkeypatch.delenv("ECGAUG_ROOT")
+    import re
+
+    from ecgaug import paper_text as pt
+    from ecgaug import report_text as rt
+
+    text = rt.discussion()
+    assert set(re.findall(r"\\ref\{([^}]+)\}", text)) <= {"sec:posthoc", "sec:medical"}
+    assert "Patient variation, not class imbalance" not in text and "What better results need" not in text
+    assert "What the scores mean in the clinic" in text
+    best = json.loads((paths.results_for("phase6_seed_ensemble") / "summary.json").read_text())["ensemble"]["with_af_veto"]["cnn/cvae"]
+    new = json.loads((paths.results_for("phase6_fresh_patients") / "summary.json").read_text())["ensemble"]["with_af_veto"]["cnn/cvae"]
+    for value in (best["se_S"]["point"], best["ppv_S"]["point"], new["se_S"]["point"], new["ppv_S"]["point"]):
+        assert pt._n(value, 2) in text
+    assert f"about {round(10 * (1 - new['ppv_S']['point']))} of every 10 S flags" in text
+    assert pt.discussion() != pt.discussion(brief=True) and "sec:patient-template" in pt.discussion()
 
 
 def test_the_example_cases_follow_their_rule(monkeypatch):
@@ -92,6 +113,8 @@ def test_the_medical_figure_is_skipped_without_raw_records(tmp_root):
 @pytest.mark.skipif(not (REPO / "paper" / "report.tex").is_file(), reason="the report is kept out of the repository")
 def test_the_report_inputs_the_report_texts():
     tex = (REPO / "paper" / "report.tex").read_text()
-    for name in ("report_summary", "report_example", "report_architecture", "report_posthoc", "report_conclusion"):
+    for name in ("report_summary", "report_example", "report_architecture", "report_posthoc", "report_discussion", "report_conclusion"):
         assert f"\\input{{generated/{name}.tex}}" in tex
     assert "report/medical_background.png" in tex and "report/progress.png" in tex
+    for label in ("fig:relative", "fig:synthetic-patients", "fig:rr-reference", "sec:posthoc", "sec:medical"):
+        assert f"\\label{{{label}}}" in tex, label

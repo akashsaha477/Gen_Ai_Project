@@ -175,10 +175,12 @@ def posthoc_story() -> str:
         up, down, total = _tally([p9["families"]["confirmatory"], p10["families"]["adaptation"], p11["families"]["confirmatory"], p14["families"]["confirmatory"]])
         same_patients = syn >= real - 0.05
         paras.append("\\paragraph{The patient limits the model more than the class balance.} Giving the cnn each beat relative to the patient's own "
-                     f"median beat, with nothing else changed, raised its test score without augmentation from {pt._n(base)} to {pt._n(rel)} (P7)"
+                     "median beat (P6, Figure~\\ref{fig:relative}), with nothing else changed, raised its test score without augmentation from "
+                     f"{pt._n(base)} to {pt._n(rel)} (P7)"
                      + (", more than any rebalancing method did" if rel - base > rebal else "") + ". The synthetic S beats came from the same few "
                      f"patients as the real ones: {pt._n(syn, 2)} of them were nearest to a beat of record {top}, against {pt._n(real, 2)} of the real "
-                     "training S beats (P8)" + (", so the generators added beats but not patients" if same_patients else "") + ". Methods that act on the patient were then tested: moving "
+                     "training S beats (P8, Figure~\\ref{fig:synthetic-patients})"
+                     + (", so the generators added beats but not patients" if same_patients else "") + ". Methods that act on the patient were then tested: moving "
                      "the deviation of each rare beat onto other patients' normal beats (P9), normalising each patient inside the network (P10), and "
                      f"adding the INCART and SVDB patients (P11) or {len(p14_data['patients'])} Icentia11k patients (P14) to training. Of their "
                      f"{total} test comparisons, {_tally_text(up, down)}" + ("; at this scale, adding patients did not by itself raise the score." if not up else "."))  # fmt: skip
@@ -186,7 +188,8 @@ def posthoc_story() -> str:
     rr, af = pt._record_rr_sentence(), pt._af_sentence()
     if rr and af:
         paras.append("\\paragraph{Timing identifies S beats, as it does for a cardiologist.} An S beat is recognised mainly by coming early for the "
-                     f"patient's own rhythm (Section~\\ref{{sec:medical}}). In P13, {_first_lower(rr)} In P16, {_first_lower(af)}")  # fmt: skip
+                     f"patient's own rhythm (Section~\\ref{{sec:medical}}). In P13, {_first_lower(rr)} Figure~\\ref{{fig:rr-reference}} shows what "
+                     f"each reference makes of the training-side recordings. In P16, {_first_lower(af)}")  # fmt: skip
 
     gens = {"P15": _load("phase6_diffusion"), "P17": _load("phase6_diffusion_long"), "P21": _load("phase6_physics_prior", "test_summary.json"),
             "P23": _load("phase6_physics_fitted", "test_summary.json")}  # fmt: skip
@@ -227,6 +230,40 @@ def posthoc_story() -> str:
     return "\n\n".join(paras) + "\n"
 
 
+def clinic_paragraph() -> str | None:
+    """What the best pipeline's scores mean for a Holter reader: S sensitivity and positive predictivity, the share of normal beats
+    flagged, and how S and V F1 carry over from the test records (P18) to the unused patients (P19)."""
+    p18, p19 = _load("phase6_seed_ensemble"), _load("phase6_fresh_patients")
+    if p18 is None or p19 is None:
+        return None
+    test, new = p18["ensemble"]["with_af_veto"]["cnn/cvae"], p19["ensemble"]["with_af_veto"]["cnn/cvae"]
+    pt_ = {k: test[k]["point"] for k in ("se_S", "ppv_S", "n_recall", "f1_S", "f1_V")}
+    pn = {k: new[k]["point"] for k in ("se_S", "ppv_S", "n_recall", "f1_S", "f1_V")}
+    false_in_ten = round(10 * (1 - pn["ppv_S"]))
+    flagged = sorted(round(1000 * (1 - p["n_recall"])) for p in (pt_, pn))
+    text = ("\\paragraph{What the scores mean in the clinic.} A Holter reader needs two numbers for each class (Section~\\ref{sec:medical}): "
+            "how many of the patient's ectopic beats the software finds, and how many of its flags are right. On the test records the best "
+            f"pipeline (P18) found {pt._n(pt_['se_S'], 2)} of the S beats, and {pt._n(pt_['ppv_S'], 2)} of its S calls were S beats. On the "
+            f"{p19['patients']:,} unused Icentia11k patients it found {pt._n(pn['se_S'], 2)} of them, and {pt._n(pn['ppv_S'], 2)} of its S "
+            f"calls were right, so about {false_in_ten} of every 10 S flags would be false alarms for the reader to dismiss. It kept "
+            f"{pt._n(pt_['n_recall'], 2)} of the normal beats as normal on the test records and {pt._n(pn['n_recall'], 2)} on the new patients: "
+            f"{flagged[0]} to {flagged[1]} of every 1,000 normal beats would be flagged as abnormal.")  # fmt: skip
+    if pn["f1_V"] / pt_["f1_V"] > pn["f1_S"] / pt_["f1_S"]:
+        text += (" Ventricular beats, whose wide QRS looks abnormal in almost every patient, carried over better than supraventricular ones: V F1 "
+                 f"went from {pt._n(pt_['f1_V'])} on the test records to {pt._n(pn['f1_V'])} on the new patients, S F1 from {pt._n(pt_['f1_S'])} "
+                 f"to {pt._n(pn['f1_S'])}.")  # fmt: skip
+    return text + (" Counting S beats, whose burden goes with later atrial fibrillation~\\cite{binici2010}, would therefore still need a person "
+                   "to review every flag; at this scale the system is a screening aid to be checked, not a counter to be trusted.")
+
+
+def discussion() -> str:
+    """The report's discussion: the paper's discussion in its brief form, and what the best pipeline's scores mean in the clinic."""
+    text = pt.discussion(brief=True).rstrip("\n")
+    if (clinic := clinic_paragraph()) is not None:
+        text += "\n\n" + clinic
+    return text + "\n"
+
+
 def conclusion() -> str:
     """A short conclusion: the pre-registered answer, what moved the score and why, what the system is, and what is needed next."""
     final, p7, p18 = _load(FINAL_EVAL), _load("phase6_relative_cnn"), _load("phase6_seed_ensemble")
@@ -252,4 +289,4 @@ def conclusion() -> str:
 def build() -> dict[str, str]:
     """Every report text: name -> LaTeX (written as ``paper/generated/<name>.tex``)."""
     return {"report_summary": summary(), "report_example": example_output(), "report_architecture": pt.architecture_section(flowing=True),
-            "report_posthoc": posthoc_story(), "report_conclusion": conclusion()}
+            "report_posthoc": posthoc_story(), "report_discussion": discussion(), "report_conclusion": conclusion()}

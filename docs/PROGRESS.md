@@ -1547,3 +1547,22 @@ section 10 are still red placeholders; docs/ASSIGNMENTS.md has no draws recorded
 Full test suite on Kaggle at 496fb3e (`phase6-suite-report`, CPU): exit code 0; 432 passed, 3 skipped, 0 failed (864
 progress marks and 6 skip marks halved, against the 435 collected locally; the third skip is the new report-file test,
 which needs paper/). Pushed 496fb3e to main (fast-forward from f90f7df). This note goes out with the next suite-tested push.
+
+2026-11-11. Course report made 30 pages, asked "make a 30 page report". `paper/report.tex` (local) went from 20 to 30
+pages, with material that already existed for the paper: a contributions list in the introduction; a related-work
+section (protocols, inter-patient classifiers with RR features, generative augmentation including SimGANs and diffusion,
+quality metrics, explanations); the protocol with beat extraction and the statistics (families, Holm); a new section
+"How each part was chosen" (phase 1 input representation, phase 2 classifiers and quality metrics, phase 3 generators
+with the real-versus-synthetic bank figure, phase 4 policy and grid with the strength curves, phase 5 saliency and
+notes); the pre-registered results by research question with the forest plot, the leakage table and the quality-vs-gain
+figure; three follow-up figures (P6 patient-relative beats, P8 synthetic beats per training patient, P13 RR reference);
+a discussion; limitations and ethics; reproducibility with the deviations from the plan. To land on 30 pages without
+repeats, the comparisons table, the quality-vs-gain table, the baseline figure and the test confusion matrices were left
+out (each repeats a table, figure or sentence that stays), the contents list shows sections only and the references are
+set smaller. New code: `paper_text.discussion(brief=True)` (refers to the follow-ups inside one section; leaves out the
+paragraphs the report gives elsewhere) and `report_text.discussion()` / `clinic_paragraph()` (the paper's discussion in
+brief plus what the best pipeline's S sensitivity and positive predictivity, normal recall and S/V F1 mean for a Holter
+reader, on the test records (P18) and on P19's new patients; every number from the result files). `report_posthoc`
+now refers to the three new figures. Tests: `tests/test_report_text.py` 8 (one new: the report discussion refers only to
+sections the report has and its numbers come from the P18 and P19 summaries). Report compiles with no undefined
+references and no overfull lines. Open: team member names and contributions (still red placeholders).
