@@ -1152,7 +1152,7 @@ def status(today: _dt.date | None = None) -> tuple[list[str], str]:
             phase5.append(_check(bool(r) and not r.get("not_run"), f"{experiment} variant {letter} ({configs[letter].stem})", f"python -m ecgaug.experiments.{experiment} --config {configs[letter].relative_to(paths.repo_root())}"))
     phase5.append(_check(bool(manifest().get(PHASE5_GATE)), "phase 5 gate: approved (method, notes, demo)", "python -m ecgaug.workflow phase5-gate"))
     lines += ["", f"Phase 3  {PHASES[3]}", *phase3, "", f"Phase 4  {PHASES[4]}", *phase4, "", f"Phase 5  {PHASES[5]}", *phase5,
-              "", f"Phase 6  {PHASES[6]}: python -m ecgaug.paper (tables and numbers for the draft in paper/)"]  # fmt: skip
+              "", f"Phase 6  {PHASES[6]}: python -m ecgaug.paper (the course report's files in report/, the draft's in paper/)"]  # fmt: skip
 
     if not data_ok:
         nxt = "Download and verify MIT-BIH: python -m ecgaug.data.raw"
@@ -1170,7 +1170,9 @@ def status(today: _dt.date | None = None) -> tuple[list[str], str]:
         if not official:
             nxt += f" (and {PRETRAIN_RESULTS} for the phase 1 winner, variant {winner})"
     else:
-        nxt = phase3_next or phase4_next or "Phase 4 is done: phase 5 (phase5_explainability, phase5_clinical_notes)"
+        phase5_next = None if manifest().get(PHASE5_GATE) else "Phase 4 is done: phase 5 (phase5_explainability, phase5_clinical_notes)"
+        nxt = phase3_next or phase4_next or phase5_next or ("Phases 1 to 5 are done: phase 6. python -m ecgaug.paper rewrites the course "
+                                                            "report's tables and texts (report/) from the result files")  # fmt: skip
     lines += ["", f"NEXT: {nxt}"]
     return lines, nxt
 

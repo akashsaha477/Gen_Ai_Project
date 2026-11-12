@@ -128,6 +128,13 @@ def test_status_names_the_next_step_in_order(project):
     assert any("[x] phase 1 gate: approved" in line and "winner C" in line for line in lines)
 
 
+def test_status_points_to_phase_6_once_phase_5_is_approved(monkeypatch):
+    monkeypatch.setenv("ECGAUG_ROOT", str(REPO))  # the committed result files: every gate through phase 5 is approved
+    lines, nxt = workflow.status(dt.date(2026, 11, 12))
+    assert any("[x] phase 5 gate: approved" in line for line in lines)
+    assert nxt.startswith("Phases 1 to 5 are done: phase 6") and "report/" in nxt
+
+
 def test_pretraining_waits_for_gate1_unless_previewed(full_fake_root, capsys, monkeypatch):
     shutil.copytree(REPO / "configs", paths.configs_dir())
     _approve_split()
