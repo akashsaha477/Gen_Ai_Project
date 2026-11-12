@@ -177,8 +177,16 @@ def test_dress_rehearsal(full_fake_root, monkeypatch, capsys):
     report = paper.build()
     capsys.readouterr()
     assert report["final_evaluation"]
-    left = [m for m in report["missing"] if m != "table_notes"]
+    preregistered = {"table_dataset", "table_input_representation", "table_baselines", "table_quality_metrics", "table_generators", "table_policy",
+                     "table_quality_vs_gain", "table_leakage_audit", "table_explainability", "final_eval_conditions.tex", "final_eval_comparisons.tex",
+                     "results_rq1", "results_rq2", "results_rq3", "results_rq4", "results_notes", "results_concentration"}  # fmt: skip
+    left = sorted(preregistered & set(report["missing"]))
     assert left == [], f"paper tables still waiting for results: {left}"
+    # Not rehearsed: the follow-up analyses P1-P23 (their texts stay marked missing, never invented), the LLM note variants
+    # (table_notes) and the report's example, which needs a confident correct S and V case from two-epoch models.
+    others = set(report["missing"]) - preregistered - {"table_notes", "report_example"}
+    assert all("posthoc" in m or m.startswith("results_") for m in others), f"missing beyond the follow-up analyses: {others}"
     lines, nxt = workflow.status()
+    assert nxt.startswith("Phases 1 to 5 are done: phase 6"), nxt
     print("\n".join(lines))
     print(json.dumps(report, indent=2))
