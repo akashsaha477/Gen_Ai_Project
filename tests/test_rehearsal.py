@@ -97,6 +97,7 @@ def test_dress_rehearsal(full_fake_root, monkeypatch, capsys):
     from ecgaug.grid import runner
 
     shutil.copytree(REPO / "configs", paths.configs_dir(), dirs_exist_ok=True)
+    (paths.repo_root() / workflow.FULL_GRID_FILE).unlink()  # the repository holds the real one; the phase 4a gate below writes it again
     _shrink()
     _approve_split()
     monkeypatch.setattr(runs, "git_dirty", lambda: False)
