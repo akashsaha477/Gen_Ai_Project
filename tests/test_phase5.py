@@ -215,6 +215,38 @@ def test_demo_smoke():
 
     out = demo.smoke()
     assert out["unsupported_claims"] == 0 and out["prediction"] in "NSVF"
+    assert out["note_by"] == "template (variant A)"  # no phase 5 gate in this root yet
+
+
+class FakeGemini(FakeClient):
+    provider = "gemini"
+
+
+class GeminiDown(FakeGemini):
+    def complete(self, system, messages):
+        raise notes.LLMQuotaError("gemini fake: the daily request quota is used up; try tomorrow or another model")
+
+
+def test_demo_note_says_who_wrote_it_and_why_the_template_replaced_it(monkeypatch):
+    from ecgaug import demo
+
+    template = notes.template_note(PAYLOAD)
+    grounded = template.replace("Beat classification:", "Classification of this beat:")
+    assert notes.check_note(grounded, PAYLOAD)["issues"] == []
+    assert demo.write_note("A", PAYLOAD, None) == (template, "template (variant A)")
+    note, by = demo.write_note("C", PAYLOAD, None)
+    assert note == template and "GEMINI_API_KEY" in by
+    assert demo.write_note("B", PAYLOAD, FakeGemini([grounded])) == (grounded, "Gemini fake (variant B), passed the fact checker")
+    note, by = demo.write_note("B", PAYLOAD, FakeGemini(["Atrial fibrillation with probability 0.99."]))
+    assert note == template and "failed the fact checker" in by
+    note, by = demo.write_note("D", PAYLOAD, FakeGemini([]))  # wrong every time: D gives way after its retries
+    assert note == template and "failed the fact checker" in by
+    note, by = demo.write_note("C", PAYLOAD, GeminiDown([]))
+    assert note == template and "call failed" in by and "quota" in by
+    assert demo.chosen_notes_variant() == "A"  # before the phase 5 gate
+    paths.results_dir().mkdir(parents=True, exist_ok=True)
+    (paths.results_dir() / "manifest.json").write_text(json.dumps({"phase5_gate": {"notes_variant": "C"}}))
+    assert demo.chosen_notes_variant() == "C" and demo.chosen_notes_variant("template") == "A"
 
 
 def test_error_analysis_from_saved_predictions(monkeypatch):

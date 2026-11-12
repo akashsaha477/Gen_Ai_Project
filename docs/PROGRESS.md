@@ -1633,3 +1633,16 @@ collected locally); `python -m ecgaug.paper` left every tracked file unchanged; 
 `workflow status` exited 0 and left every tracked file unchanged; status shows no open item. The first run of this
 check (v1, bcffd94) found the rehearsal failure above. Commits after 2811b94 change documents only (README.md,
 PROJECT_GUIDE.md, docs/PROGRESS.md), which no test reads.
+
+2026-11-12. The demo's Gemini note, asked "the gemini part should also work in the workflow". The demo wrote the
+template note unless `--notes llm` was given, said nothing when it fell back (no key), and stopped with an error if the
+Gemini call failed (daily quota, network). Now `--notes llm` is the default: the note comes from the variant chosen at
+the phase 5 gate (C, gemini-3.5-flash-lite) when `GEMINI_API_KEY` is set, and the template note replaces it, with the
+reason printed, when no key is set, the call fails or the note fails the fact checker (`demo.write_note`). Every run
+prints `note by: ...`; `--smoke` reports the same and reads the gate's choice before its temporary root.
+`--notes template` skips the call. The report's description of the system (a generator writes the note, the template
+replaces one that fails the check) already matched; report/ unchanged. Tests: `write_note` with a fake Gemini client
+(kept, fact-check failure, D after its retries, quota error, no key) and the gate's choice; the test fixture clears
+`GEMINI_API_KEY`, so no test calls the API. Real demo without a key (record 118, beat 112: S, 0.62) prints
+"template (variant A), because no LLM key is set (GEMINI_API_KEY)". The live Gemini call was not run here (the key is
+in the keychain, read by interactive shells only).

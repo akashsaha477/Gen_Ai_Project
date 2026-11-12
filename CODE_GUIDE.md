@@ -481,7 +481,9 @@ precondition before the first test byte, predicts the test set with every frozen
   gradients, SmoothGrad and occlusion; `explain/evaluate.py`: `faithfulness`, `stability`, `segment_masses`.
 - `report/notes.py`: `note_input` (the note's input JSON), `template_note`, `generate` (variants A-D),
   `check_note` (the fact checker), `LLMClient` / `client_from_env`; `report/error_analysis.py`: `analyse`.
-- `demo.py`: `explain_beat` classifies, explains and describes one beat and saves the figure.
+- `demo.py`: `explain_beat` classifies, explains and describes one beat and saves the figure. `write_note` returns the
+  note and who wrote it: the note variant chosen at the phase 5 gate (`chosen_notes_variant`, C, Gemini) when a key is
+  set, else the template, which also replaces a note whose call failed or that failed the fact checker, with the reason.
 - `paper.py`: `build()` writes the paper's tables and numbers from the result files. It then calls `report_folder.write()`, which copies only the files the two versions of the course report (`report/report.tex`, 30 pages, and `report/report_short.tex`, 20 pages) input into `report/generated/` (stale ones are removed, so none of the paper's own texts land there) and writes `report/results.md`: every results table of the full report, converted from the same LaTeX tables to Markdown under the report's section titles, with each caption's first sentence as the title and the files each table was built from.
 
 ### `experiments/phase6_*.py` — the post hoc analyses P1-P23

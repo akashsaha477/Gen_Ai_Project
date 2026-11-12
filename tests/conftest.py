@@ -18,10 +18,11 @@ FAKE_DS2 = (100, 213)
 
 @pytest.fixture(autouse=True)
 def tmp_root(tmp_path, monkeypatch):
-    """Point the package at an empty temporary root and clear every test-access flag."""
+    """Point the package at an empty temporary root, clear every test-access flag and the LLM key (no test calls the API)."""
     monkeypatch.setenv("ECGAUG_ROOT", str(tmp_path))
     monkeypatch.delenv("ALLOW_TEST", raising=False)
     monkeypatch.delenv("ALLOW_TEST_BUILD", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     return tmp_path
 
 

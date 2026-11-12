@@ -1,13 +1,15 @@
 """Demo: one validation beat in, prediction, probabilities, saliency plot and a fact-checked note out (PLAN Phase 5).
 
-    python -m ecgaug.demo --record 118 --beat 100              # the beat at position 100 among the record's usable beats
-    python -m ecgaug.demo --record 118 --beat 100 --notes llm  # the note variant chosen at the phase 5 gate (needs GEMINI_API_KEY)
-    python -m ecgaug.demo --smoke                              # a fake record and a tiny model, to check a fresh clone
+    python -m ecgaug.demo --record 118 --beat 100                   # the beat at position 100 among the record's usable beats
+    python -m ecgaug.demo --record 118 --beat 100 --notes template  # the template note only, no LLM call
+    python -m ecgaug.demo --smoke                                   # a fake record and a tiny model, to check a fresh clone
 
 Only validation records are accepted (the test records are locked anyway). The model is the best seed
 of the condition named by ``--condition`` (default: the best generative condition) at the strength the
 phase 4 gate fixed; the saliency method is the phase 5 gate's choice for the architecture (integrated
-gradients until then). A note that fails the fact checker is replaced by the template note.
+gradients until then). The note comes from the note variant the phase 5 gate chose (Gemini, which needs
+``GEMINI_API_KEY``; see ``ecgaug.report.notes``). The template note replaces it when no key is set, when the call
+fails (daily quota, network) or when the note fails the fact checker; the demo prints who wrote the note and why.
 """
 
 from __future__ import annotations
@@ -27,11 +29,36 @@ from ecgaug.data.representation import RepresentationSpec, transform_record, usa
 from ecgaug.explain.evaluate import SEGMENTS_MS, segment_masses
 from ecgaug.explain.methods import saliency
 from ecgaug.names import PHASE4_GATE, PHASE5_GATE
-from ecgaug.report.notes import check_note, client_from_env, generate, note_input, template_note
+from ecgaug.report.notes import API_KEYS, LLMClient, LLMQuotaError, check_note, client_from_env, generate, note_input, template_note
 
 DEFAULT_METHOD = "integrated_gradients"
 METHOD_SETTINGS = {"ig_steps": 50, "smoothgrad_samples": 25, "smoothgrad_sd": 0.1, "occlusion_window_ms": 50, "occlusion_stride_ms": 25, "batch_size": 64}
 LOW_CONFIDENCE_THRESHOLD = 0.6
+
+
+def write_note(variant: str, payload: dict, client: LLMClient | None) -> tuple[str, str]:
+    """The note for one beat and who wrote it. An LLM variant gives way to the template note, with the reason, when no
+    key is set, when the call fails (daily quota, network) or when its note fails the fact checker."""
+    template = template_note(payload)
+    if variant == "A":
+        return template, "template (variant A)"
+    if client is None:
+        return template, f"template (variant A), because no LLM key is set ({', '.join(API_KEYS.values())})"
+    name = f"{client.provider.capitalize()} {client.model}"
+    try:
+        made = generate(variant, payload, client)
+    except (LLMQuotaError, OSError, ValueError) as err:  # HTTP and network errors are OSErrors; the key is never in them
+        return template, f"template (variant A), because the {name} call failed: {err}"
+    issues = check_note(made["note"], payload)["issues"]
+    if issues or made["variant_used"] == "A":  # variant D gives way to the template itself after its retries
+        why = "; ".join(issues) or "still failing after the retries"
+        return template, f"template (variant A), because the {name} note (variant {variant}) failed the fact checker: {why}"
+    return made["note"], f"{name} (variant {variant}), passed the fact checker"
+
+
+def chosen_notes_variant(notes: str = "llm") -> str:
+    """The note variant: for "llm" the phase 5 gate's choice (the template, A, until the gate), for "template" A."""
+    return ((workflow.manifest().get(PHASE5_GATE) or {}).get("notes_variant") or "A") if notes == "llm" else "A"
 
 
 def explain_beat(model: torch.nn.Module, spec: RepresentationSpec, record: int, index: int, method: str, notes_variant: str, client,
@@ -53,13 +80,11 @@ def explain_beat(model: torch.nn.Module, spec: RepresentationSpec, record: int, 
     pre = spec.window_samples[0]
     masses = {name: float(v[0]) for name, v in segment_masses(maps, pre, spec.effective_fs).items()}
     payload = note_input(f"record-{record}-beat-{index}", dict(zip(CLASSES, map(float, probs))), masses, model_id, threshold)
-    made = generate(notes_variant, payload, client)
-    report = check_note(made["note"], payload)
-    note = made["note"] if not report["issues"] else template_note(payload)
+    note, note_by = write_note(notes_variant, payload, client)
     figure = _plot(x[0], maps[0], probs, pre, spec.effective_fs, payload, out_dir / f"record{record}_beat{index}.png")
     return {"record": record, "beat": index, "r_idx": int(row["r_idx"]), "true_class": CLASSES[int(row["y"])], "prediction": payload["predicted_class"],
             "probabilities": payload["probabilities"], "segment_masses": masses, "saliency_method": method, "note": note,
-            "fact_check": check_note(note, payload), "figure": str(figure)}  # fmt: skip
+            "note_by": note_by, "fact_check": check_note(note, payload), "figure": str(figure)}  # fmt: skip
 
 
 def _plot(beat: np.ndarray, sal: np.ndarray, probs: np.ndarray, pre: int, fs: float, payload: dict, path: Path) -> Path:
@@ -98,15 +123,18 @@ def chosen_model(arch: str, condition: str) -> tuple[str, str]:
 
 
 def smoke() -> dict:
-    """A fake validation record and a tiny untrained model: checks the whole path from a fresh clone."""
+    """A fake validation record and a tiny untrained model: checks the whole path from a fresh clone, the note as in a real run."""
     from ecgaug.experiments.data_source import smoke_data
     from ecgaug.models import build_model
 
+    variant = chosen_notes_variant()  # read before the smoke data's temporary root replaces the repository's
     with smoke_data() as (split, data):
         torch.manual_seed(0)
         model = build_model({"name": "shallow_cnn", "channels": [8, 16, 16], "kernel": 7, "side_hidden": 4}, 4, 3 if data.spec.rr_features else 0)
-        out = explain_beat(model, data.spec, split.val[0], 5, DEFAULT_METHOD, "A", None, "smoke-model", paths.repo_root() / "figures" / "demo")
-        return {"prediction": out["prediction"], "unsupported_claims": out["fact_check"]["unsupported_claims"], "note": out["note"][:80] + "..."}
+        out = explain_beat(model, data.spec, split.val[0], 5, DEFAULT_METHOD, variant, client_from_env(), "smoke-model",
+                           paths.repo_root() / "figures" / "demo")  # fmt: skip
+        return {"prediction": out["prediction"], "unsupported_claims": out["fact_check"]["unsupported_claims"], "note_by": out["note_by"],
+                "note": out["note"][:80] + "..."}  # fmt: skip
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -115,7 +143,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--beat", type=int, default=0, help="position among the record's usable beats (from 0)")
     parser.add_argument("--arch", default="cnn", help="cnn or rnn")
     parser.add_argument("--condition", default="best_generative", help="none, class_weighted, ..., or best_generative")
-    parser.add_argument("--notes", choices=["template", "llm"], default="template")
+    parser.add_argument("--notes", choices=["llm", "template"], default="llm",
+                        help="llm (default): the note variant chosen at the phase 5 gate, Gemini, with the template as fallback; template: no LLM call")
     parser.add_argument("--out", default="figures/demo", help="folder for the figure")
     parser.add_argument("--smoke", action="store_true", help="fake record and tiny model")
     args = parser.parse_args(argv)
@@ -140,11 +169,12 @@ def main(argv: list[str] | None = None) -> int:
     except (ValueError, FileNotFoundError, KeyError) as err:
         print(f"Demo not ready: {err}")
         return 2
-    variant = ((workflow.manifest().get(PHASE5_GATE) or {}).get("notes_variant") or "A") if args.notes == "llm" else "A"
-    out = explain_beat(model, spec, args.record, args.beat, method, variant, client_from_env(), run_id, paths.repo_root() / args.out)
+    client = client_from_env() if args.notes == "llm" else None
+    out = explain_beat(model, spec, args.record, args.beat, method, chosen_notes_variant(args.notes), client, run_id, paths.repo_root() / args.out)
     print(f"record {out['record']}, beat {out['beat']} (annotated {out['true_class']}): predicted {out['prediction']} "
           f"{out['probabilities']}; saliency by {out['saliency_method']}: {out['segment_masses']}")  # fmt: skip
     print(out["note"])
+    print(f"note by: {out['note_by']}")
     print(f"figure: {out['figure']}")
     return 0
 
