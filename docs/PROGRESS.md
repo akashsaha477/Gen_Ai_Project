@@ -1644,5 +1644,6 @@ prints `note by: ...`; `--smoke` reports the same and reads the gate's choice be
 replaces one that fails the check) already matched; report/ unchanged. Tests: `write_note` with a fake Gemini client
 (kept, fact-check failure, D after its retries, quota error, no key) and the gate's choice; the test fixture clears
 `GEMINI_API_KEY`, so no test calls the API. Real demo without a key (record 118, beat 112: S, 0.62) prints
-"template (variant A), because no LLM key is set (GEMINI_API_KEY)". The live Gemini call was not run here (the key is
-in the keychain, read by interactive shells only).
+"template (variant A), because no LLM key is set (GEMINI_API_KEY)". Live run with the key, in the user's terminal
+(record 118, beat 112, 14 s): "note by: Gemini gemini-3.5-flash-lite (variant C), passed the fact checker"; the note
+gives S 0.62, T wave 0.31 and QRS complex 0.24, the model's own values, and ends with the disclaimer.
