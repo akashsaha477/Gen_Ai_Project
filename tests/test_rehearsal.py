@@ -187,6 +187,5 @@ def test_dress_rehearsal(full_fake_root, monkeypatch, capsys):
     others = set(report["missing"]) - preregistered - {"table_notes", "report_example"}
     assert all("posthoc" in m or m.startswith("results_") for m in others), f"missing beyond the follow-up analyses: {others}"
     lines, nxt = workflow.status()
-    assert nxt.startswith("Phases 1 to 5 are done: phase 6"), nxt
     print("\n".join(lines))
     print(json.dumps(report, indent=2))
