@@ -1647,3 +1647,8 @@ replaces one that fails the check) already matched; report/ unchanged. Tests: `w
 "template (variant A), because no LLM key is set (GEMINI_API_KEY)". Live run with the key, in the user's terminal
 (record 118, beat 112, 14 s): "note by: Gemini gemini-3.5-flash-lite (variant C), passed the fact checker"; the note
 gives S 0.62, T wave 0.31 and QRS complex 0.24, the model's own values, and ends with the disclaimer.
+Final check on Kaggle at 6d1bc74 (`phase6-final-check` v3, CPU, fresh clone): full suite with ECGAUG_REHEARSAL=1 exit
+code 0, 441 passed, 1 skipped (paper draft), 0 failed (882 progress marks and 2 skip marks halved, against the 442
+collected locally); `python -m ecgaug.paper` and all 11 README smoke commands and `workflow status` exited 0 and left
+every tracked file unchanged. The demo smoke there reports "template (variant A), because no LLM key is set
+(GEMINI_API_KEY)", as expected without a Kaggle secret. Commits after 6d1bc74 change documents only.

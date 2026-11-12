@@ -457,12 +457,12 @@ Updated on 2026-11-12 for the final submission; `docs/PROGRESS.md` has every che
   the ones each run recorded.
 - Every phase ran on the real data (training on Kaggle), and every gate was approved before the next phase; the final evaluation
   read the test records once, and every later read is logged in `docs/TEST_ACCESS_LOG.md`.
-- The full test suite passes in a fresh clone on Kaggle at the submitted code (2811b94): 440 passed, 1 skipped (the paper
+- The full test suite passes in a fresh clone on Kaggle at the submitted code (6d1bc74): 441 passed, 1 skipped (the paper
   draft is kept local), 0 failed. It includes the dress rehearsal, which runs every phase, gate, the final evaluation,
   phase 5, RQ3, the leakage audit and the paper on fake records, and tests that the test set cannot be read by accident.
 - Every smoke command in `README.md` runs end to end in a fresh clone and leaves the tracked files unchanged;
   `python -m ecgaug.paper` on a fresh clone rewrites `report/generated/` and `report/results.md` byte for byte; the demo
-  runs on a real validation beat with the frozen model.
+  runs on a real validation beat with the frozen model, and its note comes from Gemini (variant C) when the key is set.
 - Both versions of the course report compile from the committed files with no undefined reference and no overfull line,
   and every number typed by hand in them was checked against the configs, the code or the documents.
 
