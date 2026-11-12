@@ -91,14 +91,13 @@ confusion matrices, before and after pretraining). They travel back from Kaggle 
 
 **Course report:** [`report/report.pdf`](report/report.pdf) (30 pages; source `report/report.tex`; a 20-page version is [`report/report_short.pdf`](report/report_short.pdf)) gives the medical background (the heartbeat, the ECG, the N/S/V/F beat classes and why new patients are hard), related work, the protocol, the system with an example of its output, how each part was chosen phase by phase (with the validation tables and figures), the pre-registered results by research question, the follow-up analyses by theme, every metric beside published results, a discussion (including what the scores mean in the clinic), the conclusion, limitations and reproducibility. Its own texts come from `src/ecgaug/report_text.py` and its two figures from `python -m ecgaug.figures report` (`figures/report/`); every number is generated from the result files. [`report/results.md`](report/results.md) shows every results table of the report on GitHub; `report/generated/` holds the tables, numbers and texts the report inputs. The paper (`paper/main.tex`, kept local) keeps the full account of every analysis.
 
-**Current state (2026-10-16, Day 10):** all four `phase1_input_representation` variants have run.
-The phase 1 gate report picks **variant C** (short window + RR features), with validation S F1
-0.296 ± 0.038 against 0.164 for A, the next best. It is waiting for the team's approval. The full
-analysis is in [docs/PHASE1_REPORT.md](docs/PHASE1_REPORT.md). Read section 6 before phase 2: an
-early-stopping flaw cut 10 of the 24 runs short; the fix is the `min_epochs` setting (team decision).
-The code of phases 2-6 is built on the branch `finish-project` (docs/DECISIONS.md A14 lists the
-design choices the team should confirm). The earlier `phase2_ptbxl_pretraining` preview used variant D
-and must be re-run with C.
+**Current state (2026-11-12, final):** every phase has run and every gate is approved (`python -m ecgaug.workflow status`
+ticks every item). The final evaluation read the test records once; the follow-up analyses P1 to P23 came after it, each
+pre-registered before it ran and reported apart from the primary results. The results are in the course report
+([`report/report.pdf`](report/report.pdf); 20-page version [`report/report_short.pdf`](report/report_short.pdf)) and, as
+tables, in [`report/results.md`](report/results.md). `docs/PROGRESS.md` logs every step, `docs/DECISIONS.md` every
+decision and `docs/TEST_ACCESS_LOG.md` every read of the test records. The phase 1 analysis is in
+[docs/PHASE1_REPORT.md](docs/PHASE1_REPORT.md).
 
 **Previews:** every runner after phase 1 refuses to run before the gates it needs unless you add
 `--preview` (`PREVIEW = True` in the notebooks). Preview results are marked provisional and do not count.

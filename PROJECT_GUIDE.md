@@ -122,14 +122,14 @@ These come from `docs/RULES.md`. In plain terms:
 
 | Phase | Planned days | What happens | State |
 |---|---|---|---|
-| 1 data | 1–3 | data pipeline, evaluation code, choose the input representation (phase1_input_representation) | infrastructure built; variants not run |
-| 2 baselines | 4–8 | baseline classifiers (phase2_baseline_classifiers), metrics for judging synthetic beats (phase2_quality_metrics), PTB-XL pretraining (phase2_ptbxl_pretraining) | one preview of phase2_ptbxl_pretraining; the rest not started |
-| 3 generators | 9–14 | cVAE (phase3_cvae) and WGAN-GP (phase3_wgan_gp), synthetic beat banks | not started |
-| 4 comparison | 16–21 | augmentation policy (phase4_augmentation_policy), the full comparison grid, the single test evaluation | not started |
-| 5 explanations | 22–26 | saliency maps (phase5_explainability), clinical-note generator (phase5_clinical_notes), demo | not started |
-| 6 paper | 27–30 | paper draft, course report, reproducibility package | not started |
+| 1 data | 1–3 | data pipeline, evaluation code, choose the input representation (phase1_input_representation) | done; gate approved (variant C) |
+| 2 baselines | 4–8 | baseline classifiers (phase2_baseline_classifiers), metrics for judging synthetic beats (phase2_quality_metrics), PTB-XL pretraining (phase2_ptbxl_pretraining) | done; gate approved |
+| 3 generators | 9–14 | cVAE (phase3_cvae) and WGAN-GP (phase3_wgan_gp), synthetic beat banks | done; banks frozen |
+| 4 comparison | 16–21 | augmentation policy (phase4_augmentation_policy), the full comparison grid, the single test evaluation | done; final evaluation run once |
+| 5 explanations | 22–26 | saliency maps (phase5_explainability), clinical-note generator (phase5_clinical_notes), demo | done; gate approved |
+| 6 paper | 27–30 | paper draft, course report, reproducibility package | done: course report in `report/` (the paper draft is kept local); follow-up analyses P1-P23 |
 
-We are on Day 7 and about four days behind: Phase 1 was due on Day 3.
+The State column was updated on 2026-11-12, when every phase was done; the rest of this section describes the plan as made.
 
 **Where are we?** `python -m ecgaug.workflow status` prints every step, ticked or not, and the next
 action. The code enforces the order: Phase 1 gate needs all four phase1_input_representation results, and the phase2_ptbxl_pretraining experiment
@@ -301,10 +301,12 @@ Asks: does pretraining on a large ECG dataset help rare-beat detection on MIT-BI
   low-confidence beats, "Clinician review is required."
 - Error analysis from saved predictions only; a demo for one validation beat.
 
-### 5.14 Phase 6: the paper (`paper.py`, `paper/`)
+### 5.14 Phase 6: the paper and the course report (`paper.py`, `report_text.py`, `report_folder.py`, `report/`)
 
-- `python -m ecgaug.paper` writes every table and number of `paper/main.tex` from the result files;
-  missing results show as red placeholders, so the draft always compiles. `scripts/reproduce.sh` lists
+- `python -m ecgaug.paper` writes every table and number of `paper/main.tex` (kept local) from the result files, and
+  the course report's share of them into `report/generated/` and `report/results.md`; missing results show as red
+  placeholders, so both always compile. The course report is `report/report.pdf` (30 pages) and
+  `report/report_short.pdf` (20 pages). `scripts/reproduce.sh` lists
   the whole pipeline in order.
 
 ### 5.15 After the final evaluation: post hoc analyses P1-P23 (`src/ecgaug/experiments/phase6_*.py`)
@@ -437,40 +439,43 @@ Full reasons are in `docs/DECISIONS.md`.
 | PTB-XL for supervised pretraining | Simple to do; each beat takes its recording's diagnosis. The labels are noisy at beat level, which is stated as a limitation. |
 | The pre-registration document is not enforced by code | The runner needs only the approved split. The document stays as a description of the rules; the paper cannot call it a time-stamped pre-registration. |
 | phase2_ptbxl_pretraining built before the phase 1 gate | To use Kaggle time now. Its results are provisional until the input representation is fixed. |
-| The phase 1 gate report picks variant C (pending approval) | Best S F1 by a clear margin; RR timing is what makes S beats detectable (docs/PHASE1_REPORT.md). |
-| Phases 2-6 built before their gates (A14) | At Akash's instruction; official runs still wait for every gate, and A14 lists the design choices to confirm. |
+| The phase 1 gate picked variant C (approved) | Best S F1 by a clear margin; RR timing is what makes S beats detectable (docs/PHASE1_REPORT.md). |
+| Phases 2-6 built before their gates (A14) | At Akash's instruction; official runs waited for every gate, and A14 lists the design choices that were confirmed. |
 
 ---
 
 ## 10. What has been checked and what has not
 
+Updated on 2026-11-12 for the final submission; `docs/PROGRESS.md` has every check with its date.
+
 **Checked**
 
 - All MIT-BIH files match PhysioNet's checksums; beat counts match the published table.
-- The four input variants build correctly on real DS1 data and produce the same 50,969 beats.
-- The R-peak detector and the padding choice were measured on DS1 (section 5.7).
-- Both runners work end to end on fake data, also through the Kaggle runner script in a fresh clone.
-- 271 tests pass, including tests that the test set cannot be read by accident, and an end-to-end final
-  evaluation on fake data that runs once and refuses a second time.
-- Every phase 2-5 runner runs end to end on fake data; the phase 3 pilot and the DTW and spectral
-  quality metrics also ran on real DS1 beats (short CPU previews, numbers not used).
-- The phase2_ptbxl_pretraining experiment ran on Kaggle for variant D, including full PTB-XL preprocessing (20,918 recordings kept).
+- The frozen dataset (`data/processed/v1/trainval.npz`) and the six synthetic banks match the SHA-256 hashes in
+  `results/manifest.json`. The phase 2 checkpoints are kept in the Kaggle run bundles; their hashes in the manifest match
+  the ones each run recorded.
+- Every phase ran on the real data (training on Kaggle), and every gate was approved before the next phase; the final evaluation
+  read the test records once, and every later read is logged in `docs/TEST_ACCESS_LOG.md`.
+- The full test suite passes in a fresh clone on Kaggle at the submitted code (2811b94): 440 passed, 1 skipped (the paper
+  draft is kept local), 0 failed. It includes the dress rehearsal, which runs every phase, gate, the final evaluation,
+  phase 5, RQ3, the leakage audit and the paper on fake records, and tests that the test set cannot be read by accident.
+- Every smoke command in `README.md` runs end to end in a fresh clone and leaves the tracked files unchanged;
+  `python -m ecgaug.paper` on a fresh clone rewrites `report/generated/` and `report/results.md` byte for byte; the demo
+  runs on a real validation beat with the frozen model.
+- Both versions of the course report compile from the committed files with no undefined reference and no overfull line,
+  and every number typed by hand in them was checked against the configs, the code or the documents.
 
-**Not checked yet**
+**Open points**
 
-- The phase 2-5 notebooks have not run on Kaggle; run times of generators and the grid are not measured.
-- The LLM note variants have not been tried with a real API key.
-- Only one real experiment exists: the phase2_ptbxl_pretraining experiment for variant D (section 5.8).
+- The author line and the team contributions of the course report are red placeholders (the team's names and
+  contributions were not recorded in `docs/ASSIGNMENTS.md`).
+- Positive predictivity for V follows the AAMI rule that fusion beats called V are neither penalised nor rewarded, so
+  they do not count as false positives. Huang et al. (2014) count them (their published confusion matrix gives
+  3025 / 3329 = 0.909), so the literature table compares slightly different definitions; on the seed-mean confusion
+  matrices of the twelve pre-registered models the two definitions differ by at most 0.017, and no comparison in the report changes direction.
 - PTB-XL file checksums were not compared on Kaggle (PhysioNet's list could not be fetched there).
-- One metric convention (AAMI positive predictivity for V) is implemented from memory of the original
-  paper and must be verified before it is quoted.
-
-**Known risks**
-
-- The schedule: four days behind, and the one buffer day before Phase 4 is already used.
-- Rare classes depend on one or two patients, so the final intervals will be wide and the main test
-  may be inconclusive even if augmentation helps.
-- The probe network is very small; pretraining may show little effect until a larger baseline exists.
+- The test set holds 22 patients, and the rare beats come from a few of them, so intervals are wide (the report's
+  limitations section).
 
 ---
 

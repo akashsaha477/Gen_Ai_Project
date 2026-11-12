@@ -1596,3 +1596,40 @@ Full test suite on Kaggle at 05d9a6a (`phase6-suite-two-reports`, CPU): exit cod
 progress marks and 4 skip marks halved, against the 440 collected locally; the report-file test now runs, since report/
 is in the repository). An earlier run at 9e9af1a (`phase6-suite-report`, before the 20-page version was added) gave the
 same counts. Pushed 05d9a6a to main (fast-forward from 496fb3e). This note goes out with the next suite-tested push.
+
+2026-11-12. Final check before the submission of 2026-11-13, asked "make 1 final check and run of everything as we have
+to submit final tomorrow and we cant change anything after that also the report". The team chose to keep the red
+placeholders for the author line and team contributions, and not to tag the submitted commit.
+- Repository: no tracked local-only files (the paper draft stays local), no secrets; every relative link in the 80 Markdown files resolves; every module and path the docs name exists.
+- Generated files: `python -m ecgaug.paper` rewrote nothing (locally and on a fresh clone on Kaggle).
+- Report: both versions compile from the committed files (30 and 20 pages; no undefined reference, no overfull line;
+  the underfull warnings are the narrow columns of the architecture tables); the committed PDFs match fresh builds
+  (extracted text); every page looked at. Every number typed by hand in `report.tex` and `report_short.tex` was checked
+  against the configs, code or documents (validation records, bootstrap 10,000, phase 1 windows, training budget,
+  quality-metric thresholds, hard gates, N-recall limit, note settings, Gemini model, P13's 0.8 rule, record 118's
+  bundle branch block, pre-registration versions 1 to 21, of which v21 covers P22 and P23). Headline numbers (final
+  evaluation, P18, P19) were checked against the result files directly. No misspelling found against the system
+  dictionary; spelling mixes British forms with "memorization" and one "normalization" (left as is).
+- Frozen artifacts: `data/processed/v1/trainval.npz` and the six banks match `results/manifest.json`; the phase 2
+  checkpoints are in the Kaggle bundles only, and their manifest hashes match the ones each run recorded. test.npz
+  was not hashed (test lock).
+- Demo: `python -m ecgaug.demo --record 118 --beat 0` runs end to end with the frozen model (N, 0.99; Grad-CAM; the
+  template note passes the fact checker).
+- AAMI V +P: our `ppv_V` leaves fusion beats called V out of the false positives (EC57: F neither penalised nor
+  rewarded). Huang et al. 2014 count them: their Table 5 gives 3025 / 3329 = 0.909, their published V +P. On the seed-mean
+  confusion matrices of the twelve pre-registered models the two definitions differ by at most 0.017 (cnn/wgan_gp);
+  no comparison in the report changes direction. Not changed; recorded in PROJECT_GUIDE section 10.
+- Fixed: `workflow status` said phase 5 was next after the phase 5 gate (now it points to phase 6 and report/; test
+  added). The dress rehearsal (opt-in, last run before 2026-11-04) failed at the phase 4a gate because the committed
+  `full_grid.yaml` was in its copy of the configs (the gate never overwrites it), and then at its paper check, which
+  required every text including the follow-up analyses it does not run; it now drops that file and requires every
+  pre-registered table and text (follow-up texts stay marked missing, never invented). Rehearsal-only runs on Kaggle:
+  `phase6-rehearsal` v1 (57a8f2e) and v2 (7f5bc59).
+- Docs brought up to date: README's current state (was Day 10) and PROJECT_GUIDE's phase table, decisions and
+  section 10 (was Day 7).
+Final check on Kaggle at 2811b94 (`phase6-final-check` v2, CPU, fresh clone): full suite with ECGAUG_REHEARSAL=1 exit
+code 0, 440 passed, 1 skipped (paper draft), 0 failed (880 progress marks and 2 skip marks halved, against the 441
+collected locally); `python -m ecgaug.paper` left every tracked file unchanged; all 11 README smoke commands and
+`workflow status` exited 0 and left every tracked file unchanged; status shows no open item. The first run of this
+check (v1, bcffd94) found the rehearsal failure above. Commits after 2811b94 change documents only (README.md,
+PROJECT_GUIDE.md, docs/PROGRESS.md), which no test reads.
