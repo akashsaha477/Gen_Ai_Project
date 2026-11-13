@@ -2,7 +2,9 @@
 % report_short.tex). Numbers of the main comparison come from the macros and tables python -m ecgaug.paper writes into
 % generated/; the few typed by hand are copied from report/results.md, docs/CHECKLIST.md or docs/PROGRESS.md and checked
 % against them. Build: cd report && tectonic report_brief.tex (figures come from ../figures/).
+
 \documentclass[10pt,a4paper]{article}
+
 \usepackage[margin=2cm]{geometry}
 \usepackage{microtype}
 \usepackage{booktabs}
@@ -17,26 +19,66 @@
 \usepackage{hyperref}
 \hypersetup{hidelinks}
 \graphicspath{{../figures/}}
-\usepackage{placeins}  % \FloatBarrier only where a figure must stay in its section
-\renewcommand{\topfraction}{0.9}\renewcommand{\bottomfraction}{0.8}\renewcommand{\textfraction}{0.07}
-\renewcommand{\floatpagefraction}{0.92}\setcounter{topnumber}{3}\setcounter{totalnumber}{5}
-\makeatletter\setlength{\@fptop}{0pt}\setlength{\@fpsep}{10pt plus 2pt}\setlength{\@fpbot}{0pt plus 1fil}\makeatother  % float pages fill from the top
-\setlength{\textfloatsep}{10pt plus 2pt minus 4pt}\setlength{\floatsep}{8pt plus 2pt minus 2pt}\setlength{\intextsep}{8pt plus 2pt minus 2pt}
+\usepackage{placeins} % \FloatBarrier only where a figure must stay in its section
+
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.92}
+\setcounter{topnumber}{3}
+\setcounter{totalnumber}{5}
+
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{10pt plus 2pt}
+\setlength{\@fpbot}{0pt plus 1fil}
+\makeatother % float pages fill from the top
+
+\setlength{\textfloatsep}{10pt plus 2pt minus 4pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
+\setlength{\intextsep}{8pt plus 2pt minus 2pt}
+
 \newcommand{\missing}[1]{\textcolor{red}{[#1]}}
 \input{generated/numbers.tex}
 
-\title{Every Heart Is Different:\\ Patient Context for Rare-Arrhythmia Detection in New Patients\\[8pt]
-\large A pre-registered study of generative augmentation, with exploratory patient-relative pipelines\\ on the MIT-BIH inter-patient benchmark\\[3pt]
-\normalsize CS787: GenAI, course project report (10-page version)}
-\author{\begin{tabular}{c@{\hspace{3em}}c}Akash Saha (261110401) & Kartheek Dasari (261110029)\\
- H M Karthik (261110025) & T D Manindra (261050084)\end{tabular}}
+\title{
+Every Heart Is Different:\\
+Patient Context for Rare-Arrhythmia Detection in New Patients\\[8pt]
+\large A pre-registered study of generative augmentation, with exploratory patient-relative pipelines\\
+on the MIT-BIH inter-patient benchmark\\[3pt]
+\normalsize CS787: GenAI
+}
+
+\author{
+\begin{tabular}{c@{\hspace{3em}}c}
+Akash Saha (261110401) & Kartheek Dasari (261110029)\\
+H M Karthik (261110025) & T D Manindra (261050084)
+\end{tabular}
+}
+
 \date{}
 
 \begin{document}
+
 \maketitle
 
+% ------------------------------------------------
+% Code Availability and Reproducibility
+% ------------------------------------------------
+
+\section*{GitHub Repository}
+
+\begin{center}
+\url{https://github.com/akashsaha477/Gen_Ai_Project}
+\end{center}
+
+% ------------------------------------------------
+% Abstract
+% ------------------------------------------------
+
 \begin{abstract}
-\noindent Beat classifiers trained on the MIT-BIH Arrhythmia Database detect normal and ventricular beats well, but in patients
+\noindent
+Beat classifiers trained on the MIT-BIH Arrhythmia Database detect normal and ventricular beats well, but in patients
 absent from training they miss most supraventricular (S) and fusion (F) beats, the rare classes with clinical weight.
 Class-conditional generative models promise to supply the missing rare beats. We tested that promise in a pre-registered study under
 the inter-patient protocol: selection rules fixed before the experiments, every choice made on validation patients, and the 22 test
@@ -52,6 +94,9 @@ separate Icentia11k patients; ten-run averaging and
 patient-chosen thresholds were confirmed there, while the prematurity rule was not. Evaluated on already-seen patients, the same
 network would have scored 0.837 instead of \TestCnnNoneRare.
 \end{abstract}
+
+</document>
+
 
 \section{Introduction}
 Ambulatory monitors record the ECG for one or more days~\cite{steinberg2017}; at 70 beats per minute a day holds about 100,000 beats,
