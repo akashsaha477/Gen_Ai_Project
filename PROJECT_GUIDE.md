@@ -4,7 +4,7 @@ This is the long explanation of the project: what we are trying to find out, how
 organised, what each part does, and what is finished. For commands only, see `README.md`. For the
 day-by-day log, see `docs/PROGRESS.md`. Sections 1 to 5.14 were written on 2026-10-16 (Day 10 of 30), before the
 experiments ran, and describe the design. Section 5.15 (the post hoc analyses) and section 6 (what has run) were added
-on 2026-11-09. The checklist in `README.md` gives the state and the result of every item.
+on 2026-11-09. The checklist in `docs/CHECKLIST.md` gives the state and the result of every item.
 
 ## Contents
 
@@ -350,7 +350,7 @@ result.
 
 The highest post hoc test score is the cVAE with Huang et al.'s SVEB rule and the atrial-fibrillation veto, its class
 probabilities averaged over ten runs (P18): rare-class macro-F1 0.587 (S F1 0.647, F F1 0.527). Against the same set-up with
-single runs (P16, 0.557) that is not a detectable change (Holm p 1.000). On 977 new Icentia11k patients (P19) the same pipeline reached S F1 0.294 and V F1 0.648, below its DS2 scores; there the ensemble alone (S F1 0.348) did better than with the SVEB rule and the veto on top. Choosing the two thresholds on 400 other Icentia11k patients (P20) raised S F1 on those 977 patients in all six conditions (cVAE 0.294 to 0.414, Holm p 0.001), but on the test records it lowered rare-class macro-F1 in five of six, none detectably (cVAE 0.587 to 0.459); the test records' S beats sit mostly in record 232, and none of the 388 tuning patients is like it. The result of every analysis is in the `README.md` checklist, the
+single runs (P16, 0.557) that is not a detectable change (Holm p 1.000). On 977 new Icentia11k patients (P19) the same pipeline reached S F1 0.294 and V F1 0.648, below its DS2 scores; there the ensemble alone (S F1 0.348) did better than with the SVEB rule and the veto on top. Choosing the two thresholds on 400 other Icentia11k patients (P20) raised S F1 on those 977 patients in all six conditions (cVAE 0.294 to 0.414, Holm p 0.001), but on the test records it lowered rare-class macro-F1 in five of six, none detectably (cVAE 0.587 to 0.459); the test records' S beats sit mostly in record 232, and none of the 388 tuning patients is like it. The result of every analysis is in the `docs/CHECKLIST.md` checklist, the
 detail in `docs/PROGRESS.md`, and the before-and-after figures in `figures/phase6_*/`.
 
 ---
@@ -358,7 +358,7 @@ detail in `docs/PROGRESS.md`, and the before-and-after figures in `figures/phase
 ## 6. What has run
 
 Phases 1 to 5, the full grid, the single final evaluation (2026-11-04), the leakage audit and the post hoc
-analyses P1-P23 (section 5.15) have all run. The checklist in `README.md` gives the state of every item, including
+analyses P1-P23 (section 5.15) have all run. The checklist in `docs/CHECKLIST.md` gives the state of every item, including
 any approval still open; `python -m ecgaug.workflow status` prints it.
 
 ---
@@ -387,7 +387,7 @@ Add `--smoke` for a one-minute check on fake data, or `--check` to build the inp
 uv run python -m ecgaug.experiments.phase2_ptbxl_pretraining --config configs/phase2_ptbxl_pretraining/A_short_window.yaml --ptbxl-download
 ```
 
-**Phases 2-6:** the commands are in `README.md` ("Phases 2-6") and in each variant's brief.
+**Phases 2-6:** the smoke commands are in `README.md` ("Reproducing"), the full commands in `docs/CHECKLIST.md` and in each variant's brief.
 
 **On Kaggle:** follow `kaggle/README.md`.
 
@@ -400,7 +400,8 @@ already in the repo) and no uncommitted code changes.
 
 | Path | Contents |
 |---|---|
-| `README.md` | quick start and current status |
+| `README.md` | overview for readers: question, setup, system, results, demo, how to reproduce |
+| `docs/CHECKLIST.md` | every item of every phase with its command and outcome, and the working notes |
 | `PROJECT_GUIDE.md` | this file |
 | `CODE_GUIDE.md` | what each code file and function does |
 | `docs/RULES.md` | the project rules and data protocol |

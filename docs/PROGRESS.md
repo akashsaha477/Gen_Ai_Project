@@ -1708,3 +1708,16 @@ of them, `--list` prints the usable beats per class and the first positions of S
 `--record/--beat` any beat as before. In a terminal each figure opens by itself (`--no-open` to stop it). Figures go to
 `figures/demo/`, now in .gitignore. A read-only array warning from torch in the rhythm strip was removed. README has a
 Demo section near the top. Run from the home folder: one example and the full tour, no warning.
+
+2026-11-13. README rewritten for the professor, asked "update the full readme for the prof". The README was the team's
+working checklist (40 rows of run details). It now gives, for a reader new to the project: the question and the setup
+(classes, inter-patient split with the beat counts, primary measure, pre-registration and test lock), the system (the
+architecture figure and what each phase chose), the results (the twelve pre-registered test results with CIs, the
+hypothesis verdicts, the follow-up analyses with the progress figure and P18/P20 beside Zhu et al., the unseen
+Icentia11k patients, what it means), the demo (commands, the three parts, an example figure), how to reproduce (setup,
+the 11 smoke commands, the dress rehearsal, Kaggle, the report build, the test lock), the layout, further reading,
+limitations and troubleshooting. Every number is copied from report/results.md, the checklist or the figures. The old
+checklist and working notes moved word for word to `docs/CHECKLIST.md` (one stale cell fixed: the phase 1 approval,
+2026-10-26, was still marked "next"); PROJECT_GUIDE's pointers updated. One demo figure is committed as an example
+(`figures/demo_example/record118_beat112.png`, made by `./demo.sh S --notes template --no-open --out
+figures/demo_example`). Every relative link in the README resolves.

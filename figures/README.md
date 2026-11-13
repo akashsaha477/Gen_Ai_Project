@@ -28,4 +28,5 @@ Folder names match `results/` and follow `docs/NAMING.md`.
 | `report/` | the course report (`python -m ecgaug.figures report`) | `medical_background.png`: eight seconds of a training recording with the cardiologists' labels and RR intervals, a normal beat with its waves and the saliency windows, and the median S, V and F beats beside the same patient's normal beats (training records only); `progress.png`: the test score after each main change, from the pre-registered system to P20, and the best pipeline's S F1 on new patients |
 | `phase5_explainability/<letter>/` | phase 5: saliency | `class_average_saliency.png`: where the models look, none versus augmented |
 | `error_analysis/` | phase 5: errors | confusion matrices and the RR context of N/S confusions |
-| `demo/` | the demo | one beat with its saliency and probabilities |
+| `demo/` | the demo (`./demo.sh`; not committed) | per beat: the rhythm strip on ECG paper, the beat with its saliency, the share of saliency per segment, the probabilities and the beat in the 36 saved runs |
+| `demo_example/` | the demo, one committed example (`./demo.sh S --notes template --no-open --out figures/demo_example`) | the same figure for record 118, beat 112 (an S beat), shown in the README |
