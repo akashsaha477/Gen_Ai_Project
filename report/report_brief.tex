@@ -1,4 +1,4 @@
-% Course report, 10-page version: a short paper with only the main findings, what was built and what it means (the full
+% Course report, 10-page version: a short report with only the main findings, what was built and what it means (the full
 % version is report.tex, the 20-page one report_short.tex). Numbers of the main comparison come from the macros and tables
 % python -m ecgaug.paper writes into generated/; the few typed by hand are copied from report/results.md and checked against
 % it. Build: cd report && tectonic report_brief.tex (figures come from ../figures/).
@@ -20,7 +20,7 @@
 \input{generated/numbers.tex}
 
 \title{Same Model, New Patient:\\ Rare Arrhythmias at the Level of the Best Published Results,\\ and the Tenfold Gap Patient Overlap Hides\\[6pt]
-\large Rare-Arrhythmia Detection with Generative ECG Augmentation\\[2pt]\normalsize Course project, short paper}
+\large Rare-Arrhythmia Detection with Generative ECG Augmentation\\[2pt]\normalsize Course project report, 10-page version}
 \author{\begin{tabular}{c@{\hspace{3em}}c}Akash Saha (261110401) & Kartheek Dasari (261110029)\\
  H M Karthik (261110025) & T D Manindra (261050084)\end{tabular}}
 \date{}
@@ -47,13 +47,8 @@ On patients it has never seen, a heartbeat classifier misses most of the beats t
 Database~\cite{moody2001} and tested on other patients, the classic methods find supraventricular ectopic (S) beats with an F1 of
 0.511~\cite{dechazal2004} and 0.577~\cite{huang2014}; the most recent method we compare with reaches 0.686 for S beats and 0.477 for
 fusion (F) beats~\cite{zhu2022}. Our own first system, built and tested under rules registered in advance, did worse: a rare-class
-F1, the mean of S and F, of \TestCnnCvaeRare. Figure~\ref{fig:progress} shows how we took it to 0.587, above the classic methods on
+F1, the mean of S and F, of \TestCnnCvaeRare. This report shows how we took it to 0.587 (Section~\ref{sec:better}), above the classic methods on
 S and V beats and above the most recent one on fusion beats and on the mean of S and F.
-
-\begin{figure}[htbp]\centering\includegraphics[width=\linewidth]{report/progress.png}
-\caption{Left: the test score after each main change, without augmentation (circles) and with the cVAE (squares); every row below
-the dotted line is a follow-up analysis; dashed, the published result of Zhu et al. Right: the best pipeline's S F1 on the test
-patients and on unseen Icentia11k patients.}\label{fig:progress}\end{figure}
 
 The rare beats are hard because patients differ: a beat's shape depends on the heart, the electrode position and the disease, and
 S beats, whose burden goes with later atrial fibrillation and stroke~\cite{binici2010}, and F beats are both rare and concentrated in
@@ -69,7 +64,7 @@ S and F, compared with no augmentation, a class-weighted loss, random oversampli
 We built the whole pipeline (data, two classifiers, two generator families, augmentation, saliency maps and fact-checked notes),
 ran it in phases that each ended with a gate at which a rule registered in advance chose on validation patients only, and read the
 test patients once. Twenty-three follow-up analyses, each registered before it ran, then asked what does help; 761 runs are logged.
-The findings, in the order of this paper:
+The findings, in the order of this report:
 \begin{itemize}\setlength{\itemsep}{1pt}
 \item \textbf{Above earlier inter-patient results on the rare classes.} Our best pipeline reaches a rare-class F1 of 0.587: above
 de Chazal et al.\ and Huang et al.\ on S and V beats, and above Zhu et al.\ on fusion beats and the mean of S and F
@@ -142,6 +137,11 @@ rule on top, raised the cVAE condition to 0.523.
 above zero.
 \item \textbf{Ten runs averaged} (P18): the cVAE's ten-run ensemble reached 0.587 [0.086, 0.702], with S F1 0.647 and F F1 0.527.
 \end{enumerate}
+
+\begin{figure}[htbp]\centering\includegraphics[width=\linewidth]{report/progress.png}
+\caption{Left: the test score after each main change, without augmentation (circles) and with the cVAE (squares); every row below
+the dotted line is a follow-up analysis; dashed, the published result of Zhu et al. Right: the best pipeline's S F1 on the test
+patients and on unseen Icentia11k patients.}\label{fig:progress}\end{figure}
 
 
 \begin{table}[htbp]\centering\small

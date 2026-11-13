@@ -495,7 +495,7 @@ precondition before the first test byte, predicts the test set with every frozen
   facts, plus findings the facts do not hold: rhythm, conduction, beat origin, waveform shape).
 - `report/notes.py` `note_claims`: each number, class, segment and term of a note next to the input value it restates,
   by the fact checker's rules (the rows that do not match are exactly its unsupported claims).
-- `paper.py`: `build()` writes the paper's tables and numbers from the result files. It then calls `report_folder.write()`, which copies only the files the three versions of the course report (`report/report.tex`, 29 pages, `report/report_short.tex`, 20 pages, and `report/report_brief.tex`, a 10-page short paper) input into `report/generated/` (stale ones are removed, so none of the paper's own texts land there) and writes `report/results.md`: every results table of the full report, converted from the same LaTeX tables to Markdown under the report's section titles, with each caption's first sentence as the title and the files each table was built from.
+- `paper.py`: `build()` writes the paper's tables and numbers from the result files. It then calls `report_folder.write()`, which copies only the files the three versions of the course report (`report/report.tex`, 29 pages, `report/report_short.tex`, 20 pages, and `report/report_brief.tex`, a 10-page version) input into `report/generated/` (stale ones are removed, so none of the paper's own texts land there) and writes `report/results.md`: every results table of the full report, converted from the same LaTeX tables to Markdown under the report's section titles, with each caption's first sentence as the title and the files each table was built from.
 
 ### `experiments/phase6_*.py` — the post hoc analyses P1-P23
 

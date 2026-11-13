@@ -4,7 +4,7 @@ The project's course report, in three versions, and its results.
 
 | File | What it holds |
 |---|---|
-| [report_brief.pdf](report_brief.pdf) | A 10-page short paper, single column: the question, what we built, the main findings and what they mean, readable in a few minutes |
+| [report_brief.pdf](report_brief.pdf) | A 10-page version, single column: the main findings, what we built and what they mean, readable in a few minutes |
 | [report.pdf](report.pdf) | The course report, full version (29 pages) |
 | [report_short.pdf](report_short.pdf) | The same report in 20 pages: without the related work, how each part was chosen, the discussion and the reproducibility section, and with fewer figures |
 | [results.md](results.md) | Every results table of the report, readable on GitHub |

@@ -1834,3 +1834,8 @@ runs in the paper's direction. It opens with where published methods stand on ne
 0.477) and where our first system started (0.113), and Figure 1 is the progress figure, the climb to 0.587 with Zhu et al.'s
 result dashed. The patient-overlap figure moved to Section 4.2, where that finding is discussed. Still 10 pages, no
 warnings.
+Then, asked "dont put a figure in the second page make the paper like a report": the introduction is text only; the
+progress figure is back in Section 4.1, which the introduction now points to, so each figure sits in the section that
+discusses it (pages 1-2 have no figure; page 2 keeps the small split table of the data section). The document calls
+itself a report ("Course project report, 10-page version"), and README, report/README, PROJECT_GUIDE and CODE_GUIDE call it
+the 10-page version. Still 10 pages, no warnings.
