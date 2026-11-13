@@ -12,7 +12,7 @@ version [report/report_short.pdf](report/report_short.pdf). Every results table 
 
 **The demo:** `./demo.sh` (see [Demo](#demo)).
 
-**Authors:** Akash Saha (261110401), Kartheek Dasari (261110029), H M Karthik (261110025), T D Manindra (261050084).
+**Authors:** Akash Saha - 261110401, Kartheek Dasari - 261110029, H M Karthik - 261110025, T D Manindra 261050084.
 
 ## The question and the setup
 
