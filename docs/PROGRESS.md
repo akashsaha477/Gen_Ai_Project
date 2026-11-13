@@ -1912,3 +1912,7 @@ lead, ten-model inference (38-74 s per training run), notes rated by team member
 only; phase 1's window comparison cited for window sensitivity; the repository link added. (11) generative conclusions restricted
 to the tested generators, data and policies, with the policy pilot and patient transfer (P9) as evidence. The background figure
 of the beat classes was removed for space. Body 10 pages plus references, no warnings; 164 typed numbers, all in the sources.
+Final check on Kaggle at ed57d58, the last code commit (`phase6-final-check` v12, CPU, fresh clone; v11 at 75b474a also
+passed): full suite with ECGAUG_REHEARSAL=1 exit code 0, 447 passed, 1 skipped (paper draft), 0 failed; `python -m ecgaug.paper`,
+the 11 README smoke commands and `workflow status` exited 0 and left every tracked file unchanged. Later commits change only
+report/report_brief.tex and its PDF and the logs.
