@@ -42,9 +42,10 @@ def test_a_caption_splits_into_a_title_and_a_note():
     assert report_folder.split_caption("Post hoc, the test records: the ten-run pipelines.") == ("Post hoc, the test records", "The ten-run pipelines.")
 
 
-def test_the_report_folder_holds_what_both_versions_input_and_cite_their_own_references():
+def test_the_report_folder_holds_what_every_version_inputs_and_cites_its_own_references():
     folder = REPO / "report"
-    assert report_folder.SOURCES == ("report.tex", "report_short.tex") and (folder / "report_short.pdf").is_file()
+    assert report_folder.SOURCES == ("report.tex", "report_short.tex", "report_brief.tex")
+    assert all((folder / s.replace(".tex", ".pdf")).is_file() for s in report_folder.SOURCES)
     texts = {s: (folder / s).read_text() for s in report_folder.SOURCES}
     names = _closure(folder / "generated", "".join(texts.values()))
     assert sorted(names) == sorted(p.name for p in (folder / "generated").glob("*.tex")), "stale or missing generated files"

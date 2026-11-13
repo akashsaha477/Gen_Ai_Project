@@ -1795,3 +1795,18 @@ README smoke commands and `workflow status` exited 0 and left every tracked file
 2026-11-13. README: the Troubleshooting section removed, asked "remove troubleshooting from the readme". Its two entries
 (the macOS matplotlib font-cache error, and running a command outside the repository) moved word for word to the end of
 `docs/CHECKLIST.md`, the team's working notes. Every README link still resolves.
+
+2026-11-13. A 10-page version of the course report, asked "Make a 10-page single column paper style report so that can
+be read by mostly around 5 minutes by the professor and the starting should be really intriguing and it should focus
+only on the main things and the main ideas and what we did". New `report/report_brief.tex` / `report_brief.pdf`
+("Same Model, New Patient: Can Synthetic Heartbeats Rescue Rare-Arrhythmia Detection?"), single column, 11 pt: it opens
+with the patient gap (0.837 on beats of seen patients, 0.088 on new ones) and its figure, then the question, the data and
+rules, the system (pipeline figure), the results (hypothesis verdicts, the single test read, the patient gap, why
+realistic synthetic beats did not help, the four follow-up changes that did with the progress figure and the published
+comparison, the explanations with the demo figure) and what it means. 10 pages, no undefined reference, no overfull
+line, about 2,600 words including captions. Numbers of the main comparison come from the generated macros and tables
+(numbers.tex, table_dataset, final_eval_conditions, table_hypotheses); the 78 numbers typed by hand were each found in
+report/results.md, docs/CHECKLIST.md or the generated report files and checked in context (two wordings fixed before
+committing: the share of S and F beats, and "nearly tripled"). `report_folder.SOURCES` now lists the three versions;
+its test checks every version's inputs, citations, references and figures. README, report/README, PROJECT_GUIDE and
+CODE_GUIDE list the 10-page version.

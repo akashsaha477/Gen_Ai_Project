@@ -1,8 +1,8 @@
-"""The course report's folder, ``report/``: the generated files its two versions input, and its tables as Markdown.
+"""The course report's folder, ``report/``: the generated files its three versions input, and its tables as Markdown.
 
 ``python -m ecgaug.paper`` writes every generated file under ``paper/generated/`` (the paper itself is kept out of the
-repository) and then calls :func:`write`. It copies only the files ``report/report.tex`` (29 pages) and
-``report/report_short.tex`` (20 pages) input into ``report/generated/``, so the folder holds the report and its results
+repository) and then calls :func:`write`. It copies only the files ``report/report.tex`` (29 pages), ``report/report_short.tex``
+(20 pages) and ``report/report_brief.tex`` (10 pages) input into ``report/generated/``, so the folder holds the report and its results
 and none of the paper's own texts. It also writes ``report/results.md``: every results table of the full report, in the
 order of its sections, as Markdown that GitHub shows.
 The Markdown is converted from the same generated tables; nothing in it is typed by hand (docs/RULES.md rule 5).
@@ -17,7 +17,7 @@ from pathlib import Path
 from ecgaug import paths
 
 FOLDER = "report"
-SOURCES = ("report.tex", "report_short.tex")  # the full report and its 20-page version; results.md follows the full one
+SOURCES = ("report.tex", "report_short.tex", "report_brief.tex")  # full, 20-page and 10-page versions; results.md follows the full one
 NOT_RESULTS = {"numbers.tex", "report_architecture.tex", "report_example.tex"}  # number macros, layer tables, one example output
 _INPUT = re.compile(r"\\input\{generated/([^}]*)\}")
 _RULES = re.compile(r"\\(?:toprule|midrule|bottomrule|hline|addlinespace)\b(?:\[[^\]]*\])?|\\cmidrule(?:\([^)]*\))?\{[^}]*\}")
@@ -51,7 +51,7 @@ def inputs(tex: str) -> list[str]:
 def write(generated: Path) -> list[str]:
     """Copy the files the report sources input from ``generated`` into ``report/generated/``; write ``report/results.md``.
 
-    Both versions of the report (:data:`SOURCES`) are served by the one folder. Files that the generated files input in
+    All versions of the report (:data:`SOURCES`) are served by the one folder. Files that the generated files input in
     turn are copied too (numbers.tex inputs the final evaluation's numbers), and files of ``report/generated/`` neither
     version inputs any more are removed. Returns the files written, relative to the root; without ``report/report.tex``
     nothing is written.
