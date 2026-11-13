@@ -1810,3 +1810,7 @@ report/results.md, docs/CHECKLIST.md or the generated report files and checked i
 committing: the share of S and F beats, and "nearly tripled"). `report_folder.SOURCES` now lists the three versions;
 its test checks every version's inputs, citations, references and figures. README, report/README, PROJECT_GUIDE and
 CODE_GUIDE list the 10-page version.
+Final check on Kaggle at 9f13bfb, the last code commit (`phase6-final-check` v9, CPU, fresh clone): full suite with
+ECGAUG_REHEARSAL=1 exit code 0, 447 passed, 1 skipped (paper draft), 0 failed (894 progress marks and 2 skip marks
+halved); `python -m ecgaug.paper`, the 11 README smoke commands and `workflow status` exited 0 and left every tracked file
+unchanged.
