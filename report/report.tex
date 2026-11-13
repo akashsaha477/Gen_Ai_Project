@@ -141,32 +141,25 @@ notes are machine-written summaries of the model output for a clinician to check
 \section{Related work}\label{sec:related}
 \paragraph{Evaluation protocols.} The AAMI EC57 standard~\cite{aami2012ec57} groups MIT-BIH beat labels into the classes N, S, V, F
 and Q and asks for record-by-record reporting. De Chazal et al.~\cite{dechazal2004} introduced the DS1/DS2 inter-patient split used
-here; Llamedo and Mart\'inez~\cite{llamedo2011} selected features by how well they generalise across databases, and a recent
-systematic review finds that only a minority of studies follow these standards~\cite{silva2025review}. Many studies split beats at
-random, so beats of the same patient appear in training and test; their scores are much higher than inter-patient
+here. Many studies split beats at random, so beats of the same patient appear in training and test; their scores are much higher than inter-patient
 ones~\cite{mousavi2019}, and Section~\ref{sec:results} measures that gap for this pipeline.
 
 \paragraph{Inter-patient classifiers.} The strongest inter-patient results lean on RR intervals normalised to the patient's own rhythm:
 Lin and Yang~\cite{lin2014} normalise RR intervals by the recording's mean, Huang et al.~\cite{huang2014} add a stage that calls a beat
-S when it comes early against that mean, Mond\'ejar-Guerra et al.~\cite{mondejar2019} and Saenz-Cogollo and Agelli~\cite{saenz2020}
-combine RR and shape features in ensembles and random forests, and Zhu et al.~\cite{zhu2022} feed RR intervals to a convolutional network.
+S when it comes early against that mean, and Zhu et al.~\cite{zhu2022} feed RR intervals to a convolutional network.
 Section~\ref{sec:all-results} compares this project with them, and several follow-up analyses test their ideas here.
 
-\paragraph{Generative augmentation of ECG.} Recurrent conditional GANs were proposed for medical time series and evaluated by training
-on synthetic and testing on real data~\cite{esteban2017rcgan}. GANs have been used to synthesise realistic ECG~\cite{delaney2019ecggan}
-and to augment MIT-BIH classifiers~\cite{shaker2020gan}; an auxiliary-classifier WGAN-GP with DTW-based screening is closest to the
-WGAN-GP variants here~\cite{adib2022cgan}. SimGANs~\cite{golany2020simgans} add McSharry et al.'s ECG simulator~\cite{mcsharry2003dynamical}
-to the generator's loss, and conditional diffusion models now generate ECG~\cite{alcaraz2023sssd} and have been used to augment beat classifiers~\cite{kwak2024diffusion};
-both are tested as follow-ups. The generators build on the VAE~\cite{kingma2013vae}, its conditional form~\cite{sohn2015cvae}, the
-Wasserstein GAN~\cite{arjovsky2017wgan} with gradient penalty~\cite{gulrajani2017wgangp}, and the conditioning schemes of auxiliary
-classifiers~\cite{odena2016acgan}, projection critics~\cite{miyato2018projection} and FiLM~\cite{perez2018film}.
+\paragraph{Generative augmentation of ECG.} GANs have been used to augment MIT-BIH classifiers~\cite{shaker2020gan}, and conditional
+diffusion models to augment beat classifiers~\cite{kwak2024diffusion}. SimGANs~\cite{golany2020simgans} add McSharry et al.'s ECG
+simulator~\cite{mcsharry2003dynamical} to the generator's loss; diffusion models and the simulator loss are both tested here as
+follow-ups. The generators build on the conditional VAE~\cite{sohn2015cvae} and the Wasserstein GAN with gradient
+penalty~\cite{gulrajani2017wgangp}, with the class given by concatenation, an auxiliary classifier, a projection critic or FiLM layers.
 
 \paragraph{Synthetic-quality metrics, explanations and reports.} Synthetic beats are scored with dynamic time
-warping~\cite{sakoe1978dtw}, spectral distances, a Fr\'echet distance in the feature space of a fixed network after
-FID~\cite{heusel2017fid}, train-on-synthetic-test-on-real~\cite{esteban2017rcgan} and classifier two-sample
-tests~\cite{lopezpaz2017c2st}. The saliency methods compared are Grad-CAM~\cite{selvaraju2016gradcam}, integrated
-gradients~\cite{sundararajan2017ig}, SmoothGrad~\cite{smilkov2017smoothgrad} and occlusion. Large ECG-language models can write
-diagnostic reports~\cite{zhao2024ecgchat}; the note generator here instead restates the classifier output and is checked claim by claim.
+warping~\cite{sakoe1978dtw}, spectral distances, a Fr\'echet distance in the feature space of a fixed network,
+train-on-synthetic-test-on-real and a classifier two-sample test. The saliency methods compared are Grad-CAM~\cite{selvaraju2016gradcam},
+integrated gradients~\cite{sundararajan2017ig}, SmoothGrad~\cite{smilkov2017smoothgrad} and occlusion. The note generator does not
+write a free diagnostic report: it restates the classifier output and is checked claim by claim.
 
 \section{Data and evaluation protocol}\label{sec:protocol}
 The records are split by patient as de Chazal et al.\ proposed~\cite{dechazal2004}: the 22 DS1 records give training and validation
@@ -247,7 +240,7 @@ chose one convolutional (\emph{cnn}) and one recurrent (\emph{rnn}) architecture
 network. All classifiers use unweighted cross-entropy (except in the class-weighted condition), AdamW with weight decay 0.01, batches of
 256, a learning rate of $10^{-3}$ or $3\cdot10^{-4}$ (the better on validation), at most 40 epochs, and early stopping with patience 5 on
 the validation selection metric, never before epoch 10. A second experiment pretrained the probe CNN on beats of the PTB-XL
-database~\cite{wagner2020ptbxl,strodthoff2020ptbxl} before fine-tuning it on MIT-BIH; training from scratch was kept.
+database~\cite{wagner2020ptbxl} before fine-tuning it on MIT-BIH; training from scratch was kept.
 \begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_baselines.tex}}\caption{Baseline
 classifiers (validation).}\label{tab:baselines}\end{table}
 
@@ -259,7 +252,7 @@ the real training beats, its score had to worsen steadily under four degradation
 severities (Spearman $\rho \ge 0.8$) and vary little across resamples (median coefficient of variation below 10\%)
 (Table~\ref{tab:quality}). Three diagnostics guard against degenerate generators: the diversity ratio (the spread of synthetic beats
 relative to real ones), the memorization fraction (synthetic beats closer to a training beat than the 5th percentile of leave-one-out
-distances among real beats) and the accuracy of a classifier two-sample test~\cite{lopezpaz2017c2st}.
+distances among real beats) and the accuracy of a classifier two-sample test.
 \begin{table}[htbp]\centering\small\adjustbox{max width=\linewidth}{\input{generated/table_quality_metrics.tex}}\caption{Sanity
 tests of the quality metrics.}\label{tab:quality}\end{table}
 
@@ -267,8 +260,8 @@ tests of the quality metrics.}\label{tab:quality}\end{table}
 Both generator families learn beats of all four classes from class-balanced batches and generate S, V and F beats; the RR features of a
 synthetic beat are copied from a random real training beat of the same class. Four cVAE variants (convolutional with the class
 concatenated to the input; the same with a smaller KL weight; with an added spectral loss; a residual network with FiLM
-conditioning~\cite{perez2018film}) and four WGAN-GP variants (a concatenated class embedding; a projection
-critic~\cite{miyato2018projection}; an auxiliary classifier~\cite{odena2016acgan}; one unconditional GAN per class) were piloted with
+conditioning) and four WGAN-GP variants (a concatenated class embedding; a projection
+critic; an auxiliary classifier; one unconditional GAN per class) were piloted with
 equal step budgets on two seeds. At each quarter of the budget a pilot classifier (the chosen cnn) was trained on real plus synthetic
 beats; hard gates (a diversity ratio of at least 0.7 and a memorization fraction of at most 10\%) were applied to every class and seed,
 and the variant with the best validation score at the final checkpoint was chosen per family (Table~\ref{tab:generators}). The chosen

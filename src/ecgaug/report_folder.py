@@ -1,7 +1,7 @@
 """The course report's folder, ``report/``: the generated files its two versions input, and its tables as Markdown.
 
 ``python -m ecgaug.paper`` writes every generated file under ``paper/generated/`` (the paper itself is kept out of the
-repository) and then calls :func:`write`. It copies only the files ``report/report.tex`` (30 pages) and
+repository) and then calls :func:`write`. It copies only the files ``report/report.tex`` (29 pages) and
 ``report/report_short.tex`` (20 pages) input into ``report/generated/``, so the folder holds the report and its results
 and none of the paper's own texts. It also writes ``report/results.md``: every results table of the full report, in the
 order of its sections, as Markdown that GitHub shows.

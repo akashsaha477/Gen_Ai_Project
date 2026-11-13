@@ -1755,3 +1755,20 @@ names with their roll numbers (a two-by-two block under the title), and the red 
 is removed from both, as the team chose (asked to draft it from the git record, keep it, or remove it). Both versions
 recompiled with tectonic: still 30 and 20 pages, no undefined reference, no overfull line, no red placeholder left.
 README has an Authors line; the placeholder points in the README limitations and PROJECT_GUIDE's open points are gone.
+
+2026-11-13. References rechecked and cut, asked "recheck the references and also make the references less 40 is too
+much". Every kept entry was checked against the publisher's record (Crossref for journal and IEEE conference papers,
+DataCite for the PhysioNet dataset, PMLR and NeurIPS pages, arXiv): authors, title, venue, volume, issue, pages and year
+all matched; three preprint entries now cite the peer-reviewed version (Gulrajani et al., NeurIPS 2017; Sundararajan
+et al., ICML 2017; Selvaraju et al., ICCV 2017), DOIs were added, and Mousavi et al.
+stays the arXiv version, the source of the numbers in the literature table (the ICASSP version has two authors). The old
+refs.bib held 49 entries, 41 printed in the long version, with source notes shifted one entry off. Removed from the long
+version's text: the related-work citations not needed for a claim the report makes (Llamedo and Martinez; the 2025
+systematic review; Mondejar-Guerra et al.; Saenz-Cogollo and Agelli; Esteban et al.; Delaney et al.; Adib et al.; Alcaraz
+and Strodthoff; Kingma and Welling; Arjovsky et al.; Odena et al.; Miyato and Koyama; Perez et al.; Heusel et al.;
+Lopez-Paz and Oquab; Zhao et al.; Strodthoff et al.'s PTB-XL benchmark), with the sentences rewritten so no claim is left
+without its source. Added where data was used but not cited: Icentia11k (Tan et al., PhysioNet 2022) at its first
+mention, and PhysioNet (Goldberger et al. 2000) for INCART and SVDB, in `report_text.posthoc_story`. refs.bib now holds
+exactly the 26 cited entries. Long version: 26 references (was 41), 29 pages (was 30); short version: 18 (was 16: the
+two dataset citations), 20 pages; no undefined citation, no overfull line, no bibtex warning. Docs give the long version
+as 29 pages. Tests: test_report_folder, test_report_text, test_paper pass; `python -m ecgaug.paper` is stable.

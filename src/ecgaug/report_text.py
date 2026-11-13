@@ -144,7 +144,7 @@ def posthoc_story(figures: bool = True) -> str:
         return pt._missing("follow-up analyses: after the final evaluation") + "\n"
     paras = []
     p19 = _load("phase6_fresh_patients")
-    unused = f"{p19['patients']:,} Icentia11k patients that no analysis had used" if p19 else "patients that no analysis had used"
+    unused = f"{p19['patients']:,} Icentia11k patients~\\cite{{tan2022icentia}} that no analysis had used" if p19 else "patients that no analysis had used"
     paras.append(f"After the final evaluation, {len(POST_HOC)} follow-up analyses (P1 to P{len(POST_HOC)}) asked why augmentation did not help and "
                  "what would. Each was added to the pre-registration (versions 4 to 21) before it ran, and every read of the test records is logged: "
                  f"{posthoc_reads()} reads after the final evaluation. Later scores on the test records are therefore optimistic and do not replace "
@@ -159,7 +159,7 @@ def posthoc_story(figures: bool = True) -> str:
         changed = len(seeds["changed"])
         paras.append("\\paragraph{The pre-registered answer holds.} With five seeds instead of three, "
                      + ("no pre-registered verdict changed" if not changed else f"{changed} pre-registered verdicts changed") + " (P3). "
-                     "On two other databases, St Petersburg INCART and the MIT-BIH Supraventricular Arrhythmia Database, generative augmentation was "
+                     "On two other databases, St Petersburg INCART and the MIT-BIH Supraventricular Arrhythmia Database~\\cite{goldberger2000}, generative augmentation was "
                      f"detectably better than no augmentation in {up} and worse in {down} of {total} comparisons (P2). With beats split at random, so "
                      f"that the same patients are in training and test, the same cnn reached {pt._n(lo)} to {pt._n(hi)} against {pt._n(inter)} across "
                      "patients (P4): much of what such splits measure is how well a model recognises patients it has seen.")  # fmt: skip

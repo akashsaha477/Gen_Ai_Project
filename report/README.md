@@ -4,7 +4,7 @@ The project's course report, in two versions, and its results.
 
 | File | What it holds |
 |---|---|
-| [report.pdf](report.pdf) | The course report, full version (30 pages) |
+| [report.pdf](report.pdf) | The course report, full version (29 pages) |
 | [report_short.pdf](report_short.pdf) | The same report in 20 pages: without the related work, how each part was chosen, the discussion and the reproducibility section, and with fewer figures |
 | [results.md](results.md) | Every results table of the report, readable on GitHub |
 | [report.tex](report.tex), [report_short.tex](report_short.tex), [refs.bib](refs.bib) | The LaTeX sources of both versions and their references |

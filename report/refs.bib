@@ -1,9 +1,7 @@
-% Verified 2026-10-27 by web search of each entry's arXiv page, DOI landing page, publisher page or an
-% institutional repository record (the page is named above each entry). Only fields shown on those pages
-% are given; a DOI, issue or article number that no page confirmed is left out rather than guessed.
-% Given names are completed where a page showed only family names or initials.
+% References of the course report (report.tex and report_short.tex): only the entries the two versions cite.
+% Each entry was checked on 2026-11-13 against the publisher's record (Crossref, DataCite, PMLR, NeurIPS or arXiv);
+% the paper draft keeps its own, longer list in paper/refs.bib.
 
-% repositories edepositireland.ie/handle/2262/17623 and tara.tcd.ie (TBME 51(7) 1196-1206); DOI not confirmed
 @article{dechazal2004,
   author  = {de Chazal, Philip and O'Dwyer, M. and Reilly, R. B.},
   title   = {Automatic classification of heartbeats using {ECG} morphology and heartbeat interval features},
@@ -11,10 +9,10 @@
   volume  = {51},
   number  = {7},
   pages   = {1196--1206},
-  year    = {2004}
+  year    = {2004},
+  doi     = {10.1109/TBME.2004.827359}
 }
 
-% physionet.org mitdb page (citation, PMID 11446209) and Scinapse record; DOI not confirmed
 @article{moody2001,
   author  = {Moody, George B. and Mark, Roger G.},
   title   = {The impact of the {MIT-BIH} Arrhythmia Database},
@@ -22,10 +20,10 @@
   volume  = {20},
   number  = {3},
   pages   = {45--50},
-  year    = {2001}
+  year    = {2001},
+  doi     = {10.1109/51.932724}
 }
 
-% archive.physionet.org citation page and citedrive DOI record
 @article{goldberger2000,
   author  = {Goldberger, A. L. and Amaral, L. A. N. and Glass, L. and Hausdorff, J. M. and Ivanov, P. Ch. and Mark, R. G. and Mietus, J. E. and Moody, G. B. and Peng, C.-K. and Stanley, H. E.},
   title   = {{PhysioBank}, {PhysioToolkit}, and {PhysioNet}: Components of a New Research Resource for Complex Physiologic Signals},
@@ -37,394 +35,13 @@
   doi     = {10.1161/01.CIR.101.23.e215}
 }
 
-% webstore.ansi.org and BSI listings of ANSI/AAMI EC57:2012
 @misc{aami2012ec57,
   author       = {{Association for the Advancement of Medical Instrumentation}},
   title        = {{ANSI/AAMI EC57:2012} Testing and reporting performance results of cardiac rhythm and {ST} segment measurement algorithms},
+  howpublished = {AAMI, Arlington, VA},
   year         = {2012}
 }
 
-% EURAMET repository record (Scientific Data 7(1), 25 May 2020); article number not confirmed
-@article{wagner2020ptbxl,
-  author  = {Wagner, Patrick and Strodthoff, Nils and Bousseljot, Ralf-Dieter and Kreiseler, Dieter and Lunze, Fatima I. and Samek, Wojciech and Schaeffter, Tobias},
-  title   = {{PTB-XL}, a large publicly available electrocardiography dataset},
-  journal = {Scientific Data},
-  volume  = {7},
-  number  = {1},
-  year    = {2020}
-}
-
-% arxiv.org/pdf/2004.13701; Fraunhofer publica record gives the JBHI DOI
-@article{strodthoff2020ptbxl,
-  author  = {Strodthoff, Nils and Wagner, Patrick and Schaeffter, Tobias and Samek, Wojciech},
-  title   = {Deep Learning for {ECG} Analysis: Benchmarks and Insights from {PTB-XL}},
-  journal = {IEEE Journal of Biomedical and Health Informatics},
-  doi     = {10.1109/JBHI.2020.3022989},
-  note    = {arXiv:2004.13701},
-  year    = {2020}
-}
-
-% arxiv.org/abs/2503.07276
-@article{silva2025review,
-  author  = {Silva, Guilherme and Silva, Pedro and Moreira, Gladston and Freitas, Vander and Gertrudes, Jadson and Luz, Eduardo},
-  title   = {A Systematic Review of {ECG} Arrhythmia Classification: Adherence to Standards, Fair Evaluation, and Embedded Feasibility},
-  journal = {arXiv preprint arXiv:2503.07276},
-  year    = {2025}
-}
-
-% physionet.org ecgkit a2hbc.m reference (TBME 58, 616-625, 2011); issue not confirmed
-@article{llamedo2011,
-  author  = {Llamedo, Mariano and Mart{\'i}nez, Juan Pablo},
-  title   = {Heartbeat classification using feature selection driven by database generalization criteria},
-  journal = {IEEE Transactions on Biomedical Engineering},
-  volume  = {58},
-  pages   = {616--625},
-  year    = {2011}
-}
-
-% jair.org/index.php/jair/article/view/10302 and doi.org/10.1613/jair.953
-@article{chawla2002smote,
-  author  = {Chawla, N. V. and Bowyer, K. W. and Hall, L. O. and Kegelmeyer, W. P.},
-  title   = {{SMOTE}: Synthetic Minority Over-sampling Technique},
-  journal = {Journal of Artificial Intelligence Research},
-  volume  = {16},
-  pages   = {321--357},
-  year    = {2002},
-  doi     = {10.1613/jair.953}
-}
-
-% arxiv.org/abs/1312.6114
-@article{kingma2013vae,
-  author  = {Kingma, Diederik P. and Welling, Max},
-  title   = {Auto-Encoding Variational {Bayes}},
-  journal = {arXiv preprint arXiv:1312.6114},
-  year    = {2013},
-  doi     = {10.48550/arXiv.1312.6114}
-}
-
-% neurips.cc/virtual/2015/poster/5763
-@inproceedings{sohn2015cvae,
-  author    = {Sohn, Kihyuk and Lee, Honglak and Yan, Xinchen},
-  title     = {Learning Structured Output Representation using Deep Conditional Generative Models},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
-  year      = {2015}
-}
-
-% arxiv.org/abs/1701.07875
-@article{arjovsky2017wgan,
-  author  = {Arjovsky, Martin and Chintala, Soumith and Bottou, L{\'e}on},
-  title   = {{Wasserstein GAN}},
-  journal = {arXiv preprint arXiv:1701.07875},
-  year    = {2017}
-}
-
-% arxiv.org/pdf/1704.00028
-@article{gulrajani2017wgangp,
-  author  = {Gulrajani, Ishaan and Ahmed, Faruk and Arjovsky, Martin and Dumoulin, Vincent and Courville, Aaron},
-  title   = {Improved Training of {Wasserstein GANs}},
-  journal = {arXiv preprint arXiv:1704.00028},
-  year    = {2017}
-}
-
-% arxiv.org/pdf/1610.09585
-@article{odena2016acgan,
-  author  = {Odena, Augustus and Olah, Christopher and Shlens, Jonathon},
-  title   = {Conditional Image Synthesis with Auxiliary Classifier {GANs}},
-  journal = {arXiv preprint arXiv:1610.09585},
-  year    = {2016}
-}
-
-% arxiv.org/pdf/1802.05637 ("Published as a conference paper at ICLR 2018")
-@inproceedings{miyato2018projection,
-  author    = {Miyato, Takeru and Koyama, Masanori},
-  title     = {{cGANs} with Projection Discriminator},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  note      = {arXiv:1802.05637},
-  year      = {2018}
-}
-
-% arxiv.org/abs/1709.07871 (accepted at AAAI 2018)
-@inproceedings{perez2018film,
-  author    = {Perez, Ethan and Strub, Florian and de Vries, Harm and Dumoulin, Vincent and Courville, Aaron},
-  title     = {{FiLM}: Visual Reasoning with a General Conditioning Layer},
-  booktitle = {AAAI Conference on Artificial Intelligence},
-  note      = {arXiv:1709.07871},
-  year      = {2018}
-}
-
-% arxiv.org/abs/1706.02633
-@article{esteban2017rcgan,
-  author  = {Esteban, Crist{\'o}bal and Hyland, Stephanie L. and R{\"a}tsch, Gunnar},
-  title   = {Real-valued (Medical) Time Series Generation with Recurrent Conditional {GANs}},
-  journal = {arXiv preprint arXiv:1706.02633},
-  year    = {2017}
-}
-
-% arxiv.org/abs/1909.09150
-@article{delaney2019ecggan,
-  author  = {Delaney, Anne Marie and Brophy, Eoin and Ward, Tom{\'a}s E.},
-  title   = {Synthesis of Realistic {ECG} using Generative Adversarial Networks},
-  journal = {arXiv preprint arXiv:1909.09150},
-  year    = {2019}
-}
-
-% research.asu.edu.eg/handle/123456789/225706 and ieeexplore.ieee.org/document/9000871
-@article{shaker2020gan,
-  author  = {Shaker, Abdelrahman M. and Tantawi, Manal and Shedeed, Howida A. and Tolba, Mohamed F.},
-  title   = {Generalization of Convolutional Neural Networks for {ECG} Classification Using Generative Adversarial Networks},
-  journal = {IEEE Access},
-  volume  = {8},
-  pages   = {35592--35605},
-  year    = {2020}
-}
-
-% arxiv.org/abs/2202.00569
-@article{adib2022cgan,
-  author  = {Adib, Edmond and Afghah, Fatemeh and Prevost, John J.},
-  title   = {Arrhythmia Classification using {CGAN}-augmented {ECG} Signals},
-  journal = {arXiv preprint arXiv:2202.00569},
-  year    = {2022}
-}
-
-% TIB record and arxiv.org/abs/2301.08227
-@article{alcaraz2023sssd,
-  author  = {Alcaraz, Juan Miguel Lopez and Strodthoff, Nils},
-  title   = {Diffusion-based Conditional {ECG} Generation with Structured State Space Models},
-  journal = {Computers in Biology and Medicine},
-  volume  = {163},
-  pages   = {107115},
-  year    = {2023},
-  doi     = {10.1016/j.compbiomed.2023.107115}
-}
-
-% arxiv.org/pdf/1706.08500
-@article{heusel2017fid,
-  author  = {Heusel, Martin and Ramsauer, Hubert and Unterthiner, Thomas and Nessler, Bernhard and Hochreiter, Sepp},
-  title   = {{GANs} Trained by a Two Time-Scale Update Rule Converge to a Local {Nash} Equilibrium},
-  journal = {arXiv preprint arXiv:1706.08500},
-  year    = {2017}
-}
-
-% arxiv.org/pdf/1610.06545 (ICLR 2017)
-@inproceedings{lopezpaz2017c2st,
-  author    = {Lopez-Paz, David and Oquab, Maxime},
-  title     = {Revisiting Classifier Two-Sample Tests},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  note      = {arXiv:1610.06545},
-  year      = {2017}
-}
-
-% ScienceOpen record (IEEE TASSP 26(1), February 1978, 43-49); DOI not confirmed
-@article{sakoe1978dtw,
-  author  = {Sakoe, Hiroaki and Chiba, Seibi},
-  title   = {Dynamic programming algorithm optimization for spoken word recognition},
-  journal = {IEEE Transactions on Acoustics, Speech, and Signal Processing},
-  volume  = {26},
-  number  = {1},
-  pages   = {43--49},
-  year    = {1978}
-}
-
-% arxiv.org/pdf/1703.01365
-@article{sundararajan2017ig,
-  author  = {Sundararajan, Mukund and Taly, Ankur and Yan, Qiqi},
-  title   = {Axiomatic Attribution for Deep Networks},
-  journal = {arXiv preprint arXiv:1703.01365},
-  year    = {2017}
-}
-
-% ar5iv.labs.arxiv.org/html/1706.03825
-@article{smilkov2017smoothgrad,
-  author  = {Smilkov, Daniel and Thorat, Nikhil and Kim, Been and Vi{\'e}gas, Fernanda and Wattenberg, Martin},
-  title   = {{SmoothGrad}: removing noise by adding noise},
-  journal = {arXiv preprint arXiv:1706.03825},
-  year    = {2017}
-}
-
-% arxiv.org/abs/1610.02391
-@article{selvaraju2016gradcam,
-  author  = {Selvaraju, Ramprasaath R. and Cogswell, Michael and Das, Abhishek and Vedantam, Ramakrishna and Parikh, Devi and Batra, Dhruv},
-  title   = {{Grad-CAM}: Visual Explanations from Deep Networks via Gradient-based Localization},
-  journal = {arXiv preprint arXiv:1610.02391},
-  year    = {2016}
-}
-
-% JSTOR stable URL www.jstor.org/stable/4615733 (via the USP and GESIS records)
-@article{holm1979,
-  author  = {Holm, Sture},
-  title   = {A Simple Sequentially Rejective Multiple Test Procedure},
-  journal = {Scandinavian Journal of Statistics},
-  volume  = {6},
-  number  = {2},
-  pages   = {65--70},
-  year    = {1979}
-}
-
-% arxiv.org/pdf/2408.08849; the full author list differs between citing papers, so only the first author is given
-@article{zhao2024ecgchat,
-  author  = {Zhao, Yubao and others},
-  title   = {{ECG-Chat}: A Large {ECG}-Language Model for Cardiac Disease Diagnosis},
-  journal = {arXiv preprint arXiv:2408.08849},
-  year    = {2024}
-}
-
-% pmc.ncbi.nlm.nih.gov/articles/PMC4085082 (Biomed Eng Online 2014;13:90, doi 10.1186/1475-925X-13-90), read 2026-11-06
-@article{huang2014,
-  author  = {Huang, H. and Liu, J. and Zhu, Q. and Wang, R. and Hu, G.},
-  title   = {A new hierarchical method for inter-patient heartbeat classification using random projections and {RR} intervals},
-  journal = {BioMedical Engineering OnLine},
-  volume  = {13},
-  pages   = {90},
-  year    = {2014},
-  doi     = {10.1186/1475-925X-13-90}
-}
-
-% reference list of the medRxiv preprint below (Math Probl Eng 2014;2014:712474, doi 10.1155/2014/712474), read 2026-11-06
-@article{lin2014,
-  author  = {Lin, C. C. and Yang, C. M.},
-  title   = {Heartbeat classification using normalized {RR} intervals and morphological features},
-  journal = {Mathematical Problems in Engineering},
-  volume  = {2014},
-  pages   = {712474},
-  year    = {2014},
-  doi     = {10.1155/2014/712474}
-}
-
-% ruc.udc.es/dspace/handle/2183/34480 (BSPC 47, 41-48, doi 10.1016/j.bspc.2018.08.007), read 2026-11-06
-@article{mondejar2019,
-  author  = {Mond{\'e}jar-Guerra, V. and Novo, J. and Rouco, J. and Penedo, M. G. and Ortega, M.},
-  title   = {Heartbeat classification fusing temporal and morphological information of {ECGs} via ensemble of classifiers},
-  journal = {Biomedical Signal Processing and Control},
-  volume  = {47},
-  pages   = {41--48},
-  year    = {2019},
-  doi     = {10.1016/j.bspc.2018.08.007}
-}
-
-% publications.crs4.it/pubdocs/2020/SA20 and DOAJ record (Algorithms 13(4), 75, doi 10.3390/a13040075), read 2026-11-06
-@article{saenz2020,
-  author  = {Saenz-Cogollo, Jose Francisco and Agelli, Maurizio},
-  title   = {Investigating feature selection and random forests for inter-patient heartbeat classification},
-  journal = {Algorithms},
-  volume  = {13},
-  number  = {4},
-  pages   = {75},
-  year    = {2020},
-  doi     = {10.3390/a13040075}
-}
-
-% aminer record and the medRxiv preprint's reference list (Physiol Meas 43(3), 035003, doi 10.1088/1361-6579/ac58de), read 2026-11-06
-@article{zhu2022,
-  author  = {Zhu, Wenliang and Ma, Gang and Zheng, Lesong and Chen, Yuhang and Qiu, Lishen and Wang, Lirong},
-  title   = {Inter-patient arrhythmia identification method with {RR}-intervals and convolutional neural networks},
-  journal = {Physiological Measurement},
-  volume  = {43},
-  number  = {3},
-  pages   = {035003},
-  year    = {2022},
-  doi     = {10.1088/1361-6579/ac58de}
-}
-
-% the preprint's own title page (medRxiv, posted 6 October 2026, doi 10.64898/2026.10.04.26364683), read 2026-11-06
-@misc{alforja2026,
-  author       = {Villavicencio Alforja, Edmayelle and Capellan Aban, Janus},
-  title        = {Timing and context features in machine learning classification of inter-patient {ECG} heartbeats on the {MIT-BIH} benchmark},
-  howpublished = {medRxiv preprint, doi 10.64898/2026.10.04.26364683},
-  year         = {2026}
-}
-
-% the repository's README (github.com/amitb-gpu/ecg-arrhythmia), read 2026-11-06; no author name or year is given there
-@misc{amitbgpu,
-  author       = {{amitb-gpu}},
-  title        = {ecg-arrhythmia: {1D} {CNN} heartbeat classifier on {MIT-BIH}, evaluated on unseen patients},
-  howpublished = {GitHub repository, github.com/amitb-gpu/ecg-arrhythmia, accessed 6 November 2026}
-}
-
-% physionet.org/content/icentia11k-continuous-ecg/1.0 (dataset citation, doi 10.13026/kk0v-r952), read 2026-11-06
-@misc{tan2022icentia,
-  author       = {Tan, S. and Ortiz-Gagn{\'e}, S. and Beaudoin-Gagnon, N. and Fecteau, P. and Courville, A. and Bengio, Y. and Cohen, J. P.},
-  title        = {Icentia11k Single Lead Continuous Raw Electrocardiogram Dataset (version 1.0)},
-  howpublished = {PhysioNet, doi 10.13026/kk0v-r952},
-  year         = {2022}
-}
-
-% the same page (original publication: CinC 2021, preprint 229_Preprint.pdf), read 2026-11-06
-@inproceedings{tan2021icentia,
-  author    = {Tan, S. and Androz, G. and Ortiz-Gagn{\'e}, S. and Chamseddine, A. and Fecteau, P. and Courville, A. and Bengio, Y. and Cohen, J. P.},
-  title     = {{Icentia11K}: An unsupervised representation learning dataset for arrhythmia subtype discovery},
-  booktitle = {Computing in Cardiology},
-  year      = {2021}
-}
-
-% peerj.com/articles/cs-2299 (local copy Papers/peerj-cs-10-2299.pdf)
-@article{kwak2024diffusion,
-  author  = {Kwak, Jinhee and Jung, Jaehee},
-  title   = {Classification of imbalanced {ECGs} through segmentation models and augmented by conditional diffusion model},
-  journal = {PeerJ Computer Science},
-  volume  = {10},
-  pages   = {e2299},
-  year    = {2024},
-  doi     = {10.7717/peerj-cs.2299}
-}
-
-% physionet.org/content/afdb (the database's requested citation)
-@inproceedings{moody1983afdb,
-  author    = {Moody, George B. and Mark, Roger G.},
-  title     = {A new method for detecting atrial fibrillation using {R-R} intervals},
-  booktitle = {Computers in Cardiology},
-  volume    = {10},
-  pages     = {227--230},
-  year      = {1983}
-}
-
-% arxiv.org/abs/1612.01474 (NIPS 2017)
-@inproceedings{lakshminarayanan2017ensembles,
-  author    = {Lakshminarayanan, Balaji and Pritzel, Alexander and Blundell, Charles},
-  title     = {Simple and Scalable Predictive Uncertainty Estimation using Deep Ensembles},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
-  note      = {arXiv:1612.01474},
-  year      = {2017}
-}
-
-% arxiv.org/abs/1906.02530 (NeurIPS 2019)
-@inproceedings{ovadia2019shift,
-  author    = {Ovadia, Yaniv and Fertig, Emily and Ren, Jie and Nado, Zachary and Sculley, D. and Nowozin, Sebastian and Dillon, Joshua V. and Lakshminarayanan, Balaji and Snoek, Jasper},
-  title     = {Can You Trust Your Model's Uncertainty? {E}valuating Predictive Uncertainty Under Dataset Shift},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
-  note      = {arXiv:1906.02530},
-  year      = {2019}
-}
-
-@inproceedings{golany2020simgans,
-  title     = {{SimGANs}: Simulator-Based Generative Adversarial Networks for {ECG} Synthesis to Improve Deep {ECG} Classification},
-  author    = {Golany, Tomer and Radinsky, Kira and Freedman, Daniel},
-  booktitle = {Proceedings of the 37th International Conference on Machine Learning},
-  series    = {Proceedings of Machine Learning Research},
-  volume    = {119},
-  pages     = {3597--3606},
-  year      = {2020}
-}
-
-@article{mcsharry2003dynamical,
-  title   = {A dynamical model for generating synthetic electrocardiogram signals},
-  author  = {McSharry, Patrick E. and Clifford, Gari D. and Tarassenko, Lionel and Smith, Leonard A.},
-  journal = {IEEE Transactions on Biomedical Engineering},
-  volume  = {50},
-  number  = {3},
-  pages   = {289--294},
-  year    = {2003}
-}
-
-@article{mousavi2019,
-  title   = {Inter- and intra- patient {ECG} heartbeat classification for arrhythmia detection: a sequence to sequence deep learning approach},
-  author  = {Mousavi, Sajad and Afghah, Fatemeh and Acharya, U. Rajendra},
-  journal = {arXiv preprint arXiv:1812.07421},
-  year    = {2019},
-  url     = {https://arxiv.org/abs/1812.07421}
-}
-
-% Medical background of the course report; checked 2026-11-11 against the publisher's catalogue (Elsevier) and the
-% journal records (PubMed, the publishers' abstracts)
 @book{goldberger2017,
   author    = {Goldberger, Ary L. and Goldberger, Zachary D. and Shvilkin, Alexei},
   title     = {Goldberger's Clinical Electrocardiography: A Simplified Approach},
@@ -445,12 +62,14 @@
 }
 
 @article{baman2010,
-  author  = {Baman, Timir S. and Lange, Dave C. and Ilg, Karl J. and others},
+  author  = {Baman, Timir S. and Lange, Dave C. and Ilg, Karl J. and Gupta, Sanjaya K. and others},
   title   = {Relationship between burden of premature ventricular complexes and left ventricular function},
   journal = {Heart Rhythm},
   volume  = {7},
+  number  = {7},
   pages   = {865--869},
-  year    = {2010}
+  year    = {2010},
+  doi     = {10.1016/j.hrthm.2010.03.036}
 }
 
 @article{steinberg2017,
@@ -462,4 +81,173 @@
   pages   = {e55--e96},
   year    = {2017},
   doi     = {10.1016/j.hrthm.2017.03.038}
+}
+
+@article{chawla2002smote,
+  author  = {Chawla, N. V. and Bowyer, K. W. and Hall, L. O. and Kegelmeyer, W. P.},
+  title   = {{SMOTE}: Synthetic Minority Over-sampling Technique},
+  journal = {Journal of Artificial Intelligence Research},
+  volume  = {16},
+  pages   = {321--357},
+  year    = {2002},
+  doi     = {10.1613/jair.953}
+}
+
+@inproceedings{sohn2015cvae,
+  author    = {Sohn, Kihyuk and Lee, Honglak and Yan, Xinchen},
+  title     = {Learning Structured Output Representation using Deep Conditional Generative Models},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {28},
+  year      = {2015}
+}
+
+@inproceedings{gulrajani2017wgangp,
+  author    = {Gulrajani, Ishaan and Ahmed, Faruk and Arjovsky, Martin and Dumoulin, Vincent and Courville, Aaron},
+  title     = {Improved Training of {Wasserstein GANs}},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {30},
+  year      = {2017}
+}
+
+@article{sakoe1978dtw,
+  author  = {Sakoe, Hiroaki and Chiba, Seibi},
+  title   = {Dynamic programming algorithm optimization for spoken word recognition},
+  journal = {IEEE Transactions on Acoustics, Speech, and Signal Processing},
+  volume  = {26},
+  number  = {1},
+  pages   = {43--49},
+  year    = {1978},
+  doi     = {10.1109/TASSP.1978.1163055}
+}
+
+@inproceedings{selvaraju2016gradcam,
+  author    = {Selvaraju, Ramprasaath R. and Cogswell, Michael and Das, Abhishek and Vedantam, Ramakrishna and Parikh, Devi and Batra, Dhruv},
+  title     = {{Grad-CAM}: Visual Explanations from Deep Networks via Gradient-Based Localization},
+  booktitle = {Proceedings of the IEEE International Conference on Computer Vision (ICCV)},
+  pages     = {618--626},
+  year      = {2017},
+  doi       = {10.1109/ICCV.2017.74}
+}
+
+@inproceedings{sundararajan2017ig,
+  author    = {Sundararajan, Mukund and Taly, Ankur and Yan, Qiqi},
+  title     = {Axiomatic Attribution for Deep Networks},
+  booktitle = {Proceedings of the 34th International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {70},
+  pages     = {3319--3328},
+  year      = {2017}
+}
+
+@article{smilkov2017smoothgrad,
+  author  = {Smilkov, Daniel and Thorat, Nikhil and Kim, Been and Vi{\'e}gas, Fernanda and Wattenberg, Martin},
+  title   = {{SmoothGrad}: removing noise by adding noise},
+  journal = {arXiv preprint arXiv:1706.03825},
+  year    = {2017}
+}
+
+@article{holm1979,
+  author  = {Holm, Sture},
+  title   = {A Simple Sequentially Rejective Multiple Test Procedure},
+  journal = {Scandinavian Journal of Statistics},
+  volume  = {6},
+  number  = {2},
+  pages   = {65--70},
+  year    = {1979}
+}
+
+@article{huang2014,
+  author  = {Huang, H. and Liu, J. and Zhu, Q. and Wang, R. and Hu, G.},
+  title   = {A new hierarchical method for inter-patient heartbeat classification using random projections and {RR} intervals},
+  journal = {BioMedical Engineering OnLine},
+  volume  = {13},
+  pages   = {90},
+  year    = {2014},
+  doi     = {10.1186/1475-925X-13-90}
+}
+
+@article{lin2014,
+  author  = {Lin, C. C. and Yang, C. M.},
+  title   = {Heartbeat classification using normalized {RR} intervals and morphological features},
+  journal = {Mathematical Problems in Engineering},
+  volume  = {2014},
+  pages   = {712474},
+  year    = {2014},
+  doi     = {10.1155/2014/712474}
+}
+
+@article{zhu2022,
+  author  = {Zhu, Wenliang and Ma, Gang and Zheng, Lesong and Chen, Yuhang and Qiu, Lishen and Wang, Lirong},
+  title   = {Inter-patient arrhythmia identification method with {RR}-intervals and convolutional neural networks},
+  journal = {Physiological Measurement},
+  volume  = {43},
+  number  = {3},
+  pages   = {035003},
+  year    = {2022},
+  doi     = {10.1088/1361-6579/ac58de}
+}
+
+@article{mousavi2019,
+  author  = {Mousavi, Sajad and Afghah, Fatemeh and Acharya, U. Rajendra},
+  title   = {Inter- and intra- patient {ECG} heartbeat classification for arrhythmia detection: a sequence to sequence deep learning approach},
+  journal = {arXiv preprint arXiv:1812.07421},
+  year    = {2019}
+}
+
+@article{kwak2024diffusion,
+  author  = {Kwak, Jinhee and Jung, Jaehee},
+  title   = {Classification of imbalanced {ECGs} through segmentation models and augmented by conditional diffusion model},
+  journal = {PeerJ Computer Science},
+  volume  = {10},
+  pages   = {e2299},
+  year    = {2024},
+  doi     = {10.7717/peerj-cs.2299}
+}
+
+@article{wagner2020ptbxl,
+  author  = {Wagner, Patrick and Strodthoff, Nils and Bousseljot, Ralf-Dieter and Kreiseler, Dieter and Lunze, Fatima I. and Samek, Wojciech and Schaeffter, Tobias},
+  title   = {{PTB-XL}, a large publicly available electrocardiography dataset},
+  journal = {Scientific Data},
+  volume  = {7},
+  pages   = {154},
+  year    = {2020},
+  doi     = {10.1038/s41597-020-0495-6}
+}
+
+@inproceedings{golany2020simgans,
+  author    = {Golany, Tomer and Radinsky, Kira and Freedman, Daniel},
+  title     = {{SimGANs}: Simulator-Based Generative Adversarial Networks for {ECG} Synthesis to Improve Deep {ECG} Classification},
+  booktitle = {Proceedings of the 37th International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {119},
+  pages     = {3597--3606},
+  year      = {2020}
+}
+
+@article{mcsharry2003dynamical,
+  author  = {McSharry, Patrick E. and Clifford, Gari D. and Tarassenko, Lionel and Smith, Leonard A.},
+  title   = {A dynamical model for generating synthetic electrocardiogram signals},
+  journal = {IEEE Transactions on Biomedical Engineering},
+  volume  = {50},
+  number  = {3},
+  pages   = {289--294},
+  year    = {2003},
+  doi     = {10.1109/TBME.2003.808805}
+}
+
+@article{shaker2020gan,
+  author  = {Shaker, Abdelrahman M. and Tantawi, Manal and Shedeed, Howida A. and Tolba, Mohamed F.},
+  title   = {Generalization of Convolutional Neural Networks for {ECG} Classification Using Generative Adversarial Networks},
+  journal = {IEEE Access},
+  volume  = {8},
+  pages   = {35592--35605},
+  year    = {2020},
+  doi     = {10.1109/ACCESS.2020.2974712}
+}
+
+@misc{tan2022icentia,
+  author       = {Tan, Shawn and Ortiz-Gagn{\'e}, Satya and Beaudoin-Gagnon, Nicolas and Fecteau, Pierre and Courville, Aaron and Bengio, Yoshua and Cohen, Joseph Paul},
+  title        = {{Icentia11k} Single Lead Continuous Raw Electrocardiogram Dataset (version 1.0)},
+  howpublished = {PhysioNet, doi:10.13026/kk0v-r952},
+  year         = {2022}
 }

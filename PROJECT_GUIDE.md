@@ -309,7 +309,7 @@ Asks: does pretraining on a large ECG dataset help rare-beat detection on MIT-BI
 
 - `python -m ecgaug.paper` writes every table and number of `paper/main.tex` (kept local) from the result files, and
   the course report's share of them into `report/generated/` and `report/results.md`; missing results show as red
-  placeholders, so both always compile. The course report is `report/report.pdf` (30 pages) and
+  placeholders, so both always compile. The course report is `report/report.pdf` (29 pages) and
   `report/report_short.pdf` (20 pages). `scripts/reproduce.sh` lists
   the whole pipeline in order.
 

@@ -6,7 +6,7 @@ study on the MIT-BIH Arrhythmia Database: the data pipeline, the classifiers, th
 usual ways of handling class imbalance, saliency explanations, LLM-written notes guarded by a fact checker, and a demo.
 It was run in pre-registered phases from 2026-10-07 to 2026-11-13.
 
-**The course report:** [report/report.pdf](report/report.pdf) (30 pages), or the 20-page version
+**The course report:** [report/report.pdf](report/report.pdf) (29 pages), or the 20-page version
 [report/report_short.pdf](report/report_short.pdf). Every results table is also in [report/results.md](report/results.md).
 
 **The demo:** `./demo.sh` (see [Demo](#demo)).
@@ -217,7 +217,7 @@ Every access is logged in [docs/TEST_ACCESS_LOG.md](docs/TEST_ACCESS_LOG.md).
 |---|---|
 | `src/ecgaug/` | the package: `data` (MIT-BIH pipeline, PTB-XL preprocessing, R-peak detector), `eval` (metrics, bootstrap, selection rules), `models` (probe and the four baselines), `train`, `generators` (cVAE, WGAN-GP, banks), `quality` (diagnostics, metric families, sanity harness), `augment` (policies, SMOTE, oversampling, class weights), `grid` (the grid runner), `experiments` (one runner per experiment), `explain` (saliency and its scores), `report` (notes, the demo's review and the fact checkers, error analysis), `final_eval`, `demo`, `paper`, `workflow` (status and gates) |
 | `configs/` | one folder per experiment (`<experiment>/<letter>_<name>.yaml` plus a shared settings file), `validation_split/`, `phase4_full_grid/` |
-| `report/` | the course report: `report.pdf` (30 pages) and `report_short.pdf` (20 pages), their LaTeX sources and references, `generated/` (the tables, numbers and texts it inputs) and `results.md`; see [report/README.md](report/README.md) |
+| `report/` | the course report: `report.pdf` (29 pages) and `report_short.pdf` (20 pages), their LaTeX sources and references, `generated/` (the tables, numbers and texts it inputs) and `results.md`; see [report/README.md](report/README.md) |
 | `results/` | generated summaries: counts, variant results, gate reports, the final evaluation, `manifest.json` (what is frozen, with hashes) |
 | `figures/` | figures for every phase and analysis, made by code; [figures/README.md](figures/README.md) lists what each folder shows |
 | `demo.sh` | the demo from any folder |
