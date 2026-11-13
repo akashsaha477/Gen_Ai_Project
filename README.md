@@ -68,16 +68,30 @@ oversampling, SMOTE, the cVAE and the WGAN-GP.
 | rnn | cVAE | 0.1 | 0.073 [0.035, 0.157] | 0.926 |
 | rnn | WGAN-GP | 0.5 | 0.069 [0.027, 0.156] | 0.857 |
 
-| Hypothesis | Verdict |
-|---|---|
-| H1 (confirmatory): a generative condition improves test rare-class macro-F1 over no augmentation | not supported: no confirmatory comparison significant after Holm's correction (cnn cVAE vs none +0.025, 95% CI −0.018 to 0.047) |
-| H1c: generative augmentation beats SMOTE, random oversampling and class-weighted loss | not supported: 0 of 6 comparisons significant |
-| H2: evaluating with the same patients in training and test inflates the baseline and the gains | not consistent: the baseline is inflated hugely (the cnn without augmentation scores 0.837 ± 0.026 with a random beat-level split, 0.088 with patients kept apart: +0.748), but the generators' gains were not larger (0 of 2) |
-| H3: a synthetic-quality metric predicts the gain from augmentation | not supported: 0 of 5 metrics |
-| H4: augmented models are at least as faithful in their saliency as the baseline | mixed: 1 of 4 model pairs |
-
 Per class, the cnn with the cVAE reaches N recall 0.938 and V F1 0.893, near published inter-patient results (Huang et
 al. 2014: V F1 0.924), but S F1 only 0.173 and F F1 0.054: the rare beats of new patients are the hard part.
+
+### The hypotheses: how each was tested and what we found
+
+Four hypotheses were registered before any test record was read, and each was tested once on the 22 test patients,
+with confidence intervals from a bootstrap over patients and Holm's correction for the confirmatory family. Behind them
+are 761 logged runs (240 in the pre-registered phases, 521 in the follow-up analyses), 21 versions of the
+pre-registration and a gate approval at the end of every phase. The verdicts below are the pre-registered rules applied
+literally; the evidence column shows what each test found.
+
+| Hypothesis | How it was tested | What we found | Verdict |
+|---|---|---|---|
+| **H1** (confirmatory): generative augmentation improves rare-class macro-F1 over no augmentation | Two generator families (cVAE, WGAN-GP), four designs of each piloted, the two winners trained with three seeds into six frozen synthetic banks; the augmentation policy chosen in a 27-run pilot; a 96-run grid (2 classifiers × 3 seeds × no augmentation plus 5 conditions at 3 strengths each), every strength chosen on validation; four confirmatory comparisons | The cVAE was the best generative condition on validation for both classifiers. On test, the cnn with the cVAE moved in the hypothesised direction: rare-class macro-F1 +0.025 (95% CI −0.018 to +0.047), S F1 and F F1 +0.025 each, F sensitivity 0.064 → 0.185, and the highest four-class macro-F1 of all twelve models (0.517). No difference survived Holm's correction, with or without record 202 | Not supported at this sample size |
+| **H1b** (exploratory): the gain is larger for F than for S | Per-class F1 differences against no augmentation, for each generator and classifier | F gained more than S with both generators on the rnn (cVAE F +0.007 vs S −0.011; WGAN-GP F +0.013 vs S −0.025); equal gains for the cnn with the cVAE (+0.025 each) | Mixed (2 of 4) |
+| **H1c** (secondary): generative augmentation beats SMOTE, random oversampling and class-weighted loss | The best generative condition on validation (the cVAE, for both classifiers) against each of the three, six comparisons with Holm's correction | The cVAE matched the cheap methods: for the cnn +0.044 vs SMOTE, +0.001 vs class-weighted loss, −0.022 vs random oversampling; for the rnn within ±0.016 | Not supported: on par, not above (0 of 6) |
+| **H2** (exploratory): evaluating with the same patients in training and test inflates the baseline and the gains | A leakage audit after the final evaluation: the same cnn trained and tested on a random beat-level split of all 44 records (15 runs), repeated on two more random splits (P4) | The baseline's rare-class macro-F1 rose from 0.088 to 0.837 ± 0.026 (+0.748), and to 0.803 and 0.777 on the other two splits; the generators' gains were not larger there (cVAE −0.017, WGAN-GP −0.052) | Not consistent: inflation strongly confirmed, larger gains not |
+| **H3** (exploratory): a synthetic-quality metric predicts the gain from augmentation | First a sanity harness for four metric families on deliberately degraded beats (DTW and spectral passed; the FID analogue and TSTR failed), then five metrics (DTW, spectral, diversity ratio, memorization fraction, C2ST accuracy) correlated with the downstream gain over 96 checkpoints of 24 generator runs | No metric had an interval excluding zero (Spearman ρ from −0.20 to +0.18): synthetic beats that look closer to real ones did not give larger gains | Not supported (0 of 5) |
+| **H4** (exploratory): augmented models are at least as faithful in their saliency as the baseline | Four saliency methods (Grad-CAM, integrated gradients, SmoothGrad, occlusion) scored for faithfulness (deleting the most salient samples against random deletion) and stability; Grad-CAM chosen for the cnn, occlusion for the rnn | Faithfulness gain over random deletion: cnn none +0.152, cVAE +0.118, WGAN-GP +0.157; rnn none +0.113, cVAE +0.054, WGAN-GP +0.092. The cnn with the cVAE shifted its saliency to the QRS window on synthetic beats (0.48 against 0.34 on real ones) | Mixed (1 of 4: the cnn with the WGAN-GP) |
+
+The negative verdicts are results, not missing work: under a strict inter-patient protocol, with 17 training patients,
+generative augmentation performed on par with the cheap balancing methods, and synthetic quality did not predict
+usefulness. The confidence intervals are wide because the rare beats sit in a few patients; showing an effect of the
+size seen for the cnn with the cVAE needs more patients with rare beats.
 
 ### After the final evaluation: 23 follow-up analyses
 
@@ -98,12 +112,28 @@ classifier, averaging over ten runs, and a rule-based S stage with an atrial-fib
 On 977 patients of the Icentia11k database that no analysis had used, the P18 pipeline reached S F1 0.294 [0.237, 0.350]
 with its own settings and 0.414 with the settings chosen on other patients (P20); Icentia11k has no F labels.
 
+What the follow-up analyses established:
+
+- **Patient-relative beats** (each beat taken relative to the patient's own beats, P7) raised the cnn's test rare-class
+  macro-F1 without augmentation from 0.088 to 0.371 (S F1 0.148 → 0.312, F F1 0.029 → 0.429): the largest step in the
+  figure above came from the input, not from the generator.
+- **The atrial-fibrillation veto** (P16) raised rare-class macro-F1 in all six conditions (+0.018 to +0.034), every 95%
+  interval above zero (Holm p 0.018 to 0.057).
+- **Averaging ten runs** (P18, P19) raised S F1 on the 977 unseen patients in five of six conditions (Holm p 0.001), and
+  on the test records lifted the WGAN-GP pipeline by +0.099 (Holm p 0.006).
+- **Choosing the settings on other patients** (P20) raised S F1 on the 977 unseen patients in all six conditions (the
+  cVAE from 0.294 to 0.414, Holm p 0.001).
+- **A larger classifier** (ResNet1D, P22) beat the cnn on the unseen patients with the cVAE (+0.023, Holm p 0.002) and the
+  WGAN-GP (+0.058, Holm p 0.0006).
+- **The leakage inflation** held on two more random splits (P4), and **five seeds** instead of three changed no verdict
+  (P3).
+
 ### What this means
 
 - With patients kept strictly apart and 17 training patients, generative augmentation did not detectably improve rare-
-  class detection over no augmentation or the simple balancing methods. Showing an effect of the size seen here needs
-  more patients with rare beats and more runs: the test S beats come mostly from one record (232 holds 1,381 of the
-  1,836 usable test S beats).
+  class detection over no augmentation or the simple balancing methods; the cVAE's effect on the cnn points the right
+  way but is within the noise. Showing it needs more patients with rare beats and more runs: the test S beats come
+  mostly from one record (232 holds 1,381 of the 1,836 usable test S beats).
 - The same models score near 0.84 when beats of the same patients are in training and test, so results from such
   splits say little about new patients.
 - Normal and V beats are detected at about the published level; S and F beats need patient-relative inputs, more

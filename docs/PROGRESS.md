@@ -1739,3 +1739,12 @@ their old versions plus one old `.gitignore` line; removed, and scrubbed from hi
 final tree identical, `docs/COMMIT_MAP.csv` extended to 399 rows: e.g. 38f0ed4 -> e425075, 9602c73 -> 949de13). Left for
 the owner on GitHub: the generated-by line at the end of pull requests #4, #5 and #6. GitHub keeps the old commits of the
 ten pull requests (from before A35); only GitHub Support can remove them.
+
+2026-11-13. README hypothesis section rewritten, asked "improve the verdict and hypothesis section it feels like we
+havent done any work". The two-column table (hypothesis, verdict) became four columns: the hypothesis, how it was
+tested (generator families and designs, banks, pilot and grid sizes, comparisons, the leakage audit runs, the quality
+sanity harness and the 96 checkpoints, the four saliency methods), what was found (effect sizes and intervals from
+`report/generated/results_rq1.tex`, `results_rq3.tex`, `results_rq4.tex`, the final-evaluation and leakage tables) and
+the pre-registered verdict, unchanged. An introduction gives the scale (761 logged runs: 240 pre-registered, 521
+follow-up; 21 pre-registration versions; a gate per phase), and the follow-up section now lists what those analyses
+established, each with its number and Holm p from the checklist (P7, P16, P18/P19, P20, P22, P4, P3). No number is new.
