@@ -241,7 +241,7 @@ The ten-run pipelines (each read once; record-level 95% CI). These reads kept S 
 | Zhu et al. 2022 [zhu2022] | – | – | 0.686 | – | – | 0.960 | 0.477 | 0.582 |
 | Mousavi et al. 2019 [mousavi2019]† | 0.889 | **0.926** | **0.907** | **0.999** | **0.995** | **0.997** | – | – |
 | Kwak and Jung 2024 [kwak2024diffusion] (intra-patient) | 0.947 | 0.947 | 0.947 | 0.989 | 0.982 | 0.985 | 0.903 | 0.925 |
-| **Ours, P18 (post hoc)** | **0.914** | 0.500 | 0.647 | – | – | 0.936 | **0.527** | **0.587** |
+| **Ours, P18 (post hoc; also trained on INCART and SVDB patients)** | **0.914** | 0.500 | 0.647 | – | – | 0.936 | **0.527** | **0.587** |
 | **Ours, pre-registered best (cnn, random oversampling)** | 0.160 | 0.294 | 0.205 | 0.855 | 0.922 | 0.885 | 0.067 | 0.136 |
 | **Ours, pre-registered cVAE (cnn)** | 0.152 | 0.201 | 0.173 | 0.873 | 0.931 | 0.893 | 0.054 | 0.113 |
 | Ours, same patients in training and test (leakage audit, cnn, none) | – | – | – | – | – | – | – | 0.837 |

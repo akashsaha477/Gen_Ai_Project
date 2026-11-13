@@ -108,7 +108,7 @@ classifier, averaging over ten runs, and a rule-based S stage with an atrial-fib
 | On the 22 test records | S F1 | F F1 | V F1 | Rare-class macro-F1 [95% CI] |
 | :--- | ---: | ---: | ---: | ---: |
 | pre-registered, cnn with the cVAE | 0.173 | 0.054 | 0.893 | 0.113 [0.049, 0.217] |
-| **P18: the cVAE's ten-run ensemble, S stage and AF veto** | **0.647** | **0.527** | 0.936 | **0.587** [0.086, 0.702] |
+| **P18: the cVAE's ten-run ensemble, S stage and AF veto** (also trained on INCART and SVDB patients) | **0.647** | **0.527** | 0.936 | **0.587** [0.086, 0.702] |
 | P20: the same, its settings chosen on other patients (Icentia11k) | 0.391 | 0.527 | 0.936 | 0.459 [0.110, 0.500] |
 | Zhu et al. 2022 (published, inter-patient) | 0.686 | 0.477 | 0.960 | 0.582 (mean of S and F F1) |
 

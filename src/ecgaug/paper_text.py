@@ -582,7 +582,7 @@ def metrics_section() -> str:
     e = _load(paths.results_for("phase6_seed_ensemble") / "summary.json")
     ours = []
     if e:
-        ours.append(("Ours, P18 (post hoc)", e["ensemble"]["with_af_veto"]["cnn/cvae"]))
+        ours.append(("Ours, P18 (post hoc; also trained on INCART and SVDB patients)", e["ensemble"]["with_af_veto"]["cnn/cvae"]))
     b = max(final["conditions"].items(), key=lambda kv: kv[1]["rare_macro_f1"]["point"])
     ours.append((f"Ours, pre-registered best ({b[0].split('/')[0]}, {SHORT[b[0].split('/')[1]]})", b[1]))
     ours.append(("Ours, pre-registered cVAE (cnn)", final["conditions"]["cnn/cvae"]))

@@ -1839,3 +1839,21 @@ progress figure is back in Section 4.1, which the introduction now points to, so
 discusses it (pages 1-2 have no figure; page 2 keeps the small split table of the data section). The document calls
 itself a report ("Course project report, 10-page version"), and README, report/README, PROJECT_GUIDE and CODE_GUIDE call it
 the 10-page version. Still 10 pages, no warnings.
+
+2026-11-13. The 10-page version rewritten as a research paper, asked "make this like a proper paper sir should be impressed
+to read it think deeply", then "add more figures smaller figures and add more contents". Title "Context Before Synthesis: A
+Pre-Registered Study of Generative Augmentation for Rare-Arrhythmia Detection in Unseen Patients". Structure: abstract;
+introduction with four numbered contributions; related work; problem setup (data, the measure as an equation, pre-
+registration and test lock); methods (the pre-registered pipeline with its training budget; the patient-context pipeline as
+equations: the patient template within 150 s, RR over the recording's mean, the ten-run average, Huang's rule at 0.8 with
+the AF veto at 0.95, all from PREREGISTRATION P6, P13, P16, P18; the notes); results (the pre-registered answer with a
+forest plot and per-record recall, where the errors are, why synthetic beats did not transfer with real-vs-synthetic beats,
+quality-vs-gain and the nearest-patient chart, the patient-context climb, the comparison with published results, the other
+follow-ups P18/P20-P23 as a table, the unseen Icentia11k patients, patient overlap, explanations); discussion; conclusion.
+A4, 10 pt, 2 cm margins, 8 figures (several as panels), 5 tables, 10 pages, no warnings, no figure on pages 1-2; the 139
+typed numbers were all found in results.md, the checklist, the progress and decisions logs or the generated files.
+Found while writing: the best pipeline (P18) builds on P11, whose training adds INCART and SVDB patients, so the comparison
+with published DS1-trained methods is not like for like on training data. The paper says so in the table and the text, and
+the P18 row of the full report's literature table (paper_text.py, so report.pdf, report_short.pdf and results.md) and of
+the README now read "also trained on INCART and SVDB patients". Within the patient-context pipeline the cVAE leads the other
+conditions by 0.046 to 0.271, none detectable (Holm p 0.107-1.000), and the paper says so.
