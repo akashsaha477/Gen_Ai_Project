@@ -43,21 +43,21 @@ Every prediction comes with a saliency map and a note whose every claim is check
 \end{abstract}
 
 \section{Introduction}
-A heartbeat classifier can look excellent or useless on the same data. Trained on the MIT-BIH Arrhythmia Database~\cite{moody2001}
-with its beats split at random, our convolutional network finds the rare arrhythmia beats with a rare-class F1 of 0.837. Trained on
-one group of patients and tested on another, the same network scores \TestCnnNoneRare. Nothing about the network changed; only the
-patients did (Figure~\ref{fig:gap}).
+On patients it has never seen, a heartbeat classifier misses most of the beats that matter. Trained on the MIT-BIH Arrhythmia
+Database~\cite{moody2001} and tested on other patients, the classic methods find supraventricular ectopic (S) beats with an F1 of
+0.511~\cite{dechazal2004} and 0.577~\cite{huang2014}; the most recent method we compare with reaches 0.686 for S beats and 0.477 for
+fusion (F) beats~\cite{zhu2022}. Our own first system, built and tested under rules registered in advance, did worse: a rare-class
+F1, the mean of S and F, of \TestCnnCvaeRare. Figure~\ref{fig:progress} shows how we took it to 0.587, above the classic methods on
+S and V beats and above the most recent one on fusion beats and on the mean of S and F.
 
-\begin{figure}[htbp]\centering\includegraphics[width=0.92\linewidth]{phase4_leakage_audit/intra_vs_inter.png}
-\caption{The same pipeline, scored on held-out beats of the training patients (blue) and on patients it has never seen (orange).
-The rare-class macro-F1 falls from about 0.8 to about 0.1, with or without generative augmentation.}\label{fig:gap}\end{figure}
+\begin{figure}[htbp]\centering\includegraphics[width=\linewidth]{report/progress.png}
+\caption{Left: the test score after each main change, without augmentation (circles) and with the cVAE (squares); every row below
+the dotted line is a follow-up analysis; dashed, the published result of Zhu et al. Right: the best pipeline's S F1 on the test
+patients and on unseen Icentia11k patients.}\label{fig:progress}\end{figure}
 
-The new-patient score is the one a clinic needs, and the published methods that measure it leave the rare classes far behind the
-common ones. De Chazal et al.~\cite{dechazal2004}, who introduced the inter-patient split, reach an S F1 of 0.511; Huang et
-al.~\cite{huang2014}, with a rule that calls a beat S when it comes early, 0.577; Zhu et al.~\cite{zhu2022} 0.686, and Zhu et al.\
-also report fusion beats, at an F1 of 0.477. The reason is that patients differ: a beat's shape depends on the
-heart, the electrode position and the disease, and S beats, whose burden goes with later atrial fibrillation and stroke~\cite{binici2010},
-and F beats are both rare and concentrated in a few people.
+The rare beats are hard because patients differ: a beat's shape depends on the heart, the electrode position and the disease, and
+S beats, whose burden goes with later atrial fibrillation and stroke~\cite{binici2010}, and F beats are both rare and concentrated in
+a few people. A model that has seen a few hundred S beats from a dozen people has to recognise them in someone new.
 
 Generative models offer an apparent remedy: learn what the rare beats look like and manufacture more of them. Conditional
 VAEs~\cite{sohn2015cvae} and Wasserstein GANs~\cite{gulrajani2017wgangp} draw convincing synthetic ECG. We registered the question
@@ -132,7 +132,7 @@ Right: what else was tested at each stage.}\label{fig:flow}\end{figure}
 \section{Results}\label{sec:results}
 \subsection{Above earlier inter-patient results on the rare classes}\label{sec:better}
 Twenty-three follow-up analyses (P1--P23), each registered before it ran, asked what moves the new-patient score. Four changes
-did, each building on the last (Figure~\ref{fig:progress}):
+did, each building on the last (Figure~\ref{fig:progress}, left):
 \begin{enumerate}\setlength{\itemsep}{1pt}
 \item \textbf{Each beat relative to the patient} (P7): subtracting the patient's own template beat raised the CNN without
 augmentation from \TestCnnNoneRare\ to 0.371.
@@ -143,10 +143,6 @@ above zero.
 \item \textbf{Ten runs averaged} (P18): the cVAE's ten-run ensemble reached 0.587 [0.086, 0.702], with S F1 0.647 and F F1 0.527.
 \end{enumerate}
 
-\begin{figure}[htbp]\centering\includegraphics[width=\linewidth]{report/progress.png}
-\caption{Left: the test score after each main change, without augmentation (circles) and with the cVAE (squares); every row below
-the dotted line is a follow-up analysis; dashed, the published result of Zhu et al. Right: the best pipeline's S F1 on the test
-patients and on unseen Icentia11k patients.}\label{fig:progress}\end{figure}
 
 \begin{table}[htbp]\centering\small
 \begin{tabular}{lrrrr}\toprule
@@ -174,6 +170,10 @@ patients~\cite{tan2022icentia} that no analysis had used, the same pipeline reac
 thresholds were chosen on 388 other Icentia11k patients.
 
 \subsection{Patient overlap inflates the score almost tenfold}\label{sec:gap}
+\begin{figure}[htbp]\centering\includegraphics[width=0.92\linewidth]{phase4_leakage_audit/intra_vs_inter.png}
+\caption{The same pipeline, scored on held-out beats of the training patients (blue) and on patients it has never seen (orange).
+The rare-class macro-F1 falls from about 0.8 to about 0.1, with or without generative augmentation.}\label{fig:gap}\end{figure}
+
 After the final evaluation, the same CNN was trained and tested on a random beat split of all 44 records. Without augmentation it
 reached 0.837 $\pm$ 0.026 (Figure~\ref{fig:gap}), and 0.803 and 0.777 on two further random splits, against \TestCnnNoneRare\ on new
 patients. Patient overlap has been known to inflate scores since de Chazal et al.\ introduced the inter-patient split; our

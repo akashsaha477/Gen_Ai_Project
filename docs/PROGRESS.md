@@ -1829,3 +1829,8 @@ presents our measurement of it on one pipeline (0.088 to 0.837, three random spl
 comparison table now also lists Mousavi et al. and a block for patients seen in training (Kwak and Jung 0.925, ours
 0.837); our row is labelled, not bolded as best. Still 10 pages, no warnings; the 79 typed numbers are all in
 report/results.md, the checklist or the generated files.
+Then, asked "figure 1 doesnt fit in the flow nicely you are not thinking of the direction correctly": the introduction now
+runs in the paper's direction. It opens with where published methods stand on new patients (S F1 0.511, 0.577, 0.686; F F1
+0.477) and where our first system started (0.113), and Figure 1 is the progress figure, the climb to 0.587 with Zhu et al.'s
+result dashed. The patient-overlap figure moved to Section 4.2, where that finding is discussed. Still 10 pages, no
+warnings.
