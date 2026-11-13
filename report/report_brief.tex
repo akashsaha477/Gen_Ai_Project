@@ -17,7 +17,9 @@
 \graphicspath{{../figures/}}
 \usepackage{placeins}  % \FloatBarrier only where a figure must stay in its section
 \renewcommand{\topfraction}{0.9}\renewcommand{\bottomfraction}{0.8}\renewcommand{\textfraction}{0.07}
-\renewcommand{\floatpagefraction}{0.75}\setcounter{topnumber}{3}\setcounter{totalnumber}{5}
+\renewcommand{\floatpagefraction}{0.92}\setcounter{topnumber}{3}\setcounter{totalnumber}{5}
+\makeatletter\setlength{\@fptop}{0pt}\setlength{\@fpsep}{10pt plus 2pt}\setlength{\@fpbot}{0pt plus 1fil}\makeatother  % float pages fill from the top
+\setlength{\textfloatsep}{10pt plus 2pt minus 4pt}\setlength{\floatsep}{8pt plus 2pt minus 2pt}\setlength{\intextsep}{8pt plus 2pt minus 2pt}
 \newcommand{\missing}[1]{\textcolor{red}{[#1]}}
 \input{generated/numbers.tex}
 
@@ -87,8 +89,8 @@ under a fact checker that rejects any claim not in that output (Section~\ref{sec
 \section{Related work}\label{sec:related}
 \paragraph{Evaluation.} The AAMI EC57 standard~\cite{aami2012ec57} groups the MIT-BIH labels into the classes N, S, V, F and Q and
 asks for record-by-record reporting; de Chazal et al.~\cite{dechazal2004} split the records into DS1 for training and DS2 for testing
-so that no patient is in both. Mousavi et al.~\cite{mousavi2019} report the same model under both protocols and find the random split
-far easier; we measure the gap on one pipeline.
+so that no patient is in both. Studies that split beats at random report far higher scores~\cite{kwak2024diffusion}; we measure the
+gap between the two protocols on one pipeline.
 
 \paragraph{Rhythm and patient context.} The strongest inter-patient methods rely on RR intervals measured against the patient's own
 rhythm: Lin and Yang~\cite{lin2014} divide them by the recording's mean, Huang et al.~\cite{huang2014} call a beat S when it comes early
@@ -130,13 +132,13 @@ each phase ended with a gate at which the rule was applied and approved. The tes
 that the final evaluation alone unlocks, and every read is logged. The follow-up analyses were registered as new versions of the
 rules (21 in all) before they ran, are reported apart from the primary results, and are labelled post hoc.
 
-\begin{figure}[tbp]\centering\includegraphics[width=0.82\linewidth]{report/medical_background.png}
+\begin{figure}[tbp]\centering\includegraphics[width=0.9\linewidth]{report/medical_background.png}
 \caption{The beat classes on the ECG (training records only). The RR intervals (arrows) reveal an early beat; the rare beats of
 each patient differ from the same patient's normal beat in their own way.}\label{fig:beats}\end{figure}
 
 \section{Methods}\label{sec:methods}
 \subsection{The pre-registered pipeline}\label{sec:pipeline}
-Each stage was chosen on validation patients by a registered rule (Figure~\ref{fig:flow}, left).
+Each stage was chosen on validation patients by a registered rule (Figure~\ref{fig:flow}, left column).
 \textbf{Beat.} A 0.5~s window around the reference R peak (180 samples), z-scored per beat, with three RR features as side input:
 the intervals before and after the beat and the ratio of the former to the mean of the previous ten (the best of four
 representations). \textbf{Classifiers.} A shallow CNN (73k parameters) and a BiLSTM (135k), the best of four architectures, trained
@@ -151,12 +153,16 @@ is a grid of 96 runs (2 classifiers, 3 seeds, no augmentation and 5 conditions a
 $3\cdot10^{-4}$ chosen on validation, at most 40 epochs, and early stopping with patience 5 on validation S F1, never before
 epoch 10; every condition has the same budget.
 
-\begin{figure}[tbp]\centering\includegraphics[width=0.56\linewidth]{architecture/flow.png}
-\caption{The pipeline. Left: the pre-registered system. Middle: the patient-context pipeline with the best test score
-(Section~\ref{sec:context}). Right: what else was tested at each stage.}\label{fig:flow}\end{figure}
+\begin{figure}[tbp]\centering
+\begin{subfigure}[b]{0.44\linewidth}\centering\includegraphics[width=\linewidth]{architecture/flow.png}\caption{}\label{fig:flow}\end{subfigure}\hfill
+\begin{subfigure}[b]{0.54\linewidth}\centering\includegraphics[width=\linewidth]{demo_example/record118_beat112.png}\caption{}\label{fig:demo}\end{subfigure}
+\caption{The system and its output. (a) The pipeline: left, the pre-registered system; middle, the patient-context pipeline with the
+best test score (Section~\ref{sec:context}); right, what else was tested at each stage. (b) The output for one S beat of a validation
+patient: the rhythm strip with each beat's predicted class and the reference label, where the model looked, the probabilities, and
+how all 36 saved runs classified the beat (only 6 called it S).}\label{fig:system}\end{figure}
 
 \subsection{The patient-context pipeline}\label{sec:contextmethod}
-The follow-up analyses replaced population-level inputs with patient-relative ones (Figure~\ref{fig:flow}, middle). For beat $b$
+The follow-up analyses replaced population-level inputs with patient-relative ones (Figure~\ref{fig:flow}, middle column). For beat $b$
 with z-scored window $x_b$ and R peak at time $\tau_b$, the patient template is the element-wise median of the windows of every beat of
 the same recording within 150~s, and the classifier sees the deviation from it:
 \begin{equation}
@@ -166,7 +172,7 @@ Figure~\ref{fig:template} shows the effect: the shape of a normal beat differs f
 bundle branch block), but after the template is subtracted a normal beat is close to zero everywhere and only the deviation of an
 ectopic beat from that patient's usual beat remains.
 
-\begin{figure}[tbp]\centering\includegraphics[width=0.9\linewidth]{phase6_patient_template/input_v2_vs_v3.png}
+\begin{figure}[tbp]\centering\includegraphics[width=\linewidth]{phase6_patient_template/input_v2_vs_v3.png}
 \caption{What the classifier sees, for three validation patients (median beat per class). Top: z-scored beats, whose shape differs
 between patients. Bottom: the same beats minus each patient's template (Equation~2); a normal beat is close to zero and an ectopic
 beat keeps only its deviation from the patient's usual beat.}\label{fig:template}\end{figure}
@@ -202,8 +208,8 @@ worse in 1 of 8 comparisons. Normal and ventricular beats were detected at about
 0.938, V F1 0.893); S and F beats were not.
 
 \begin{figure}[tbp]\centering
-\begin{subfigure}[b]{0.39\linewidth}\centering\includegraphics[width=\linewidth]{final_eval/forest.png}\caption{}\end{subfigure}\hfill
-\begin{subfigure}[b]{0.59\linewidth}\centering\includegraphics[width=\linewidth]{final_eval/per_record_S_F.png}\caption{}\end{subfigure}
+\begin{subfigure}[b]{0.335\linewidth}\centering\includegraphics[width=\linewidth]{final_eval/forest.png}\caption{}\end{subfigure}\hfill
+\begin{subfigure}[b]{0.645\linewidth}\centering\includegraphics[width=\linewidth]{final_eval/per_record_S_F.png}\caption{}\end{subfigure}
 \caption{The pre-registered comparison on the test patients. (a) Differences in rare-class macro-F1 with 95\% intervals and Holm-adjusted
 $p$: black, the confirmatory family; grey, the secondary one. (b) S and F recall per test record for all twelve models: two records
 (232 for S, 213 for F) hold most rare beats, and every model misses most of them.}\label{fig:answer}\end{figure}
@@ -233,9 +239,9 @@ reproduce the training distribution faithfully, and that distribution is dominat
 not in it (Figure~\ref{fig:why}).
 
 \begin{figure}[tbp]\centering
-\begin{subfigure}[b]{0.43\linewidth}\centering\includegraphics[width=\linewidth]{phase3_gate/banks.png}\caption{}\end{subfigure}\hfill
-\begin{subfigure}[b]{0.55\linewidth}\centering\includegraphics[width=\linewidth]{phase4_quality_vs_gain/quality_vs_gain.png}\caption{}\end{subfigure}\\[4pt]
-\begin{subfigure}[b]{0.8\linewidth}\centering\includegraphics[width=\linewidth]{phase6_augmentation_mechanism/mechanism.png}\caption{}\end{subfigure}
+\begin{subfigure}[b]{0.418\linewidth}\centering\includegraphics[width=\linewidth]{phase3_gate/banks.png}\caption{}\end{subfigure}\hfill
+\begin{subfigure}[b]{0.562\linewidth}\centering\includegraphics[width=\linewidth]{phase4_quality_vs_gain/quality_vs_gain.png}\caption{}\end{subfigure}\\[4pt]
+\begin{subfigure}[b]{0.9\linewidth}\centering\includegraphics[width=\linewidth]{phase6_augmentation_mechanism/mechanism.png}\caption{}\end{subfigure}
 \caption{Why the synthetic beats did not transfer. (a) Real training beats beside the frozen cVAE and WGAN-GP banks (mean $\pm$ SD and 20
 random beats): the synthetic beats look right. (b) No quality metric predicts the downstream gain (96 checkpoints of 24 generator
 runs). (c) Each S beat attributed to its nearest training patient: synthetic beats follow the real training mix, dominated by
@@ -250,7 +256,7 @@ runs gave 0.587 [0.086, 0.702], with S F1 0.647 and F F1 0.527 (P18). Within thi
 above the other conditions, mostly through fusion beats, but none of these differences is detectable with 22 test patients (Holm
 $p$ from 0.107 to 1.000): synthesis on top of context is a promising point estimate, not a finding.
 
-\begin{figure}[tbp]\centering\includegraphics[width=0.92\linewidth]{report/progress.png}
+\begin{figure}[tbp]\centering\includegraphics[width=\linewidth]{report/progress.png}
 \caption{The test score after each main change, without augmentation (circles) and with the cVAE (squares); every row below the
 dotted line is a follow-up analysis; dashed, Zhu et al.'s published mean of S and F F1. Right: the best pipeline's S F1 on the test
 patients and on unseen Icentia11k patients.}\label{fig:progress}\end{figure}
@@ -303,18 +309,32 @@ same thresholds, none of the lower block is detectably different (Holm $p$ 0.24 
 To discount those repeated reads, the frozen pipeline was run on 977 patients of the Icentia11k database~\cite{tan2022icentia} that no
 analysis had used (S and V labels only; Icentia11k has no F label). Its S F1 was 0.294 [0.237, 0.350] with its own thresholds, and
 0.414 when the two thresholds were chosen on 388 other Icentia11k patients; on the test records that choice gave 0.459, because the
-test record that holds most S beats resembles no tuning patient. Patient context therefore transfers, but less than the test score
-suggests, and the cVAE was level with the other conditions there (differences $-0.001$ to $+0.008$, none detectable).
+test record that holds most S beats resembles no tuning patient. On these patients the ensemble alone did better than with the rule
+(cVAE S F1 0.348): Huang et al.'s threshold, set on MIT-BIH, doubled S sensitivity (0.303 to 0.629) but cut positive predictivity
+(0.408 to 0.157), and V F1 fell from 0.936 on the test patients to 0.648 (Figure~\ref{fig:unseen}). Patient context therefore
+transfers, but less than the test score suggests, and the cVAE was level with the other conditions there (differences $-0.001$ to
+$+0.008$, none detectable).
+
+\begin{figure}[tbp]\centering\includegraphics[width=\linewidth]{phase6_fresh_patients/results.png}
+\caption{The frozen pipeline on 977 unseen Icentia11k patients. Left and middle: S and V F1 of each condition's ten-run ensemble on the
+test records (squares), on the unseen patients with the rule and the veto (orange) and without them (grey). Right: the registered
+comparisons on the unseen patients, with Holm-adjusted $p$.}\label{fig:unseen}\end{figure}
 
 \subsection{Patient overlap inflates the score almost tenfold}\label{sec:overlap}
-Trained and tested on a random beat split of all 44 records, the same CNN without augmentation reached 0.837 $\pm$ 0.026
-(Figure~\ref{fig:gap}), and 0.803 and 0.777 on two further random splits, against \TestCnnNoneRare\ on unseen patients. Generative
-augmentation helped under neither protocol (with patients seen in training: cVAE $-0.017$, WGAN-GP $-0.052$). Random-split results
-above 0.9 belong beside our own 0.837, not beside inter-patient results (Table~\ref{tab:published}).
+After the final evaluation, the same CNN was trained and tested on a random beat split of all 44 records, so that beats of every
+patient were in both training and test. Without augmentation it reached 0.837 $\pm$ 0.026 (Figure~\ref{fig:gap}), and 0.803 and
+0.777 on two further random splits (Figure~\ref{fig:splits}), against \TestCnnNoneRare\ on unseen patients. The gap is not a property of one condition: the
+cVAE reached 0.820 and the WGAN-GP 0.785 under the random split. Generative augmentation helped under neither protocol (with
+patients seen in training: cVAE $-0.017$, WGAN-GP $-0.052$). A model that has seen a patient's beats largely recognises that
+patient; random-split results above 0.9 therefore belong beside our own 0.837, not beside inter-patient results
+(Table~\ref{tab:published}), and every other number in this paper is measured on patients unseen in training.
 
-\begin{figure}[tbp]\centering\includegraphics[width=0.66\linewidth]{phase4_leakage_audit/intra_vs_inter.png}
-\caption{The same pipeline, scored on held-out beats of the training patients (blue) and on unseen patients (orange): the rare-class
-macro-F1 falls from about 0.8 to about 0.1, with or without generative augmentation.}\label{fig:gap}\end{figure}
+\begin{figure}[tbp]\centering
+\begin{subfigure}[b]{0.517\linewidth}\centering\includegraphics[width=\linewidth]{phase4_leakage_audit/intra_vs_inter.png}\caption{}\label{fig:gap}\end{subfigure}\hfill
+\begin{subfigure}[b]{0.463\linewidth}\centering\includegraphics[width=\linewidth]{phase6_audit_check/audit_checks.png}\caption{}\label{fig:splits}\end{subfigure}
+\caption{Patient overlap. (a) The same pipeline on held-out beats of the training patients (blue) and on unseen patients (orange), with
+and without generative augmentation. (b) The random-split score on two further splits and at a second WGAN-GP strength, against the
+unseen-patient score of 0.088 (line).}\label{fig:overlap}\end{figure}
 
 \subsection{A prediction a clinician can check}\label{sec:explain}
 Of the four saliency methods, the registered rule chose Grad-CAM for the CNN, the most faithful (deleting its most salient samples hurt
@@ -323,11 +343,6 @@ chose Gemini with worked examples and a fixed output schema, which covered every
 Figure~\ref{fig:demo} shows the demonstrator for one S beat: the offline analysis by our models, which a review written by Gemini from
 those results then restates, claim by claim checked.
 
-\begin{figure}[tbp]\centering\includegraphics[width=0.58\linewidth]{demo_example/record118_beat112.png}
-\caption{One S beat of a validation patient: the rhythm strip with each beat's predicted class and the reference label, where the
-model looked, the probabilities, and how all 36 saved runs classified the beat (only 6 called it S).}\label{fig:demo}\end{figure}
-
-\FloatBarrier
 \section{Discussion}\label{sec:discussion}
 \paragraph{Context before synthesis.} With 17 training patients, the bottleneck for unseen patients is not the number of rare beats
 but the number of patients they come from. A generator trained on that set multiplies its dominant patient; what transferred instead
@@ -337,6 +352,11 @@ estimate, which suggests the order in which the two ideas should be combined.
 
 \paragraph{The protocol decides the score.} The same network scores 0.837 or \TestCnnNoneRare\ depending only on whether the test
 patients were seen in training, so results on random beat splits cannot be ranked against inter-patient ones.
+
+\paragraph{Reproducibility.} Every number in this paper is written by code from logged runs, each with its configuration, seed,
+commit and environment. The registered rules and their 21 versions, every decision and every read of the test records are kept in
+the project repository, the data are public on PhysioNet, and the test suite, including a dress rehearsal that runs every phase,
+gate and evaluation in order on fake records, passes on a fresh copy of the repository.
 
 \paragraph{Limitations.} The rare test beats sit in two patients, so intervals are wide and a single record can move the primary
 measure; the follow-up pipeline is post hoc and partly fitted to repeated test reads, which the unseen-patient check only partly

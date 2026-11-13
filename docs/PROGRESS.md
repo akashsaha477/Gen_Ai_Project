@@ -1857,3 +1857,14 @@ with published DS1-trained methods is not like for like on training data. The pa
 the P18 row of the full report's literature table (paper_text.py, so report.pdf, report_short.pdf and results.md) and of
 the README now read "also trained on INCART and SVDB patients". Within the patient-context pipeline the cVAE leads the other
 conditions by 0.046 to 0.271, none detectable (Holm p 0.107-1.000), and the paper says so.
+Then, asked "figures are not placed in the correct way a lot of places are empty": narrow centred figures and a sparse float
+page left blank space. Now the pipeline and the demo are one figure, "the system and its output", side by side at equal
+heights; every paired figure's panels are sized to equal heights; the patient-overlap figure is paired with the check on two
+more random splits (P4, figures/phase6_audit_check); float pages need 92% fill and stack from the top; no forced float
+flush. Added for content: the unseen-patient figure (figures/phase6_fresh_patients) with what it shows (on Icentia11k the
+ensemble alone did better, cVAE S F1 0.348, as Huang's threshold doubled S sensitivity 0.303 to 0.629 but cut S +P 0.408 to
+0.157; V F1 0.936 to 0.648, from the P19 row of the checklist) and a reproducibility paragraph. One sentence corrected: the
+related work said Mousavi et al. found the random split "far easier", but their two protocols' results are close; it now
+says studies with random splits report far higher scores (Kwak and Jung). 10 pages, 9 figures, 5 tables, no warnings, every
+page filled; 148 typed numbers, all in the sources. The Kaggle check v10 for f76936c did not run: the kernel started before
+the new repository bundle was processed and could not check out the commit.
