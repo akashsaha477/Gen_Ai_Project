@@ -240,12 +240,12 @@ reproduce the training distribution faithfully, and that distribution is dominat
 not in it (Figure~\ref{fig:why}).
 
 \begin{figure}[tbp]\centering
-\begin{subfigure}[b]{0.418\linewidth}\centering\includegraphics[width=\linewidth]{phase3_gate/banks.png}\caption{}\end{subfigure}\hfill
-\begin{subfigure}[b]{0.562\linewidth}\centering\includegraphics[width=\linewidth]{phase4_quality_vs_gain/quality_vs_gain.png}\caption{}\end{subfigure}\\[4pt]
+\begin{subfigure}[b]{0.433\linewidth}\centering\includegraphics[width=\linewidth]{phase3_gate/banks.png}\caption{}\end{subfigure}\hfill
+\begin{subfigure}[b]{0.547\linewidth}\centering\includegraphics[width=\linewidth]{phase4_quality_vs_gain/rho.png}\caption{}\end{subfigure}\\[4pt]
 \begin{subfigure}[b]{0.9\linewidth}\centering\includegraphics[width=\linewidth]{phase6_augmentation_mechanism/mechanism.png}\caption{}\end{subfigure}
 \caption{Why the synthetic beats did not transfer. (a) Real training beats beside the frozen cVAE and WGAN-GP banks (mean $\pm$ SD and 20
-random beats): the synthetic beats look right. (b) No quality metric predicts the downstream gain (96 checkpoints of 24 generator
-runs). (c) Each S beat attributed to its nearest training patient: synthetic beats follow the real training mix, dominated by
+random beats): the synthetic beats look right. (b) The Spearman correlation of each quality metric with the downstream gain over 96
+checkpoints of 24 generator runs: every 95\% interval includes zero. (c) Each S beat attributed to its nearest training patient: synthetic beats follow the real training mix, dominated by
 record 209, while the validation patients' S beats are nearest to patients the training set barely holds.}\label{fig:why}\end{figure}
 
 \subsection{Patient context lifts detection above published results}\label{sec:context}

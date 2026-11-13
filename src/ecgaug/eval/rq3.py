@@ -171,6 +171,7 @@ def write_outputs(summary: dict) -> None:
     from ecgaug import figures
 
     figures.safe_call(figures.quality_vs_gain_figure, summary, rows)
+    figures.safe_call(figures.quality_rho_figure, summary)
     summary["rows"] = rows
 
 

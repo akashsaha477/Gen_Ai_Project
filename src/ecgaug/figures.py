@@ -2639,6 +2639,36 @@ def quality_vs_gain_figure(summary: dict, rows: list[dict]) -> list[Path]:
     return [_save(fig, paths.figures_for("phase4_quality_vs_gain") / "quality_vs_gain.png", "RQ3: quality metrics against the downstream gain", caption)]
 
 
+QUALITY_NAMES = {"quality_dtw": "DTW distance", "quality_spectral": "spectral distance", "diversity_ratio_mean": "diversity ratio",
+                 "memorization_fraction_mean": "memorization fraction", "c2st_accuracy_mean": "two-sample test accuracy"}  # fmt: skip
+
+
+def quality_rho_figure(summary: dict) -> list[Path]:
+    """RQ3 in one panel: each quality metric's Spearman rho with the downstream gain and its 95% interval."""
+    plt = _plt()
+    metrics = [m for m in summary["metrics"] if summary["metrics"][m].get("ci_low") is not None]
+    fig, ax = plt.subplots(figsize=(5.8, 2.7))
+    for i, metric in enumerate(metrics):
+        m = summary["metrics"][metric]
+        ax.plot([m["ci_low"], m["ci_high"]], [i, i], color=BLUES[5], linewidth=2, solid_capstyle="round")
+        ax.plot(m["rho"], i, "o", color=BLUES[6], markersize=7, markeredgecolor=SURFACE, markeredgewidth=1.2, zorder=3)
+        signed = lambda v: f"{v if abs(v) >= 0.005 else 0.0:+.2f}"  # noqa: E731 (no "-0.00")
+        ax.text(0.98, i, f"{signed(m['rho'])} [{signed(m['ci_low'])}, {signed(m['ci_high'])}]", transform=ax.get_yaxis_transform(), ha="right",
+                va="center", fontsize=8, color=INK_2)  # fmt: skip
+    ax.axvline(0, color=INK_2, linewidth=1, linestyle="--")
+    ax.set_yticks(range(len(metrics)), [QUALITY_NAMES.get(m, m) for m in metrics])
+    ax.invert_yaxis()
+    ax.set_xlim(-0.6, 0.95)
+    ax.set_xticks([-0.5, -0.25, 0, 0.25, 0.5])
+    ax.set_xlabel("Spearman rho with the downstream gain (95% interval)")
+    ax.grid(axis="y", visible=False)
+    every = all(not summary["metrics"][m]["excludes_zero"] for m in metrics)
+    caption = (f"{summary['n_checkpoints']} checkpoints of {summary['n_runs']} generator runs; intervals from resampling runs; "
+               + ("every interval includes zero." if every else "dashed: no correlation."))  # fmt: skip
+    title = "No quality metric predicts the gain" if every else "Quality metrics against the downstream gain"
+    return [_save(fig, paths.figures_for("phase4_quality_vs_gain") / "rho.png", title, caption)]
+
+
 def phase4_strength_figure(gate: dict) -> list[Path]:
     """Validation selection metric against strength, per condition and architecture (the strength curves)."""
     plt = _plt()

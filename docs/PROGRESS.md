@@ -1874,3 +1874,8 @@ rare-arrhythmia detection on the MIT-BIH inter-patient benchmark". Still 10 page
 Then, asked "dont make the title negative": the title is now "Every Heart Is Different: Patient Context Lifts
 Rare-Arrhythmia Detection in New Patients", subtitle "A pre-registered study of generative augmentation and
 patient-relative inputs on the MIT-BIH inter-patient benchmark". Still 10 pages, no warnings.
+Then, asked "figure 5 b is bad": panel (b) was the grid of five small scatter plots (quality metric against downstream
+gain), unreadable at half width. New `figures.quality_rho_figure` (called by `ecgaug.eval.rq3` beside the grid) draws
+`figures/phase4_quality_vs_gain/rho.png` from results/phase4_quality_vs_gain/summary.json: each metric's Spearman rho with
+its 95% interval and a zero line, titled from the data ("No quality metric predicts the gain" only when every interval
+includes zero). Figure 5(b) uses it, panels at equal heights. Still 10 pages, no warnings.
