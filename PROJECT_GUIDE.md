@@ -461,7 +461,7 @@ Updated on 2026-11-12 for the final submission; `docs/PROGRESS.md` has every che
   the ones each run recorded.
 - Every phase ran on the real data (training on Kaggle), and every gate was approved before the next phase; the final evaluation
   read the test records once, and every later read is logged in `docs/TEST_ACCESS_LOG.md`.
-- The full test suite passes in a fresh clone on Kaggle at the submitted code (e425075, 38f0ed4 before the rewrite of 2026-11-13): 447 passed, 1 skipped (the paper
+- The full test suite passes in a fresh clone on Kaggle at the submitted code (e14909a): 447 passed, 1 skipped (the paper
   draft is kept local), 0 failed. It includes the dress rehearsal, which runs every phase, gate, the final evaluation,
   phase 5, RQ3, the leakage audit and the paper on fake records, and tests that the test set cannot be read by accident.
 - Every smoke command in `README.md` runs end to end in a fresh clone and leaves the tracked files unchanged;

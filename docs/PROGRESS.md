@@ -1787,3 +1787,7 @@ F1 (98.79) does not follow from its own PPV and SEN (97.28), a slip in the paper
 (3) What the report says each source did: Huang's SVEB stage compares the RR ratio with a threshold (abstract), Lin and
 Yang divide by the mean RR of the recording; the other citing sentences restate the sources' titles or abstracts.
 Nothing needed changing.
+Final check on Kaggle at e14909a, the last code commit (`phase6-final-check` v8, CPU, fresh clone): full suite with
+ECGAUG_REHEARSAL=1 exit code 0, 447 passed, 1 skipped (paper draft), 0 failed (894 progress marks and 2 skip marks
+halved); `python -m ecgaug.paper` left every tracked file unchanged, so the committed report files match the code; the 11
+README smoke commands and `workflow status` exited 0 and left every tracked file unchanged.
