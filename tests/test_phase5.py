@@ -227,6 +227,7 @@ def test_demo_prints_the_offline_analysis_then_the_review_then_the_match(capsys)
     assert all(p in text for p in parts) and text.index(parts[0]) < text.index(parts[1]) < text.index(parts[2])
     assert "Explainability" in text and "QRS" in text and "0 unsupported claims" in text and "{" not in text
     assert all(f"   {label}:" in text for label in ("Findings", "Impression", "Confidence", "Next step"))
+    assert "Rhythm strip" in text and "reference" in text and "RR (ms)" in text
 
 
 OUT = {"record": 118, "beat": 112, "prediction": "S", "probabilities": {"N": 0.23, "S": 0.62, "V": 0.13, "F": 0.02}, "low_confidence": False,

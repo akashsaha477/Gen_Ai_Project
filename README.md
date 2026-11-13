@@ -236,9 +236,11 @@ written by `python -m ecgaug.paper` from the result files (`src/ecgaug/paper_tex
 course report's share of them into `report/generated/` and `report/results.md`; the paper draft (`paper/main.tex`) is kept out of this repository. The LLM note variants need `GEMINI_API_KEY` (free
 tier from aistudio.google.com; optionally `ECGAUG_LLM_MODEL`) in the environment; without it the template note is used.
 The demo (`python -m ecgaug.demo --record <validation record> --beat <index>`) prints three parts. (1) The offline
-analysis, with no LLM: our model's prediction and probabilities, the beat's RR intervals, where the model looked (the
-share of saliency in the P, QRS, ST and T windows), the same beat in the saved validation predictions of all 36 models the
-phase 4 gate fixed, and a figure of all of it. (2) A review written by Gemini as a cardiologist's short report
+analysis, with no LLM: our model's prediction and probabilities, the beat's RR intervals, a rhythm strip (every beat in
+the 8 s around it classified by the same model, next to the reference annotation), where the model looked (the share of
+saliency in the P, QRS, ST and T windows), the same beat in the saved validation predictions of all 36 models the phase 4
+gate fixed, and a figure of all of it (the strip on ECG paper, the beat with its saliency, the shares, the probabilities
+and the 36 runs). (2) A review written by Gemini as a cardiologist's short report
 (findings, impression, confidence, next step) from the offline result only, never the signal. (3) Every number, class and
 segment of that review next to the offline value it restates. A review with a claim the offline result does not hold
 (a wrong number, or a rhythm, conduction, beat-origin or waveform finding) is sent back at most twice; without the key,

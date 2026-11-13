@@ -65,6 +65,8 @@ CONDITION_NAMES = {"none": "no augmentation", "class_weighted": "class-weighted 
                    "cvae": "cVAE", "wgan_gp": "WGAN-GP"}  # fmt: skip
 SEGMENTS = ("P", "QRS", "ST", "T")
 SALIENCY_COLOR, SALIENCY_LIGHT = "#7b5cc4", "#d9d0ee"  # not a class colour: saliency is a magnitude, not a class
+STRIP_SECONDS = 8.0
+PAPER, PAPER_MINOR, PAPER_MAJOR = "#fff7f6", "#f5d9d6", "#e9aaa4"  # ECG paper: small squares 40 ms x 0.1 mV, large 200 ms x 0.5 mV
 
 
 def write_note(variant: str, payload: dict, client: LLMClient | None) -> tuple[str, str]:
@@ -141,6 +143,22 @@ def offline_runs(record: int, r_idx: int) -> list[dict]:
     return rows
 
 
+def rhythm_strip(model: torch.nn.Module, spec: RepresentationSpec, signal: np.ndarray, candidates, r_idx: int) -> dict:
+    """Our model's class for every usable beat within ``STRIP_SECONDS`` around the beat, with the reference annotation
+    and the RR interval before each beat (offline; the signal of the strip is drawn by ``_plot``)."""
+    half = int(STRIP_SECONDS / 2 * FS)
+    lo, hi = max(0, r_idx - half), min(signal.size, r_idx + half)
+    near = candidates[(candidates["r_idx"] >= lo) & (candidates["r_idx"] < hi)]
+    peaks = near["r_idx"].to_numpy().astype(int)
+    x = transform_record(signal, peaks, spec)
+    side = near[["rr_prev", "rr_next", "rr_ratio"]].to_numpy(dtype=np.float32) if spec.rr_features else None
+    with torch.no_grad():
+        probs = torch.softmax(model(torch.from_numpy(x), None if side is None else torch.from_numpy(side)), dim=1).numpy()
+    beats = [{"time_s": round(int(peak) / FS, 3), "prediction": CLASSES[int(np.argmax(q))], "reference": CLASSES[int(y)], "rr_before_ms": round(float(rr) * 1000),
+              "reviewed": int(peak) == r_idx} for peak, q, y, rr in zip(peaks, probs, near["y"], near["rr_prev"])]  # fmt: skip
+    return {"start": lo, "end": hi, "beats": beats}
+
+
 def explain_beat(model: torch.nn.Module, spec: RepresentationSpec, record: int, index: int, method: str, review: str, client,
                  model_id: str, out_dir: Path, threshold: float = LOW_CONFIDENCE_THRESHOLD, notes_variant: str = "A") -> dict:  # fmt: skip
     """The offline analysis of the ``index``-th usable beat of a record (prediction, saliency, saved runs, figure), then
@@ -164,12 +182,15 @@ def explain_beat(model: torch.nn.Module, spec: RepresentationSpec, record: int, 
     masses = {name: float(v[0]) for name, v in segment_masses(maps, pre, spec.effective_fs).items()}
     payload = note_input(f"record-{record}-beat-{index}", dict(zip(CLASSES, map(float, probs))), masses, model_id, threshold)
     saved = offline_runs(record, r_idx)
+    strip = rhythm_strip(model, spec, signal, candidates, r_idx)
     out = {"record": record, "beat": index, "r_idx": r_idx, "time_s": r_idx / FS, "true_class": CLASSES[int(row["y"])],
            "rr": {"before_s": float(row["rr_prev"]), "after_s": float(row["rr_next"]), "ratio": float(row["rr_ratio"])},
            "model_id": model_id, "model": describe_model(model_id), "prediction": payload["predicted_class"], "probabilities": payload["probabilities"],
            "probabilities_exact": dict(zip(CLASSES, map(float, probs))), "low_confidence": payload["low_confidence"], "threshold": threshold,
-           "saliency_method": method, "segment_masses": masses, "top_segments": [s["name"] for s in payload["top_segments"]], "offline_runs": saved}  # fmt: skip
-    out["figure"] = str(_plot(x[0], maps[0], probs, pre, spec.effective_fs, out, out_dir / f"record{record}_beat{index}.png"))
+           "saliency_method": method, "segment_masses": masses, "top_segments": [s["name"] for s in payload["top_segments"]], "offline_runs": saved,
+           "strip": {"start_s": strip["start"] / FS, "end_s": strip["end"] / FS, "beats": strip["beats"]}}  # fmt: skip
+    figure = _plot(x[0], maps[0], probs, pre, spec.effective_fs, out, signal[strip["start"] : strip["end"]], out_dir / f"record{record}_beat{index}.png")
+    out["figure"] = str(figure)
     if review == "gate":
         note, note_by = write_note(notes_variant, payload, client)
         found, check = note_claims(note, payload), check_note(note, payload)
@@ -183,15 +204,56 @@ def explain_beat(model: torch.nn.Module, spec: RepresentationSpec, record: int, 
     return out
 
 
-def _plot(beat: np.ndarray, sal: np.ndarray, probs: np.ndarray, pre: int, fs: float, out: dict, path: Path) -> Path:
+def _paper(ax, t0: float, t1: float, v0: float, v1: float) -> None:
+    """ECG paper behind a strip: small squares 40 ms x 0.1 mV, large squares 200 ms x 0.5 mV."""
+    from ecgaug import figures
+
+    ax.set_facecolor(PAPER)
+    ax.grid(False)
+    for step, color, width in ((0.04, PAPER_MINOR, 0.4), (0.2, PAPER_MAJOR, 0.7)):
+        for t in np.arange(np.ceil(t0 / step) * step, t1, step):
+            ax.axvline(t, color=color, linewidth=width, zorder=0)
+    for step, color, width in ((0.1, PAPER_MINOR, 0.4), (0.5, PAPER_MAJOR, 0.7)):
+        for v in np.arange(np.ceil(v0 / step) * step, v1, step):
+            ax.axhline(v, color=color, linewidth=width, zorder=0)
+    ax.set_xlim(t0, t1)
+    ax.set_ylim(v0, v1)
+    for side in ax.spines.values():
+        side.set_color(figures.GRID)
+
+
+def _strip(ax, signal: np.ndarray, out: dict) -> None:
+    from ecgaug import figures
+
+    strip = out["strip"]
+    t = strip["start_s"] + np.arange(signal.size) / FS
+    low, high = np.floor((signal.min() - 0.6) * 2) / 2, np.ceil((signal.max() + 0.7) * 2) / 2
+    _paper(ax, t[0], t[-1], low, high)
+    for b in strip["beats"]:
+        if b["reviewed"]:
+            ax.axvspan(b["time_s"] - 0.25, b["time_s"] + 0.25, color=SALIENCY_LIGHT, alpha=0.8, linewidth=0, zorder=1)
+    ax.plot(t, signal, color=figures.INK, linewidth=1.0, zorder=2)
+    beats = strip["beats"]
+    for k, b in enumerate(beats):
+        ax.text(b["time_s"], high - 0.12, b["prediction"], ha="center", va="top", fontsize=10, fontweight="bold", color=figures.CLASS_COLORS[b["prediction"]], zorder=3)
+        ax.text(b["time_s"], low + 0.08, b["reference"], ha="center", va="bottom", fontsize=8, color=figures.INK_2, zorder=3)
+        if k:
+            ax.text((beats[k - 1]["time_s"] + b["time_s"]) / 2, high - 0.18, f"{b['rr_before_ms']}", ha="center", va="top", fontsize=7, color=figures.INK_2, zorder=3)
+    ax.set_xlabel("seconds into the recording (lead MLII)")
+    ax.set_ylabel("mV")
+    ax.set_title("rhythm strip: our model's class above each beat (coloured), the reference annotation below (grey), RR intervals in ms", loc="left")
+
+
+def _plot(beat: np.ndarray, sal: np.ndarray, probs: np.ndarray, pre: int, fs: float, out: dict, strip_signal: np.ndarray, path: Path) -> Path:
     from matplotlib.patches import Rectangle
 
     from ecgaug import figures
 
     plt = figures._plt()
-    fig = plt.figure(figsize=(11, 6.6))
-    grid = fig.add_gridspec(2, 3, height_ratios=[1.3, 1], width_ratios=[1, 1, 1.2])
-    ax = fig.add_subplot(grid[0, :])
+    fig = plt.figure(figsize=(11, 9.8))
+    grid = fig.add_gridspec(3, 3, height_ratios=[1.15, 1.2, 1], width_ratios=[1, 1, 1.2])
+    _strip(fig.add_subplot(grid[0, :]), strip_signal, out)
+    ax = fig.add_subplot(grid[1, :])
     ms = (np.arange(len(beat)) - pre) / fs * 1000
     weight = np.abs(sal) / max(np.abs(sal).max(), 1e-12)
     for k, (name, (lo, hi)) in enumerate(SEGMENTS_MS.items()):
@@ -208,7 +270,7 @@ def _plot(beat: np.ndarray, sal: np.ndarray, probs: np.ndarray, pre: int, fs: fl
     ax.set_ylim(low, beat.max() + 0.25 * np.ptp(beat))
     ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncol=2, borderaxespad=0.2)
 
-    seg = fig.add_subplot(grid[1, 0])
+    seg = fig.add_subplot(grid[2, 0])
     shares = [out["segment_masses"].get(s, 0.0) for s in SEGMENTS]
     colors = [SALIENCY_COLOR if s in out["top_segments"] else SALIENCY_LIGHT for s in SEGMENTS]
     seg.barh(range(len(SEGMENTS)), shares, color=colors, height=0.7)
@@ -221,17 +283,16 @@ def _plot(beat: np.ndarray, sal: np.ndarray, probs: np.ndarray, pre: int, fs: fl
     seg.grid(axis="y", visible=False)
     seg.set_title(f"where it looked ({METHOD_NAMES.get(out['saliency_method'], out['saliency_method'])})", loc="left")
 
-    bar = fig.add_subplot(grid[1, 1])
+    bar = fig.add_subplot(grid[2, 1])
     bar.bar(list(CLASSES), probs, color=[figures.CLASS_COLORS[c] for c in CLASSES], edgecolor=figures.SURFACE, width=0.7)
     for i, v in enumerate(probs):
         bar.text(i, v + 0.02, f"{v:.2f}", ha="center", fontsize=8, color=figures.INK)
     bar.axhline(out["threshold"], color=figures.INK_2, linewidth=0.8, linestyle="--")
-    bar.text(3.4, out["threshold"] + 0.02, f"low-confidence\nthreshold {out['threshold']:.2f}", ha="right", va="bottom", fontsize=7, color=figures.INK_2)
     bar.set_ylim(0, 1.1)
     bar.grid(axis="x", visible=False)
-    bar.set_title("probabilities", loc="left")
+    bar.set_title(f"probabilities (- - threshold {out['threshold']:.2f})", loc="left")
 
-    vote = fig.add_subplot(grid[1, 2])
+    vote = fig.add_subplot(grid[2, 2])
     saved = out["offline_runs"]
     archs = list(dict.fromkeys(r["arch"] for r in saved))
     conditions = list(dict.fromkeys(r["condition"] for r in saved))
@@ -263,9 +324,10 @@ def _plot(beat: np.ndarray, sal: np.ndarray, probs: np.ndarray, pre: int, fs: fl
 
     title = (f"Record {out['record']}, beat {out['beat']}: predicted {out['prediction']} ({max(probs):.2f}); "
              f"reference annotation {out['true_class']}")  # fmt: skip
-    caption = ("Computed offline by our models, no LLM involved. Top: the beat and where the model looked (saliency, scaled to its peak) in the "
-               "P, QRS, ST and T windows. Bottom right: the beat's predicted class in the saved validation predictions of every model "
-               "the phase 4 gate fixed; outlined, the model used here.")  # fmt: skip
+    caption = (f"Computed offline by our models, no LLM involved. Top: {STRIP_SECONDS:.0f} s of the recording on ECG paper (small squares 40 ms "
+               "and 0.1 mV), the reviewed beat shaded; every usable beat classified by the same model. Middle: the reviewed beat (z-scored) and "
+               "where the model looked (saliency, scaled to its peak) in the P, QRS, ST and T windows. Bottom right: the beat's class in the "
+               "saved validation predictions of every model the phase 4 gate fixed; outlined, the model used here.")  # fmt: skip
     return figures._save(fig, path, title, caption)
 
 
@@ -298,6 +360,17 @@ def format_review(out: dict) -> str:
     rr = out["rr"]
     lines.append(_row("RR intervals", f"{rr['before_s']:.2f} s before the beat, {rr['after_s']:.2f} s after; "
                                       f"before / mean of the previous 10: {rr['ratio']:.2f}"))  # fmt: skip
+    beats = out["strip"]["beats"]
+    if beats:
+        cell = [f"{'[' + b['prediction'] + ']' if b['reviewed'] else b['prediction']:^5}" for b in beats]
+        ref = [f"{b['reference']:^5}" for b in beats]
+        agree = sum(b["prediction"] == b["reference"] for b in beats)
+        span = out["strip"]["end_s"] - out["strip"]["start_s"]
+        lines.append(_row("Rhythm strip", f"{len(beats)} usable beats in the {span:.0f} s around the beat, each classified by the same model:"))
+        lines.append(_row("", f"{'our model':<13}" + "".join(cell)))
+        lines.append(_row("", f"{'reference':<13}" + "".join(ref)))
+        lines.append(_row("", f"{'RR (ms)':<13}" + "".join(f"{b['rr_before_ms']:^5}" for b in beats)))
+        lines.append(_row("", f"same class as the reference for {agree} of {len(beats)} beats"))
     lines.append(_row("Prediction", f"{p}, {CLASS_NAMES[p]}"))
     for i, c in enumerate(CLASSES):
         v = out["probabilities"][c]

@@ -1685,3 +1685,17 @@ offline report, `--notes gate` the phase 5 note (C). Record 118, beat 112, offli
 the facts, the offline report passing its own check, a review naming a bundle branch block, an atrial origin and a
 number not in the facts (all four caught), a review not naming the class, two rewrites then a pass, three failures
 then the offline report, no key, quota error.
+Live run with the key, in the user's terminal (record 118, beat 112): "Review by Gemini gemini-3.5-flash-lite, written as
+a cardiologist's report", passed on the first attempt; findings (631 ms, 0.78 of the mean of the previous 10, "the beat
+came earlier than the preceding beats", 908 ms after; T wave 0.31, QRS 0.24, ST 0.2, P wave 0.18), impression (S 0.62,
+next N 0.23), confidence (above the threshold 0.6; 6 of 36 saved runs): 22 claims, all matching; no rhythm, conduction
+or beat-origin claim although record 118 is a right bundle branch block record.
+
+2026-11-13. Demo figure with a rhythm strip, asked "what about the figures". The figure showed only the 500 ms window of
+the beat. It now has three rows: 8 s of the recording on ECG paper (small squares 40 ms x 0.1 mV, large 200 ms x 0.5 mV,
+in mV) with every usable beat classified by the same model (class above, coloured), the reference annotation below
+(grey), the RR intervals in ms and the reviewed beat shaded; the beat with its saliency; the shares by segment, the
+probabilities (threshold dashed) and the 36 saved runs. Part 1 of the text prints the strip as three aligned rows (our
+model, reference, RR). Record 118: beat 112 shows the S beat after 631 ms among intervals of 794-808 ms and a 908 ms
+interval after it, 10 of 10 strip beats as the reference; beat 129 shows an S beat (625 ms) two beats before the V beat
+(633 ms, then 1006 ms), 10 of 10 as the reference. Still no LLM in this part.
