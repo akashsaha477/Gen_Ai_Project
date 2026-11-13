@@ -1721,3 +1721,9 @@ checklist and working notes moved word for word to `docs/CHECKLIST.md` (one stal
 2026-10-26, was still marked "next"); PROJECT_GUIDE's pointers updated. One demo figure is committed as an example
 (`figures/demo_example/record118_beat112.png`, made by `./demo.sh S --notes template --no-open --out
 figures/demo_example`). Every relative link in the README resolves.
+Final check on Kaggle at 38f0ed4, the last code commit (`phase6-final-check` v7, CPU, fresh clone; v4-v6 ran on
+earlier commits of the same day and were superseded): full suite with ECGAUG_REHEARSAL=1 exit code 0, 447 passed,
+1 skipped (paper draft), 0 failed (894 progress marks and 2 skip marks halved, against the 448 collected locally);
+`python -m ecgaug.paper`, the 11 README smoke commands and `workflow status` exited 0 and left every tracked file
+unchanged. main was pushed at 110bb9b (README and docs on top of 38f0ed4) before this check finished, on the user's
+"push"; the commits after 38f0ed4 change documents and one example figure only.
