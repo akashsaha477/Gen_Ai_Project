@@ -1,5 +1,9 @@
 """Demo: one validation beat in; an offline analysis by our models, then a review by Gemini checked against it (PLAN Phase 5).
 
+    ./demo.sh                                                       # the tour from any folder: one N, S, V and F beat
+    python -m ecgaug.demo                                           # the same tour, from the repository root
+    python -m ecgaug.demo S                                         # one example beat: N, S, V or F
+    python -m ecgaug.demo --list                                    # beat positions to choose from, per validation record
     python -m ecgaug.demo --record 118 --beat 112                   # the beat at position 112 among the record's usable beats
     python -m ecgaug.demo --record 118 --beat 112 --notes template  # the same review filled in offline, no LLM call
     python -m ecgaug.demo --record 118 --beat 112 --notes gate      # the note variant the phase 5 gate chose, instead of the review
@@ -19,7 +23,8 @@ It prints three parts, in this order:
    then replaced by the same report filled in offline, as is the review when no key is set or the call fails (daily
    quota, network); the demo says which and why.
 
-Only validation records are accepted (the test records are locked anyway).
+Only validation records are accepted (the test records are locked anyway). In a terminal the figure opens by itself
+(``--no-open`` to stop it) and the tour waits for Enter between beats.
 """
 
 from __future__ import annotations
@@ -27,6 +32,9 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
+import subprocess
+import sys
 import textwrap
 from collections import Counter
 from pathlib import Path
@@ -66,6 +74,8 @@ CONDITION_NAMES = {"none": "no augmentation", "class_weighted": "class-weighted 
 SEGMENTS = ("P", "QRS", "ST", "T")
 SALIENCY_COLOR, SALIENCY_LIGHT = "#7b5cc4", "#d9d0ee"  # not a class colour: saliency is a magnitude, not a class
 STRIP_SECONDS = 8.0
+# The tour: one beat per class from the validation records, each classified correctly by the demo's model (checked 2026-11-13).
+SHOWCASE = {"N": (118, 100), "S": (118, 112), "V": (118, 129), "F": (205, 1400)}
 PAPER, PAPER_MINOR, PAPER_MAJOR = "#fff7f6", "#f5d9d6", "#e9aaa4"  # ECG paper: small squares 40 ms x 0.1 mV, large 200 ms x 0.5 mV
 
 
@@ -143,6 +153,39 @@ def offline_runs(record: int, r_idx: int) -> list[dict]:
     return rows
 
 
+def usable_beats(record: int):
+    """The record's signal and its usable beats in order; a beat's position here is what ``--beat`` takes."""
+    signal = raw.read_signal(record)
+    beats = extract_beats(record)
+    keep = usable_mask(beats["r_idx"].to_numpy(), signal.size, beats["rr_prev"].to_numpy(), beats["rr_next"].to_numpy()) & (beats["y"] >= 0).to_numpy()
+    return signal, beats[keep].reset_index(drop=True)
+
+
+def list_beats(records, shown: int = 6) -> str:
+    """For each record: usable beats per reference class and the first positions of the rare classes, for ``--beat``."""
+    rows = []
+    for record in records:
+        _, candidates = usable_beats(record)
+        labels = candidates["y"].to_numpy()
+        counts = [int((labels == k).sum()) for k in range(len(CLASSES))]
+        firsts = [" ".join(map(str, np.flatnonzero(labels == k)[:shown])) or "-" for k in range(1, len(CLASSES))]
+        rows.append((record, len(labels), counts, firsts))
+    heads = [f"first {c} positions" for c in CLASSES[1:]]
+    widths = [max([len(h)] + [len(r[3][k]) for r in rows]) for k, h in enumerate(heads)]
+    lines = ["Validation beats to show: python -m ecgaug.demo --record <record> --beat <position>", "",
+             f"{'record':<8}{'beats':>7}" + "".join(f"{c:>7}" for c in CLASSES) + "   " + "   ".join(f"{h:<{w}}" for h, w in zip(heads, widths))]  # fmt: skip
+    for record, n, counts, firsts in rows:
+        lines.append(f"{record:<8}{n:>7}" + "".join(f"{c:>7}" for c in counts) + "   " + "   ".join(f"{f:<{w}}" for f, w in zip(firsts, widths)))
+    return "\n".join(line.rstrip() for line in lines)
+
+
+def open_figure(path: str) -> None:
+    """Open the figure in the system viewer (macOS ``open``, Linux ``xdg-open``); nothing happens where there is none."""
+    opener = "open" if sys.platform == "darwin" else "xdg-open" if shutil.which("xdg-open") else None
+    if opener:
+        subprocess.Popen([opener, path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
 def rhythm_strip(model: torch.nn.Module, spec: RepresentationSpec, signal: np.ndarray, candidates, r_idx: int) -> dict:
     """Our model's class for every usable beat within ``STRIP_SECONDS`` around the beat, with the reference annotation
     and the RR interval before each beat (offline; the signal of the strip is drawn by ``_plot``)."""
@@ -150,8 +193,8 @@ def rhythm_strip(model: torch.nn.Module, spec: RepresentationSpec, signal: np.nd
     lo, hi = max(0, r_idx - half), min(signal.size, r_idx + half)
     near = candidates[(candidates["r_idx"] >= lo) & (candidates["r_idx"] < hi)]
     peaks = near["r_idx"].to_numpy().astype(int)
-    x = transform_record(signal, peaks, spec)
-    side = near[["rr_prev", "rr_next", "rr_ratio"]].to_numpy(dtype=np.float32) if spec.rr_features else None
+    x = np.array(transform_record(signal, peaks, spec), dtype=np.float32)  # a writable copy for torch
+    side = np.array(near[["rr_prev", "rr_next", "rr_ratio"]].to_numpy(dtype=np.float32)) if spec.rr_features else None
     with torch.no_grad():
         probs = torch.softmax(model(torch.from_numpy(x), None if side is None else torch.from_numpy(side)), dim=1).numpy()
     beats = [{"time_s": round(int(peak) / FS, 3), "prediction": CLASSES[int(np.argmax(q))], "reference": CLASSES[int(y)], "rr_before_ms": round(float(rr) * 1000),
@@ -164,10 +207,7 @@ def explain_beat(model: torch.nn.Module, spec: RepresentationSpec, record: int, 
     """The offline analysis of the ``index``-th usable beat of a record (prediction, saliency, saved runs, figure), then
     the review written from it and its claims checked against it. ``review``: "clinician" (Gemini as a cardiologist,
     offline template as fallback), "template" (the offline template) or "gate" (the phase 5 note ``notes_variant``)."""
-    signal = raw.read_signal(record)
-    beats = extract_beats(record)
-    keep = usable_mask(beats["r_idx"].to_numpy(), signal.size, beats["rr_prev"].to_numpy(), beats["rr_next"].to_numpy()) & (beats["y"] >= 0).to_numpy()
-    candidates = beats[keep].reset_index(drop=True)
+    signal, candidates = usable_beats(record)
     if not 0 <= index < len(candidates):
         raise ValueError(f"Record {record} has {len(candidates)} usable beats; --beat must be 0..{len(candidates) - 1}")
     row = candidates.iloc[index]
@@ -477,9 +517,13 @@ def smoke(show: bool = False) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Offline analysis of one validation beat by our models, then a review by Gemini checked against it.")
-    parser.add_argument("--record", type=int, help="a validation record")
-    parser.add_argument("--beat", type=int, default=0, help="position among the record's usable beats (from 0)")
+    parser = argparse.ArgumentParser(description="Offline analysis of a validation beat by our models, then a review by Gemini checked against it. "
+                                                 "Without arguments: a tour of a normal, an S and a V beat.")  # fmt: skip
+    parser.add_argument("example", nargs="?", type=str.upper, choices=sorted(SHOWCASE), help="one example beat of this class instead of the tour")
+    parser.add_argument("--record", type=int, help="a validation record (with --beat)")
+    parser.add_argument("--beat", type=int, default=0, help="position among the record's usable beats (from 0; see --list)")
+    parser.add_argument("--list", action="store_true", help="beat positions per validation record and class, to choose from")
+    parser.add_argument("--no-open", action="store_true", help="do not open the figure")
     parser.add_argument("--arch", default="cnn", help="cnn or rnn")
     parser.add_argument("--condition", default="best_generative", help="none, class_weighted, ..., or best_generative")
     parser.add_argument("--notes", choices=["clinician", "template", "gate"], default="clinician",
@@ -489,6 +533,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true", help="print the result as JSON instead of the three parts")
     parser.add_argument("--smoke", action="store_true", help="fake record and tiny model")
     args = parser.parse_args(argv)
+    if args.record is not None and args.example:
+        parser.error("give an example class or --record, not both")
     if args.smoke:
         summary = smoke(show=not args.json)
         print(json.dumps(summary, indent=2))
@@ -496,10 +542,13 @@ def main(argv: list[str] | None = None) -> int:
     from ecgaug.data.splits import load_approved_split
     from ecgaug.experiments.common import load_run_classifier
 
-    if args.record is None:
-        parser.error("--record is required")
     split = load_approved_split()
-    if args.record not in split.val:
+    if args.list:
+        print(list_beats(split.val))
+        return 0
+    targets = [(args.record, args.beat)] if args.record is not None else [SHOWCASE[args.example]] if args.example else list(SHOWCASE.values())
+    outside = sorted({r for r, _ in targets} - set(split.val))
+    if outside:
         print(f"The demo uses validation records only: {list(split.val)}")
         return 2
     try:
@@ -512,9 +561,24 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Demo not ready: {err}")
         return 2
     client = client_from_env() if args.notes != "template" else None
-    out = explain_beat(model, spec, args.record, args.beat, method, args.notes, client, run_id, paths.repo_root() / args.out,
-                       notes_variant=chosen_notes_variant("llm"))  # fmt: skip
-    print(json.dumps(out, indent=2) if args.json else format_review(out))
+    interactive = sys.stdin.isatty() and sys.stdout.isatty() and not args.json
+    if len(targets) > 1 and not args.json:
+        stops = ", ".join(f"{CLASS_NAMES[c]} ({c}, record {r})" for c, (r, _) in SHOWCASE.items())
+        print(f"Demo tour, one beat per class from the validation records: {stops}.\n")
+    for k, (record, beat) in enumerate(targets):
+        if k and interactive and input("\nPress Enter for the next beat, or q and Enter to stop: ").strip().lower() == "q":
+            break
+        if k and not args.json:
+            print("\n" + "=" * 100 + "\n")
+        try:
+            out = explain_beat(model, spec, record, beat, method, args.notes, client, run_id, paths.repo_root() / args.out,
+                               notes_variant=chosen_notes_variant("llm"))  # fmt: skip
+        except ValueError as err:
+            print(err)
+            return 2
+        print(json.dumps(out, indent=2) if args.json else format_review(out))
+        if interactive and not args.no_open:
+            open_figure(out["figure"])
     return 0
 
 

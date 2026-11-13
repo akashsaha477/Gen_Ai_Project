@@ -1699,3 +1699,12 @@ probabilities (threshold dashed) and the 36 saved runs. Part 1 of the text print
 model, reference, RR). Record 118: beat 112 shows the S beat after 631 ms among intervals of 794-808 ms and a 908 ms
 interval after it, 10 of 10 strip beats as the reference; beat 129 shows an S beat (625 ms) two beats before the V beat
 (633 ms, then 1006 ms), 10 of 10 as the reference. Still no LLM in this part.
+
+2026-11-13. Easier demo, asked "make this easier so it is easier to demo". `./demo.sh` (repository root, works from any
+folder) runs `uv run python -m ecgaug.demo`. Without arguments the demo is a tour of one beat per class, waiting for
+Enter between beats in a terminal: N record 118 beat 100, S 118/112, V 118/129, F 205/1400 (each classified correctly
+by the demo's model: F 0.86, while 16 of the 36 saved runs call that beat F and 20 call it N). `./demo.sh S` shows one
+of them, `--list` prints the usable beats per class and the first positions of S, V and F for each validation record,
+`--record/--beat` any beat as before. In a terminal each figure opens by itself (`--no-open` to stop it). Figures go to
+`figures/demo/`, now in .gitignore. A read-only array warning from torch in the rhythm strip was removed. README has a
+Demo section near the top. Run from the home folder: one example and the full tour, no warning.

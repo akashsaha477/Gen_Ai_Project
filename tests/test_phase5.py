@@ -277,6 +277,19 @@ def test_demo_clinician_review_rewrites_then_falls_back_with_the_reason():
     assert text == offline and "call failed" in by and "quota" in by
 
 
+def test_demo_lists_beats_and_has_one_example_per_class():
+    from ecgaug import demo
+    from ecgaug.experiments.data_source import smoke_data
+
+    with smoke_data() as (split, _):
+        text = demo.list_beats(split.val)
+        _, candidates = demo.usable_beats(split.val[0])
+    assert "first S positions" in text and f"{split.val[0]:<8}{len(candidates):>7}" in text
+    assert set(demo.SHOWCASE) == set(demo.CLASSES)
+    with pytest.raises(SystemExit):
+        demo.main(["S", "--record", "118"])
+
+
 def test_note_claims_follow_the_fact_checker():
     template = notes.template_note(PAYLOAD)
     wrong = "Supraventricular ectopic beat (S), probability 0.7, with atrial fibrillation; the model relied most on the T wave (10%)."

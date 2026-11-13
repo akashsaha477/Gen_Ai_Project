@@ -10,6 +10,22 @@ New to the project? Read `PROJECT_GUIDE.md` first: it explains the whole project
 Then `docs/PLAN.md` (phases, rules and the data protocol), `docs/PAPER_TRACK.md` and
 `docs/PREREGISTRATION.md`. Live state is in `docs/PROGRESS.md` and `docs/DECISIONS.md`.
 
+## Demo
+
+```bash
+./demo.sh                          # a tour: one normal (N), S, V and F beat, Enter between beats
+./demo.sh S                        # one example beat: N, S, V or F
+./demo.sh --list                   # beat positions to choose from, per validation record
+./demo.sh --record 118 --beat 112  # any validation beat
+```
+
+`demo.sh` works from any folder (it runs `uv run python -m ecgaug.demo` in the repository). For each beat it prints
+(1) the offline analysis by our models, with no LLM: the prediction, the rhythm strip around the beat, where the model
+looked and how all 36 saved runs classified the beat, and opens the figure; (2) a review written by Gemini as a
+cardiologist's short report from those results only; (3) every claim of the review checked against the offline
+results. Gemini needs `GEMINI_API_KEY` in the environment; without it the same review is filled in offline. Figures go
+to `figures/demo/` (not committed); `--no-open` keeps them closed, `--notes template` skips Gemini.
+
 ## Where we are and what to do next
 
 One command answers both:
@@ -118,6 +134,7 @@ for pretraining.
 | `configs/` | one folder per experiment (`<experiment>/<letter>_<name>.yaml` plus a shared settings file), `validation_split/`, `phase4_full_grid/` |
 | `report/` | the course report: `report.pdf` (30 pages) and `report_short.pdf` (20 pages), their LaTeX sources and references, `generated/` (the tables, numbers and texts it inputs) and `results.md` (every results table, readable on GitHub); see `report/README.md` |
 | `paper/` | the paper draft, its `generated/` tables and numbers and `claims_vs_evidence.md`; written locally by `python -m ecgaug.paper` and kept out of this repository |
+| `demo.sh` | the demo from any folder (see Demo above) |
 | `scripts/reproduce.sh` | the whole pipeline in order |
 | `scripts/phase3_bank_figure.py` | real training beats next to each frozen bank, per class (`figures/phase3_gate/banks.png`) |
 | `scripts/phase4a_policy_figure.py` | the policy pilot against no augmentation, per bank (`figures/phase4a_gate/policies.png`) |

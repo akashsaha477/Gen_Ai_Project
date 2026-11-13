@@ -481,7 +481,9 @@ precondition before the first test byte, predicts the test set with every frozen
   gradients, SmoothGrad and occlusion; `explain/evaluate.py`: `faithfulness`, `stability`, `segment_masses`.
 - `report/notes.py`: `note_input` (the note's input JSON), `template_note`, `generate` (variants A-D),
   `check_note` (the fact checker), `LLMClient` / `client_from_env`; `report/error_analysis.py`: `analyse`.
-- `demo.py`: `explain_beat` runs the offline analysis of one beat (prediction, saliency by segment, RR intervals, the
+- `demo.py` (run through `demo.sh`): with no arguments a tour of `SHOWCASE` (one N, S, V and F validation beat the
+  demo's model classifies correctly), with a class one of them, with `--list` the beat positions per record
+  (`list_beats`, from `usable_beats`); `open_figure` opens each figure in a terminal. `explain_beat` runs the offline analysis of one beat (prediction, saliency by segment, RR intervals, the
   rhythm strip around it via `rhythm_strip`, the beat in the saved validation predictions of every model the phase 4
   gate fixed via `offline_runs`, the figure with the strip on ECG paper), then
   the review and its claims; `format_review` prints the three parts. `clinician_review` returns the cardiologist-style

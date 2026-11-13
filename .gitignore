@@ -29,3 +29,6 @@ __pycache__/
 .env
 .env.*
 kaggle.json
+
+# Demo figures (python -m ecgaug.demo writes them here)
+/figures/demo/
