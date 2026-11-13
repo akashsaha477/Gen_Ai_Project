@@ -1871,3 +1871,6 @@ the new repository bundle was processed and could not check out the commit.
 Then, asked "make the tittle better this is boring and bad": the 10-page paper's title is now "Every Heart Is Different: Why
 Synthetic Heartbeats Do Not Transfer to New Patients, and What Does", with the subtitle "A pre-registered study of
 rare-arrhythmia detection on the MIT-BIH inter-patient benchmark". Still 10 pages, no warnings.
+Then, asked "dont make the title negative": the title is now "Every Heart Is Different: Patient Context Lifts
+Rare-Arrhythmia Detection in New Patients", subtitle "A pre-registered study of generative augmentation and
+patient-relative inputs on the MIT-BIH inter-patient benchmark". Still 10 pages, no warnings.
