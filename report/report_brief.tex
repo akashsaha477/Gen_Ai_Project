@@ -6,6 +6,8 @@
 \usepackage[margin=2cm]{geometry}
 \usepackage{microtype}
 \usepackage{booktabs}
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \usepackage{graphicx}
 \usepackage{adjustbox}
 \usepackage{subcaption}
@@ -23,8 +25,8 @@
 \newcommand{\missing}[1]{\textcolor{red}{[#1]}}
 \input{generated/numbers.tex}
 
-\title{Every Heart Is Different:\\ Patient Context Lifts Rare-Arrhythmia Detection in New Patients\\[8pt]
-\large A pre-registered study of generative augmentation and patient-relative inputs\\ on the MIT-BIH inter-patient benchmark\\[3pt]
+\title{Every Heart Is Different:\\ Patient Context for Rare-Arrhythmia Detection in New Patients\\[8pt]
+\large A pre-registered study of generative augmentation, with exploratory patient-relative pipelines\\ on the MIT-BIH inter-patient benchmark\\[3pt]
 \normalsize CS787: GenAI, course project report (10-page version)}
 \author{\begin{tabular}{c@{\hspace{3em}}c}Akash Saha (261110401) & Kartheek Dasari (261110029)\\
  H M Karthik (261110025) & T D Manindra (261050084)\end{tabular}}
@@ -38,15 +40,16 @@
 absent from training they miss most supraventricular (S) and fusion (F) beats, the rare classes with clinical weight.
 Class-conditional generative models promise to supply the missing rare beats. We tested that promise in a pre-registered study under
 the inter-patient protocol: selection rules fixed before the experiments, every choice made on validation patients, and the 22 test
-patients read once. Across two classifiers and a 96-run grid, neither a conditional VAE nor a WGAN-GP detectably improved the
-rare-class macro-F1 over no augmentation (best difference $+\TestCnnCvaeVsNoneDiff$, 95\% CI $\TestCnnCvaeVsNoneLow$ to
-$+\TestCnnCvaeVsNoneHigh$) or over class weighting, random oversampling and SMOTE, and no synthetic-quality metric predicted the gain:
-the synthetic beats reproduced the few training patients they were learned from. Twenty-three follow-up analyses, each registered
-before it ran, show what does generalise, namely patient context. Expressing each beat relative to the patient's own beats, judging
-prematurity against the patient's mean rhythm, vetoing S calls during atrial fibrillation, training with patients from two further
-databases and averaging ten runs raised the test score from \TestCnnCvaeRare\ to 0.587 (S F1 0.647, F F1 0.527), above two classic
-inter-patient methods on S and V beats and above a recent one on F beats. On 977 patients no analysis had used, the pipeline's S F1
-was 0.294 to 0.414. Evaluated on already-seen patients, the same network would have scored 0.837 instead of \TestCnnNoneRare.
+patients read once. Across two classifiers and a 96-run grid, the conditional VAE and WGAN-GP we trained did not detectably improve
+the rare-class macro-F1 over no augmentation (best difference $+\TestCnnCvaeVsNoneDiff$, 95\% CI $\TestCnnCvaeVsNoneLow$ to
+$+\TestCnnCvaeVsNoneHigh$) or over class weighting, random oversampling and SMOTE, and none of our synthetic-quality metrics predicted
+the gain: the synthetic beats reproduced the few training patients they were learned from. Twenty-three follow-up analyses, each
+registered before it ran but all read on the same test patients, are therefore exploratory. They point to patient context:
+expressing each beat relative to the patient's own beats, judging prematurity against the patient's rhythm, vetoing S calls during
+atrial fibrillation and averaging ten runs raised the test score from \TestCnnCvaeRare\ to 0.587. On 977 patients that no analysis
+had used, the frozen pipeline reached an S F1 of 0.294, and 0.414 with thresholds chosen on other patients; ten-run averaging and
+patient-chosen thresholds were confirmed there, while the prematurity rule was not. Evaluated on already-seen patients, the same
+network would have scored 0.837 instead of \TestCnnNoneRare.
 \end{abstract}
 
 \section{Introduction}
@@ -75,12 +78,12 @@ S and F, compared with no augmentation, a class-weighted loss, random oversampli
 Every rule that chose a model, a variant or a strength was fixed in advance and applied to validation patients at a gate closing each
 phase; the test file opened once, for the final evaluation. In all, 761 runs are logged. The paper makes four contributions:
 \begin{enumerate}\setlength{\itemsep}{1pt}
-\item \textbf{A pre-registered negative result.} Generative augmentation did not detectably improve the detection of rare
-arrhythmias in unseen patients over three conventional remedies for class imbalance, and synthetic-quality metrics did not predict its usefulness; a
-nearest-patient analysis explains why (Sections~\ref{sec:answer} and~\ref{sec:why}).
-\item \textbf{A patient-context pipeline} that raises the rare-class macro-F1 on the inter-patient benchmark from \TestCnnCvaeRare\ to
-0.587, above two classic methods on S and V beats and above a recent one on F beats and on the mean of S and F
-(Section~\ref{sec:context}), with its generalisation tested on 977 unseen patients (Section~\ref{sec:unseen}).
+\item \textbf{A pre-registered negative result} for the generators, data and selection policies we tested: they did not detectably
+improve the detection of rare arrhythmias in unseen patients over three conventional remedies, and our synthetic-quality metrics did
+not predict their usefulness; a nearest-patient analysis explains why (Sections~\ref{sec:answer} and~\ref{sec:why}).
+\item \textbf{An exploratory patient-context pipeline} that raises the rare-class macro-F1 on the inter-patient test patients from
+\TestCnnCvaeRare\ to 0.587 (Section~\ref{sec:context}), with a step-by-step account of what each change contributed and an
+independent check of the frozen pipeline on 977 untouched patients (Section~\ref{sec:unseen}).
 \item \textbf{A same-pipeline measurement of patient overlap}: the rare-class macro-F1 rises from \TestCnnNoneRare\ to 0.837 when the
 test patients were seen in training, consistently over three random splits (Section~\ref{sec:overlap}).
 \item \textbf{An explainable system}: per-segment saliency and notes written by a language model from the classifier's output alone,
@@ -112,9 +115,8 @@ output by a fact checker.
 \paragraph{Data.} The MIT-BIH Arrhythmia Database~\cite{moody2001,goldberger2000} holds 48 half-hour two-lead recordings whose beats
 were labelled by cardiologists. We use lead MLII at 360~Hz, map the labels to the AAMI classes N, S, V and F, and exclude the four
 paced records and the few Q beats. The 22 DS1 records give training (17) and validation (5) patients and the 22 DS2 records the test
-patients (Table~\ref{tab:data}); generators, oversamplers and normalisation see training patients only. Figure~\ref{fig:beats} shows
-the classes: an S beat comes early but looks almost like the patient's normal beat, a V beat is wide and different, an F beat lies
-between the two.
+patients (Table~\ref{tab:data}); generators, oversamplers and normalisation see training patients only. An S beat
+comes early but looks almost like the patient's normal beat, a V beat is wide and different, and an F beat lies between the two.
 
 \begin{table}[htbp]\centering\small\input{generated/table_dataset.tex}
 \caption{Records and beats per split. S beats are under 4\% of each split, and F beats at most 1\%.}\label{tab:data}\end{table}
@@ -133,16 +135,26 @@ each phase ended with a gate at which the rule was applied and approved. The tes
 that the final evaluation alone unlocks, and every read is logged. The follow-up analyses were registered as new versions of the
 rules (21 in all) before they ran, are reported apart from the primary results, and are labelled post hoc.
 
-\begin{figure}[tbp]\centering\includegraphics[width=0.9\linewidth]{report/medical_background.png}
-\caption{The beat classes on the ECG (training records only). The RR intervals (arrows) reveal an early beat; the rare beats of
-each patient differ from the same patient's normal beat in their own way.}\label{fig:beats}\end{figure}
+\paragraph{Three levels of evidence.} Every result below carries one of three labels. \emph{Confirmatory}: the pre-registered
+comparison, decided on validation patients and read once on the test patients (Section~\ref{sec:answer}). \emph{Exploratory}: the
+follow-up analyses, each registered before it ran, but all read on the same 22 test patients after the final evaluation, so their
+test scores are subject to adaptive overfitting and are not unbiased estimates (Section~\ref{sec:context}). \emph{Independent}: the
+frozen follow-up pipeline on 977 Icentia11k patients that no analysis had used, with nothing fitted on them
+(Section~\ref{sec:unseen}); validation-patient results, which never involve the test set, are also reported where they exist.
+
+\paragraph{Patient identity.} MIT-BIH has 48 records from 47 people: records 201 and 202 are the same person. Record 201 is a
+validation record, so no classifier was trained on that person, but it took part in model selection while 202 is a test record; every
+test result is also reported without record 202, and the conclusions do not change. In the follow-up analyses, INCART patients were
+identified from the record headers and split by patient; SVDB records carry no patient identity and were treated as patients; the
+400 Icentia11k training patients and the 977 evaluation patients were drawn disjointly, and DS2 was never used for training.
 
 \section{Methods}\label{sec:methods}
 \subsection{The pre-registered pipeline}\label{sec:pipeline}
 Each stage was chosen on validation patients by a registered rule (Figure~\ref{fig:flow}, left column).
 \textbf{Beat.} A 0.5~s window around the reference R peak (180 samples), z-scored per beat, with three RR features as side input:
 the intervals before and after the beat and the ratio of the former to the mean of the previous ten (the best of four
-representations). \textbf{Classifiers.} A shallow CNN (73k parameters) and a BiLSTM (135k), the best of four architectures, trained
+representations on validation S F1: \PhaseOneInputRepresentationCMean, against \PhaseOneInputRepresentationAMean\ without the RR features,
+\PhaseOneInputRepresentationBMean\ for a 1~s band-passed window and \PhaseOneInputRepresentationDMean\ at 125~Hz). \textbf{Classifiers.} A shallow CNN (73k parameters) and a BiLSTM (135k), the best of four architectures, trained
 with three seeds and early stopping on validation S F1 (validation holds too few F beats to guide selection); pretraining on PTB-XL
 did not help. \textbf{Generators.} A conditional VAE and a WGAN-GP, each the best of four designs in a pilot, trained on training
 patients only with three seeds into frozen banks of synthetic beats. \textbf{Augmentation.} Each rare class $c$ with $n_c$ real
@@ -185,26 +197,31 @@ p_k(c\mid b)$, and a beat the ensemble calls normal becomes S when it is prematu
 \end{equation}
 and $\hat{y}_b = \arg\max_c \bar{p}(c\mid b)$ otherwise. The threshold 0.8 is Huang et al.'s~\cite{huang2014}, not tuned; $a_b$ is the
 atrial-fibrillation probability of a logistic regression on five RR-irregularity measures, fitted on the 25 records of the MIT-BIH
-Atrial Fibrillation Database~\cite{goldberger2000} (other subjects), with its threshold chosen on training-side data. Training also
-adds the patients of two further databases (St Petersburg INCART and the MIT-BIH Supraventricular Arrhythmia
-Database~\cite{goldberger2000}), and the generators are retrained on patient-relative beats.
+Atrial Fibrillation Database~\cite{goldberger2000} (other subjects), with its threshold chosen on training-side data, never on the
+test records. Training also adds the patients of two further databases (St Petersburg INCART and the MIT-BIH Supraventricular
+Arrhythmia Database~\cite{goldberger2000}), and the generators are retrained on patient-relative beats.
+\emph{Intended setting.} The template window is symmetric and includes the beat itself (one of several hundred beats in the median),
+and the RR interval after the beat is an input, so the pipeline is designed for retrospective review of a recording, as in Holter
+analysis, with a latency of at least 150~s; it is not a real-time detector, and a past-only template was not tested.
 
 \subsection{Explanations and notes}\label{sec:notesmethod}
 Saliency is summarised as the share of attention in fixed P, QRS, ST and T windows around the R peak. A language model (Gemini)
 writes a short note from a JSON holding only the prediction, the probabilities, a low-confidence flag and the two most salient
-segments; a fact checker rejects any number, class, segment or finding not in that JSON and falls back to a template note.
+segments; a fact checker rejects any number, class, segment or finding not in that JSON and falls back to a template note. The
+checker guarantees consistency with the classifier, not clinical correctness: a wrong prediction is restated faithfully.
 
 \section{Results}\label{sec:results}
 \noindent\fbox{\begin{minipage}{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}\small
-\textbf{Results at a glance} (all on patients unseen in training, except the last point)
+\textbf{Results at a glance} (C: confirmatory; E: exploratory, repeated test reads; I: independent, untouched patients)
 \begin{itemize}\setlength{\itemsep}{0pt}\setlength{\topsep}{2pt}
-\item \textbf{Patient context works:} rare-class macro-F1 from \TestCnnCvaeRare\ to \textbf{0.587}; fusion-beat F1 \textbf{0.527}, above the best
-published inter-patient result (0.477); S F1 \textbf{0.647}, above both classic methods (0.511, 0.577).
-\item \textbf{Synthetic beats alone do not:} best gain $+\TestCnnCvaeVsNoneDiff$ (95\% CI $\TestCnnCvaeVsNoneLow$ to $+\TestCnnCvaeVsNoneHigh$),
-no comparison significant after Holm's correction; \textbf{no quality metric predicts the gain}.
-\item \textbf{Why:} 57--65\% of synthetic S beats copy a single training patient, record 209.
-\item \textbf{On 977 more unseen patients}, S F1 is \textbf{0.294 to 0.414}: patient context transfers, at a lower level.
-\item \textbf{Patient overlap inflates scores almost tenfold:} \textbf{0.837} on seen patients against \textbf{\TestCnnNoneRare} on unseen ones.
+\item[C] \textbf{Synthetic beats alone did not help:} best gain $+\TestCnnCvaeVsNoneDiff$ (95\% CI $\TestCnnCvaeVsNoneLow$ to
+$+\TestCnnCvaeVsNoneHigh$), no comparison significant after Holm's correction; \textbf{no quality metric predicted the gain}.
+\item[E] \textbf{Patient context:} rare-class macro-F1 from \TestCnnCvaeRare\ to \textbf{0.587} [0.086, 0.702] on the same test
+patients, with fusion-beat F1 \textbf{0.527} and S F1 \textbf{0.647}.
+\item[I] \textbf{On 977 untouched patients}, the frozen pipeline's S F1 is \textbf{0.294}, and \textbf{0.414} with thresholds chosen
+on other patients; ten-run averaging helps there, the prematurity rule does not.
+\item[E] \textbf{Why synthesis fails:} 57--65\% of synthetic S beats copy a single training patient, record 209.
+\item[E] \textbf{Patient overlap inflates scores almost tenfold:} \textbf{0.837} on seen patients against \textbf{\TestCnnNoneRare} on unseen ones.
 \end{itemize}
 \end{minipage}}
 \vspace{4pt}
@@ -251,7 +268,11 @@ memorization and a classifier two-sample test were then compared with the downst
 57\% and 65\% of the synthetic S beats lie nearest to a single training patient}, record 209, just as 60\% of the real training S beats
 do, while the validation patients' S beats lie nearest to training patients who contribute \textbf{only 1--2\%} of them. The generators
 reproduce the training distribution faithfully, and that distribution is dominated by one patient; a new patient's rare beats are
-not in it (Figure~\ref{fig:why}).
+not in it (Figure~\ref{fig:why}). Two alternatives did not change this: unscreened selection policies lost to the DTW screen in the
+policy pilot on validation, and patient transfer, which grafts each rare beat's deviation onto another training patient's template,
+was not detectably better than no augmentation on the test patients (BiLSTM 0.075 to 0.105--0.109; CNN 0.096 to 0.089--0.116). These
+conclusions hold for the generators, the 17 training patients and the selection policies tested here, not for generative
+augmentation in general.
 
 \begin{figure}[tbp]\centering
 \begin{subfigure}[b]{0.433\linewidth}\centering\includegraphics[width=\linewidth]{phase3_gate/banks.png}\caption{}\end{subfigure}\hfill
@@ -262,8 +283,9 @@ random beats): the synthetic beats look right. (b) The Spearman correlation of e
 checkpoints of 24 generator runs: every 95\% interval includes zero. (c) Each S beat attributed to its nearest training patient: synthetic beats follow the real training mix, dominated by
 record 209, while the validation patients' S beats are nearest to patients the training set barely holds.}\label{fig:why}\end{figure}
 
-\subsection{Patient context lifts detection above published results}\label{sec:context}
-Figure~\ref{fig:progress} traces the follow-up analyses on the test patients. Patient-relative beats raised the CNN without
+\subsection{Patient context: an exploratory pipeline}\label{sec:context}
+Figure~\ref{fig:progress} traces the follow-up analyses on the test patients. These are exploratory: each analysis was registered
+before it ran, but each chose its next step after seeing earlier test scores, so the scores below are optimistic. Patient-relative beats raised the CNN without
 augmentation from \TestCnnNoneRare\ to \textbf{0.371} (P7), \textbf{the largest single step}. Generators retrained on patient-relative beats lifted the
 cVAE condition to \textbf{0.368} (P12). Normalising RR intervals by the recording's mean with Huang et al.'s rule on top raised it to \textbf{0.523}
 (P13); the atrial-fibrillation veto raised every condition by 0.018 to 0.034, each 95\% interval above zero (P16); and averaging ten
@@ -284,45 +306,52 @@ de Chazal et al.\ 2004~\cite{dechazal2004} & 0.511 & 0.797 & -- & -- \\
 Huang et al.\ 2014~\cite{huang2014} & 0.577 & 0.924 & -- & -- \\
 Zhu et al.\ 2022~\cite{zhu2022} & 0.686 & 0.960 & 0.477 & 0.582 \\
 Mousavi et al.\ 2019$^\dagger$~\cite{mousavi2019} & 0.907 & 0.997 & -- & -- \\
+Ours, RR-only linear discriminant, same split (P1) & & & & 0.022 \\
 Ours, pre-registered (CNN with the cVAE) & 0.173 & 0.893 & 0.054 & \TestCnnCvaeRare \\
 \textbf{Ours, patient-context pipeline}$^\ddagger$ & 0.647 & 0.936 & \textbf{0.527} & \textbf{0.587} \\\midrule
 \multicolumn{5}{l}{\textit{Test patients also seen in training (beats split at random)}} \\
 Kwak and Jung 2024~\cite{kwak2024diffusion} & 0.947 & 0.985 & 0.903 & 0.925 \\
 Ours, the same CNN (no augmentation) & & & & 0.837 \\\bottomrule
 \end{tabular}
-\caption{Beside published results (F1 computed from the reported sensitivity and positive predictivity where a paper gives no F1).
+\caption{Beside published results, for context only: the published rows differ from ours in training data, preprocessing and test
+reads, so this is not a controlled comparison; the controlled comparisons are Table~\ref{tab:test} and the RR-only discriminant row,
+run on exactly our split. F1 is computed from the reported sensitivity and positive predictivity where a paper gives no F1.
 Bold: the best inter-patient value in the column. $^\dagger$Far above every other inter-patient report; its protocol could not be checked here. $^\ddagger$Post hoc, and trained with
 patients of two further databases as well as DS1.}\label{tab:published}\end{table}
 
-Table~\ref{tab:published} sets the pipeline beside published results. It is \textbf{above the two classic methods on both classes they
+Table~\ref{tab:published} sets the pipeline beside published results, for context. It is \textbf{above the two classic methods on both classes they
 report}, S F1 0.647 against 0.511 and 0.577 and V F1 0.936 against 0.797 and 0.924, and \textbf{above Zhu et al.'s recent method on fusion beats
 (0.527 against 0.477) and on the mean of S and F (0.587 against 0.582)}, while Zhu et al.\ remain ahead on S (0.686) and V (0.960)
-beats. Two qualifications apply: our pipeline was trained with additional patients from two further databases, and, built after the
-final evaluation, it read the same test patients more than once.
+beats. Three qualifications apply: our pipeline was trained with additional patients from two further databases, it was built while
+reading the same test patients more than once, and the published numbers come from other preprocessing and code. On sensitivity and
+precision, the pipeline finds 0.914 of the test S beats with a precision of 0.500, against 0.152 and 0.201 for the pre-registered CNN.
 
-\paragraph{What else was tried.} Table~\ref{tab:variants} lists the other ideas tested inside the same pipeline. A class-conditional
-diffusion model and the WGAN-GP stayed below the cVAE, and with the thresholds chosen on other patients neither a physics prior
-from McSharry et al.'s simulator~\cite{mcsharry2003dynamical}, as in SimGANs~\cite{golany2020simgans}, nor a ResNet1D with 6.7 times
-the CNN's parameters detectably improved on the cVAE.
+\paragraph{What each step contributed.} The changes were added one after another, so their effects are not separable on the test
+patients alone. Table~\ref{tab:steps} sets each step's test effect beside the evidence that does not depend on the test set. Patient-relative
+beats helped the CNN on validation patients but hurt the BiLSTM; adding INCART and SVDB patients lowered the score without
+augmentation, so the extra data do not explain the gain; ten-run averaging and thresholds chosen on other patients were confirmed on
+untouched patients; the prematurity rule raised S sensitivity everywhere but, on untouched patients, cut precision more than it added
+recall. Other ideas tested in the same pipeline (a diffusion model, a physics prior from McSharry et al.'s simulator~\cite{mcsharry2003dynamical}
+as in SimGANs~\cite{golany2020simgans}, and a ResNet1D with 6.7 times the CNN's parameters) were not detectably better than the cVAE
+(Holm $p$ 0.24 to 0.62).
 
 \begin{table}[tbp]\centering\footnotesize
-\begin{tabular}{llr}\toprule
-Setting & Variant & Rare-class macro-F1 [95\% CI] \\\midrule
-Huang's threshold 0.8, AF veto 0.95 (P18) & no augmentation & 0.316 [0.066, 0.434] \\
- & WGAN-GP & 0.474 [0.081, 0.604] \\
- & diffusion model & 0.433 [0.109, 0.554] \\
- & cVAE & \textbf{0.587} [0.086, 0.702] \\\midrule
-Thresholds chosen on other patients (P20) & cVAE & 0.459 [0.110, 0.500] \\
- & cVAE with a simulator (Euler) loss (P21) & 0.481 [0.106, 0.529] \\
- & cVAE with a fitted simulator loss (P23) & 0.465 [0.112, 0.506] \\
- & ResNet1D with the cVAE (P22) & 0.486 [0.149, 0.529] \\\bottomrule
+\begin{tabular}{L{3.7cm}L{5.1cm}L{6.7cm}}\toprule
+Step & Test patients (E) & Evidence without the test set (V: validation; I: untouched) \\\midrule
+Patient-relative beats (P7) & CNN, no augmentation: 0.088 $\to$ \textbf{0.371} & V: S F1 CNN 0.350 $\to$ 0.472; BiLSTM 0.306 $\to$ 0.181 \\
+MIT-BIH only vs.\ + INCART, SVDB (P11) & no augmentation 0.371 $\to$ 0.147; class-weighted 0.407 & -- \\
+RR over the recording mean, Huang's rule (P13) & cVAE 0.356 $\to$ \textbf{0.523} & I: S Se 0.303 $\to$ 0.629 but S PPV 0.408 $\to$ 0.157 \\
+AF veto (P16) & +0.018 to +0.034, every CI above zero; S PPV 0.415 $\to$ 0.496 & Threshold set on training-side data (S F1 0.490 $\to$ 0.575); V: rule with veto 0.753 vs.\ CNN alone 0.755 \\
+Ten runs averaged (P18, P19) & cVAE 0.557 $\to$ \textbf{0.587} (not detectable) & I: S F1 +0.006 to +0.016 in 5 of 6 conditions, Holm $p$ 0.001 \\
+Thresholds chosen on other patients (P20) & cVAE 0.587 $\to$ 0.459 & I: S F1 0.294 $\to$ \textbf{0.414}, Holm $p$ 0.001 \\\bottomrule
 \end{tabular}
-\caption{Other follow-ups in the patient-context pipeline (ten-run ensembles, the 22 test patients, post hoc). Against the cVAE with the
-same thresholds, none of the lower block is detectably different (Holm $p$ 0.24 to 0.62).}\label{tab:variants}\end{table}
+\caption{What each step of the patient-context pipeline contributed, on the test patients (exploratory) and where available without the
+test set. Rare-class macro-F1 unless marked; S Se and S PPV are the sensitivity and positive predictivity for S beats.}\label{tab:steps}\end{table}
 
-\subsection{Generalisation to unseen patients}\label{sec:unseen}
+\subsection{Independent check on untouched patients}\label{sec:unseen}
 To discount those repeated reads, the frozen pipeline was run on 977 patients of the Icentia11k database~\cite{tan2022icentia} that no
-analysis had used (S and V labels only; Icentia11k has no F label). Its S F1 was \textbf{0.294} [0.237, 0.350] with its own thresholds, and
+analysis had used, with nothing fitted on them. Icentia11k differs from MIT-BIH in device (one chest lead at 250~Hz), annotation
+(technician-labelled N, S, V and Q beats) and population, and has no F label, so fusion beats could not be checked. Its S F1 was \textbf{0.294} [0.237, 0.350] with its own thresholds, and
 \textbf{0.414} when the two thresholds were chosen on 388 other Icentia11k patients; on the test records that choice gave 0.459, because the
 test record that holds most S beats resembles no tuning patient. On these patients the ensemble alone did better than with the rule
 (cVAE S F1 0.348): Huang et al.'s threshold, set on MIT-BIH, doubled S sensitivity (0.303 to 0.629) but cut positive predictivity
@@ -353,8 +382,10 @@ unseen-patient score of 0.088 (line).}\label{fig:overlap}\end{figure}
 
 \subsection{A prediction a clinician can check}\label{sec:explain}
 Of the four saliency methods, the registered rule chose Grad-CAM for the CNN, the most faithful (deleting its most salient samples hurt
-the model most), and occlusion for the BiLSTM. Of four note generators tried on 50 beats, \textbf{all made zero unsupported claims}; the rule
+the model most), and occlusion for the BiLSTM. Faithfulness here means the saliency reflects what the model used, not that the model is clinically right. Of four note
+generators tried on 50 beats, \textbf{all made zero unsupported claims}; the rule
 chose Gemini with worked examples and a fixed output schema, which covered every required fact in 2.6~s per note.
+the notes were rated by team members, not clinicians, and 50 beats is too few for strong reliability claims.
 Figure~\ref{fig:demo} shows the demonstrator for one S beat: the offline analysis by our models, which a review written by Gemini from
 those results then restates, claim by claim checked.
 
@@ -370,31 +401,35 @@ patients were seen in training, so results on random beat splits cannot be ranke
 
 \paragraph{Reproducibility.} Every number in this paper is written by code from logged runs, each with its configuration, seed,
 commit and environment. The registered rules and their 21 versions, every decision and every read of the test records are kept in
-the project repository, the data are public on PhysioNet, and the test suite, including a dress rehearsal that runs every phase,
+the project repository (\url{https://github.com/akashsaha477/Gen_Ai_Project}), the data are public on PhysioNet, and the test suite, including a dress rehearsal that runs every phase,
 gate and evaluation in order on fake records, passes on a fresh copy of the repository.
 
-\paragraph{Limitations.} The rare test beats sit in two patients, so intervals are wide and a single record can move the primary
-measure; the follow-up pipeline is post hoc and partly fitted to repeated test reads, which the unseen-patient check only partly
-corrects; and it uses more training patients than the published methods it is compared with. Fusion beats could not be checked on
-unseen patients. The notes restate the classifier and do not diagnose.
+\paragraph{Limitations.} \emph{Evidence:} the patient-context pipeline is exploratory; only the untouched Icentia11k patients test it
+cleanly, and there it is weaker (S F1 0.294 to 0.414) and untested on fusion beats. \emph{Sample:} the rare test beats sit in two
+patients, so intervals are wide (0.086 to 0.702) and one record can move the primary measure; per-patient S and F recall is shown in
+Figure~\ref{fig:answer}b, while a per-patient distribution for the follow-up pipeline would need a further test read, which we did not
+make. \emph{Selection:} models were selected on validation S F1 because validation holds only 27 F beats, so F performance was never
+optimised directly. \emph{Metrics:} beyond F1 we report sensitivity, precision and N recall, but not specificity, calibration, AUROC
+or false alarms per hour. \emph{Setting:} the pipeline uses the reference R peaks, one lead (MLII), a retrospective 150~s template and
+ten models at inference (each trained in 38--74~s on a T4 GPU); an automatic R-peak detector, other leads, causal templates and
+inference cost were not evaluated. The notes restate the classifier and do not diagnose.
 
 \section{Conclusion}\label{sec:conclusion}
 We asked whether synthetic heartbeats can teach a classifier to recognise rare arrhythmias in patients it has never seen, and answered
-under rules fixed before the test data was read. Three conclusions follow.
+under rules fixed before the test data was read. Three conclusions follow, each at its level of evidence.
 \begin{enumerate}\setlength{\itemsep}{1pt}
-\item \textbf{Patient context is what generalises.} Reading each beat against its own patient (its deviation from the patient's usual
-beat, its prematurity against the patient's rhythm, the regularity of that rhythm) and averaging ten runs raised the rare-class macro-F1
-on unseen test patients from \TestCnnCvaeRare\ to \textbf{0.587}, ahead of the classic inter-patient methods on S and V beats and of the
-most recent one on fusion beats (F1 \textbf{0.527} against 0.477).
-\item \textbf{Synthetic beats need more patients, not more beats.} On their own, a conditional VAE and a WGAN-GP gave no detectable gain
-($+\TestCnnCvaeVsNoneDiff$ at best) because they faithfully reproduce the few training patients they learn from; once each beat was
-expressed relative to its patient, the cVAE gave the best point estimate.
+\item \textbf{The tested synthetic beats did not help (confirmatory).} A conditional VAE and a WGAN-GP gave no detectable gain over no
+augmentation or simple balancing ($+\TestCnnCvaeVsNoneDiff$ at best), because they faithfully reproduce the few training patients they
+learn from.
+\item \textbf{Patient context is the most promising direction (exploratory, partly confirmed).} Reading each beat against its own
+patient and averaging ten runs raised the rare-class macro-F1 on the test patients from \TestCnnCvaeRare\ to \textbf{0.587}; on 977
+untouched patients the frozen pipeline reached an S F1 of \textbf{0.294 to 0.414}, and ensembling and patient-chosen thresholds held up
+while the prematurity rule did not.
 \item \textbf{Evaluation must keep patients apart.} The same network scores \textbf{0.837} on patients it has seen and
-\textbf{\TestCnnNoneRare} on new ones; only the second number says anything about the clinic.
+\textbf{\TestCnnNoneRare} on new ones.
 \end{enumerate}
-The next step is the one thing that cannot be synthesised: many more patients with rare beats. With them, patient-relative generators can
-be tested with the power to settle whether synthesis adds to context, and the patient-context pipeline can be confirmed on patients that
-no analysis has touched.
+The decisive next experiment needs no new idea, only new patients: freeze the patient-context pipeline, ablate its parts one at a time,
+compare causal with symmetric templates, and test once on an untouched cohort that carries fusion-beat labels.
 
 \begingroup\footnotesize
 \bibliographystyle{plain}

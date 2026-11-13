@@ -1888,3 +1888,27 @@ are bold as the best inter-patient values in their columns; the conclusion is th
 generalises; synthetic beats need more patients, not more beats; evaluation must keep patients apart) and a forward-looking
 close. The body ends on page 10 and the references follow (11 pages in all), no warnings; every typed number is in the
 sources.
+
+2026-11-13. The 10-page paper revised against an external critical review (major revision; the user's file
+critical_reviewer_assessment.pdf, kept outside the repository), asked "only change the report with all the runs and data we
+already have dont go and changing runs". No run was made and no test record was read. Changes, by review point: (1, repeated
+test use) three evidence levels stated (confirmatory, exploratory, independent) and every headline result labelled; the abstract,
+contributions, results box and conclusion call the 0.587 pipeline exploratory and give the untouched Icentia11k result as the
+independent check; title "Patient Context for Rare-Arrhythmia Detection in New Patients". (2, small concentrated sample)
+per-record recall points to Figure 4b, intervals and the record-202 check stated; a per-patient distribution for the follow-up
+pipeline is named as needing a further test read, not made. (3, identity) a patient-identity paragraph: record 201 is a
+validation record (the paper had wrongly said training); INCART split by patient from the headers, SVDB records treated as
+patients, Icentia11k training and evaluation patients disjoint, DS2 never trained on. (4, future information) the intended
+setting stated: symmetric template including the beat, the next RR interval as input, retrospective analysis with at least
+150 s latency, past-only template not tested. (5, 8, confounded steps and rules) a step table (P7, P11, P13, P16, P18/P19,
+P20) with each step's test effect beside validation or untouched-patient evidence: patient-relative beats helped the CNN on
+validation (S F1 0.350 to 0.472) but not the BiLSTM (0.306 to 0.181); added INCART/SVDB patients lowered no augmentation
+(0.371 to 0.147); on untouched patients the prematurity rule raised S Se 0.303 to 0.629 but cut S PPV 0.408 to 0.157, while
+ensembling (+0.006 to +0.016, Holm p 0.001) and patient-chosen thresholds (0.294 to 0.414, Holm p 0.001) held. (6) Icentia11k's
+device, annotation and missing F labels stated. (7) the published table is labelled context only, and the RR-only linear
+discriminant on our split (P1, 0.022) added as a controlled baseline. (9, 10, 13 and the technical points) limitations name S-F1
+selection with 27 validation F beats, missing specificity, calibration, AUROC and false alarms per hour, reference R peaks, one
+lead, ten-model inference (38-74 s per training run), notes rated by team members not clinicians and checked for consistency
+only; phase 1's window comparison cited for window sensitivity; the repository link added. (11) generative conclusions restricted
+to the tested generators, data and policies, with the policy pilot and patient transfer (P9) as evidence. The background figure
+of the beat classes was removed for space. Body 10 pages plus references, no warnings; 164 typed numbers, all in the sources.
