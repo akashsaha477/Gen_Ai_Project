@@ -133,6 +133,41 @@ def check_note(note: str, payload: dict) -> dict:
     return {"unsupported_claims": len(issues), "issues": issues, "coverage": coverage, "coverage_fraction": sum(coverage.values()) / len(coverage)}
 
 
+def note_claims(note: str, payload: dict) -> list[dict]:
+    """Each claim of a note that the fact checker looks at, next to the input value it restates, in reading order.
+
+    Same rules as ``check_note``: the rows with ``matches`` False are exactly its unsupported claims. Rows: every number,
+    every class and segment named, every term beyond the input, the disclaimer and, for a low-confidence beat, the
+    review sentence.
+    """
+    text = note.replace(str(payload["model_id"]), " ").replace(str(payload["record_anon_id"]), " ")
+    values = {**{f"probability of {c}": float(v) for c, v in payload["probabilities"].items()},
+              **{f"{SEGMENT_NAMES[s['name']]} share": float(s["mass"]) for s in payload["top_segments"]}}  # fmt: skip
+    rows = []
+    for m in re.finditer(r"(\d+(?:\.\d+)?)\s*(%?)", text):
+        value = float(m.group(1)) / (100 if m.group(2) else 1)
+        tolerance = 0.005 if m.group(2) else 0.0051
+        names = [name for name, v in values.items() if abs(value - v) <= tolerance]
+        rows.append({"at": m.start(), "claim": m.group(0).strip(), "offline": " or ".join(names) or "no such value", "matches": bool(names)})
+    for cls, name in CLASS_NAMES.items():  # whole words: "ventricular" inside "supraventricular" is not class V
+        if found := re.search(rf"\b{cls}\b|\b{re.escape(name)}", text):
+            what = "the predicted class" if cls == payload["predicted_class"] else f"class {cls}, probability {payload['probabilities'].get(cls, 0):.2f}"
+            rows.append({"at": found.start(), "claim": found.group(0), "offline": what, "matches": cls in payload["probabilities"]})
+    top = {s["name"]: s["mass"] for s in payload["top_segments"]}
+    for name, pattern in _SEGMENT_PATTERNS.items():
+        if found := re.search(pattern, text):
+            what = f"a top segment, {top[name]:.0%} of the saliency" if name in top else "not among the top segments"
+            rows.append({"at": found.start(), "claim": found.group(0), "offline": what, "matches": name in top})
+    lowered = text.lower()
+    rows += [{"at": lowered.find(term), "claim": term, "offline": "beyond the input", "matches": False} for term in UNSUPPORTED_TERMS if term in lowered]
+    rows.sort(key=lambda r: r["at"])
+    rows.append({"at": len(text), "claim": "disclaimer", "offline": "present word for word" if DISCLAIMER in note else "missing", "matches": DISCLAIMER in note})
+    if payload["low_confidence"]:
+        rows.append({"at": len(text), "claim": "review sentence", "offline": "present" if REVIEW_REQUIRED in note else "missing (low-confidence beat)",
+                     "matches": REVIEW_REQUIRED in note})  # fmt: skip
+    return rows
+
+
 # --------------------------------------------------------------------------------------------------
 # LLM variants
 # --------------------------------------------------------------------------------------------------

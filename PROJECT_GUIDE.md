@@ -299,8 +299,10 @@ Asks: does pretraining on a large ECG dataset help rare-beat detection on MIT-BI
 - Notes: a template and three LLM variants restate the model's output; a fact checker rejects any
   number, class, segment or diagnosis not in the input, and requires the disclaimer and, for
   low-confidence beats, "Clinician review is required."
-- Error analysis from saved predictions only; a demo for one validation beat. Its note comes from the variant chosen at
-  the gate (C, Gemini) when `GEMINI_API_KEY` is set, with the template as fallback, and the demo prints which one wrote it.
+- Error analysis from saved predictions only; a demo for one validation beat in three parts: the offline analysis by our
+  models with no LLM (prediction, saliency by segment, RR intervals, the beat in all 36 saved runs, a figure), a review
+  by Gemini (variant C) written from that result only, and each claim of the review checked against it. Without
+  `GEMINI_API_KEY` the template note is used and the demo says why.
 
 ### 5.14 Phase 6: the paper and the course report (`paper.py`, `report_text.py`, `report_folder.py`, `report/`)
 

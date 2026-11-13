@@ -214,8 +214,48 @@ def test_demo_smoke():
     from ecgaug import demo
 
     out = demo.smoke()
-    assert out["unsupported_claims"] == 0 and out["prediction"] in "NSVF"
+    assert out["unsupported_claims"] == 0 and out["claims_not_matching"] == 0 and out["prediction"] in "NSVF"
     assert out["note_by"] == "template (variant A)"  # no phase 5 gate in this root yet
+
+
+def test_demo_prints_the_offline_analysis_then_the_review_then_the_match(capsys):
+    from ecgaug import demo
+
+    demo.smoke(show=True)
+    text = capsys.readouterr().out
+    parts = ["1. Offline analysis by our models (no LLM)", "2. Review: the template note (no LLM)", "3. The review against the offline analysis"]
+    assert all(p in text for p in parts) and text.index(parts[0]) < text.index(parts[1]) < text.index(parts[2])
+    assert "Explainability" in text and "QRS" in text and "0 unsupported claims" in text and "{" not in text
+
+
+def test_note_claims_follow_the_fact_checker():
+    template = notes.template_note(PAYLOAD)
+    wrong = "Supraventricular ectopic beat (S), probability 0.7, with atrial fibrillation; the model relied most on the T wave (10%)."
+    for note in (template, wrong, template.replace(notes.DISCLAIMER, "")):
+        rows = notes.note_claims(note, PAYLOAD)
+        assert sum(not r["matches"] for r in rows) == notes.check_note(note, PAYLOAD)["unsupported_claims"]
+    rows = {r["claim"]: r for r in notes.note_claims(wrong, PAYLOAD)}
+    assert not rows["0.7"]["matches"] and not rows["fibrillation"]["matches"] and not rows["T wave"]["matches"]
+    assert rows["S"]["offline"] == "the predicted class" and rows["S"]["matches"]
+    assert "ventricular ectopic beat" not in {r["claim"] for r in notes.note_claims("A supraventricular ectopic beat (S).", PAYLOAD)}
+
+
+def test_demo_finds_the_beat_in_every_saved_run():
+    from ecgaug import demo
+
+    chosen = {"cnn": {"none": {"run_ids": ["phase4_full_grid-cnn.none-s0-abc1234-202611030000", "phase4_full_grid-cnn.none-s1-abc1234-202611030000"],
+                               "strength": None}}}  # fmt: skip
+    paths.results_dir().mkdir(parents=True, exist_ok=True)
+    (paths.results_dir() / "manifest.json").write_text(json.dumps({"phase4_gate": {"chosen": chosen}}))
+    for k, run_id in enumerate(chosen["cnn"]["none"]["run_ids"]):
+        run_dir = paths.runs_dir() / "phase4_full_grid" / run_id
+        run_dir.mkdir(parents=True)
+        probs = np.array([[0.7, 0.1, 0.1, 0.1], [0.1, 0.2 + 0.5 * k, 0.6 - 0.5 * k, 0.1]], dtype=np.float32)
+        np.savez(run_dir / "preds_val.npz", probs=probs, y=np.array([0, 1]), record=np.array([118, 118]), r_idx=np.array([100, 500]))
+    rows = demo.offline_runs(118, 500)
+    assert [(r["seed"], r["prediction"]) for r in rows] == [(0, "V"), (1, "S")]
+    assert demo.offline_runs(118, 999) == [] and demo.offline_runs(201, 100) == []
+    assert demo.describe_model(rows[1]["run_id"]) == {"arch": "cnn", "condition": "none", "strength": None, "seed": 1}
 
 
 class FakeGemini(FakeClient):

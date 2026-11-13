@@ -1652,3 +1652,21 @@ code 0, 441 passed, 1 skipped (paper draft), 0 failed (882 progress marks and 2 
 collected locally); `python -m ecgaug.paper` and all 11 README smoke commands and `workflow status` exited 0 and left
 every tracked file unchanged. The demo smoke there reports "template (variant A), because no LLM key is set
 (GEMINI_API_KEY)", as expected without a Kaggle secret. Commits after 6d1bc74 change documents only.
+
+2026-11-13. Demo output in three parts, asked "the output isnt well formated for the explainibility part. one should
+give the data it should check with our models make the figures till this part everything should be without ai and then
+send it to gemini to make a review of the heart condition and match with our offline runnings". The demo printed raw
+dictionaries (saliency masses with 16 decimals). Now `python -m ecgaug.demo` prints: (1) the offline analysis, no LLM:
+model (arch, condition, strength, seed, run ID), RR intervals, prediction, probabilities with bars, confidence against
+the 0.6 threshold, the saliency share per P/QRS/ST/T window with bars and the top two marked, the beat in this model's
+saved validation predictions (difference to the live run), the beat in the saved validation predictions of all 36 runs
+the phase 4 gate fixed (2 architectures x 6 conditions x 3 seeds; read from `preds_val.npz`, nothing rerun), and a new
+figure (beat and saliency, shares by segment, probabilities with the threshold, the 36 runs as a grid); (2) the review by
+Gemini (variant C), written from the offline result only (the RULES §5 JSON, never the signal), or the template note with
+the reason; (3) each number, class and segment of the review next to the offline value it restates (`notes.note_claims`,
+the fact checker's own rules; `check_note` unchanged) and how many of the 36 runs agree. `--json` prints the result as
+JSON. Record 118 (local, no key): beat 112 (reference S) predicted S 0.62 by cnn/cVAE seed 1, saved prediction identical
+(difference 0.000), but only 6 of 36 runs predict S (N 17, V 13); beat 129 (reference V) V 0.79, 30 of 36 runs V; beat
+100 (reference N) N, 34 of 36 runs N. The Gemini parts were rendered with a stand-in client returning the 2026-11-12
+live Gemini answer: 7 claims, all matching. report/ unchanged (it says the demo prints the prediction, probabilities and
+note and saves a figure, which still holds).

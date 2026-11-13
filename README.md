@@ -235,9 +235,13 @@ What each variant is, how to run it and what to check: `docs/briefs/<experiment>
 written by `python -m ecgaug.paper` from the result files (`src/ecgaug/paper_text.py`) into `paper/generated/`, and the
 course report's share of them into `report/generated/` and `report/results.md`; the paper draft (`paper/main.tex`) is kept out of this repository. The LLM note variants need `GEMINI_API_KEY` (free
 tier from aistudio.google.com; optionally `ECGAUG_LLM_MODEL`) in the environment; without it the template note is used.
-The demo (`python -m ecgaug.demo --record <validation record> --beat <index>`) writes its note with the variant chosen at
-the phase 5 gate (C, Gemini) and prints who wrote it (`note by: ...`). Without the key, when the call fails (daily quota,
-network) or when the note fails the fact checker, it uses the template note and says why; `--notes template` skips the call.
+The demo (`python -m ecgaug.demo --record <validation record> --beat <index>`) prints three parts. (1) The offline
+analysis, with no LLM: our model's prediction and probabilities, the beat's RR intervals, where the model looked (the
+share of saliency in the P, QRS, ST and T windows), the same beat in the saved validation predictions of all 36 models the
+phase 4 gate fixed, and a figure of all of it. (2) A review written by Gemini (the note variant chosen at the phase 5 gate,
+C) from the offline result only. (3) Every number, class and segment of that review next to the offline value it restates.
+Without the key, when the call fails (daily quota, network) or when the review fails the fact checker, the template note
+is used and the demo says why; `--notes template` skips the call and `--json` prints the result as JSON.
 
 ## Troubleshooting
 
