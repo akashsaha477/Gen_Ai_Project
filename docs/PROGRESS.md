@@ -1814,3 +1814,18 @@ Final check on Kaggle at 9f13bfb, the last code commit (`phase6-final-check` v9,
 ECGAUG_REHEARSAL=1 exit code 0, 447 passed, 1 skipped (paper draft), 0 failed (894 progress marks and 2 skip marks
 halved); `python -m ecgaug.paper`, the 11 README smoke commands and `workflow status` exited 0 and left every tracked file
 unchanged.
+
+2026-11-13. The 10-page paper reframed, asked "the report is focusing in the wrong way it should be focused on that we are
+improving on every paper before this and keep the tested beat on trained patient as a new finding that other papers didnt
+find". New title "Same Model, New Patient: Rare Arrhythmias at the Level of the Best Published Results, and the Tenfold Gap
+Patient Overlap Hides"; the abstract, introduction and results now lead with the best pipeline against published
+inter-patient results (Section 4.1, with the four changes, the progress figure and the comparison table), then the
+patient-overlap measurement (4.2), then the pre-registered answer on generative augmentation (4.3) and why (4.4). Two
+claims were kept to what the numbers show, and the user was told why: P18 is above de Chazal et al. and Huang et al. on S
+and V F1 (the classes compared), and above Zhu et al. on F F1 (0.527 vs 0.477) and the S-F mean (0.587 vs 0.582) but below
+them on S (0.686) and V (0.960), and below Mousavi et al., whose protocol was not checked (kept in the table with that
+note), so the text does not say "every paper"; and patient-overlap inflation is known since de Chazal et al., so the paper
+presents our measurement of it on one pipeline (0.088 to 0.837, three random splits) rather than a first discovery. The
+comparison table now also lists Mousavi et al. and a block for patients seen in training (Kwak and Jung 0.925, ours
+0.837); our row is labelled, not bolded as best. Still 10 pages, no warnings; the 79 typed numbers are all in
+report/results.md, the checklist or the generated files.
