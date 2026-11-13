@@ -1772,3 +1772,18 @@ mention, and PhysioNet (Goldberger et al. 2000) for INCART and SVDB, in `report_
 exactly the 26 cited entries. Long version: 26 references (was 41), 29 pages (was 30); short version: 18 (was 16: the
 two dataset citations), 20 pages; no undefined citation, no overfull line, no bibtex warning. Docs give the long version
 as 29 pages. Tests: test_report_folder, test_report_text, test_paper pass; `python -m ecgaug.paper` is stable.
+Full recheck of the 26 references, asked "recheck all the references if they are correct". (1) Every field of the 20
+entries with a DOI compared automatically with Crossref or DataCite (full author lists, title, venue, volume, issue,
+pages, year): all match; the only differences were formatting (Crossref's "deChazal", PhysioNet's title stored without
+its subtitle, the ICCV proceedings name, "version 1.0" in the Icentia11k title, which DataCite confirms). The others:
+Sohn et al. and Gulrajani et al. on the NeurIPS pages (volumes 28 and 30), Sundararajan et al. and Golany et al. on PMLR
+(70: 3319-3328; 119: 3597-3606), SmoothGrad and Mousavi et al. on arXiv (Mousavi's last version March 2019), Holm (Scand
+J Stat 6(2):65-70, as Wikipedia's citation with JSTOR 4615733), the Goldberger textbook (three authors, Elsevier, 9th
+edition 2017, Open Library) and AAMI EC57:2012 (title as the ANSI and BSI listings). (2) The numbers taken from the
+comparators: de Chazal (SVEB 75.9/38.5, VEB 77.7/81.9), Huang (SVEB 91.1/42.2, VEB 93.9/90.9) and Zhu (F1 98.26, 68.61,
+95.99, 47.75) match their abstracts; Mousavi's inter-patient values match the abstract's inter-patient sentence (S PPV
+92.57, Se 88.94; V PPV 99.50, Se 99.94); Kwak and Jung's model 4 matches their Table 4 (columns PPV, SEN, F1); its N
+F1 (98.79) does not follow from its own PPV and SEN (97.28), a slip in the paper, and the report uses only S, V and F.
+(3) What the report says each source did: Huang's SVEB stage compares the RR ratio with a threshold (abstract), Lin and
+Yang divide by the mean RR of the recording; the other citing sentences restate the sources' titles or abstracts.
+Nothing needed changing.
