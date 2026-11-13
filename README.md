@@ -11,6 +11,8 @@ It was run in pre-registered phases from 2026-10-07 to 2026-11-13.
 
 **The demo:** `./demo.sh` (see [Demo](#demo)).
 
+**Authors:** Akash Saha (261110401), Kartheek Dasari (261110029), H M Karthik (261110025), T D Manindra (261050084).
+
 ## The question and the setup
 
 - **Beat classes** (AAMI EC57): N normal, S supraventricular ectopic, V ventricular ectopic, F fusion. The rare classes
@@ -251,7 +253,6 @@ Every access is logged in [docs/TEST_ACCESS_LOG.md](docs/TEST_ACCESS_LOG.md).
   patients give the fairer estimate.
 - The notes and the demo's review only restate the model's output. They are not a diagnosis, and every one ends with
   that statement.
-- The author line and the team contributions in the report are still placeholders.
 
 ## Troubleshooting
 

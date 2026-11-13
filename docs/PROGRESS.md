@@ -1748,3 +1748,10 @@ sanity harness and the 96 checkpoints, the four saliency methods), what was foun
 the pre-registered verdict, unchanged. An introduction gives the scale (761 logged runs: 240 pre-registered, 521
 follow-up; 21 pre-registration versions; a gate per phase), and the follow-up section now lists what those analyses
 established, each with its number and Holm p from the checklist (P7, P16, P18/P19, P20, P22, P4, P3). No number is new.
+
+2026-11-13. Authors on the course report: "the authors are Akash Saha - 261110401, Kartheek Dasari 261110029, H M
+Karthik 261110025 and T D MANINDRA 261050084". Both `report/report.tex` and `report/report_short.tex` now carry the four
+names with their roll numbers (a two-by-two block under the title), and the red "Team contributions" placeholder section
+is removed from both, as the team chose (asked to draft it from the git record, keep it, or remove it). Both versions
+recompiled with tectonic: still 30 and 20 pages, no undefined reference, no overfull line, no red placeholder left.
+README has an Authors line; the placeholder points in the README limitations and PROJECT_GUIDE's open points are gone.

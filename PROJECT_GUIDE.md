@@ -472,8 +472,6 @@ Updated on 2026-11-12 for the final submission; `docs/PROGRESS.md` has every che
 
 **Open points**
 
-- The author line and the team contributions of the course report are red placeholders (the team's names and
-  contributions were not recorded in `docs/ASSIGNMENTS.md`).
 - Positive predictivity for V follows the AAMI rule that fusion beats called V are neither penalised nor rewarded, so
   they do not count as false positives. Huang et al. (2014) count them (their published confusion matrix gives
   3025 / 3329 = 0.909), so the literature table compares slightly different definitions; on the seed-mean confusion
