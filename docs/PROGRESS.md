@@ -1881,3 +1881,10 @@ its 95% interval and a zero line, titled from the data ("No quality metric predi
 includes zero). Figure 5(b) uses it, panels at equal heights. Still 10 pages, no warnings.
 Then, told "its cs787 and name is GenAi": the title pages now read "CS787: GenAI, course project report" (full), "... (20-page
 version)" and "... (10-page version)", and the README names the course. Page counts unchanged (29, 20, 10), no warnings.
+Then, asked "the conclusion is not good and make the results more clear and bold the number and things that aere more
+important" and "10 page + reference": the Results open with a boxed "Results at a glance" (five findings with their numbers);
+key numbers and claims are bold in every results subsection; in the comparison table our F F1 (0.527) and S-F mean (0.587)
+are bold as the best inter-patient values in their columns; the conclusion is three numbered takeaways (patient context
+generalises; synthetic beats need more patients, not more beats; evaluation must keep patients apart) and a forward-looking
+close. The body ends on page 10 and the references follow (11 pages in all), no warnings; every typed number is in the
+sources.
