@@ -1924,3 +1924,12 @@ explanation section is labelled a demonstrator, not a validated clinical explana
 documented reasons (two architecture families; the DTW screen won the policy pilot; the 150 s window from the DS1 diagnostic of
 DECISIONS A25, 51% vs 87% of training S beats below a 0.9 ratio; ten runs because single runs ranged 0.451 to 0.610; 0.8 is
 Huang's value, not tuned). Body exactly 10 pages, references on page 11, no warnings.
+Then, from a pasted pre-submission checklist (editorial only): the research question reads "Under the standard DS1/DS2
+inter-patient protocol" and a sentence names the record 201/202 overlap and its sensitivity analysis; the reproducibility
+paragraph explains the 21 versions (1 to 3 the pre-registered study, 4 to 21 the 23 follow-up analyses, some registering more than
+one); "paper" became "report" where it means this document; the abstract, results box and conclusion say 0.294 is the original
+thresholds and 0.414 the thresholds adapted on 388 separate Icentia11k patients. Figure 1(a), the full architecture diagram,
+printed at about 28% of its size (labels under 3 pt); new `figures.pipeline_compact_figure` draws the two pipelines stage by
+stage at the printed size (figures/report/pipeline_compact.png, labels about 6 pt on paper) and replaces it; the other figures print
+at 70% or more of their size. No undefined reference, no warning; the repository link returns 200; body 10 pages, references on
+page 11; every typed number is in the sources.

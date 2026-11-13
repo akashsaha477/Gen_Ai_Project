@@ -3087,3 +3087,44 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+PIPELINE_STAGES = (
+    ("Data", "MIT-BIH DS1:\n17 training, 5 validation", "+ INCART and SVDB\ntraining patients"),
+    ("Beat", "0.5 s window, z-scored,\nRR features", "beat minus the patient's\ntemplate; RR over the\nrecording's mean"),
+    ("Augmentation", "cVAE, WGAN-GP, SMOTE,\noversampling, class weights", "cVAE retrained on\npatient-relative beats"),
+    ("Classifier", "CNN and BiLSTM,\n3 seeds each", "CNN, 10 runs averaged"),
+    ("Decision", "most probable class", "+ Huang's rule (0.8)\n+ AF veto (0.95)"),
+    ("Explanation", "Grad-CAM; Gemini note\nwith fact checker", "same"),
+)
+
+
+def pipeline_compact_figure() -> list[Path]:
+    """The two pipelines stage by stage, drawn at the size the 10-page report prints them (half the text width), so that the
+    labels stay legible on paper; the full diagram is ``architecture_flow_figure``."""
+    from matplotlib.patches import FancyBboxPatch
+
+    plt = _plt()
+    fig = plt.figure(figsize=(3.0, 3.2))
+    ax = fig.add_axes((0, 0, 1, 1))
+    ax.set_xlim(0, 3.0)
+    ax.set_ylim(0.35, 3.55)
+    ax.axis("off")
+    columns = ((0.80, "Pre-registered\n(confirmatory)", "#cde2fb"), (1.92, "Patient context\n(exploratory)", "#d6efe3"))
+    box_w, box_h, top, step = 1.04, 0.42, 3.0, 0.48
+    for x, head, _ in columns:
+        ax.text(x + box_w / 2, top + 0.30, head, ha="center", va="center", fontsize=6.6, fontweight="bold", color=INK)
+    for i, (stage, left, right) in enumerate(PIPELINE_STAGES):
+        y = top - i * step
+        ax.text(0.75, y, stage, ha="right", va="center", fontsize=5.9, fontweight="bold", color=INK)
+        for (x, _, color), text in zip(columns, (left, right)):
+            ax.add_patch(FancyBboxPatch((x, y - box_h / 2), box_w, box_h, boxstyle="round,pad=0,rounding_size=0.05",
+                                        facecolor=color, edgecolor=INK_2, linewidth=0.6))  # fmt: skip
+            ax.text(x + box_w / 2, y, text, ha="center", va="center", fontsize=5.7, color=INK, linespacing=1.0)
+            if i < len(PIPELINE_STAGES) - 1:
+                ax.annotate("", (x + box_w / 2, y - box_h / 2 - 0.07), (x + box_w / 2, y - box_h / 2), arrowprops={"arrowstyle": "-|>", "color": INK_2, "lw": 0.6})
+    path = paths.figures_for("report") / "pipeline_compact.png"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=300, facecolor=SURFACE)
+    plt.close(fig)
+    return [path]
