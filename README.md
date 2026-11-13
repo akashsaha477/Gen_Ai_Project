@@ -253,11 +253,3 @@ Every access is logged in [docs/TEST_ACCESS_LOG.md](docs/TEST_ACCESS_LOG.md).
   patients give the fairer estimate.
 - The notes and the demo's review only restate the model's output. They are not a diagnosis, and every one ends with
   that statement.
-
-## Troubleshooting
-
-- **`KeyError: '_items'` on `import matplotlib.pyplot` (macOS):** the system font listing returns nothing on some macOS
-  versions. Call `ecgaug.eval.plotting.import_pyplot()` once; it builds matplotlib's font cache without that step, after
-  which normal imports work.
-- **`ModuleNotFoundError: No module named 'ecgaug'`:** the command ran outside the repository. Run it from the
-  repository root, or use `./demo.sh`, which works from any folder.

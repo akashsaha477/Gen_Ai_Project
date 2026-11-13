@@ -1791,3 +1791,7 @@ Final check on Kaggle at e14909a, the last code commit (`phase6-final-check` v8,
 ECGAUG_REHEARSAL=1 exit code 0, 447 passed, 1 skipped (paper draft), 0 failed (894 progress marks and 2 skip marks
 halved); `python -m ecgaug.paper` left every tracked file unchanged, so the committed report files match the code; the 11
 README smoke commands and `workflow status` exited 0 and left every tracked file unchanged.
+
+2026-11-13. README: the Troubleshooting section removed, asked "remove troubleshooting from the readme". Its two entries
+(the macOS matplotlib font-cache error, and running a command outside the repository) moved word for word to the end of
+`docs/CHECKLIST.md`, the team's working notes. Every README link still resolves.

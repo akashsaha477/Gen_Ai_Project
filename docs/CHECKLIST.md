@@ -183,3 +183,10 @@ model from scratch for comparison. `DIR` is a PTB-XL copy; `--ptbxl-download` fe
 instead. Results go to `results/phase2_ptbxl_pretraining/`. Design: `docs/PLAN.md`, Phase 2.
 It runs only for the variant the phase 1 gate chose; add `--preview` to run it earlier or for another variant.
 
+## Troubleshooting
+
+- **`KeyError: '_items'` on `import matplotlib.pyplot` (macOS):** the system font listing returns nothing on some macOS
+  versions. Call `ecgaug.eval.plotting.import_pyplot()` once; it builds matplotlib's font cache without that step, after
+  which normal imports work.
+- **`ModuleNotFoundError: No module named 'ecgaug'`:** the command ran outside the repository. Run it from the
+  repository root, or use `./demo.sh`, which works from any folder.
