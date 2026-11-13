@@ -301,8 +301,9 @@ Asks: does pretraining on a large ECG dataset help rare-beat detection on MIT-BI
   low-confidence beats, "Clinician review is required."
 - Error analysis from saved predictions only; a demo for one validation beat in three parts: the offline analysis by our
   models with no LLM (prediction, saliency by segment, RR intervals, the beat in all 36 saved runs, a figure), a review
-  by Gemini (variant C) written from that result only, and each claim of the review checked against it. Without
-  `GEMINI_API_KEY` the template note is used and the demo says why.
+  by Gemini written as a cardiologist's short report from that result only (added after the gate for the demo, A44), and
+  each claim of the review checked against it. Without `GEMINI_API_KEY` the same report is filled in offline and the
+  demo says why; `--notes gate` writes the phase 5 note variant (C) instead.
 
 ### 5.14 Phase 6: the paper and the course report (`paper.py`, `report_text.py`, `report_folder.py`, `report/`)
 

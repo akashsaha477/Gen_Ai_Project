@@ -573,3 +573,19 @@ derivative form of that loss mostly measures roughness (smoothing a beat cut its
 so the signal form (simulated beat against beat) is registered; the check is reported in the pre-registration. Both are
 compared on P19's patients and once each on DS2, and each is labelled post hoc. Offered at about 1.5 and 5 GPU-hours;
 about 7 in all after writing the pre-registration. Pre-registration v21 is committed and tagged before P21's DS2 read.
+
+## 2026-11-13 (Day 38) — A44: a cardiologist-style review in the demo (post hoc, demo only) — Akash Saha ("make the gemini output better act like you were a dr")
+
+The demo's Gemini text was the phase 5 note (variant C), which restates the prediction, its probability and the top two
+segments. Asked for a review written as a doctor would, the demo now asks Gemini for a cardiologist's short report
+(`src/ecgaug/report/review.py`): findings (the beat's timing from its RR intervals, where the classifier's attention
+lay), impression (the predicted class and the next most likely one, with probabilities) and confidence (the threshold
+and how many of the 36 saved runs predict the same class), followed by a fixed next step ("Clinician review is
+required.") and the disclaimer. Its input is the RULES §5 note input plus the facts the demo's offline analysis already
+computes: every segment's share of the saliency, the RR intervals before and after the beat and their ratio to the mean
+of the previous 10, and the saved-run agreement. The checker applies the fact checker's rules to these facts and also
+rejects findings they do not hold (rhythm, conduction, beat origin such as "atrial" or "junctional", waveform shape,
+width, amplitude, axis, compensatory pause); a failing review is sent back with its problems at most twice, then
+replaced by the same report filled in without an LLM. This was not evaluated by the phase 5 gate's rule, so it is
+labelled post hoc and used in the demo only: the note variants A-D, their results, the gate's choice (C) and the
+report's numbers are unchanged, and `python -m ecgaug.demo --notes gate` still writes variant C.

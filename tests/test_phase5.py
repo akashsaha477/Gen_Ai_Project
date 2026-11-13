@@ -215,7 +215,7 @@ def test_demo_smoke():
 
     out = demo.smoke()
     assert out["unsupported_claims"] == 0 and out["claims_not_matching"] == 0 and out["prediction"] in "NSVF"
-    assert out["note_by"] == "template (variant A)"  # no phase 5 gate in this root yet
+    assert out["note_by"] == "offline template (no LLM), because no LLM key is set (GEMINI_API_KEY)"
 
 
 def test_demo_prints_the_offline_analysis_then_the_review_then_the_match(capsys):
@@ -223,9 +223,57 @@ def test_demo_prints_the_offline_analysis_then_the_review_then_the_match(capsys)
 
     demo.smoke(show=True)
     text = capsys.readouterr().out
-    parts = ["1. Offline analysis by our models (no LLM)", "2. Review: the template note (no LLM)", "3. The review against the offline analysis"]
+    parts = ["1. Offline analysis by our models (no LLM)", "2. Review: the offline template (no LLM)", "3. The review against the offline analysis"]
     assert all(p in text for p in parts) and text.index(parts[0]) < text.index(parts[1]) < text.index(parts[2])
     assert "Explainability" in text and "QRS" in text and "0 unsupported claims" in text and "{" not in text
+    assert all(f"   {label}:" in text for label in ("Findings", "Impression", "Confidence", "Next step"))
+
+
+OUT = {"record": 118, "beat": 112, "prediction": "S", "probabilities": {"N": 0.23, "S": 0.62, "V": 0.13, "F": 0.02}, "low_confidence": False,
+       "threshold": 0.6, "segment_masses": {"P": 0.1836, "QRS": 0.2353, "ST": 0.196, "T": 0.3146}, "top_segments": ["T", "QRS"],
+       "rr": {"before_s": 0.631, "after_s": 0.908, "ratio": 0.781}, "model_id": "run-x",
+       "offline_runs": [{"prediction": "S"}] * 6 + [{"prediction": "N"}] * 30}  # fmt: skip
+GOOD = {"findings": "The beat came 631 ms after the previous one, 78% of the mean of the previous 10 RR intervals, earlier than the preceding beats; "
+                    "the next followed after 908 ms. Attention lay on the T wave (31%) and the QRS complex (24%).",
+        "impression": "Supraventricular ectopic beat (S), probability 0.62; next most likely normal beat (N), 0.23.",
+        "confidence": "Above the low-confidence threshold of 0.6; 6 of 36 saved runs predict S."}  # fmt: skip
+
+
+def test_clinician_review_template_and_checker():
+    from ecgaug.report import review
+
+    facts = review.review_facts(OUT)
+    assert facts["rr_before_ms"] == 631 and facts["saved_runs_same_class"] == 6 and facts["segment_shares"]["T"] == 0.31
+    offline = review.template_review(facts)
+    assert review.check_review(offline, facts)["issues"] == [] and offline.endswith(notes.DISCLAIMER) and review.NEXT_STEP in offline
+    assert review.check_review(review.render(GOOD), facts)["issues"] == []
+    bad = review.render({**GOOD, "findings": "Right bundle branch block morphology, RR 0.7 s.", "impression": "Atrial premature beat."})
+    report = review.check_review(bad, facts)
+    rows = review.claims(bad, facts)
+    assert report["unsupported_claims"] == sum(not r["matches"] for r in rows) >= 4
+    assert {"bundle", "block", "atrial", "0.7"} == {r["claim"] for r in rows if not r["matches"]}
+    unnamed = review.render({**GOOD, "impression": "Normal beat (N), probability 0.23.", "confidence": "Above the low-confidence threshold of 0.6."})
+    assert review.check_review(unnamed, facts)["issues"] == ["the predicted class S is not named"]
+    assert review.render({**GOOD, "findings": "Findings: " + GOOD["findings"] + " " + notes.DISCLAIMER}).count(notes.DISCLAIMER) == 1
+    with pytest.raises(ValueError):
+        review.render({"findings": "only one field"})
+
+
+def test_demo_clinician_review_rewrites_then_falls_back_with_the_reason():
+    from ecgaug import demo
+    from ecgaug.report import review
+
+    facts = review.review_facts(OUT)
+    offline = review.template_review(facts)
+    good, bad = json.dumps(GOOD), json.dumps({**GOOD, "impression": "Atrial premature beat with aberrant conduction."})
+    assert demo.clinician_review(facts, FakeGemini([good])) == (review.render(GOOD), "Gemini fake (clinician review), passed the fact checker")
+    text, by = demo.clinician_review(facts, FakeGemini([bad, "no json here", good]))
+    assert text == review.render(GOOD) and by.endswith("after 2 rewrites")
+    text, by = demo.clinician_review(facts, FakeGemini([bad, bad, bad]))
+    assert text == offline and "failed the fact checker 3 times" in by and "atrial" in by
+    assert demo.clinician_review(facts, None) == (offline, "offline template (no LLM), because no LLM key is set (GEMINI_API_KEY)")
+    text, by = demo.clinician_review(facts, GeminiDown([]))
+    assert text == offline and "call failed" in by and "quota" in by
 
 
 def test_note_claims_follow_the_fact_checker():

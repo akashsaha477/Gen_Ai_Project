@@ -238,10 +238,13 @@ tier from aistudio.google.com; optionally `ECGAUG_LLM_MODEL`) in the environment
 The demo (`python -m ecgaug.demo --record <validation record> --beat <index>`) prints three parts. (1) The offline
 analysis, with no LLM: our model's prediction and probabilities, the beat's RR intervals, where the model looked (the
 share of saliency in the P, QRS, ST and T windows), the same beat in the saved validation predictions of all 36 models the
-phase 4 gate fixed, and a figure of all of it. (2) A review written by Gemini (the note variant chosen at the phase 5 gate,
-C) from the offline result only. (3) Every number, class and segment of that review next to the offline value it restates.
-Without the key, when the call fails (daily quota, network) or when the review fails the fact checker, the template note
-is used and the demo says why; `--notes template` skips the call and `--json` prints the result as JSON.
+phase 4 gate fixed, and a figure of all of it. (2) A review written by Gemini as a cardiologist's short report
+(findings, impression, confidence, next step) from the offline result only, never the signal. (3) Every number, class and
+segment of that review next to the offline value it restates. A review with a claim the offline result does not hold
+(a wrong number, or a rhythm, conduction, beat-origin or waveform finding) is sent back at most twice; without the key,
+when the call fails (daily quota, network) or when it still fails, the same report filled in offline is used and the
+demo says why. `--notes template` skips the call, `--notes gate` writes the phase 5 gate's note variant (C) instead, and
+`--json` prints the result as JSON.
 
 ## Troubleshooting
 

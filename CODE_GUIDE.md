@@ -483,9 +483,13 @@ precondition before the first test byte, predicts the test set with every frozen
   `check_note` (the fact checker), `LLMClient` / `client_from_env`; `report/error_analysis.py`: `analyse`.
 - `demo.py`: `explain_beat` runs the offline analysis of one beat (prediction, saliency by segment, RR intervals, the
   beat in the saved validation predictions of every model the phase 4 gate fixed via `offline_runs`, the figure), then
-  the note and its claims (`note_claims`); `format_review` prints the three parts. `write_note` returns the note and who
-  wrote it: the note variant chosen at the phase 5 gate (`chosen_notes_variant`, C, Gemini) when a key is set, else the
-  template, which also replaces a note whose call failed or that failed the fact checker, with the reason.
+  the review and its claims; `format_review` prints the three parts. `clinician_review` returns the cardiologist-style
+  review and who wrote it (Gemini, or the offline template with the reason). `--notes gate` uses `write_note` instead:
+  the note variant chosen at the phase 5 gate (`chosen_notes_variant`, C), the template note as fallback.
+- `report/review.py` (demo only, A44): `review_facts` (the RULES §5 input plus every segment's share, the RR intervals and
+  the saved-run agreement), `SYSTEM` (the cardiologist prompt), `write_review` (at most two rewrites), `render`,
+  `template_review` (the same report without an LLM), `claims` / `check_review` (the fact checker's rules over these
+  facts, plus findings the facts do not hold: rhythm, conduction, beat origin, waveform shape).
 - `report/notes.py` `note_claims`: each number, class, segment and term of a note next to the input value it restates,
   by the fact checker's rules (the rows that do not match are exactly its unsupported claims).
 - `paper.py`: `build()` writes the paper's tables and numbers from the result files. It then calls `report_folder.write()`, which copies only the files the two versions of the course report (`report/report.tex`, 30 pages, and `report/report_short.tex`, 20 pages) input into `report/generated/` (stale ones are removed, so none of the paper's own texts land there) and writes `report/results.md`: every results table of the full report, converted from the same LaTeX tables to Markdown under the report's section titles, with each caption's first sentence as the title and the files each table was built from.

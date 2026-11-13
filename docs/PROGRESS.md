@@ -1674,3 +1674,14 @@ Live run with the key, in the user's terminal (record 118, beat 112): part 1 as 
 gemini-3.5-flash-lite (variant C)", a new wording ("The heartbeat classifier predicted a supraventricular ectopic beat (S)
 with a probability of 0.62 ..."); part 3: 7 claims (class, 0.62, T wave, 0.31, QRS, 0.24, disclaimer), all matching the
 offline analysis, review kept; 6 of the 36 saved runs predict S for this beat.
+
+2026-11-13. Cardiologist-style review in the demo (A44), asked "make the gemini output better act like you were a dr".
+New `src/ecgaug/report/review.py`; the demo's default (`--notes clinician`) asks Gemini for findings, impression and
+confidence from the offline result (RR intervals in ms and their ratio, every segment's share, probabilities, threshold,
+saved-run agreement), adds "Next step: Clinician review is required." and the disclaimer, checks every claim, sends a
+failing review back at most twice and otherwise uses the same report filled in offline. `--notes template` gives the
+offline report, `--notes gate` the phase 5 note (C). Record 118, beat 112, offline report: 17 claims (631 ms, 0.78, 10,
+908 ms, T wave 31%, QRS 24%, S 0.62, N 0.23, threshold 0.60, 6 of 36 runs, next step, disclaimer), all matching. Tests:
+the facts, the offline report passing its own check, a review naming a bundle branch block, an atrial origin and a
+number not in the facts (all four caught), a review not naming the class, two rewrites then a pass, three failures
+then the offline report, no key, quota error.

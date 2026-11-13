@@ -1,7 +1,8 @@
 """Demo: one validation beat in; an offline analysis by our models, then a review by Gemini checked against it (PLAN Phase 5).
 
     python -m ecgaug.demo --record 118 --beat 112                   # the beat at position 112 among the record's usable beats
-    python -m ecgaug.demo --record 118 --beat 112 --notes template  # the template note only, no LLM call
+    python -m ecgaug.demo --record 118 --beat 112 --notes template  # the same review filled in offline, no LLM call
+    python -m ecgaug.demo --record 118 --beat 112 --notes gate      # the note variant the phase 5 gate chose, instead of the review
     python -m ecgaug.demo --smoke                                   # a fake record and a tiny model, to check a fresh clone
 
 It prints three parts, in this order:
@@ -10,11 +11,13 @@ It prints three parts, in this order:
    condition) classifies the beat; the saliency method the phase 5 gate chose for the architecture (integrated
    gradients until then) shows where it looked, as the share of saliency in the P, QRS, ST and T windows; the beat is
    looked up in the saved validation predictions of every model the phase 4 gate fixed; the figure is saved.
-2. Review by Gemini. The note variant the phase 5 gate chose writes the review from the offline result only (the JSON
-   of docs/RULES.md §5, never the signal); it needs ``GEMINI_API_KEY`` (see ``ecgaug.report.notes``).
+2. Review by Gemini, written as a cardiologist's short report (findings, impression, confidence, next step) from the
+   offline result only, never the signal (``ecgaug.report.review``, added after the phase 5 gate for the demo, A44); it
+   needs ``GEMINI_API_KEY``. ``--notes gate`` writes the note variant the phase 5 gate chose instead (``ecgaug.report.notes``).
 3. The review against the offline analysis: every number, class and segment the review names, next to the offline
-   value it restates. A review with any claim the offline analysis does not support is replaced by the template note,
-   as is the review when no key is set or the call fails (daily quota, network); the demo says which and why.
+   value it restates. A review with any claim the offline analysis does not support is sent back (at most twice) and
+   then replaced by the same report filled in offline, as is the review when no key is set or the call fails (daily
+   quota, network); the demo says which and why.
 
 Only validation records are accepted (the test records are locked anyway).
 """
@@ -51,6 +54,8 @@ from ecgaug.report.notes import (
     note_input,
     template_note,
 )
+from ecgaug.report.review import check_review, review_facts, template_review, write_review
+from ecgaug.report.review import claims as review_claims
 
 DEFAULT_METHOD = "integrated_gradients"
 METHOD_SETTINGS = {"ig_steps": 50, "smoothgrad_samples": 25, "smoothgrad_sd": 0.1, "occlusion_window_ms": 50, "occlusion_stride_ms": 25, "batch_size": 64}
@@ -80,6 +85,23 @@ def write_note(variant: str, payload: dict, client: LLMClient | None) -> tuple[s
         why = "; ".join(issues) or "still failing after the retries"
         return template, f"template (variant A), because the {name} note (variant {variant}) failed the fact checker: {why}"
     return made["note"], f"{name} (variant {variant}), passed the fact checker"
+
+
+def clinician_review(facts: dict, client: LLMClient | None) -> tuple[str, str]:
+    """The cardiologist-style review and who wrote it: Gemini when a key is set and its review passes the checker (after
+    at most two rewrites), else the same report filled in offline, with the reason."""
+    offline = template_review(facts)
+    if client is None:
+        return offline, f"offline template (no LLM), because no LLM key is set ({', '.join(API_KEYS.values())})"
+    name = f"{client.provider.capitalize()} {client.model}"
+    try:
+        made = write_review(facts, client)
+    except (LLMQuotaError, OSError, ValueError) as err:  # HTTP and network errors are OSErrors; the key is never in them
+        return offline, f"offline template (no LLM), because the {name} call failed: {err}"
+    if made["review"] is None:
+        return offline, f"offline template (no LLM), because the {name} review failed the fact checker {made['attempts']} times: {'; '.join(made['issues'])}"
+    rewrites = made["attempts"] - 1
+    return made["review"], f"{name} (clinician review), passed the fact checker" + (f" after {rewrites} rewrite{'s' * (rewrites > 1)}" if rewrites else "")
 
 
 def chosen_notes_variant(notes: str = "llm") -> str:
@@ -119,10 +141,11 @@ def offline_runs(record: int, r_idx: int) -> list[dict]:
     return rows
 
 
-def explain_beat(model: torch.nn.Module, spec: RepresentationSpec, record: int, index: int, method: str, notes_variant: str, client,
-                 model_id: str, out_dir: Path, threshold: float = LOW_CONFIDENCE_THRESHOLD) -> dict:  # fmt: skip
+def explain_beat(model: torch.nn.Module, spec: RepresentationSpec, record: int, index: int, method: str, review: str, client,
+                 model_id: str, out_dir: Path, threshold: float = LOW_CONFIDENCE_THRESHOLD, notes_variant: str = "A") -> dict:  # fmt: skip
     """The offline analysis of the ``index``-th usable beat of a record (prediction, saliency, saved runs, figure), then
-    the note written from it and the note's claims checked against it."""
+    the review written from it and its claims checked against it. ``review``: "clinician" (Gemini as a cardiologist,
+    offline template as fallback), "template" (the offline template) or "gate" (the phase 5 note ``notes_variant``)."""
     signal = raw.read_signal(record)
     beats = extract_beats(record)
     keep = usable_mask(beats["r_idx"].to_numpy(), signal.size, beats["rr_prev"].to_numpy(), beats["rr_next"].to_numpy()) & (beats["y"] >= 0).to_numpy()
@@ -147,8 +170,16 @@ def explain_beat(model: torch.nn.Module, spec: RepresentationSpec, record: int, 
            "probabilities_exact": dict(zip(CLASSES, map(float, probs))), "low_confidence": payload["low_confidence"], "threshold": threshold,
            "saliency_method": method, "segment_masses": masses, "top_segments": [s["name"] for s in payload["top_segments"]], "offline_runs": saved}  # fmt: skip
     out["figure"] = str(_plot(x[0], maps[0], probs, pre, spec.effective_fs, out, out_dir / f"record{record}_beat{index}.png"))
-    note, note_by = write_note(notes_variant, payload, client)
-    out.update(note=note, note_by=note_by, llm_used=not note_by.startswith("template"), claims=note_claims(note, payload), fact_check=check_note(note, payload))
+    if review == "gate":
+        note, note_by = write_note(notes_variant, payload, client)
+        found, check = note_claims(note, payload), check_note(note, payload)
+    else:
+        facts = review_facts(out)
+        note, note_by = clinician_review(facts, client if review == "clinician" else None)
+        if review == "template":
+            note_by = "offline template (no LLM), because --notes template was given"
+        found, check = review_claims(note, facts), check_review(note, facts)
+    out.update(review_kind=review, note=note, note_by=note_by, llm_used=not note_by.startswith(("template", "offline template")), claims=found, fact_check=check)
     return out
 
 
@@ -310,12 +341,21 @@ def format_review(out: dict) -> str:
     lines.append(_row("Figure", out["figure"]))
 
     lines += [""]
+    writer = out["note_by"].split(", passed the fact checker")[0]
     if out["llm_used"]:
-        lines += [f"2. Review by {out['note_by'].removesuffix(', passed the fact checker')}, written from the offline result only", RULE]
+        kind = "as a cardiologist's report" if out["review_kind"] != "gate" else "as the phase 5 note"
+        lines += [f"2. Review by {writer.replace(' (clinician review)', '')}, written {kind} from the offline result only", RULE]
+        if "rewrite" in out["note_by"]:
+            lines.append(_row("Checked", out["note_by"].split(", ", 1)[1]))
     else:
-        why = out["note_by"].split("because ", 1)[1] if "because " in out["note_by"] else "--notes template was given"
-        lines += ["2. Review: the template note (no LLM)", RULE, _row("Why", why)]
-    lines += textwrap.wrap(out["note"], width=97, initial_indent="   ", subsequent_indent="   ")
+        title = "the template note (no LLM)" if out["review_kind"] == "gate" else "the offline template (no LLM)"
+        lines += [f"2. Review: {title}", RULE, _row("Why", out["note_by"].split("because ", 1)[-1])]
+    for paragraph in out["note"].split("\n"):
+        label, _, rest = paragraph.partition(": ")
+        if out["review_kind"] != "gate" and rest and label in ("Findings", "Impression", "Confidence", "Next step"):
+            lines += textwrap.wrap(rest, width=100, initial_indent=f"   {label + ':':<14}", subsequent_indent=" " * 17)
+        else:
+            lines += textwrap.wrap(paragraph, width=100, initial_indent="   ", subsequent_indent="   ")
 
     lines += ["", "3. The review against the offline analysis", RULE]
     width = max([len(c["claim"]) for c in out["claims"]] + [10]) + 2
@@ -351,11 +391,10 @@ def smoke(show: bool = False) -> dict:
     from ecgaug.experiments.data_source import smoke_data
     from ecgaug.models import build_model
 
-    variant = chosen_notes_variant()  # read before the smoke data's temporary root replaces the repository's
     with smoke_data() as (split, data):
         torch.manual_seed(0)
         model = build_model({"name": "shallow_cnn", "channels": [8, 16, 16], "kernel": 7, "side_hidden": 4}, 4, 3 if data.spec.rr_features else 0)
-        out = explain_beat(model, data.spec, split.val[0], 5, DEFAULT_METHOD, variant, client_from_env(), "smoke-model",
+        out = explain_beat(model, data.spec, split.val[0], 5, DEFAULT_METHOD, "clinician", client_from_env(), "smoke-model",
                            paths.repo_root() / "figures" / "demo")  # fmt: skip
         text = format_review(out)
     if show:
@@ -370,8 +409,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--beat", type=int, default=0, help="position among the record's usable beats (from 0)")
     parser.add_argument("--arch", default="cnn", help="cnn or rnn")
     parser.add_argument("--condition", default="best_generative", help="none, class_weighted, ..., or best_generative")
-    parser.add_argument("--notes", choices=["llm", "template"], default="llm",
-                        help="llm (default): the note variant chosen at the phase 5 gate, Gemini, with the template as fallback; template: no LLM call")
+    parser.add_argument("--notes", choices=["clinician", "template", "gate"], default="clinician",
+                        help="clinician (default): Gemini writes a cardiologist's review, the offline template as fallback; template: the same review "
+                             "filled in offline, no LLM call; gate: the note variant chosen at the phase 5 gate")
     parser.add_argument("--out", default="figures/demo", help="folder for the figure")
     parser.add_argument("--json", action="store_true", help="print the result as JSON instead of the three parts")
     parser.add_argument("--smoke", action="store_true", help="fake record and tiny model")
@@ -398,8 +438,9 @@ def main(argv: list[str] | None = None) -> int:
     except (ValueError, FileNotFoundError, KeyError) as err:
         print(f"Demo not ready: {err}")
         return 2
-    client = client_from_env() if args.notes == "llm" else None
-    out = explain_beat(model, spec, args.record, args.beat, method, chosen_notes_variant(args.notes), client, run_id, paths.repo_root() / args.out)
+    client = client_from_env() if args.notes != "template" else None
+    out = explain_beat(model, spec, args.record, args.beat, method, args.notes, client, run_id, paths.repo_root() / args.out,
+                       notes_variant=chosen_notes_variant("llm"))  # fmt: skip
     print(json.dumps(out, indent=2) if args.json else format_review(out))
     return 0
 
