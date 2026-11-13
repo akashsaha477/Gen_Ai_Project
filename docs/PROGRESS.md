@@ -1879,3 +1879,5 @@ gain), unreadable at half width. New `figures.quality_rho_figure` (called by `ec
 `figures/phase4_quality_vs_gain/rho.png` from results/phase4_quality_vs_gain/summary.json: each metric's Spearman rho with
 its 95% interval and a zero line, titled from the data ("No quality metric predicts the gain" only when every interval
 includes zero). Figure 5(b) uses it, panels at equal heights. Still 10 pages, no warnings.
+Then, told "its cs787 and name is GenAi": the title pages now read "CS787: GenAI, course project report" (full), "... (20-page
+version)" and "... (10-page version)", and the README names the course. Page counts unchanged (29, 20, 10), no warnings.

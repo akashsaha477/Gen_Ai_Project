@@ -4,7 +4,7 @@ Can a generative model that creates synthetic heartbeats (a conditional VAE or a
 rare arrhythmia beats, when the patients it is tested on were never seen in training? This repository holds the whole
 study on the MIT-BIH Arrhythmia Database: the data pipeline, the classifiers, the generators, the comparison with the
 usual ways of handling class imbalance, saliency explanations, LLM-written notes guarded by a fact checker, and a demo.
-It was run in pre-registered phases from 2026-10-07 to 2026-11-13.
+A course project for CS787: GenAI, run in pre-registered phases from 2026-10-07 to 2026-11-13.
 
 **The course report:** a 10-page version with the main findings, what we built and what it means,
 [report/report_brief.pdf](report/report_brief.pdf); the full report [report/report.pdf](report/report.pdf) (29 pages); or the 20-page
