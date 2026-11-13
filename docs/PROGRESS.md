@@ -1868,3 +1868,6 @@ related work said Mousavi et al. found the random split "far easier", but their 
 says studies with random splits report far higher scores (Kwak and Jung). 10 pages, 9 figures, 5 tables, no warnings, every
 page filled; 148 typed numbers, all in the sources. The Kaggle check v10 for f76936c did not run: the kernel started before
 the new repository bundle was processed and could not check out the commit.
+Then, asked "make the tittle better this is boring and bad": the 10-page paper's title is now "Every Heart Is Different: Why
+Synthetic Heartbeats Do Not Transfer to New Patients, and What Does", with the subtitle "A pre-registered study of
+rare-arrhythmia detection on the MIT-BIH inter-patient benchmark". Still 10 pages, no warnings.
