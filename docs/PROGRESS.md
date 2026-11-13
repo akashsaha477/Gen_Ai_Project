@@ -1670,3 +1670,7 @@ JSON. Record 118 (local, no key): beat 112 (reference S) predicted S 0.62 by cnn
 100 (reference N) N, 34 of 36 runs N. The Gemini parts were rendered with a stand-in client returning the 2026-11-12
 live Gemini answer: 7 claims, all matching. report/ unchanged (it says the demo prints the prediction, probabilities and
 note and saves a figure, which still holds).
+Live run with the key, in the user's terminal (record 118, beat 112): part 1 as above; part 2 "Review by Gemini
+gemini-3.5-flash-lite (variant C)", a new wording ("The heartbeat classifier predicted a supraventricular ectopic beat (S)
+with a probability of 0.62 ..."); part 3: 7 claims (class, 0.62, T wave, 0.31, QRS, 0.24, disclaimer), all matching the
+offline analysis, review kept; 6 of the 36 saved runs predict S for this beat.
