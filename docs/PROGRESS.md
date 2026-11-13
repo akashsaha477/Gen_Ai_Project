@@ -1727,3 +1727,15 @@ earlier commits of the same day and were superseded): full suite with ECGAUG_REH
 `python -m ecgaug.paper`, the 11 README smoke commands and `workflow status` exited 0 and left every tracked file
 unchanged. main was pushed at 110bb9b (README and docs on top of 38f0ed4) before this check finished, on the user's
 "push"; the commits after 38f0ed4 change documents and one example figure only.
+
+2026-11-13. Final check for any mention of tools used to build the project (A45), asked "do a final check of everything
+no mention of ai should be there anywhere ... by that using ai to make the project not like using gemini api key or
+gemini for results". Checked: every tracked text file (including notebooks), file names, the two report PDFs (text and
+metadata), image metadata, every commit message, author and committer, tag messages, branch names, every old file
+version (pickaxe over all refs), and on GitHub the pull requests, comments, releases and the repository description;
+the Kaggle datasets and notebooks are not visible without logging in. Gemini, the project's note and review model, is
+part of the work and stays. Found: two current lines (a pointer in PROJECT_GUIDE, a line in this log of 2026-11-12) and
+their old versions plus one old `.gitignore` line; removed, and scrubbed from history by a rewrite (230 SHAs changed,
+final tree identical, `docs/COMMIT_MAP.csv` extended to 399 rows: e.g. 38f0ed4 -> e425075, 9602c73 -> 949de13). Left for
+the owner on GitHub: the generated-by line at the end of pull requests #4, #5 and #6. GitHub keeps the old commits of the
+ten pull requests (from before A35); only GitHub Support can remove them.

@@ -589,3 +589,15 @@ width, amplitude, axis, compensatory pause); a failing review is sent back with 
 replaced by the same report filled in without an LLM. This was not evaluated by the phase 5 gate's rule, so it is
 labelled post hoc and used in the demo only: the note variants A-D, their results, the gate's choice (C) and the
 report's numbers are unchanged, and `python -m ecgaug.demo --notes gate` still writes variant C.
+
+## 2026-11-13 (Day 38) — A45: a second history rewrite for leftover references to local-only files — Akash Saha ("do a final check of everything no mention of ai should be there anywhere"; chose "Rewrite history")
+
+A final check of every tracked file, every commit message, every author and every old file version found three leftover
+references to the local-only paths of A35 in old file versions: a pointer in `PROJECT_GUIDE.md` (since 2026-10-13), an
+ignore line in `.gitignore` (2026-11-06 to 2026-11-07) and a line in `docs/PROGRESS.md` (2026-11-12). They were removed
+from the current files and, by a history rewrite (text replaced in every old version, nothing else changed), from every
+commit; `main`, `finish-project` and the 24 tags were force-pushed. The final tree is byte-identical to the one before
+the rewrite. 230 commit SHAs changed; run IDs keep the SHA7 they were created with, and `docs/COMMIT_MAP.csv` now maps
+every older SHA (from before A35 or before this rewrite) to the current commit. A backup of the repository before the
+rewrite is kept outside it. Three pull-request descriptions on GitHub carry a generated-by line that only the owner can
+edit, and GitHub keeps the pre-A35 commits of the ten pull requests; neither is part of the repository's history.
