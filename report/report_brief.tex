@@ -132,8 +132,8 @@ generative condition with no augmentation.
 
 \paragraph{Pre-registration and test lock.} Every selection rule and hypothesis was written down before the experiment it governs, and
 each phase ended with a gate at which the rule was applied and approved. The test array can only be read through a guarded loader
-that the final evaluation alone unlocks, and every read is logged. The follow-up analyses were registered as new versions of the
-rules (21 in all) before they ran, are reported apart from the primary results, and are labelled post hoc.
+that the final evaluation alone unlocks, and every read is logged. The 23 follow-up analyses (P1--P23) were each registered before
+they ran, in versions 4 to 21 of the pre-registration, are reported apart from the primary results, and are labelled post hoc.
 
 \paragraph{Three levels of evidence.} Every result below carries one of three labels. \emph{Confirmatory}: the pre-registered
 comparison, decided on validation patients and read once on the test patients (Section~\ref{sec:answer}). \emph{Exploratory}: the
@@ -145,7 +145,8 @@ frozen follow-up pipeline on 977 Icentia11k patients that no analysis had used, 
 \paragraph{Patient identity.} MIT-BIH has 48 records from 47 people: records 201 and 202 are the same person. Record 201 is a
 validation record, so no classifier was trained on that person, but it took part in model selection while 202 is a test record; every
 test result is also reported without record 202, and the conclusions do not change. In the follow-up analyses, INCART patients were
-identified from the record headers and split by patient; SVDB records carry no patient identity and were treated as patients; the
+identified from the record headers and split by patient; SVDB records carry no patient identity and were treated as patients, which is an assumption, not a proof, since two SVDB
+records could come from one person; the
 400 Icentia11k training patients and the 977 evaluation patients were drawn disjointly, and DS2 was never used for training.
 
 \section{Methods}\label{sec:methods}
@@ -161,7 +162,9 @@ patients only with three seeds into frozen banks of synthetic beats. \textbf{Aug
 training beats is brought up to a fraction $s\in\{0.1, 0.25, 0.5\}$ of the normal count $n_N$ with $m_c = s\,n_N - n_c$ synthetic
 beats, taken from $2m_c$ bank beats as the $m_c$ closest to real training beats by dynamic time warping~\cite{sakoe1978dtw}; $s$ is
 chosen per condition on validation. With no augmentation, a class-weighted loss, random oversampling and SMOTE as competitors, this
-is a grid of 96 runs (2 classifiers, 3 seeds, no augmentation and 5 conditions at 3 strengths). \textbf{Training.} Cross-entropy
+is a grid of 96 runs (2 classifiers, 3 seeds, no augmentation and 5 conditions at 3 strengths). The two classifiers are the best
+convolutional and the best recurrent design, so that every conclusion is checked on two architecture families; the DTW screen won
+the policy pilot on validation against unscreened policies. \textbf{Training.} Cross-entropy
 (class-weighted only in that condition), AdamW with weight decay 0.01, batches of 256, a learning rate of $10^{-3}$ or
 $3\cdot10^{-4}$ chosen on validation, at most 40 epochs, and early stopping with patience 5 on validation S F1, never before
 epoch 10; every condition has the same budget.
@@ -190,7 +193,10 @@ ectopic beat from that patient's usual beat remains.
 between patients. Bottom: the same beats minus each patient's template (Equation~2); a normal beat is close to zero and an ectopic
 beat keeps only its deviation from the patient's usual beat.}\label{fig:template}\end{figure}
 RR intervals are divided by the mean RR interval $\overline{RR}$ of the recording, $\tilde{r}_b = RR^{\mathrm{prev}}_b/\overline{RR}$.
-Neither step uses a label. Ten independently trained runs are averaged, $\bar{p}(c\mid b) = \frac{1}{10}\sum_{k=1}^{10}
+Neither step uses a label. The 150~s window comes from a training-patient diagnostic: S beats inside runs do not look premature
+against the ten preceding intervals, and only 51\% of training S beats had a ratio below 0.9 that way, against 87\% against the median of a
+$\pm$150~s window. Ten independently trained runs are averaged, because single runs of the same setting varied widely (0.451 to 0.610
+on the test patients), $\bar{p}(c\mid b) = \frac{1}{10}\sum_{k=1}^{10}
 p_k(c\mid b)$, and a beat the ensemble calls normal becomes S when it is premature, unless an atrial-fibrillation detector fires:
 \begin{equation}
 \hat{y}_b = S \quad\text{if}\quad \operatorname*{arg\,max}_c \bar{p}(c\mid b) = N,\;\; \tilde{r}_b < 0.8 \;\;\text{and}\;\; a_b < 0.95 ,
@@ -380,7 +386,8 @@ patient; random-split results above 0.9 therefore belong beside our own 0.837, n
 and without generative augmentation. (b) The random-split score on two further splits and at a second WGAN-GP strength, against the
 unseen-patient score of 0.088 (line).}\label{fig:overlap}\end{figure}
 
-\subsection{A prediction a clinician can check}\label{sec:explain}
+\subsection{A prediction a clinician can check: the demonstrator}\label{sec:explain}
+This part is the project's engineering demonstrator of generative AI in the loop, not a validated clinical explanation system.
 Of the four saliency methods, the registered rule chose Grad-CAM for the CNN, the most faithful (deleting its most salient samples hurt
 the model most), and occlusion for the BiLSTM. Faithfulness here means the saliency reflects what the model used, not that the model is clinically right. Of four note
 generators tried on 50 beats, \textbf{all made zero unsupported claims}; the rule
@@ -415,16 +422,17 @@ ten models at inference (each trained in 38--74~s on a T4 GPU); an automatic R-p
 inference cost were not evaluated. The notes restate the classifier and do not diagnose.
 
 \section{Conclusion}\label{sec:conclusion}
-We asked whether synthetic heartbeats can teach a classifier to recognise rare arrhythmias in patients it has never seen, and answered
-under rules fixed before the test data was read. Three conclusions follow, each at its level of evidence.
+The central finding of this project is where the difficulty lies: rare arrhythmias are hard to detect in new patients because every
+heart is different, and the promising way through that patient-level shift is patient-relative context, not synthetic data. We reached
+it by asking, under rules fixed before the test data was read, whether synthetic heartbeats can help, and by following the answer.
 \begin{enumerate}\setlength{\itemsep}{1pt}
-\item \textbf{The tested synthetic beats did not help (confirmatory).} A conditional VAE and a WGAN-GP gave no detectable gain over no
-augmentation or simple balancing ($+\TestCnnCvaeVsNoneDiff$ at best), because they faithfully reproduce the few training patients they
-learn from.
 \item \textbf{Patient context is the most promising direction (exploratory, partly confirmed).} Reading each beat against its own
 patient and averaging ten runs raised the rare-class macro-F1 on the test patients from \TestCnnCvaeRare\ to \textbf{0.587}; on 977
 untouched patients the frozen pipeline reached an S F1 of \textbf{0.294 to 0.414}, and ensembling and patient-chosen thresholds held up
 while the prematurity rule did not.
+\item \textbf{The tested synthetic beats did not help (confirmatory).} A conditional VAE and a WGAN-GP gave no detectable gain over no
+augmentation or simple balancing ($+\TestCnnCvaeVsNoneDiff$ at best), because they faithfully reproduce the few training patients they
+learn from; this negative result is what pointed us to patient context.
 \item \textbf{Evaluation must keep patients apart.} The same network scores \textbf{0.837} on patients it has seen and
 \textbf{\TestCnnNoneRare} on new ones.
 \end{enumerate}

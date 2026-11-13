@@ -1916,3 +1916,11 @@ Final check on Kaggle at ed57d58, the last code commit (`phase6-final-check` v12
 passed): full suite with ECGAUG_REHEARSAL=1 exit code 0, 447 passed, 1 skipped (paper draft), 0 failed; `python -m ecgaug.paper`,
 the 11 README smoke commands and `workflow status` exited 0 and left every tracked file unchanged. Later commits change only
 report/report_brief.tex and its PDF and the logs.
+Then, from a pasted assessment that separated writing fixes from new experiments (writing fixes only): the protocol now says the
+23 follow-up analyses (P1-P23) were registered in versions 4 to 21 of the pre-registration (the abstract's 23 and the protocol's 21
+no longer read as a conflict); the SVDB patient assumption is called an assumption, not a proof; the conclusion opens with the
+central finding (patient-level shift, and patient context as the promising way through it) and lists patient context first; the
+explanation section is labelled a demonstrator, not a validated clinical explanation system; the design choices carry their
+documented reasons (two architecture families; the DTW screen won the policy pilot; the 150 s window from the DS1 diagnostic of
+DECISIONS A25, 51% vs 87% of training S beats below a 0.9 ratio; ten runs because single runs ranged 0.451 to 0.610; 0.8 is
+Huang's value, not tuned). Body exactly 10 pages, references on page 11, no warnings.
